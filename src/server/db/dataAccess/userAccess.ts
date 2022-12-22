@@ -9,14 +9,14 @@
 import { IUserDataAccess } from "../interfaces";
 import { IUser } from "../interfaces";
 import { db } from "../../db";
-import { _DBADMIN } from "../constants";
+import { _DBDATAS } from "../constants";
 import { encrypt } from "../../helpers/";
 
 export const userAccess: IUserDataAccess = {
     getAll: async () => {
         return await db["admin"]
             .table("user")
-            .select(Object.keys(_DBADMIN.Users.columns).filter((word) => word.toLowerCase() != "password"))
+            .select(Object.keys(_DBDATAS.Users.columns).filter((word) => word.toLowerCase() != "password"))
             .orderBy("id");
     },
 

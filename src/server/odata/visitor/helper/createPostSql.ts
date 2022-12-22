@@ -375,13 +375,6 @@ export function createPostSql(datas: IKeyValues[] | IKeyValues, knexInstance: Kn
     const temp = createQuerySelectPGQuery(main, main); 
     sqlResult += queryAsJson(` SELECT ${temp?.select} FROM ${names[postEntity.table]} ${temp && temp.groupBy ? `GROUP BY ${temp.groupBy}` : ''}`, false, false);
 
-    //                 return createSql({select: select.join(","), 
-//                                             from: _DBDATAS[realEntityName].table , 
-//                                             where: element.where, 
-//                                             groupBy: element.groupBy.join(","), 
-//                                             orderby: element.orderby,
-//                                             skip: element.skip,
-//                                             limit: element.limit});
 
     logDebug(sqlResult);        
     return sqlResult;

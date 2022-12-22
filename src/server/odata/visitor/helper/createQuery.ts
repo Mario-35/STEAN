@@ -65,7 +65,7 @@ export function createQuerySelectPGQuery(main: PgVisitor, element: PgVisitor): P
                     from: _DBDATAS[realEntityName].table , 
                     where: element.where, 
                     groupBy: element.groupBy.join(",\n\t"), 
-                    orderby: element.orderby,
+                    orderby: element.orderby || "id",
                     skip: element.skip,
                     limit: element.limit
                 };

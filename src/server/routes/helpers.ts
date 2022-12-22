@@ -6,7 +6,6 @@
  *
  */
 
-import { _DBADMIN } from "../db/constants";
 import { _CONFIGFILE } from "../configuration";
 
 export const testRoutes = (input: string): string => {

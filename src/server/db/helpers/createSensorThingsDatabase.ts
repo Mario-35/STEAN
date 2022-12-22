@@ -31,7 +31,7 @@ import { triggers } from "../createDBDatas/triggers";
     }
 
     // in case of test always destroy DB
-    if (configFile.pg_database === "test" || (configFile.destroy && configFile.destroy == true)) {
+    if (configFile.pg_database === "test") {
         returnValue[`DROP Database`] = await db["admin"]
             .raw(`DROP Database IF EXISTS ${configFile.pg_database}`)
             .then(() => "✔")

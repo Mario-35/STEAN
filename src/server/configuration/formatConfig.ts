@@ -24,10 +24,8 @@ export function formatConfig(input: JSON, name?: string): IConfigFile {
         webSiteDoc: input["webSiteDoc"] || "no web site",
         nb_page: input["nb_page"] ? +input["nb_page"] : 200,
         lineLimit: input["lineLimit"] ? +input["lineLimit"] : 2000,
-        destroy: input["destroy"] || false,
         seed: name === "test" ? true : input["seed"] || false,
-        forceHttps: input["forceHttps"] ? input["forceHttps"] : false,
-        pg_migrate: input["pg_migrate"] ? Number(input["pg_migrate"]) : -1
+        forceHttps: input["forceHttps"] ? input["forceHttps"] : false
     };
     if (Object.values(returnValue).includes("ERROR"))
         throw new TypeError(`Error in config file [${util.inspect(returnValue, { showHidden: false, depth: null })}]`);

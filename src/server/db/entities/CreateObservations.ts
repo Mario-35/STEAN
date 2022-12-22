@@ -12,7 +12,7 @@ import { Common } from "./common";
 import { _DBDATAS } from "../constants";
 import { message } from "../../logger";
 import { ICsvColumns, ICsvFile, IKeyValues, IReturnResult } from "../../types";
-import { importCsv, renameProp, verifyId } from "../helpers";
+import { extractMessageError, importCsv, renameProp, verifyId } from "../helpers";
 import { stringToBool } from "../../helpers";
 import { _CONFIGFILE } from "../../configuration";
 
@@ -137,8 +137,8 @@ export class CreateObservations extends Common {
                     total: total,
                     body: returnValue
                 });
-            } catch (error) {
-                this.returnError(error);
+            } catch (error: any) {
+                this.ctx.throw(400, { detail: extractMessageError(error.message) });
             }
         }
         if (returnValue) {

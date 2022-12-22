@@ -7,7 +7,7 @@
  */
 
 export { IColList } from "./colList";
-export { IUser } from "./user";
+export { IUser, userToken } from "./user";
 export { IDbConnection } from "./dbConnection";
 export { IReturnResult } from "./returnResult";
 export { returnFormatString, typeFormat, returnFormat } from "./returnFormat";

@@ -10,7 +10,6 @@ import Router from "koa-router";
 import { apiAccess, userAccess } from "../db/dataAccess";
 import { _DBDATAS } from "../db/constants";
 import { ConfigCtx, returnBody } from "../helpers";
-import { adminHtml } from "../views/admin";
 import fs from "fs";
 import { message } from "../logger";
 import { IKeyValues, IReturnResult, returnFormatString } from "../types";
@@ -20,30 +19,36 @@ import { CreateHtmlView, createIqueryFromContext,  } from "../views/helpers/";
 import { testRoutes } from "./helpers";
 import { DefaultState, Context } from "koa";
 import { graphHtml } from "../views/graph";
-import { decodeToken, ensureAuthenticated, getAuthenticatedUser, Rights } from "../types/user";
+import { ensureAuthenticated, getAuthenticatedUser, Rights } from "../types/user";
 import { createDatabase } from "../db/helpers";
 import { createOdata } from "../odata";
+import { _CONFIGFILE } from "../configuration";
+// import { queryAdminPage } from "../views/query/admin";
 
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 
+
+
 // ALl others
 unProtectedRoutes.get("/(.*)", async (ctx) => {
-    const token = decodeToken(ctx);  
+    
+
+    const adminWithSuperAdminAccess = ctx._configName === "admin" ? ctx._user?.PDCUAS[Rights.SuperAdmin] === true ? true : false : true;
 
     switch (testRoutes(ctx.path).toUpperCase()) {
         case ctx._version.toUpperCase():
             let expectedResponse: Record<string, unknown>[] = [{}];
-            // in _DBDATAS use order to order list entities
-            const entities = Object.keys(_DBDATAS)
-                .filter((elem: string) => _DBDATAS[elem].order > 0)
-                .sort((a, b) => (_DBDATAS[a].order > _DBDATAS[b].order ? 1 : -1));
-
-            entities.forEach((value: string) => {
+            
+            if (ctx._configName === "admin" && !adminWithSuperAdminAccess) ctx.throw(401);
+            Object.keys(_DBDATAS)
+                .filter((elem: string) => (ctx._configName === "admin") ?_DBDATAS[elem].admin === true : _DBDATAS[elem].order > 0)
+                .sort((a, b) => (_DBDATAS[a].order > _DBDATAS[b].order ? 1 : -1))
+                .forEach((value: string) => {
                 expectedResponse.push({
                     name: _DBDATAS[value].name,
                     url: `${ctx._linkBase}/${ctx._version}/${value}`
                 });
-            });
+            }); 
             ctx.type = returnFormatString.JSON;
             ctx.body = {
                 value: expectedResponse.filter((elem) => Object.keys(elem).length)
@@ -52,11 +57,10 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
 
         case "FAVICON.ICO":
             try {
-                const icon = fs.readFileSync(__dirname + "/favicon.ico");
                 const cacheControl = `public, max-age=${8640}`;
                 ctx.set("Cache-Control", cacheControl);
                 ctx.type = returnFormatString.ICON;
-                ctx.body = icon;
+                ctx.body =  fs.readFileSync(__dirname + "/favicon.ico");
             } catch (e) {
                 if (e instanceof Error) message(false, "ERROR", e.message);
             }
@@ -76,22 +80,22 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
 
         case "LOGOUT":
             ctx.cookies.set("jwt-session");
-            if (ctx.request.header.accept && ctx.request.header.accept.includes("text/html")) ctx.redirect(`${ctx._rootName}/login`);
+            if (ctx.request.header.accept && ctx.request.header.accept.includes("text/html")) ctx.redirect(`${ctx._rootName}login`);
             else ctx.status = 200;
             ctx.body = {
                 message: "Logout succeeded"
             };
             return;
 
-        case "ADMIN":
-            if (token?.PDCUAS[Rights.SuperAdmin] === true) {
-                ctx.type = returnFormatString.HTML;
-                ctx.body = adminHtml(ctx);
-            } else ctx.redirect(`${ctx._rootName}/login`);
-            return;
+        // case "CONFIGS":
+        //     if (token?.PDCUAS[Rights.SuperAdmin] === true) {
+        //         ctx.type = returnFormatString.HTML;
+        //         ctx.body = _CONFIGFILE;
+        //     } else ctx.redirect(`${ctx._rootName}login`);
+        //     return;
 
         case "LOGIN":
-            if (ensureAuthenticated(ctx)) ctx.redirect(`${ctx._rootName}/status`);
+            if (ensureAuthenticated(ctx)) ctx.redirect(`${ctx._rootName}status`);
             else {
                 const createHtml = new CreateHtmlView(ctx);
                 ctx.type = returnFormatString.HTML;
@@ -100,7 +104,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             return;
 
         case "ALL":
-            if (token?.PDCUAS[Rights.SuperAdmin] === true) {
+            if (ctx.request["token"]?.PDCUAS[Rights.SuperAdmin] === true) {
                 ctx.type = returnFormatString.JSON;
                 ctx.body = await userAccess.getAll();
             }
@@ -121,10 +125,11 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
                     return;
                 }
             }
-            ctx.redirect(`${ctx._rootName}/login`);
+            ctx.redirect(`${ctx._rootName}login`);
             return;
 
         case "QUERY":
+            if(!adminWithSuperAdminAccess) ctx.redirect(`${ctx._rootName}login`);
             const temp = await createIqueryFromContext(ctx);
             ctx.set("script-src", "self");
             ctx.set("Content-Security-Policy", "self");
@@ -135,8 +140,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         case "USER":
             // Only to get user Infos
             const id = ctx.url.toUpperCase().match(/[0-9]/g)?.join("");
-
-            if (id && token?.PDCUAS[Rights.SuperAdmin] === true) {
+            if (id && ctx.request["token"]?.PDCUAS[Rights.SuperAdmin] === true) {
                 const user = await userAccess.getSingle(id);
                 const createHtml = new CreateHtmlView(ctx);
                 ctx.type = returnFormatString.HTML;
@@ -153,12 +157,12 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
                 ctx.body = returnValue;
             } else {
                 ctx.status = 400;
-                ctx.redirect(`${ctx._rootName}/error`);
+                ctx.redirect(`${ctx._rootName}error`);
             }
             return;
     }
     // API REQUEST
-    if (ctx.path.includes(`/${_APIVERSION}`)) {
+    if (ctx.path.includes(`/${_APIVERSION}`)) {        
         const odataVisitor = await createOdata(ctx); 
         if (odataVisitor)  ctx._odata = odataVisitor;
         if (ctx._odata) {

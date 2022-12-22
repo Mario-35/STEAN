@@ -52,7 +52,7 @@ async function  getFetchDatas(url, format) {
       },
     });
 
-    if (format && ["CSV","TXT"].includes(format))
+    if (format && ["csv","txt"].includes(format))
         return await response.text();
         else  return await response.json();
       }

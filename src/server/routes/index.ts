@@ -9,6 +9,7 @@
 import Koa from "koa";
 import { boolToString, ConfigCtx, setConfigToCtx, stringToBool } from "../helpers";
 import { writeToLog } from "../logger";
+import { decodeToken } from "../types/user";
 
 export { protectedRoutes } from "./protected";
 export { unProtectedRoutes } from "./unProtected";
@@ -17,6 +18,13 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
     try {
         // process.env.DEBUG = "true";
         setConfigToCtx(ctx);
+        const tempUser =  decodeToken(ctx); 
+        ctx._user = tempUser ? tempUser :  {
+            id: 0,
+            username: "",
+            password: "",
+            PDCUAS: [false, false, false, false, false, false]
+        };
         if (stringToBool(process.env.DEBUG)) console.log(ConfigCtx(ctx));
         await next().then(async () => {
             await writeToLog(ctx);

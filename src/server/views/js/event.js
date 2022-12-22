@@ -107,20 +107,19 @@
         // ===============================================================================
         // |                                     GET                                     |
         // ===============================================================================
-        const value = await getFetchDatas(url.replace("resultFormat=GRAPH","resultFormat=GRAPHDATAS"),resultFormatOption.value);
+        const value = await getFetchDatas(url.replace("resultFormat=graph","resultFormat=graphDatas"), resultFormatOption.value);
         try {
-          if (query.includes("resultFormat=CSV")) {
+          if (query.includes("resultFormat=csv")) {
             buildTableWithCsv(value,";");
             showOnly('csvContainer');
-          } else if (query.includes("resultFormat=GRAPH") && (value.title)) {
+          } else if (query.includes("resultFormat=graph") && (value.title)) {
             showOnly('graphContainer');
               showGraph(value);
               wait(false);
           }else {
             jsonObj = value;
             showJson(jsonObj);
-          }
-          
+          }      
         }
         catch (err) {
           notify("Error", err.message);
@@ -225,7 +224,7 @@
     if (e) e.preventDefault();
     wait(true);
 
-    const url =  `${optHost.value}/${optVersion.value}/Logs?$select=date,method,url,datas,result,error&$filter=method eq '${logsMethod.value}'&$orderby=date desc`;
+    const url =  `${optHost.value}/${optVersion.value}/Logs?$select=date,method,url,datas,return,error&$filter=method eq '${logsMethod.value}'&$orderby=date desc`;
 
   debug(url);
     
@@ -236,7 +235,6 @@
           },
         });
         try {
-          // const value = query.includes("resultFormat=CSV")  ?  await response.text() : await response.json()  ;
           const csv = false;
           const value = csv === true ?  await response.text() : await response.json()  ;
           
@@ -284,7 +282,7 @@
     if ((entity.value.includes("createDB") && params.user.canCreateDb == true) || importFile) method.value = "POST";
     else if (entity.value === "createDB") method.value = "POST";
     else {
-      populateSelect(subentity, params.relations[entity.value], params.relations[tempEntity].includes(params.subentity) ? params.subentity :  _NONE, true);
+      if(params.relations) populateSelect(subentity, params.relations[entity.value], params.relations[tempEntity].includes(params.subentity) ? params.subentity :  _NONE, true);
       populateSelect(method, entity.value == "Loras" ? ["GET","POST"]  : params.methods ,"GET"); 
     }
     refreshAfterEntityOrSubEntity();    
@@ -354,7 +352,7 @@ try {
     fileonelabel.querySelector( "span" ).innerHTML = fileName;
     method.value = "POST";
     entity.value = "Datastreams";
-    populateSelect(subentity, params.relations[entity.value], "Observations", true);
+    if (params.relations) populateSelect(subentity, params.relations[entity.value], "Observations", true);
     importFile = true;
   }
   else {

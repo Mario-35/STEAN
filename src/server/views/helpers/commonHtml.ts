@@ -8,7 +8,7 @@
 
 /* eslint-disable quotes */
 
-import { _DBDATAS } from "../../db/constants";
+import { _DBDATAS, _DBADMIN } from "../../db/constants";
 import { message } from "../../logger";
 import util from "util";
 import { cleanUrl } from "../../helpers";
@@ -22,33 +22,38 @@ export const commonHtml = (input: string, params: IQuery, ): string => {
     message(true, "HEAD", "commonHtml");
     message(true, "INFO", "params", params);
     const result: string[] = input.replace(/\r\n/g,'\n').split('\n').map((e:string) => e.trim());
+    const _SOURCE = (params.admin === true ? _DBADMIN :  (params.user.admin === true || params.user.superAdmin === true) ? _DBDATAS : Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === false)))
+    ;
     
     const replaceInResult = (searhText: string, content: string) => {
         const index = result.indexOf(searhText);
         if (index > 0) result[index] = content;
-
     }
 
     const relations: { [key: string]: string[] } = {};
     const columns: { [key: string]: { [key: string]: IEntityColumnForm } } = {};
     const action = `${params.host}/${params.version}/CreateObservations`;
     const singulars:{ [key: string]: string } = {};
-    Object.keys(_DBDATAS).forEach((elem: string) =>{
-        singulars[_DBDATAS[elem].singular] = _DBDATAS[elem].name;
+    Object.keys(_SOURCE).forEach((elem: string) =>{
+        singulars[_SOURCE[elem].singular] = _SOURCE[elem].name;
     });
     
-    Object.keys(_DBDATAS)
-        .filter((elem: string) => _DBDATAS[elem].order >= 0)
+    Object.keys(_SOURCE)
+    .filter((elem: string) => _DBDATAS[elem].order > 0)
+    .sort((a, b) => (_DBDATAS[a].order > _DBDATAS[b].order ? 1 : -1))    
         .forEach((key: string) => {
             if (key == "CreateObservations") {
-                if (params.user && params.user.canPost && params.user.canPost == true) relations[key] = Object.keys(_DBDATAS[key].relations);
+                if (params.user && params.user.canPost && params.user.canPost == true) relations[key] = Object.keys(_SOURCE[key].relations);
             } else {                
-                relations[key] = Object.keys(_DBDATAS[key].relations);
-                const temp = getColumnsListType(key);
-                if (temp) columns[key] = temp; 
+                relations[key] = Object.keys(_SOURCE[key].relations);
+                if(_SOURCE[key].admin === false || (_SOURCE[key].admin === true && (params.user.superAdmin === true || params.user.admin === true))) {
+                    const temp = getColumnsListType(key);
+                    if (temp) columns[key] = temp; 
+                }
             }
         });
-    if (params.user && params.user.canCreateDb && params.user.canCreateDb == true) relations["createDB"] = [];
+
+    // if (params.user && params.user.canCreateDb && params.user.canCreateDb == true) relations["createDB"] = [];
     
 
     const start = params.results ? "jsonObj = JSON.parse(`" + params.results + "`); jsonViewer.showJSON(jsonObj);" : "";
@@ -59,7 +64,7 @@ export const commonHtml = (input: string, params: IQuery, ): string => {
     }
 
     if (params.user.canDelete) params.methods.push("DELETE");
-    params.relations = relations;
+    params.relations = params.admin === true ? undefined : relations;
     params.columns = columns;
     params.singulars = singulars;
 
@@ -82,7 +87,7 @@ export const commonHtml = (input: string, params: IQuery, ): string => {
         });
     }
 
-    params.entities = Object.keys(_DBDATAS);
+    params.entities = Object.keys(_SOURCE);
 
     listCssFiles().forEach((item: string) => {   
         const itemSearch = `<link rel="stylesheet" href="${item}">`;

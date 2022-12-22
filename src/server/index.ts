@@ -14,17 +14,16 @@ import json from "koa-json";
 import { protectedRoutes, routerHandle, unProtectedRoutes } from "./routes/";
 import cors from "@koa/cors";
 import { asyncForEach, isTest } from "./helpers";
-import { dbMigration, isDbExist } from "./db/helpers/";
+import { isDbExist } from "./db/helpers/";
 import { message, logConnection } from "./logger";
-import {  IKeyString } from "./types";
+import {  IKeyString, userToken } from "./types";
 import serve from "koa-static";
 import path from "path";
 import compress from "koa-compress";
 // import { minifierConfig, helmetConfig, keyApp } from "./constants";
 import { helmetConfig, keyApp, _ENV_VERSION, _NODE_ENV } from "./constants";
-import { _DBADMIN, _DBDATAS } from "./db/constants";
+import { _DBDATAS } from "./db/constants";
 import { _CONFIGFILE } from "./configuration";
-import { clearDbMigration, _DBMIGRATION } from "./db/helpers/dbMigration";
 import { PgVisitor } from "./odata";
 
 declare module "koa" {
@@ -36,6 +35,7 @@ declare module "koa" {
         _odata: PgVisitor;
         _datas: IKeyString;
         _query: string;
+        _user: userToken
     }
 }
 
@@ -68,8 +68,6 @@ app.use(protectedRoutes.routes());
 
 message(false, "HEAD", "env", _NODE_ENV);
 message(false, "HEAD", "version", _ENV_VERSION);
-
-const max = Object.keys(_CONFIGFILE).length -1;
 const ports: number[] = [];
 
 export const server = isTest()
@@ -82,7 +80,6 @@ export const server = isTest()
               await isDbExist(key, true)
                   .then(async (res: boolean) => {                   
                         const port = _CONFIGFILE[key].port;
-                        await dbMigration(key);   
                         if (port  > 0) {
                             if (ports.includes(port)) message(false, "HEAD", "Server Already listening on port", port);
                             else app.listen(port, () => {
@@ -91,8 +88,7 @@ export const server = isTest()
                                 });
                             
                         }
-                        if (res && !isTest()) logConnection(key);
-                        if (max === index)  clearDbMigration();     
+                        if (res && !isTest()) logConnection(key);   
                   })
                   .catch((e) => {
                       message(false, "ERROR", "Unable to find or create", _CONFIGFILE[key].pg_database);

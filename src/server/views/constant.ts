@@ -17,6 +17,7 @@ export interface IQuery {
     columns?: { [key: string]: { [key: string]: IEntityColumnForm } };
     singulars?: { [key: string]: string };
     graph: boolean;
+    admin: boolean;
 }
 
 export const userHeader: IKeyString = Object.freeze({

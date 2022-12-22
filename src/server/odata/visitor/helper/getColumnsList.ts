@@ -64,8 +64,8 @@
  
              switch (element.parentEntity) {
                 
-                case _DBDATAS.MultiDatastreams.name:    
-                     const keys = `(select jsonb_agg(tmp.units -> 'name') as keys from ( select jsonb_array_elements("unitOfMeasurements") as units from multidatastream where id = ${element.parentId} ) as tmp) as keys`;
+                case _DBDATAS.MultiDatastreams.name: 
+                const keys = `(select jsonb_agg(tmp.units -> 'name') as keys from ( select jsonb_array_elements("unitOfMeasurements") as units from multidatastream where id = ${element.parentId} ) as tmp) as keys`;
                      returnValue.push( `(SELECT json_object_agg(key, value) from ( SELECT jsonb_array_elements_text("keys") as key, unnest("observation"."resultnumbers")::float8 as value from ( SELECT keys from ${keys} ) as tmp2 ) as tmp3) as "result"`);
                      break;
                  case _DBDATAS.Datastreams.name:                            

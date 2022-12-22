@@ -9,7 +9,6 @@
 export { createDatabase } from "./createDatabase";
 export { createGraph } from "./createGraph";
 export { createTable } from "./createTable";
-export { dbMigration } from "./dbMigration";
 export { dbSchemaList } from "./dbSchemaList";
 export { extractMessageError } from "./extractMessageError";
 export { getColumnsListType } from "./getColumnsListType";
@@ -21,6 +20,7 @@ export { recordToKeyValue } from "./recordToKeyValue";
 export { removeKeyFromUrl } from "./removeKeyFromUrl";
 export { renameProp } from "./renameProp";
 export { testConnection } from "./testConnection";
+export { redoLog } from "./redoLog";
 export { verifyId } from "./verifyId";
 // Class
 export { TimeSeries } from "./timeSeries";

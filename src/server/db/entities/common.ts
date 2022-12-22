@@ -36,14 +36,6 @@ export class Common {
         
     }
 
-    // get Error and format it to return it in body koa
-    returnError(error: any): void {
-        if (error instanceof Error) {
-            message(true, "ERROR", error.message);
-            this.ctx.throw(400, { detail: extractMessageError(error.message) });
-        }
-    }
-
     // only for override
     formatDataInput(input: IKeyValues[] | undefined): IKeyValues[] | undefined {
         return input;
@@ -100,7 +92,7 @@ export class Common {
             await Common.dbContext(_DBDATAS[entityName].table).select("name").where({id: this.ctx._odata.parentEntity ? this.ctx._odata.parentId: this.ctx._odata.id}).limit(1).then((res: any) => tempTitle = res[0].name);
             const temp =  createGraph(input, tempTitle);
             return temp ?  temp : JSON.parse('');
-        } 
+        } // ONLY if OBSERVATIONS ONLY it's slow BUT that make no sens to request anly observations without MultiDatastream OR Datastream
         else if (this.ctx._odata.entity == _DBDATAS.Observations.name && !this.ctx._odata.parentEntity) {     
             if (Object(input).forEach)
                 Object(input).forEach((elem: object) => { 
@@ -131,8 +123,8 @@ export class Common {
         return await conn
             .raw(sql)
             .then(async (res: any) => {    
-                const nb = Number(res.rows[0].count);      
-                          
+                const nb = Number(res.rows[0].count);
+
                 if (nb > 0 && res.rows[0]) {                    
                     return this.createReturnResult({
                         id: isNaN(nb) ? undefined : nb,
@@ -257,8 +249,8 @@ export class Common {
             return this.createReturnResult({
                 id: BigInt(returnValue)
             });
-        } catch (error) {
-            this.returnError(error);
+        } catch (error: any) {
+            this.ctx.throw(400, { detail: extractMessageError(error.message) });
         }
     }
 }

@@ -12,7 +12,7 @@ let dragText = "";
 
 function debug(input) { if (isDebug == true) console.log(input); }
 
-const SubOrNot = () => subentity.value !== _NONE ? subentity.value : entity.value;
+const SubOrNot = () => params.admin === false && subentity.value !== _NONE ? subentity.value : entity.value;
 const isObservation = () => entity.value == "Observations" || subentity.value == "Observations";
 const testNull = (input) => (input.value == "<empty string>" || input.value.trim() == "" || input.value.trim()[0] == "0" || input.value.startsWith(_NONE)); 
 
@@ -121,18 +121,20 @@ var notify =  function (titleMess, bodyMess) {
     buttonGoOrSubmit();
     ToggleOption( getIfChecked("splitResultOption") && isObservation(), 'splitResult',splitResultOptionName.value, "");
 
-    let temp = importFile ? ["JSON"]  : ["JSON","CSV","TXT","DATAARRAY"];
-    if (isObservation() || resultFormatOption.value == "GRAPH") temp.push("GRAPH");
+    let temp = importFile ? ["json"]  : ["json","csv","txt","dataArray"];
+    if (isObservation() || resultFormatOption.value == "graph") temp.push("graph");
       populateSelect(resultFormatOption, temp, getDefaultValue(resultFormatOption, temp));
     };
 
 
 
   function refreshAfterEntityOrSubEntity() {
-    populateMultiSelect("querySelect", Object.keys(params.columns[SubOrNot()]), null, "all");
-    populateMultiSelect("queryOrderBy", Object.keys(params.columns[SubOrNot()]), null, _NONE, true);
-    populateMultiSelect("queryExpand", params.relations[SubOrNot()], null, _NONE);
-    populateSelect(queryProperty, Object.keys(params.columns[SubOrNot()]), params.property != undefined ? params.property :_NONE, true);
+    if(params.columns) {
+      populateMultiSelect("querySelect", Object.keys(params.columns[SubOrNot()]), null, "all");
+      populateMultiSelect("queryOrderBy", Object.keys(params.columns[SubOrNot()]), null, _NONE, true);
+      populateSelect(queryProperty, Object.keys(params.columns[SubOrNot()]), params.property != undefined ? params.property :_NONE, true);
+    }
+    if (params.relations) populateMultiSelect("queryExpand", params.relations[SubOrNot()], null, _NONE);
 
     refresh();
     updateForm();
@@ -142,6 +144,7 @@ var notify =  function (titleMess, bodyMess) {
   };
 
   function updateBuilder() {
+    if (!params.columns) return;
     const ent = SubOrNot();
       const fields = [];
       Object.keys(params.columns[ent]).forEach(e => {
@@ -276,9 +279,14 @@ function init() {
   clear();
   wait(false);
 
-  tempEntity = Object.keys(params.relations).includes(params.entity) ? params.entity : "Things";
-  populateSelect(entity, Object.keys(params.relations), tempEntity);
-  populateSelect(subentity, params.relations[entity.value], params.relations[tempEntity].includes(params.subentity) ? params.subentity : _NONE, true);
+  tempEntity = params.admin === true ? "Logs" :Object.keys(params.relations).includes(params.entity) ? params.entity : "Things";
+  if (params.relations) {
+    populateSelect(entity, Object.keys(params.relations), tempEntity);
+    populateSelect(subentity, params.relations[entity.value], params.relations[tempEntity].includes(params.subentity) ? params.subentity : _NONE, true);
+  }
+  if (params.admin == true) {
+    populateSelect(entity, params.entities, tempEntity);
+  }
   populateSelect(method, entity.value == "Loras" ? ["GET","POST"]  : params.methods, params.method ? params.method : "GET");
   populateSelect(logsMethod,  params.methods, params.method ? params.method : "GET");
   populateSelect(selectSeries, ["year", "month", "day"], _NONE, true); 
@@ -303,12 +311,25 @@ function init() {
     }
   }
   refreshAfterEntityOrSubEntity();
+  if (params.admin == true) pipo();
   showOnly('none');
 };
 
-function jsonContainerEvent(event) {
-  dragText = event.explicitOriginalTarget.innerText;
-}
 
 
 init();
+function pipo() {
+  getElement("chck3").setAttribute('disabled', ''); 
+  return;
+  getElement("chck2").setAttribute('disabled', ''); 
+  getElement("chck4").setAttribute('disabled', ''); 
+  getElement("subentity").setAttribute('disabled', ''); 
+  getElement("resultFormatOption").setAttribute('disabled', ''); 
+}
+
+function jsonContainerEvent(event) {
+  console.log("========================================================================> ok"); 
+  console.log(event); 
+  dragText = event.explicitOriginalTarget.innerText;
+
+}

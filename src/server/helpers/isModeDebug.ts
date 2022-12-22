@@ -6,8 +6,4 @@
  *
  */
 
-export const isModeDebug = (change?: boolean): boolean => {
-    if (change) process.env.DEBUG = change ? "true" : "false";
-    // return true;
-    return process.env.DEBUG?.trim() === "true" || false;
-};
+export const isModeDebug = (): boolean => process.env.DEBUG?.trim() === "true" || false;

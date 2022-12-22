@@ -39,6 +39,7 @@ export const createIqueryFromContext = async (ctx: koa.Context): Promise<IQuery>
                   superAdmin: false
               },
               // TODO universal return
-        graph: ctx.url.includes("$resultFormat=GRAPH")
+        graph: ctx.url.includes("$resultFormat=graph"),
+        admin: ctx._configName === 'admin'
     };
 };

@@ -7,12 +7,12 @@
  */
 
 import koa from "koa";
-import { _DBADMIN } from "../db/constants";
 import { getUserId } from "../helpers";
 import { db } from "../db";
 import { logDebug } from ".";
 import { _CONFIGFILE } from "../configuration";
 import { IKeyValue } from "../types";
+import { _DBDATAS } from "../db/constants";
 
 export const writeToLog = async (ctx: koa.Context, error?: IKeyValue): Promise<void> => {
     if (ctx.method !== "GET" ) {  
@@ -28,7 +28,7 @@ export const writeToLog = async (ctx: koa.Context, error?: IKeyValue): Promise<v
             "error": error && error["error"]
         }      
         try {
-            await db["admin"].table(_DBADMIN.Logs_request.table).insert(req);
+            await db["admin"].table(_DBDATAS.Logs.table).insert(req);
         } catch (error) {
             logDebug(error);
         }

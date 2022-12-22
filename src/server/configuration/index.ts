@@ -9,4 +9,5 @@
 import { makeConfig } from "./makeConfig";
 export { createConnection } from "./createConnection";
 export { formatConfig } from "./formatConfig";
+export { addToConfig } from "./addToConfig";
 export const _CONFIGFILE = makeConfig();

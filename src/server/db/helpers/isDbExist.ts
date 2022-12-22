@@ -7,7 +7,6 @@
  */
 
 import { message } from "../../logger";
-import { _DBADMIN } from "../constants";
 import { _CONFIGFILE } from "../../configuration";
 import { getConnection } from "./getConnection";
 import { createDatabase } from ".";

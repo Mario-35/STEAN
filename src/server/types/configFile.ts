@@ -20,9 +20,7 @@ export interface IConfigFile {
     webSiteDoc: string;
     nb_page: number;
     lineLimit: number;
-    destroy?: boolean;
     createUser?: boolean;
-    pg_migrate?: number;
     forceHttps: boolean;
 }
 export interface IConfigFiles {

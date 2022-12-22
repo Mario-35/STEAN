@@ -38,7 +38,7 @@
 
             } else if (index === 1) {
               if (element.includes('?')) options.value = element;
-              else populateSelect(subentity, params.relations[entity.value], element, true);
+              else if (params.relations) populateSelect(subentity, params.relations[entity.value], element, true);
             }
           });    
 

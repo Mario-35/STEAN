@@ -6,7 +6,7 @@
  *
  */
 
-import { createQuerySelectString, queryAsDataArray, queryAsGraphData, queryAsJson } from ".";
+import { createQuerySelectString, queryAsDataArray, queryAsJson } from ".";
 import { isGraph, _DBDATAS } from "../../../db/constants";
 import { PgVisitor } from "../PgVisitor";
 
@@ -21,7 +21,7 @@ import { PgVisitor } from "../PgVisitor";
                 visitor.entity =names[0];
                 visitor.select = "*";
                 visitor.where = "1 = 1";
-                visitor.orderby = "id, ";
+                visitor.orderby = "";
                 visitor.navigationProperty = names[1];
                 includesItem.includes.push(visitor);
             }
@@ -41,7 +41,6 @@ import { PgVisitor } from "../PgVisitor";
     switch (main.resultFormat.name.toUpperCase()) {        
         case "DATAARRAY" : return queryAsDataArray(main.ArrayNames, temp, false, fields);
         case "CSV" : return queryAsDataArray(main.ArrayNames, temp, false, fields);
-        case "GRAPHDATAS" : return queryAsGraphData(main, temp);
         default : return queryAsJson(temp, false, count, fields);
     }
 }

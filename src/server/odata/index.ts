@@ -3,7 +3,7 @@ import { Token } from "./parser/lexer";
 import koa from "koa";
 import { cleanUrl } from "../helpers";
 import { _CONFIGFILE } from "../configuration";
-import { rootBase, _DBDATAS } from "../db/constants";
+import { _DBDATAS } from "../db/constants";
 import { PgVisitor } from "./visitor/PgVisitor";
 import { db } from "../db";
 import { SqlOptions } from "./parser/sqlOptions";
@@ -18,7 +18,7 @@ const doSomeWarkAfterAst = async (input: PgVisitor, ctx: koa.Context) => {
 
 export const createOdata = async (ctx: koa.Context):Promise<PgVisitor | undefined> => {
     const blankUrl = `$top=${_CONFIGFILE[ctx._configName].nb_page ? +_CONFIGFILE[ctx._configName].nb_page : 200}`;
-    const options: SqlOptions = {loraId: undefined, rootBase: rootBase(ctx), value: false, ref: false, method: ctx.method};
+    const options: SqlOptions = {loraId: undefined, rootBase: ctx._rootName, value: false, ref: false, method: ctx.method};
 
     let urlSrc = ctx.href.normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(ctx._version)[1];
 

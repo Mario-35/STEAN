@@ -9,6 +9,7 @@ import koa from "koa";
 import { logDebug, message } from "../../logger";
 import { createGetSql, createPostSql, oDatatoDate } from "./helper";
 import { Knex } from "knex";
+import { _CONFIGFILE } from "../../configuration";
 
 export interface PGQuery {
     from: string;
@@ -33,7 +34,7 @@ export class PgVisitor {
     select: string = "";
     ArrayNames: { [key: string]: string } = {} ;
     where: string = "";
-    orderby: string = "id, ";
+    orderby: string = "";
     groupBy: string[] = [];
     expand: string[] = [];
     splitResult: string[] | undefined;
@@ -72,6 +73,7 @@ export class PgVisitor {
     
     init(ctx: koa.Context, node: Token) {
         message(true, "HEAD", "INIT PgVisitor");
+        this.limit = +_CONFIGFILE[ctx._configName].nb_page || 200;
         const temp = this.VisitRessources(node);
         logDebug(temp);
         this.verifyRessources(ctx);
@@ -85,7 +87,6 @@ export class PgVisitor {
         if (this.entity.toUpperCase() === "LORA") this.setEntity("Loras");
         if (this.parentEntity) {
             if (!_DBDATAS[this.parentEntity].relations[this.entity])  ctx.throw(404, { detail:`Invalid path ${this.entity.trim()}` }); 
-            
             
         } else if (!_DBDATAS[this.entity])  ctx.throw(404, { detail:`Invalid path ${this.entity.trim()}` }); 
     
@@ -194,6 +195,8 @@ export class PgVisitor {
 
     verifyQuery = (ctx: koa.Context): void => {
         message(true, "HEAD", "verifyQuery");
+        if (this.entity === "Logs" && ctx._configName !== "admin") this.where = `database = '${_CONFIGFILE[ctx._configName].pg_database}'`;
+
         if (this.select.length > 0) {
             const cols = [...Object.keys(_DBDATAS[this.entity].columns), ...Object.keys(_DBDATAS[this.entity].relations)]
             
@@ -223,9 +226,9 @@ export class PgVisitor {
             if (!this.splitResult || this.splitResult.length !== 1 ||  this.splitResult[0].toUpperCase() === 'ALL')  ctx.throw(400, { detail:`You must use SplitResult to identify one key result` }); 
         }
         
-        if((this.entity === _DBDATAS.Observations.name && !this.parentEntity) && this.timeSeries !== undefined) {
-            ctx.throw(400, { detail: `Series not allowed for Observations entity use /Datastreams/Observations or /MultiDatastreams/Observations With SplitResult` }); 
-        }
+        // if((this.entity === _DBDATAS.Observations.name && !this.parentEntity) && this.timeSeries !== undefined) {
+        //     ctx.throw(400, { detail: `Series not allowed for Observations entity use /Datastreams/Observations or /MultiDatastreams/Observations With SplitResult` }); 
+        // }
         if(this.resultFormat.name === "DATAARRAY" && BigInt(this.id) > 0 && !this.parentEntity ) {
             ctx.throw(400, { detail: `DataArray not allowed` }); 
 
@@ -307,6 +310,8 @@ export class PgVisitor {
 
     protected VisitResultFormat(node: Token, context: any) {      
         if (node.value.format) this.resultFormat = getReturnFormat(node.value.format);
+        //ATTTENTION
+        if (["dataArray","graph","graphDatas"].includes(this.resultFormat.name)) this.limit = 0;
         if (isGraph(this)) this.showRelations = false;
     }
 

@@ -292,12 +292,12 @@ JSONViewer = (function () {
         // color = "#656d78";
         if (lvl === 0) {
             const temp = title.split(":")[0];
-            if (Object.keys(params.relations).includes(temp)) {
+            if (params.relations && Object.keys(params.relations).includes(temp)) {
                 this.actual = temp;
                 // color = "#23a84b";
             }
         } else if (this.actual && this.actual !== "") {
-            if (params.relations[this.actual].includes(title.split(":")[0])) color = "#c9a221";
+            if (params.relations && params.relations[this.actual].includes(title.split(":")[0])) color = "#c9a221";
         }
         // linkEl.style.color = color;
         return linkEl;

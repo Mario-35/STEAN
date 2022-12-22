@@ -8,13 +8,10 @@
 
 /* eslint-disable quotes */
 
-// For odata parser
-
 import { Knex } from "knex";
-import koa from "koa";
 import { _CONFIGFILE } from "../configuration";
 import { _ENV_VERSION } from "../constants";
-import { getEntityName, isTest } from "../helpers";
+import { getEntityName } from "../helpers";
 import { PgVisitor } from "../odata";
 import {  IEntity } from "../types";
 import { RELATIONS } from "../types/entity";
@@ -24,10 +21,6 @@ export const isSingular = (input: string): boolean => {
     return entityName ? (_DBDATAS[entityName].singular == input) : false;
 }
 export const isGraph = (input: PgVisitor) =>  input.resultFormat.name.startsWith("GRAPH");
-export const rootBase = (ctx: koa.Context) => (isTest() ? `proxy/${ctx._version}/` : `${ctx._linkBase}/${ctx._version}/`);
-// export const limit = (ctx: koa.Context, args: PgVisitor) => args.limit && args.limit > 0 ? args.limit : args.resultFormat.name === "JSON" ? +_CONFIGFILE[ctx._configName].nb_page : 0;
-// export const skip = (args: PgVisitor) => (args.skip && args.skip > 0 ? args.skip : 0);
-
 
 // Get date by Database usefull to have the TimeZone
 export const getDateNow = async (conn: Knex | Knex.Transaction): Promise<string> => {
@@ -37,136 +30,6 @@ export const getDateNow = async (conn: Knex | Knex.Transaction): Promise<string>
 
 const makeIDAlias = (table: string) => `"${table}"."id" AS "@iot.id"`;
 const _DATEFORMAT = 'YYYY-MM-DD"T"HH24:MI:SSZ';
-
-
-export const _DBADMIN: { [key: string]: IEntity } = {
-    Users: {
-        name: "Users",
-        singular: "User",
-        table: "user",
-        order: -1, // exclude
-        columns: {
-            id: {
-                create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                comment: "A unique bigSerial."
-            },
-            username: {
-                create: "text NOT NULL UNIQUE",
-                comment: "Name of the user."
-            },
-            email: {
-                create: "text NOT NULL",
-                comment: "Mail fo the user."
-            },
-            password: {
-                create: "text NOT NULL",
-                comment: "Password."
-            },
-            database: {
-                create: "text NOT NULL",
-                comment: "Database."
-            },
-            canPost: {
-                create: "bool NULL",
-                comment: "canPost or Not."
-            },
-            canDelete: {
-                create: "bool NULL",
-                comment: "canDelete or Not."
-            },
-            canCreateUser: {
-                create: "bool NULL",
-                comment: "canCreateUser or Not."
-            },
-            canCreateDb: {
-                create: "bool NULL",
-                comment: "canCreateDb or Not."
-            },
-            admin: {
-                create: "bool NULL",
-                comment: "Admin or Not."
-            },
-            superAdmin: {
-                create: "bool NULL",
-                comment: "Super Admin or Not."
-            }
-        },
-        migrationTest: true,
-        relations: {}
-    },
-
-    Logs_request: {
-        name: "Logs_request",
-        singular: "Log_request",
-        table: "log_request",
-        order: -1,
-        columns: {
-            id: {
-                create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                alias: makeIDAlias("log_request"),
-                comment: "A unique bigSerial.",
-                form: {type : "number"}
-            },
-            date: {
-                create: "timestamptz DEFAULT CURRENT_TIMESTAMP",
-                comment: "The time of the operation.",
-                form: {type : "datetime-local"}
-            },
-            user_id: {
-                create: "BIGINT",
-                comment: "User id.",
-                form: {type : "number"}
-            },
-            method: {
-                create: "text",
-                comment: "Method of request.",
-                form: {type : "text"}
-            },
-            code: {
-                create: "text",
-                comment: "code return.",
-                form: {type : "text"}
-            },
-            url: {
-                create: "text NOT NULL",
-                comment: "Url of the request.",
-                form: {type : "text"}
-            },
-            datas: {
-                create: "jsonb NULL",
-                comment: "Datas send.",
-                form: {type : "textarea"}
-            },
-            port: {
-                create: "INT NULL",
-                comment: "port.",
-                form: {type : "number"}
-            },
-            database: {
-                create: "text NULL",
-                comment: "database.",
-                form: {type : "text"}
-            },
-            query: {
-                create: "text NULL",
-                comment: "Query generated.",
-                form: {type : "textarea"}
-            },
-            return: {
-                create: "text NULL",
-                comment: "return result / error receive.",
-                form: {type : "textarea"}
-            },
-            error: {
-                create: "text NULL",
-                comment: "Error message.",
-                form: {type : "text"}
-            }
-        },
-        migrationTest: true,
-        relations: {}
-    }
-};
 
 export const _DBDATAS: { [key: string]: IEntity } = {
     Things: {
@@ -200,7 +63,7 @@ export const _DBDATAS: { [key: string]: IEntity } = {
         constraints: {
             thing_pkey: 'PRIMARY KEY ("id")'
         },
-        migrationTest: true,
+        admin: false,
         relations: {
             Locations: {
                 type: RELATIONS.belongsToMany,
@@ -281,7 +144,7 @@ export const _DBDATAS: { [key: string]: IEntity } = {
                 test: "encodingType"
             }
         },
-        migrationTest: true,
+        admin: false,
         relations: {
             Observations: {
                 type: RELATIONS.hasMany,
@@ -369,7 +232,7 @@ export const _DBDATAS: { [key: string]: IEntity } = {
         constraints: {
             location_pkey: 'PRIMARY KEY ("id")'
         },
-        migrationTest: true,
+        admin: false,
         relations: {
             Things: {
                 type: RELATIONS.belongsToMany,
@@ -438,7 +301,7 @@ export const _DBDATAS: { [key: string]: IEntity } = {
         indexes: {
             historical_location_thing_id: 'ON public."historical_location" USING btree ("thing_id")'
         },
-        migrationTest: true,
+        admin: false,
         relations: {
             // TODO NOT GOOD
             Things: {
@@ -491,7 +354,7 @@ export const _DBDATAS: { [key: string]: IEntity } = {
             location_historical_location_historical_location_id: 'ON public."location_historical_location" USING btree ("historical_location_id")',
             location_historical_location_location_id: 'ON public."location_historical_location" USING btree ("location_id")'
         },
-        migrationTest: true,
+        admin: false,
         relations: {}
     },
 
@@ -532,7 +395,7 @@ export const _DBDATAS: { [key: string]: IEntity } = {
         constraints: {
             observedproperty_pkey: 'PRIMARY KEY ("id")'
         },
-        migrationTest: true,
+        admin: false,
         relations: {
             Datastreams: {
                 type: RELATIONS.hasMany,
@@ -606,7 +469,7 @@ export const _DBDATAS: { [key: string]: IEntity } = {
         constraints: {
             sensor_pkey: 'PRIMARY KEY ("id")'
         },
-        migrationTest: true,
+        admin: false,
         relations: {
             Datastreams: {
                 type: RELATIONS.hasMany,
@@ -714,7 +577,7 @@ export const _DBDATAS: { [key: string]: IEntity } = {
                 form: {type : "textarea"}
             }
         },
-        migrationTest: true,
+        admin: false,
         relations: {
             Thing: {
                 type: RELATIONS.belongsTo,
@@ -842,9 +705,15 @@ export const _DBDATAS: { [key: string]: IEntity } = {
                 create: "jsonb NULL",
                 comment: "The detailed description of the multi datastream. The data type is defined by encodingType.",
                 form: {type : "textarea"}
+            },
+            _keys: {
+                create: "",
+                comment: "Generate list of keys",
+                alias: `(select jsonb_agg(tmp.elements -> 'name') as keys from ( select jsonb_array_elements("unitOfMeasurements") as elements) as tmp)`,
+                form: {type : "text"}               
             }
         },
-    migrationTest: true,
+    admin: false,
         relations: {
             Thing: {
                 type: RELATIONS.belongsTo,
@@ -888,7 +757,17 @@ export const _DBDATAS: { [key: string]: IEntity } = {
                 relationKey: "observedproperty_id",
                 entityColumn: "multidatastream_id",
                 tableKey: "multidatastream_id"
-            }
+            },
+            Loras: {
+                type: RELATIONS.belongsTo,
+                expand: `"lora"."id" = (select "lora"."id" from "lora" where "lora"."multidatastream_id" = "multidatastream"."id")`,
+                link: `"lora"."id" = (select "lora"."id" from "lora" where "lora"."multidatastream_id" = $ID)`,
+                entityName: "loras",
+                tableName: "lora",
+                relationKey: "multidatastream_id",
+                entityColumn: "id",
+                tableKey: "id"
+            },
         },
         constraints: {
             multidatastream_pkey: 'PRIMARY KEY ("id")',
@@ -920,7 +799,7 @@ export const _DBDATAS: { [key: string]: IEntity } = {
             //     comment: "?."
             // }
         },
-        migrationTest: true,
+        admin: false,
         relations: {},
         constraints: {
             multi_datastream_observedproperty_pkey: 'PRIMARY KEY ("multidatastream_id", "observedproperty_id")',
@@ -1014,7 +893,7 @@ export const _DBDATAS: { [key: string]: IEntity } = {
             observation_multidatastream_id: 'ON public."observation" USING btree ("multidatastream_id")',
             observation_featureofinterest_id: 'ON public."observation" USING btree ("featureofinterest_id")'
         },
-        migrationTest: true,
+        admin: false,
         relations: {
             Datastream: {
                 type: RELATIONS.belongsTo,
@@ -1088,7 +967,7 @@ export const _DBDATAS: { [key: string]: IEntity } = {
         indexes: {
             HistoricalObservations_observation_id: 'ON public."historical_observation" USING btree ("observation_id")'
         },
-        migrationTest: true,
+        admin: false,
         relations: {
             Observations: {
                 type: RELATIONS.belongsTo,
@@ -1119,7 +998,7 @@ export const _DBDATAS: { [key: string]: IEntity } = {
                 comment: "A unique bigSerial for location."
             }
         },
-        migrationTest: true,
+        admin: false,
         relations: {},
         constraints: {
             thing_location_pkey: 'PRIMARY KEY ("thing_id", "location_id")',
@@ -1167,7 +1046,7 @@ export const _DBDATAS: { [key: string]: IEntity } = {
         constraints: {
             decoder_pkey: 'PRIMARY KEY ("id")'
         },
-        migrationTest: true,
+        admin: false,
         relations: {
             Loras: {
                 type: RELATIONS.hasMany,
@@ -1194,6 +1073,21 @@ export const _DBDATAS: { [key: string]: IEntity } = {
                 alias: makeIDAlias("lora"),
                 form: {type : "number"}
             },
+            name: {
+                create: "text NOT NULL DEFAULT 'no name'::text",
+                comment: "A property provides a label for FeatureOfInterest entity, commonly a descriptive name.",
+                form: {type : "text"}
+            },
+            description: {
+                create: "text NOT NULL DEFAULT 'no description'::text",
+                comment: "The definition of the observed property.",
+                form: {type : "text"}
+            },
+            properties: {
+                create: "jsonb NULL",
+                comment: "The detailed description of the feature. The data type is defined by encodingType.",
+                form: {type : "textarea"}
+            },
             deveui: {
                 create: "text NOT NULL",
                 comment: "The deveui of lora.",
@@ -1204,32 +1098,49 @@ export const _DBDATAS: { [key: string]: IEntity } = {
                 comment: "Id of the decoder id",
                 form: {type : "entity", entity: "Decoders"}
             },
-            sensor_id: {
-                create: "BIGINT NOT NULL",
-                comment: "The sensor.",
-                form: {type : "entity", entity: "Sensors"}
+            datastream_id: {
+                create: "BIGINT[] NULL",
+                comment: "The spatial.",
+                form: {type : "entity", entity: "Datastreams"}
+            },
+            multidatastream_id: {
+                create: "BIGINT NULL",
+                comment: "The spatial.",
+                form: {type : "entity", entity: "MultiDatastreams"}
             }
         },
         constraints: {
             lora_pkey: 'PRIMARY KEY ("id")',
             lora_unik_deveui: 'UNIQUE ("deveui")',
-            lora_sensor_id_fkey: 'FOREIGN KEY ("sensor_id") REFERENCES "sensor"("id") ON UPDATE CASCADE ON DELETE CASCADE',
-            lora_decoder_id_fkey: 'FOREIGN KEY ("decoder_id") REFERENCES "decoder"("id") ON UPDATE CASCADE ON DELETE CASCADE'
+            // lora_datastream_id_fkey: 'FOREIGN KEY ("datastream_id") REFERENCES "datastream"("id") ON UPDATE CASCADE ON DELETE CASCADE',
+            lora_multidatastream_id_fkey: 'FOREIGN KEY ("multidatastream_id") REFERENCES "multidatastream"("id") ON UPDATE CASCADE ON DELETE CASCADE',
+            lora_decoder_fkey: 'FOREIGN KEY ("decoder_id") REFERENCES "decoder"("id") ON UPDATE CASCADE ON DELETE CASCADE'
         },
         indexes: {
-            lora_sensor_id: 'ON public."lora" USING btree ("sensor_id")',
-            lora_decoder_id: 'ON public."lora" USING btree ("decoder_id")'
+            lora_datastream_id: 'ON public."lora" USING btree ("datastream_id")',
+            lora_multidatastream_id: 'ON public."lora" USING btree ("multidatastream_id")',
+            decoder_id: 'ON public."lora" USING btree ("decoder_id")'
         },
-        migrationTest: true,
+        admin: false,
         relations: {
-            Sensor: {
-                type: RELATIONS.belongsTo,
-                expand: `"sensor"."id" = "lora"."sensor_id"`,
-                link: `"sensor"."id" = (SELECT "lora"."sensor_id" FROM "lora" WHERE "lora"."id" = $ID)`,
-                entityName: "sensors",
-                tableName: "sensor",
+            Datastreams: {
+                type: RELATIONS.hasMany,
+                expand: `"datastream"."id" = "observation"."datastream_id"`,
+                link: `"datastream"."id" (SELECT "observation"."datastream_id" FROM "observation" WHERE "observation"."id" = $ID)`,
+                entityName: "Datastreams",
+                tableName: "observation",
                 relationKey: "id",
-                entityColumn: "sensor_id",
+                entityColumn: "datastream_id",
+                tableKey: "id"
+            },
+            MultiDatastream: {
+                type: RELATIONS.belongsTo,
+                expand: `"multidatastream"."id" = "lora"."multidatastream_id"`,
+                link: `"multidatastream"."id" = (SELECT "lora"."multidatastream_id" FROM "lora" WHERE "lora"."id" = $ID)`,
+                entityName: "MultiDatastreams",
+                tableName: "observation",
+                relationKey: "id",
+                entityColumn: "multidatastream_id",
                 tableKey: "id"
             },
             Decoder: {
@@ -1245,51 +1156,167 @@ export const _DBDATAS: { [key: string]: IEntity } = {
         }
     },
 
+    Users: {
+        name: "Users",
+        singular: "User",
+        table: "user",
+        order: 21,
+        admin: true,
+        columns: {
+            id: {
+                create: "BIGINT GENERATED ALWAYS AS IDENTITY",
+                comment: "A unique bigSerial."
+            },
+            username: {
+                create: "text NOT NULL UNIQUE",
+                comment: "Name of the user."
+            },
+            email: {
+                create: "text NOT NULL",
+                comment: "Mail fo the user."
+            },
+            password: {
+                create: "text NOT NULL",
+                comment: "Password."
+            },
+            database: {
+                create: "text NOT NULL",
+                comment: "Database."
+            },
+            canPost: {
+                create: "bool NULL",
+                comment: "canPost or Not."
+            },
+            canDelete: {
+                create: "bool NULL",
+                comment: "canDelete or Not."
+            },
+            canCreateUser: {
+                create: "bool NULL",
+                comment: "canCreateUser or Not."
+            },
+            canCreateDb: {
+                create: "bool NULL",
+                comment: "canCreateDb or Not."
+            },
+            admin: {
+                create: "bool NULL",
+                comment: "Admin or Not."
+            },
+            superAdmin: {
+                create: "bool NULL",
+                comment: "Super Admin or Not."
+            }
+        },
+        relations: {}
+    },
+
+    Logs: {
+        name: "Logs_request",
+        singular: "Log_request",
+        table: "log_request",
+        order: 22,
+        admin: true,
+        columns: {
+            id: {
+                create: "BIGINT GENERATED ALWAYS AS IDENTITY",
+                alias: makeIDAlias("log_request"),
+                comment: "A unique bigSerial.",
+                form: {type : "number"}
+            },
+            date: {
+                create: "timestamptz DEFAULT CURRENT_TIMESTAMP",
+                comment: "The time of the operation.",
+                form: {type : "datetime-local"}
+            },
+            user_id: {
+                create: "BIGINT",
+                comment: "User id.",
+                form: {type : "number"}
+            },
+            method: {
+                create: "text",
+                comment: "Method of request.",
+                form: {type : "text"}
+            },
+            code: {
+                create: "text",
+                comment: "code return.",
+                form: {type : "text"}
+            },
+            url: {
+                create: "text NOT NULL",
+                comment: "Url of the request.",
+                form: {type : "text"}
+            },
+            datas: {
+                create: "jsonb NULL",
+                comment: "Datas send.",
+                form: {type : "textarea"}
+            },
+            port: {
+                create: "INT NULL",
+                comment: "port.",
+                form: {type : "number"}
+            },
+            database: {
+                create: "text NULL",
+                comment: "database.",
+                form: {type : "text"}
+            },
+            query: {
+                create: "text NULL",
+                comment: "Query generated.",
+                form: {type : "textarea"}
+            },
+            return: {
+                create: "text NULL",
+                comment: "return result / error receive.",
+                form: {type : "textarea"}
+            },
+            error: {
+                create: "text NULL",
+                comment: "Error message.",
+                form: {type : "text"}
+            }
+        },
+        relations: {}
+    },
+
+    Configs: {
+        name: "Configs",
+        singular: "Config",
+        table: "config",
+        order: 20,
+        admin: true,
+        columns: {
+            name: {
+                create: "TEXT GENERATED ALWAYS AS IDENTITY",
+                comment: "A unique bigSerial."
+            },
+            properties: {
+                create: "jsonb NULL",
+                comment: "The detailed description of the feature. The data type is defined by encodingType.",
+                form: {type : "textarea"}
+            }
+        },
+        relations: {}
+    },
+
     CreateObservations: {
         name: "CreateObservations",
         singular: "CreateObservation",
         table: "",
         order: 0,
         columns: {},
-        migrationTest: false,
-        relations: {},
-        constraints: {},
-        indexes: {}
-    },
-
-    Config: {
-        name: "Config",
-        singular: "Config",
-        table: "config",
-        order: 0,
-        columns: {
-            version: {
-                create: "text NOT NULL DEFAULT '1.0.0'::text",
-                comment: "Api version."
-            }
-        },
-        migrationTest: true,
-        relations: {},
-        constraints: {
-            config_unik_version: 'UNIQUE ("version")',
-        },
-        indexes: {},
-        after: `INSERT INTO config (version) VALUES ('${_ENV_VERSION}');`
-
-    },
-
-    Logs: {
-        name: "Logs",
-        singular: "Log",
-        table: _DBADMIN.Logs_request.table,
-        order: 0,
-        columns: _DBADMIN.Logs_request.columns,
-        migrationTest: false,
+        admin: false,
         relations: {},
         constraints: {},
         indexes: {}
     },    
 };
+
+export const _DBADMIN = Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === true));
 
 export const _POSGRESTOJS:{[key:string]: string} = {
     "timestamptz": "timestamp",
@@ -1320,5 +1347,7 @@ export type _ENTITIES =
     'Decoders' |
     'Loras' |
     'CreateObservations' |
-    'Logs';
+    'Logs'|
+    'Configs';
+
 

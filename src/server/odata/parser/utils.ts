@@ -24,7 +24,7 @@ namespace Utils {
         }
         return i === compare.length ? i : 0;
     }
-
+    
     export function required(value: SourceArray, index: number, comparer: Function, min?: number, max?: number) {
         let i = 0;
 

@@ -37,7 +37,7 @@ describe("Output formats", () => {
                 api: `{get} ResultFormat as CSV`,
                 apiName: "FormatCsv",
                 apiDescription: 'Use $resultFormat=csv to get datas as csv format.<br><img src="./assets/csv.jpg" alt="csv result">',
-                apiExample: { http: "/v1.0/Datastreams(1)/Observations?$top=20&$resultFormat=CSV" }
+                apiExample: { http: "/v1.0/Datastreams(1)/Observations?$top=20&$resultFormat=csv" }
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
@@ -57,8 +57,8 @@ describe("Output formats", () => {
             const infos = {
                 api: `{get} Things Things as DATAARRAY`,
                 apiName: "FormatThingDATAARRAY",
-                apiDescription: 'Use $resultFormat=DATAARRAY to get datas as DATAARRAY format.',
-                apiExample: { http: "/v1.0/Things?$resultFormat=DATAARRAY" }
+                apiDescription: 'Use $resultFormat=dataArray to get datas as dataArray format.',
+                apiExample: { http: "/v1.0/Things?$resultFormat=dataArray" }
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
@@ -76,10 +76,10 @@ describe("Output formats", () => {
         
         it("Return Datastream/Observations in DATAARRAY format.", (done) => {
             const infos = {
-                api: `{get} Datastream Observations as DATAARRAY`,
+                api: `{get} Datastream Observations as dataArray`,
                 apiName: "FormatDataStreamDATAARRAY",
-                apiDescription: 'Use $resultFormat=DATAARRAY to get datas as DATAARRAY format.',
-                apiExample: { http: "/v1.0/Datastreams(1)/Observations?$resultFormat=DATAARRAY&$select=id,result" }
+                apiDescription: 'Use $resultFormat=dataArray to get datas as dataArray format.',
+                apiExample: { http: "/v1.0/Datastreams(1)/Observations?$resultFormat=dataArray&$select=id,result" }
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
@@ -103,7 +103,7 @@ describe("Output formats", () => {
                 api: `{get} ResultFormat as GRAPH`,
                 apiName: "FormatGraph",
                 apiDescription: 'Use $resultFormat=GRAPH to get datas into graphical representation.<br><img src="./assets/graph.jpg" alt="graph result">',
-                apiExample: { http: "/v1.0/Datastreams(1)/Observations?$resultFormat=GRAPH" }
+                apiExample: { http: "/v1.0/Datastreams(1)/Observations?$resultFormat=graph" }
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
@@ -123,7 +123,7 @@ describe("Output formats", () => {
                 api: `{get} ResultFormat as GRAPHDATAS`,
                 apiName: "FormatGraphDatas",
                 apiDescription: "Use $resultFormat=GRAPHDATAS to get datas into echarts compatible format.",
-                apiExample: { http: "/v1.0/Datastreams(1)/Observations?$resultFormat=GRAPHDATAS" }
+                apiExample: { http: "/v1.0/Datastreams(1)/Observations?$resultFormat=graphDatas" }
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)

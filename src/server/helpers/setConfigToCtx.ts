@@ -111,5 +111,5 @@ export const setConfigToCtx = (ctx: koa.Context): void => {
         : "";
 
     if (!ctx._linkBase.includes(ctx._configName)) ctx._linkBase = ctx._linkBase + "/" + ctx._configName;
-    ctx._rootName =  `${ctx._linkBase}/${ctx._version}`;
+    ctx._rootName = process.env.NODE_ENV?.trim() === "test"  ? `proxy/${ctx._version}/` : `${ctx._linkBase}/${ctx._version}/`;
 };

@@ -138,9 +138,9 @@ namespace Query {
         index = eq;
 
         let format;
-        ["CSV", "JSON", "TXT", "GRAPHDATAS", "GRAPH", "DATAARRAY"].forEach((key: string) => {
+        ["csv", "json", "txt", "graphDatas", "graph", "dataArray"].forEach((key: string) => {
             if (Utils.equals(value, index, key)) {
-                format = key.toUpperCase();
+                format = key;
                 index += key.length ;
             }
         });

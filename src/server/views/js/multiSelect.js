@@ -62,6 +62,7 @@ const createListWithoutOptions = (inputList) => inputList.split("</option>").joi
    * @param {*} orderby orderby mode
    */
   function populateMultiSelect(obj, list, defValue, mode, orderby) {
+    if (!list) return;
     obj = getElement(obj);
 
     while (obj.firstChild) {

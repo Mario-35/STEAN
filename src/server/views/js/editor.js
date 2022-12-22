@@ -40,6 +40,9 @@ class JSON_Editor extends HTMLElement {
         this.shadowRoot.appendChild( template.content.cloneNode(true) )
         this.editor = this.shadowRoot.getElementById('editor')
         this.addEventListener('keyup', _ => this.format() )
+        this.addEventListener("dragenter", onDragEnter, false);
+        this.addEventListener('dragover', onDragOver, false);
+        this.addEventListener('drop',onDrop, false);
     }
   
     connectedCallback() {
