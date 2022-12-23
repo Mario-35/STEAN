@@ -26,14 +26,10 @@ export class MultiDatastreams extends Common {
 
         if (input["multiObservationDataTypes"] && input["unitOfMeasurements"] && input["ObservedProperties"]) {
             if (input["multiObservationDataTypes"].length != input["unitOfMeasurements"].length)
-                this.ctx.throw(400, {
-                    detail: `Size of list of unitOfMeasurements (${input["unitOfMeasurements"].length}) is not equal to size of multiObservationDataTypes (${input["multiObservationDataTypes"].length})`
-                });
+                this.ctx.throw(400, { detail: `Size of list of unitOfMeasurements (${input["unitOfMeasurements"].length}) is not equal to size of multiObservationDataTypes (${input["multiObservationDataTypes"].length})` });
 
             if (input["multiObservationDataTypes"].length != input["ObservedProperties"].length)
-                this.ctx.throw(400, {
-                    detail: `Size of list of ObservedProperties (${input["ObservedProperties"].length}) is not equal to size of multiObservationDataTypes (${input["multiObservationDataTypes"].length})`
-                });
+                this.ctx.throw(400, { detail: `Size of list of ObservedProperties (${input["ObservedProperties"].length}) is not equal to size of multiObservationDataTypes (${input["multiObservationDataTypes"].length})` });
         }
         if (input && input["multiObservationDataTypes"] && input["multiObservationDataTypes"] != null)
             input["multiObservationDataTypes"] = JSON.stringify(input["multiObservationDataTypes"]).replace("[", "{").replace("]", "}");

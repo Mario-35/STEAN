@@ -23,6 +23,7 @@ export interface IConfigFile {
     createUser?: boolean;
     forceHttps: boolean;
 }
+
 export interface IConfigFiles {
     [key: string]: IConfigFile;
 }

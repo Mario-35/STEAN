@@ -9,21 +9,19 @@
 import Router from "koa-router";
 import { apiAccess, userAccess } from "../db/dataAccess";
 import { _DBDATAS } from "../db/constants";
-import { ConfigCtx, returnBody } from "../helpers";
+import { ConfigCtx } from "../helpers";
 import fs from "fs";
 import { message } from "../logger";
-import { IKeyValues, IReturnResult, returnFormatString } from "../types";
+import { IKeyValues, IReturnResult, returnFormats } from "../types";
 import { _APIVERSION } from "../constants";
 import { queryHtmlPage } from "../views/query";
 import { CreateHtmlView, createIqueryFromContext,  } from "../views/helpers/";
 import { testRoutes } from "./helpers";
 import { DefaultState, Context } from "koa";
-import { graphHtml } from "../views/graph";
 import { ensureAuthenticated, getAuthenticatedUser, Rights } from "../types/user";
 import { createDatabase } from "../db/helpers";
 import { createOdata } from "../odata";
 import { _CONFIGFILE } from "../configuration";
-// import { queryAdminPage } from "../views/query/admin";
 
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 
@@ -31,8 +29,6 @@ export const unProtectedRoutes = new Router<DefaultState, Context>();
 
 // ALl others
 unProtectedRoutes.get("/(.*)", async (ctx) => {
-    
-
     const adminWithSuperAdminAccess = ctx._configName === "admin" ? ctx._user?.PDCUAS[Rights.SuperAdmin] === true ? true : false : true;
 
     switch (testRoutes(ctx.path).toUpperCase()) {
@@ -49,7 +45,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
                     url: `${ctx._linkBase}/${ctx._version}/${value}`
                 });
             }); 
-            ctx.type = returnFormatString.JSON;
+            ctx.type = returnFormats.json.type;
             ctx.body = {
                 value: expectedResponse.filter((elem) => Object.keys(elem).length)
             };
@@ -59,7 +55,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             try {
                 const cacheControl = `public, max-age=${8640}`;
                 ctx.set("Cache-Control", cacheControl);
-                ctx.type = returnFormatString.ICON;
+                ctx.type = returnFormats.icon.type;
                 ctx.body =  fs.readFileSync(__dirname + "/favicon.ico");
             } catch (e) {
                 if (e instanceof Error) message(false, "ERROR", e.message);
@@ -68,13 +64,13 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
 
         case "ERROR":
             const createHtmlError = new CreateHtmlView(ctx);
-            ctx.type = returnFormatString.HTML;
+            ctx.type = returnFormats.html.type;
             ctx.body = createHtmlError.error("what ?");
             return;
 
         case "REGISTER":
             const createHtmlRegister = new CreateHtmlView(ctx);
-            ctx.type = returnFormatString.HTML;
+            ctx.type = returnFormats.html.type;
             ctx.body = createHtmlRegister.login({ login: false });
             return;
 
@@ -89,7 +85,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
 
         // case "CONFIGS":
         //     if (token?.PDCUAS[Rights.SuperAdmin] === true) {
-        //         ctx.type = returnFormatString.HTML;
+        //         ctx.type = returnFormatsString.HTML;
         //         ctx.body = _CONFIGFILE;
         //     } else ctx.redirect(`${ctx._rootName}login`);
         //     return;
@@ -98,20 +94,20 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             if (ensureAuthenticated(ctx)) ctx.redirect(`${ctx._rootName}status`);
             else {
                 const createHtml = new CreateHtmlView(ctx);
-                ctx.type = returnFormatString.HTML;
+                ctx.type = returnFormats.html.type;
                 ctx.body = createHtml.login({ login: true });
             }
             return;
 
         case "ALL":
             if (ctx.request["token"]?.PDCUAS[Rights.SuperAdmin] === true) {
-                ctx.type = returnFormatString.JSON;
+                ctx.type = returnFormats.json.type;
                 ctx.body = await userAccess.getAll();
             }
             return;
 
         case "INFOS":
-            ctx.type = returnFormatString.JSON;
+            ctx.type = returnFormats.json.type;
             ctx.body = ConfigCtx(ctx);
             return;
 
@@ -120,7 +116,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
                 const user = await getAuthenticatedUser(ctx);
                 if (user) {
                     const createHtml = new CreateHtmlView(ctx);
-                    ctx.type = returnFormatString.HTML;
+                    ctx.type = returnFormats.html.type;
                     ctx.body = createHtml.status(user);
                     return;
                 }
@@ -133,7 +129,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             const temp = await createIqueryFromContext(ctx);
             ctx.set("script-src", "self");
             ctx.set("Content-Security-Policy", "self");
-            ctx.type = returnFormatString.HTML;
+            ctx.type = returnFormats.html.type;
             ctx.body = queryHtmlPage(temp);
             return;
 
@@ -143,7 +139,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             if (id && ctx.request["token"]?.PDCUAS[Rights.SuperAdmin] === true) {
                 const user = await userAccess.getSingle(id);
                 const createHtml = new CreateHtmlView(ctx);
-                ctx.type = returnFormatString.HTML;
+                ctx.type = returnFormats.html.type;
                 ctx.body = createHtml.edit({ body: user });
             }
             return;
@@ -172,53 +168,21 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
                 if (ctx._odata.entity && Number(ctx._odata.id) === 0) {
                     const returnValue = await objectAccess.getAll();
                     if (returnValue) {
-                        if (returnValue.body) {
-                            ctx.type = ctx._odata.resultFormat.value;
-                            ctx.body = returnBody(returnValue.body, ctx._odata.resultFormat.name);
-                        } else {
-                            ctx.type = ctx._odata.resultFormat.value;
-                            switch (ctx._odata.resultFormat.name) {
-                                case "JSON":
-                                    ctx.body = returnBody(
-                                        {
-                                            "@iot.count": returnValue.id?.toString(),
-                                            "@iot.nextLink": returnValue.nextLink,
-                                            "@iot.prevLink": returnValue.prevLink,
-                                            value: returnValue["value"]
-                                        } as IKeyValues,
-                                        ctx._odata.resultFormat.name
-                                    );
-                                    break;
-                                case "GRAPH":
-                                    ctx.type = returnFormatString.HTML;
-                                    ctx.body = graphHtml(ctx, returnValue.value);
-                                    break;
-                                case "GRAPHDATAS":                                    
-                                    ctx.body = returnBody(returnValue["value"] as IKeyValues, ctx._odata.resultFormat.name);
-                                    break;
-
-                                default:
-                                    ctx.body = returnBody(returnValue["value"] as IKeyValues, ctx._odata.resultFormat.name);
-                                    break;
-                            }
-                        }
+                        const datas = ctx._odata.resultFormat.name === "json" ? {
+                            "@iot.count": returnValue.id?.toString(),
+                            "@iot.nextLink": returnValue.nextLink,
+                            "@iot.prevLink": returnValue.prevLink,
+                            value: returnValue.body
+                        } as IKeyValues : returnValue.body;
+                        ctx.type = ctx._odata.resultFormat.type;
+                        ctx.body = ctx._odata.resultFormat.format(datas as IKeyValues, ctx);
                     } else ctx.throw(404);
-                } else if (
-                    (ctx._odata.id && typeof ctx._odata.id == "bigint" && ctx._odata.id > 0) ||
-                    (typeof ctx._odata.id == "string" && ctx._odata.id != "")
-                ) {
-                    
-                    const returnValue: IReturnResult | undefined = await objectAccess.getSingle(
-                        ctx._odata.id
-                    );
-
+                } else if ( (ctx._odata.id && typeof ctx._odata.id == "bigint" && ctx._odata.id > 0) || (typeof ctx._odata.id == "string" && ctx._odata.id != "") ) {
+                    const returnValue: IReturnResult | undefined = await objectAccess.getSingle(ctx._odata.id);
                     if (returnValue && returnValue.body) {
-                        ctx.type = ctx._odata.resultFormat.value;
-                        ctx.body = returnBody(returnValue.body, ctx._odata.resultFormat.name);
-                    } else
-                        ctx.throw(404, {
-                            detail: `id : ${ctx._odata.id} not found`
-                        });
+                        ctx.type = ctx._odata.resultFormat.type;
+                        ctx.body = ctx._odata.resultFormat.format(returnValue.body);
+                    } else ctx.throw(404, { detail: `id : ${ctx._odata.id} not found` });
                 } else ctx.throw(400);
             }
         } 

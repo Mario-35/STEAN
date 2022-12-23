@@ -54,10 +54,8 @@ export class Common {
         return {
             ...{
                 id: undefined,
-                entity: _DBDATAS[this.constructor.name],
                 nextLink: args.nextLink ? (args.nextLink as string) : undefined,
                 prevLink: args.prevLink ? (args.prevLink as string) : undefined,
-                value: undefined,
                 body: undefined,
                 total: undefined
             },
@@ -130,10 +128,10 @@ export class Common {
                         id: isNaN(nb) ? undefined : nb,
                         nextLink: this.nextLink(nb),
                         prevLink: this.prevLink(nb),
-                        value: await this.formatResult(res.rows[0].results)
+                        body: await this.formatResult(res.rows[0].results)
                     });
                 } else return this.createReturnResult({ 
-                        value: res.rows[0].results || res.rows[0]
+                        body: res.rows[0].results || res.rows[0]
                     });
             })
             .catch((err: Error) => this.ctx.throw(400, { detail: err.message }));
@@ -215,8 +213,6 @@ export class Common {
 
         const sql = this.ctx._odata.asPatchSql(dataInput, Common.dbContext);
 
-        
-
         this.logDebugQuery(sql);
 
         return Common.dbContext
@@ -224,10 +220,7 @@ export class Common {
             .then((res: any) => {
                 if (res.rows) {
                     if (res.rows[0].results[0]) this.formatResult(res.rows[0].results[0]);
-                    return this.createReturnResult({
-                        body: res.rows[0].results[0],
-                        query: sql
-                    });
+                    return this.createReturnResult({ body: res.rows[0].results[0], query: sql });
                 }
             })
             .catch((err: any) => {
@@ -245,10 +238,7 @@ export class Common {
             const query: Knex.QueryBuilder = Common.dbContext(_DBDATAS[this.constructor.name].table).del().where({ id: idInput });
             this.ctx._query = knexQueryToSql(query);
             const returnValue = await query;
-
-            return this.createReturnResult({
-                id: BigInt(returnValue)
-            });
+            return this.createReturnResult({ id: BigInt(returnValue) });
         } catch (error: any) {
             this.ctx.throw(400, { detail: extractMessageError(error.message) });
         }

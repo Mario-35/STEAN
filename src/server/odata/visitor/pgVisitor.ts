@@ -1,6 +1,6 @@
 import { isGraph, _DBDATAS, _ENTITIES } from "../../db/constants";
-import {  getEntityName,   getReturnFormat, removeQuotes } from "../../helpers";
-import { IKeyValues, returnFormat, TimeSeriesType } from "../../types";
+import {  getEntityName, removeQuotes } from "../../helpers";
+import { IKeyValues, IreturnFormat, returnFormats, TimeSeriesType } from "../../types";
 import { Token } from "../parser/lexer";
 import { Literal } from "../parser/literal";
 import { SQLLiteral } from "../parser/sqlLiteral";
@@ -46,7 +46,7 @@ export class PgVisitor {
     value: boolean = false;
     InlineCount: boolean;
     navigationProperty: string;
-    resultFormat: returnFormat = getReturnFormat("json");
+    resultFormat: IreturnFormat = returnFormats.json;
     includes: PgVisitor[] = [];
     parameters: unknown[] = [];
     ast: Token;
@@ -57,7 +57,7 @@ export class PgVisitor {
         this.options = options;
         this.ref = options.ref;
         this.value = options.value;
-        if (this.value  === true) this.resultFormat = getReturnFormat("txt");        
+        if (this.value  === true) this.resultFormat = returnFormats.txt;        
     }
     
     
@@ -229,7 +229,7 @@ export class PgVisitor {
         // if((this.entity === _DBDATAS.Observations.name && !this.parentEntity) && this.timeSeries !== undefined) {
         //     ctx.throw(400, { detail: `Series not allowed for Observations entity use /Datastreams/Observations or /MultiDatastreams/Observations With SplitResult` }); 
         // }
-        if(this.resultFormat.name === "DATAARRAY" && BigInt(this.id) > 0 && !this.parentEntity ) {
+        if(this.resultFormat === returnFormats.dataArray && BigInt(this.id) > 0 && !this.parentEntity ) {
             ctx.throw(400, { detail: `DataArray not allowed` }); 
 
         }
@@ -309,7 +309,7 @@ export class PgVisitor {
     }
 
     protected VisitResultFormat(node: Token, context: any) {      
-        if (node.value.format) this.resultFormat = getReturnFormat(node.value.format);
+        if (node.value.format) this.resultFormat = returnFormats[node.value.format];
         //ATTTENTION
         if (["dataArray","graph","graphDatas"].includes(this.resultFormat.name)) this.limit = 0;
         if (isGraph(this)) this.showRelations = false;

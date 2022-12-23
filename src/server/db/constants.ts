@@ -13,14 +13,14 @@ import { _CONFIGFILE } from "../configuration";
 import { _ENV_VERSION } from "../constants";
 import { getEntityName } from "../helpers";
 import { PgVisitor } from "../odata";
-import {  IEntity } from "../types";
+import {  IEntity, returnFormats } from "../types";
 import { RELATIONS } from "../types/entity";
 
 export const isSingular = (input: string): boolean => {
     const entityName = getEntityName(input);
     return entityName ? (_DBDATAS[entityName].singular == input) : false;
 }
-export const isGraph = (input: PgVisitor) =>  input.resultFormat.name.startsWith("GRAPH");
+export const isGraph = (input: PgVisitor) =>  input.resultFormat === returnFormats.graph || input.resultFormat === returnFormats.graphDatas;
 
 // Get date by Database usefull to have the TimeZone
 export const getDateNow = async (conn: Knex | Knex.Transaction): Promise<string> => {

@@ -14,7 +14,7 @@ import fs from "fs";
 import koa from "koa";
 import { checkPassword, emailIsValid, testRoutes } from "./helpers";
 import { message } from "../logger";
-import { IConfigFile, IKeyString, IReturnResult, returnFormatString } from "../types";
+import { IConfigFile, IKeyString, IReturnResult, returnFormats } from "../types";
 import { DefaultState, Context } from "koa";
 
 import { db } from "../db";
@@ -88,7 +88,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
                 }
             } else {
                 const createHtml = new CreateHtmlView(ctx);
-                ctx.type = returnFormatString.HTML;
+                ctx.type = returnFormats.html.type;
                 ctx.body = createHtml.login({ login: false, body: ctx.request.body, why: why });
             }
             return;
@@ -131,7 +131,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
                 const objectAccess = new apiAccess(ctx);
                 const returnValue: IReturnResult | undefined | void = await objectAccess.add();
                 if (returnValue) {
-                    returnFormatString.JSON;
+                    returnFormats.json.type;
                     ctx.status = 201;
                     ctx.body = returnValue.body ? returnValue.body : returnValue.body;
                 }
@@ -168,7 +168,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
                             results: JSON.stringify({ added: returnValue.total, value: returnValue.body })
                         });
                     } else {
-                        returnFormatString.JSON;
+                        returnFormats.json.type;
                         ctx.status = 201;
                         ctx.body = returnValue.body ? returnValue.body : returnValue.body;
                     }
@@ -201,7 +201,7 @@ protectedRoutes.patch("/(.*)", async (ctx) => {
             if (ctx._odata.id) {
                 const returnValue: IReturnResult | undefined | void = await objectAccess.update(ctx._odata.id);
                 if (returnValue) {
-                    returnFormatString.JSON;
+                    returnFormats.json.type;
                     ctx.status = 200;
                     ctx.body = returnValue.body;
                 }
@@ -226,7 +226,7 @@ protectedRoutes.delete("/(.*)", async (ctx) => {
             if (ctx._odata.id) {
                 const returnValue: IReturnResult | undefined | void = await objectAccess.delete(ctx._odata.id);
                 if (returnValue && returnValue.id && returnValue.id > 0) {
-                    returnFormatString.JSON;
+                    returnFormats.json.type;
                     ctx.status = 204;
                 }
             } else {

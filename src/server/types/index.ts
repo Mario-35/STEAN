@@ -10,7 +10,7 @@ export { IColList } from "./colList";
 export { IUser, userToken } from "./user";
 export { IDbConnection } from "./dbConnection";
 export { IReturnResult } from "./returnResult";
-export { returnFormatString, typeFormat, returnFormat } from "./returnFormat";
+export { returnFormats, IreturnFormat } from "./returnFormats";
 export { TimeSeriesType } from "./timeSeries";
 export { ICsvFile, ICsvColumns } from "./csvFile";
 export { IKeyValue, IKeyValues, IKeyString } from "./keyFile";

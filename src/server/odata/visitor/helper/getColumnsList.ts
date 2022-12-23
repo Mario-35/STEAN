@@ -8,6 +8,7 @@
 
  import { isGraph, _DBDATAS } from "../../../db/constants";
  import { getEntityName, goodName, removeQuotes } from "../../../helpers";
+import { returnFormats } from "../../../types";
  import { PgVisitor } from "../PgVisitor";
  
  
@@ -27,9 +28,8 @@
              elem = removeQuotes(elem);
              if(element.ref == true ) {
                  returnValue.push(`CONCAT('${main.options.rootBase}${_DBDATAS[name].name}(', "${_DBDATAS[name].table}"."id", ')') AS "@iot.selfLink"`);                 
-             } else if (elem.startsWith("result") && !main.splitResult && main.resultFormat.name === 'DATAARRAY') {
+             } else if (elem.startsWith("result") && !main.splitResult && main.resultFormat === returnFormats.dataArray) {
                  main.addToArrayNames("result");  
-                //  main.addToArrayNames("result", main.parentEntity === _DBDATAS.MultiDatastreams.name ? `"result"` : `("result" #>> '{result}')::float`);  
              } else {   
                  if (element.getEntity() === _DBDATAS.Logs.name) {
                      returnValue.push(`CONCAT('${main.options.rootBase}${_DBDATAS.Logs.name}(', "${_DBDATAS.Logs.table}"."id", ')') AS "@iot.selfLink"`);                 
@@ -39,8 +39,8 @@
                      if (main.id && alias) alias = alias.replace(/[$ID]+/g, <string>main.id) ;
                      returnValue.push(`${alias ? alias : `"${elem}"`}`);
                      
-                     if (elem === "id" && (element.showRelations == true || ["DATAARRAY", "CSV"].includes(main.resultFormat.name))) {
-                         if (["DATAARRAY", "CSV"].includes(main.resultFormat.name)) {
+                     if (elem === "id" && (element.showRelations == true || main.resultFormat === returnFormats.dataArray || main.resultFormat === returnFormats.csv)) {
+                         if (main.resultFormat === returnFormats.dataArray || main.resultFormat === returnFormats.csv) {
                              returnValue.push(`"${_DBDATAS[name].table}"."id" AS "id"`); 
                              main.addToArrayNames("id");            
                          } else returnValue.push(`CONCAT('${main.options.rootBase}${_DBDATAS[name].name}(', "${_DBDATAS[name].table}"."id", ')') AS "@iot.selfLink"`);    
@@ -70,7 +70,6 @@
                      break;
                  case _DBDATAS.Datastreams.name:                            
                      returnValue.push( `"observation"."resultnumber" as "result"`);
-                    //  returnValue.push(`json_object_agg('result', "observation"."resultnumber")->'result' AS "result"`);
                      break;
                  default:      
                      returnValue.push(`CASE WHEN ("multidatastream_id" is null) THEN json_object_agg('result', "observation"."resultnumber")->'result' ELSE ( SELECT json_object_agg(key, value) from ( SELECT jsonb_array_elements_text("keys") as key, unnest("observation"."resultnumbers")::float8 as value from ( SELECT (select jsonb_agg(tmp.units -> 'name') as keys from ( select jsonb_array_elements("unitOfMeasurements") as units from multidatastream where id = "multidatastream_id" ) as tmp) ) as tmp2 ) as tmp3) end as "result"`);
@@ -79,13 +78,11 @@
              if (isSelect === false) {
                  element.groupBy = cols.map(e => `"${_DBDATAS[name].table}"."${e}"`);
                  element.groupBy.push(`"${_DBDATAS[name].table}"."resultnumber"`,`"${_DBDATAS[name].table}"."datastream_id"`, `"${_DBDATAS[name].table}"."resultnumbers"`,`"${_DBDATAS[name].table}"."multidatastream_id"`);
-                     // main.addToArrayNames("result", main.parentEntity === _DBDATAS.MultiDatastreams.name ? `"result"` : `("result" #>> '{result}')::float`);  
  
              } else  if (![_DBDATAS.MultiDatastreams.name, _DBDATAS.Datastreams.name].includes(tableName)) {                
                      element.groupBy = cols.map(e => `"${_DBDATAS[name].table}".${e}`);                            
                      element.groupBy.push(`"${_DBDATAS[name].table}"."id"`);
                      element.groupBy.push(`"${_DBDATAS[name].table}"."resultnumber"`,`"${_DBDATAS[name].table}"."datastream_id"`, `"${_DBDATAS[name].table}"."resultnumbers"`,`"${_DBDATAS[name].table}"."multidatastream_id"`);
-                     // if(element.select.includes('result')) main.addToArrayNames("result",`"result"->>'result'`);
              }
          }
      }
