@@ -11,7 +11,7 @@ import koa from "koa";
 import { Common } from "./common";
 import { _DBDATAS } from "../constants";
 import { message } from "../../logger";
-import { ICsvColumns, ICsvFile, IKeyValues, IReturnResult } from "../../types";
+import { ICsvColumns, ICsvFile, IReturnResult } from "../../types";
 import { extractMessageError, importCsv, renameProp, verifyId } from "../helpers";
 import { stringToBool } from "../../helpers";
 import { _CONFIGFILE } from "../../configuration";
@@ -32,7 +32,7 @@ export class CreateObservations extends Common {
         else if (typeof inputValue == "object") return { key: "resultnumbers", value: `{"${Object.values(inputValue).join('","')}"}` };
     }
 
-    async add(dataInput: IKeyValues[]): Promise<IReturnResult | undefined> {
+    async add(dataInput: Object): Promise<IReturnResult | undefined> {
         message(true, "HEAD", `class ${this.constructor.name} override add`);
         const returnValue: string[] = [];
         let total = 0;
@@ -109,8 +109,8 @@ export class CreateObservations extends Common {
                 this.ctx.throw(404, { detail: `No id found for : ${dataStreamId}` });
             }
 
-            dataInput["dataArray"].forEach((element: IKeyValues) => {
-                const temp: IKeyValues = {
+            dataInput["dataArray"].forEach((element: Object) => {
+                const temp: Object = {
                     datastream_id: Number(dataStreamId)
                 };
                 

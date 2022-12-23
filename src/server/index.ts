@@ -16,7 +16,7 @@ import cors from "@koa/cors";
 import { asyncForEach, isTest } from "./helpers";
 import { isDbExist } from "./db/helpers/";
 import { message, logConnection } from "./logger";
-import {  IKeyString, userToken } from "./types";
+import {  userToken } from "./types";
 import serve from "koa-static";
 import path from "path";
 import compress from "koa-compress";
@@ -33,7 +33,7 @@ declare module "koa" {
         _configName: string;
         _version: string;
         _odata: PgVisitor;
-        _datas: IKeyString;
+        _datas: {[key: string]: string};
         _query: string;
         _user: userToken
     }

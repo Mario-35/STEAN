@@ -12,21 +12,21 @@ import { _VOIDTABLE } from "../../../constants";
 import { _DBDATAS } from "../../../db/constants";
 import { getBigIntFromString, getEntityName } from "../../../helpers";
 import { logDebug, message } from "../../../logger";
-import { IEntity, IKeyValues } from "../../../types";
+import { IEntity } from "../../../types";
 import { OperationType } from "../../../types/";
 import { PgVisitor } from "../PgVisitor";
 
 
 
-// const createPostQuery(datas: IKeyValues[] | IKeyValues, knexInstance: Knex | Knex.Transaction, main.id?: bigint | string): string {
+// const createPostQuery(datas: Object, knexInstance: Knex | Knex.Transaction, main.id?: bigint | string): string {
 
-export function createPostSql(datas: IKeyValues[] | IKeyValues, knexInstance: Knex | Knex.Transaction, main: PgVisitor): string {
+export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transaction, main: PgVisitor): string {
     let sqlResult = "";
     const queryMaker: {
         [key: string]: {
             type: OperationType;
             table: string;
-            datas: IKeyValues[] | IKeyValues;
+            datas: Object;
             keyId: string;
         };
     } = {};
@@ -139,7 +139,7 @@ export function createPostSql(datas: IKeyValues[] | IKeyValues, knexInstance: Kn
      * @param parentEntity parent entity for the datas if not root entity
      * @returns result
      */
-    const start = (datas: IKeyValues | IKeyValues[], entity?: IEntity, parentEntity?: IEntity): IKeyValues[] | IKeyValues | undefined => {
+    const start = (datas: Object, entity?: IEntity, parentEntity?: IEntity): Object | undefined => {
         message(true, "HEAD", `start level ${level++}`);
         
         const returnValue = {};
@@ -177,7 +177,7 @@ export function createPostSql(datas: IKeyValues[] | IKeyValues, knexInstance: Kn
             type: OperationType,
             name: string,
             tableName: string,
-            datas: string | IKeyValues[] | IKeyValues,
+            datas: string | Object,
             keyId: string,
             key: string | undefined
             ): void => {
@@ -299,7 +299,7 @@ export function createPostSql(datas: IKeyValues[] | IKeyValues, knexInstance: Kn
          * @param key key Name
          * @param value Datas to process
          */
-        const subBlock = (key: string, value: IKeyValues[] | IKeyValues) => {
+        const subBlock = (key: string, value: Object) => {
             const entityNameSearch = getEntityName(key);
             if (entityNameSearch) {
                 const newEntity = _DBDATAS[entityNameSearch];
@@ -322,7 +322,7 @@ export function createPostSql(datas: IKeyValues[] | IKeyValues, knexInstance: Kn
                     Object.entries(datas[key]).forEach(([_key, value]) => {
                         if (entity && parentEntity && Object.keys(entity.relations).includes(key)) {
                             message(true, "INFO", `Found a relation for ${entity.name}`, key);
-                            subBlock(key, value as IKeyValues);
+                            subBlock(key, value as Object);
                         } else {
                             message(true, "INFO", `data ${key}`, datas[key]);
                             returnValue[key] = datas[key];

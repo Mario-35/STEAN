@@ -1,6 +1,6 @@
 import { isGraph, _DBDATAS, _ENTITIES } from "../../db/constants";
-import {  getEntityName, removeQuotes } from "../../helpers";
-import { IKeyValues, IreturnFormat, returnFormats, TimeSeriesType } from "../../types";
+import {  getEntityName, removeQuotes, returnFormats } from "../../helpers";
+import { IreturnFormat, TimeSeriesType } from "../../types";
 import { Token } from "../parser/lexer";
 import { Literal } from "../parser/literal";
 import { SQLLiteral } from "../parser/sqlLiteral";
@@ -174,11 +174,11 @@ export class PgVisitor {
         return createGetSql(this);    
     } 
 
-    asPatchSql(datas: IKeyValues[] | IKeyValues, knexInstance: Knex | Knex.Transaction): string { 
+    asPatchSql(datas: Object | Object, knexInstance: Knex | Knex.Transaction): string { 
         return createPostSql(datas, knexInstance , this);    
     }  
 
-    asPostSql(datas: IKeyValues[] | IKeyValues, knexInstance: Knex | Knex.Transaction): string { 
+    asPostSql(datas: Object | Object, knexInstance: Knex | Knex.Transaction): string { 
         return createPostSql(datas, knexInstance , this);    
     }  
 
@@ -311,7 +311,8 @@ export class PgVisitor {
     protected VisitResultFormat(node: Token, context: any) {      
         if (node.value.format) this.resultFormat = returnFormats[node.value.format];
         //ATTTENTION
-        if (["dataArray","graph","graphDatas"].includes(this.resultFormat.name)) this.limit = 0;
+        if ([returnFormats.dataArray, returnFormats.graph, returnFormats.graphDatas].includes(this.resultFormat)) this.limit = 0;
+        // if (["dataArray","graph","graphDatas"].includes(this.resultFormat.name)) this.limit = 0;
         if (isGraph(this)) this.showRelations = false;
     }
 

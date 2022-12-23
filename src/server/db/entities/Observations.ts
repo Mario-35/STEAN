@@ -11,7 +11,7 @@ import koa from "koa";
 import { Common } from "./common";
 import { getDateNow, _DBDATAS } from "../constants";
 import { message } from "../../logger";
-import { IKeyValues, IReturnResult } from "../../types";
+import { IReturnResult } from "../../types";
 import { getBigIntFromString } from "../../helpers";
 
 export class Observations extends Common {
@@ -19,7 +19,7 @@ export class Observations extends Common {
         super(ctx, knexInstance);
     }
 
-    async prepareInputResult(dataInput: IKeyValues[]): Promise<IKeyValues[]> {
+    async prepareInputResult(dataInput: Object): Promise<Object> {
         message(true, "CLASS", this.constructor.name, "prepareInputResult");     
         
         if ((dataInput["MultiDatastream"] && dataInput["MultiDatastream"] != null) || ( this.ctx._odata.parentEntity && this.ctx._odata.parentEntity.startsWith("MultiDatastream"))) {
@@ -65,13 +65,13 @@ export class Observations extends Common {
         return dataInput;
     }
     
-    async add(dataInput: IKeyValues[]): Promise<IReturnResult | undefined> {
+    async add(dataInput: Object): Promise<IReturnResult | undefined> {
         message(true, "HEAD", `class ${this.constructor.name} override add`);
         if (dataInput) dataInput = await this.prepareInputResult(dataInput);
         return await super.add(dataInput);
     }
     
-    async update(idInput: bigint, dataInput: IKeyValues[] | undefined): Promise<IReturnResult | undefined> {
+    async update(idInput: bigint, dataInput: Object | undefined): Promise<IReturnResult | undefined> {
         message(true, "HEAD", `class ${this.constructor.name} override update`);
         if (dataInput) dataInput = await this.prepareInputResult(dataInput);
         if (dataInput) dataInput["validTime"] = await getDateNow(Common.dbContext);

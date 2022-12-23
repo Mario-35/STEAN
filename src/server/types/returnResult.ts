@@ -6,12 +6,10 @@
  *
  */
 
-import { IKeyValues } from ".";
-
 export interface IReturnResult {
     id: bigint | undefined;
     nextLink: string | undefined;
     prevLink: string | undefined;
-    body: IKeyValues[] | IKeyValues | string | undefined;
+    body: Object | string | undefined;
     total: bigint | undefined;
 }

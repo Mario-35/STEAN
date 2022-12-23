@@ -8,16 +8,16 @@
 
 import { Common } from "../entities/common";
 import koa from "koa";
-import { IKeyValues, IReturnResult } from "../../types";
+import { IReturnResult } from "../../types";
 
 export interface DataAccessInterface {
     readonly myEntity: Common | undefined;
     readonly ctx: koa.Context;
 
-    formatDataInput(dataInput: IKeyValues[] | undefined): IKeyValues[] | undefined;
+    formatDataInput(dataInput: Object | undefined): Object | undefined;
     getAll(queryResult: any | undefined): Promise<IReturnResult | undefined>;
     getSingle(idInput: bigint | string, propertyName?: string, onlyValue?: boolean): Promise<IReturnResult | undefined>;
     add(): Promise<IReturnResult | undefined>;
-    update(idInput: bigint | string, dataInput: IKeyValues[] | undefined): Promise<IReturnResult | undefined>;
+    update(idInput: bigint | string, dataInput: Object | undefined): Promise<IReturnResult | undefined>;
     delete(idInput: bigint | string): Promise<IReturnResult | undefined>;
 }

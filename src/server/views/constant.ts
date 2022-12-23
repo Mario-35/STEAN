@@ -1,4 +1,4 @@
-import { IEntityColumnForm, IKeyString, IUser } from "../types";
+import { IEntityColumnForm, IUser } from "../types";
 
 export interface IQuery {
     user: IUser;
@@ -20,7 +20,7 @@ export interface IQuery {
     admin: boolean;
 }
 
-export const userHeader: IKeyString = Object.freeze({
+export const userHeader: {[key: string]: string} = Object.freeze({
     "canPost": "post",
     "canDelete": "Delete",
     "canCreateUser": "Create User",

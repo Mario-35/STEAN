@@ -25,4 +25,5 @@ export { isModeDebug } from "./isModeDebug";
 export { setConfigToCtx } from "./setConfigToCtx";
 export { changeInJson } from "./changeInJson";
 export { showConfigCtx, ConfigCtx } from "./showConfigCtx";
+export { returnFormats } from "./returnFormats";
 export { upload } from "./upload";

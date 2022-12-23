@@ -13,7 +13,6 @@ import util from "util";
 import fs from "fs";
 import koa from "koa";
 import { message } from "../logger";
-import { IKeyString } from "../types";
 
 /**
  *
@@ -21,8 +20,8 @@ import { IKeyString } from "../types";
  * @returns KeyString
  */
 
-export const upload = (ctx: koa.Context): Promise<IKeyString> => {
-    const data: IKeyString = {};
+export const upload = (ctx: koa.Context): Promise<{[key: string]: string}> => {
+    const data: {[key: string]: string} = {};
     return new Promise(async (resolve, reject) => {
         const uploadPath = "./upload";
         const allowedExtName = ["csv", "txt", "json"];

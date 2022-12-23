@@ -3,13 +3,8 @@ import { _CONFIGFILE } from "../../configuration";
 import { _DBDATAS } from "../../db/constants";
 import { IUser } from "../../db/interfaces";
 import { showConfigCtx } from "../../helpers";
-import { IKeyString } from "../../types";
 import { userHeader } from "../constant";
 import { cssFile } from "../css";
-// import { fileQueryCss, fileUserCss } from "./css";
-
-
-
 
 export class CreateHtmlView {
     private ctx: koa.Context;
@@ -47,7 +42,7 @@ export class CreateHtmlView {
         return returnValue.join();
     };
 
-    public login = (datas: { login: boolean; body?: any; why?: IKeyString }): string => {
+    public login = (datas: { login: boolean; body?: any; why?: {[key: string]: string} }): string => {
         const alert = (name: string): string => {
             return datas.why && datas.why[name] ? `<div class="alert">${datas.why[name]}</div>` : "";
         };
@@ -183,7 +178,7 @@ export class CreateHtmlView {
         return temp;
     };
 
-    public edit = (datas: { body?: any; why?: IKeyString }): string => {
+    public edit = (datas: { body?: any; why?: {[key: string]: string} }): string => {
         const user = datas.body;
         const alert = (name: string): string => (datas.why && datas.why[name] ? `<div class="alert">${datas.why[name]}</div>` : "");
         return `<!DOCTYPE html>

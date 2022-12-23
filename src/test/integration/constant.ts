@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
 import { db } from "../../server/db";
-import { IKeyString } from "../../server/types";
 const conf = require("../../server/configuration/config.json");
 const apidocJson = require("../apidoc.json");
 export const identification = { "username": conf["test"]["test"].pg_user, "password": conf["test"]["test"].pg_password };
@@ -33,7 +32,7 @@ export interface IApiInput {
     apiDescription: string;
     apiReference?: string;
     apiPermission?: string;
-    apiExample?: IKeyString;
+    apiExample?: {[key: string]: string};
     apiError?: string[];
     apiParam?: string[];
     apiSuccess?: string[];
@@ -98,7 +97,7 @@ export interface IApiDoc {
     apiParam?: string[];
     apiError?: string[];
     apiSuccess?: string[];
-    apiExample?: IKeyString;
+    apiExample?: {[key: string]: string};
     apiParamExample?: string;
     apiSuccessExample?: string;
     apiErrorExample?: string;

@@ -7,11 +7,8 @@
  */
 
  import { isGraph, _DBDATAS } from "../../../db/constants";
- import { getEntityName, goodName, removeQuotes } from "../../../helpers";
-import { returnFormats } from "../../../types";
+ import { getEntityName, goodName, removeQuotes, returnFormats } from "../../../helpers";
  import { PgVisitor } from "../PgVisitor";
- 
- 
  
  export function getColumnsList(tableName: string, main: PgVisitor, element: PgVisitor): string[] | undefined  {
      tableName = tableName.trim();

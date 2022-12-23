@@ -11,7 +11,7 @@ import { Knex } from "knex";
 import { isGraph, _DBDATAS } from "../constants";
 import { getEntityName, isModeDebug, removeQuotes } from "../../helpers/index";
 import {  message } from "../../logger";
-import { IReturnResult, IKeyValues } from "../../types";
+import { IReturnResult } from "../../types";
 import { createGraph, extractMessageError, knexQueryToSql, removeKeyFromUrl, verifyId } from "../helpers";
 import { _VOIDTABLE } from "../../constants";
 import { _CONFIGFILE } from "../../configuration";
@@ -37,7 +37,7 @@ export class Common {
     }
 
     // only for override
-    formatDataInput(input: IKeyValues[] | undefined): IKeyValues[] | undefined {
+    formatDataInput(input: Object | undefined): Object | undefined {
         return input;
     }
 
@@ -82,7 +82,7 @@ export class Common {
 
     // formatResult for graph and for observation request without Datastreams or MultiDatastreams
     formatResult = async (input: JSON): Promise<JSON | IGraphDatas> => {
-        message(true, "INFO", "formatResult", this.ctx._odata.resultFormat.name);
+        message(true, "INFO", "formatResult", this.ctx._odata.resultFormat);
         if (isGraph(this.ctx._odata)) {
             const entityName = getEntityName(this.ctx._odata.parentEntity ? this.ctx._odata.parentEntity : this.ctx._odata.entity);            
             let tempTitle  = "No Title"
@@ -171,7 +171,7 @@ export class Common {
             .catch((err: Error) => this.ctx.throw(400, { detail: err.message }));
     }
 
-    async add(dataInput: IKeyValues[] | undefined): Promise<IReturnResult | undefined> {
+    async add(dataInput: Object | undefined): Promise<IReturnResult | undefined> {
         message(true, "CLASS", this.constructor.name, "add");
 
         dataInput = this.formatDataInput(dataInput);
@@ -198,7 +198,7 @@ export class Common {
             });
     }
 
-    async update(idInput: bigint | string, dataInput: IKeyValues[] | undefined): Promise<IReturnResult | undefined> {
+    async update(idInput: bigint | string, dataInput: Object | undefined): Promise<IReturnResult | undefined> {
         message(true, "CLASS", this.constructor.name, "update");
 
         if (!dataInput) this.ctx.throw(400, { detail: "No data send for update" });

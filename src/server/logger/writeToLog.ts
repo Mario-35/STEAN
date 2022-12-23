@@ -11,10 +11,9 @@ import { getUserId } from "../helpers";
 import { db } from "../db";
 import { logDebug } from ".";
 import { _CONFIGFILE } from "../configuration";
-import { IKeyValue } from "../types";
 import { _DBDATAS } from "../db/constants";
 
-export const writeToLog = async (ctx: koa.Context, error?: IKeyValue): Promise<void> => {
+export const writeToLog = async (ctx: koa.Context, error?: Object): Promise<void> => {
     if (ctx.method !== "GET" ) {  
         const req = {
             "method" : ctx.method,

@@ -11,7 +11,7 @@ import koa from "koa";
 import { Common } from "./common";
 import { _DBDATAS } from "../constants";
 import { message } from "../../logger";
-import { IKeyValues, IReturnResult } from "../../types";
+import { IReturnResult } from "../../types";
 import { addToConfig, _CONFIGFILE } from "../../configuration";
 import { hidePasswordInJson } from "../../helpers";
 import { db } from "../../db";
@@ -38,7 +38,7 @@ import { Rights } from "../../types/user";
         } else this.ctx.throw(401);
      }
 
-     async add(dataInput: IKeyValues[] | undefined): Promise<IReturnResult | undefined> {
+     async add(dataInput: Object | undefined): Promise<IReturnResult | undefined> {
         message(true, "OVERRIDE", this.constructor.name, "add");
 
         if (!dataInput) return;

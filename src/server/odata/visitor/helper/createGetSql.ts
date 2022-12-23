@@ -8,7 +8,7 @@
 
 import { createQuerySelectString, queryAsDataArray, queryAsJson } from ".";
 import { isGraph, _DBDATAS } from "../../../db/constants";
-import { returnFormats } from "../../../types";
+import { returnFormats } from "../../../helpers";
 import { PgVisitor } from "../PgVisitor";
 
  export function createGetSql(main: PgVisitor): string {   

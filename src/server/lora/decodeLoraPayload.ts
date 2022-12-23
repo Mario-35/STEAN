@@ -11,11 +11,10 @@
 import { Knex } from "knex";
 import { _DBDATAS } from "../db/constants";
 import { logDebug } from "../logger";
-import { IKeyString } from "../types";
 import { IDecoderInfos, IDecoderInfosMessage } from "./types";
 import util from "util";
 
-const nomenclature: IKeyString = {
+const nomenclature: {[key: string]: string} = {
     "voltage": "battery voltage",
     "period": "periods",
     "0110": "air temperature",
@@ -28,8 +27,8 @@ const nomenclature: IKeyString = {
     "0710": "soil moisture"
 };
 
-export const decodeLoraPayload = async (knexInstance: Knex | Knex.Transaction, loraDeveui: string, input: string): Promise<IKeyString> => {
-    const returnValue: IKeyString = {};
+export const decodeLoraPayload = async (knexInstance: Knex | Knex.Transaction, loraDeveui: string, input: string): Promise<{[key: string]: string}> => {
+    const returnValue: {[key: string]: string} = {};
     const temp = decoder(input.match(/.{1,2}/g));    
     if (temp.valid == true) {
         temp.messages.forEach((elem: IDecoderInfosMessage) => {

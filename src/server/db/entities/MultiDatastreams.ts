@@ -10,14 +10,13 @@ import { Knex } from "knex";
 import koa from "koa";
 import { message } from "../../logger";
 import { Common } from "./common";
-import { IKeyValues } from "../../types";
 
 export class MultiDatastreams extends Common {
     constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
         super(ctx, knexInstance);
     }
 
-    formatDataInput(input: IKeyValues[] | undefined): IKeyValues[] | undefined {
+    formatDataInput(input: Object | undefined): Object | undefined {
         message(true, "HEAD", `class ${this.constructor.name} override formatDataInput`);
         if (!input)
             this.ctx.throw(400, {

@@ -13,7 +13,7 @@ import { Common } from "../entities/common";
 import koa from "koa";
 import { db } from "../../db";
 import { message } from "../../logger";
-import { IKeyValues, IReturnResult } from "../../types";
+import { IReturnResult } from "../../types";
 import { recordToKeyValue } from "../helpers";
 import { getEntityName } from "../../helpers";
 
@@ -32,7 +32,7 @@ export class apiAccess implements DataAccessInterface {
         } else message(true, "ERROR", `Entity Error : ${entityName}`);
     }
 
-    formatDataInput(input: IKeyValues[] | undefined): IKeyValues[] | undefined {
+    formatDataInput(input: Object | undefined): Object | undefined {
         message(true, "CLASS", this.constructor.name, "formatDataInput");
         return this.myEntity ? this.myEntity.formatDataInput(input) : input;
     }

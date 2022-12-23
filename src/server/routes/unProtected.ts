@@ -9,10 +9,10 @@
 import Router from "koa-router";
 import { apiAccess, userAccess } from "../db/dataAccess";
 import { _DBDATAS } from "../db/constants";
-import { ConfigCtx } from "../helpers";
+import { ConfigCtx, returnFormats } from "../helpers";
 import fs from "fs";
 import { message } from "../logger";
-import { IKeyValues, IReturnResult, returnFormats } from "../types";
+import { IReturnResult } from "../types";
 import { _APIVERSION } from "../constants";
 import { queryHtmlPage } from "../views/query";
 import { CreateHtmlView, createIqueryFromContext,  } from "../views/helpers/";
@@ -168,14 +168,14 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
                 if (ctx._odata.entity && Number(ctx._odata.id) === 0) {
                     const returnValue = await objectAccess.getAll();
                     if (returnValue) {
-                        const datas = ctx._odata.resultFormat.name === "json" ? {
+                        const datas = ctx._odata.resultFormat === returnFormats.json ? {
                             "@iot.count": returnValue.id?.toString(),
                             "@iot.nextLink": returnValue.nextLink,
                             "@iot.prevLink": returnValue.prevLink,
                             value: returnValue.body
-                        } as IKeyValues : returnValue.body;
+                        } as Object : returnValue.body;
                         ctx.type = ctx._odata.resultFormat.type;
-                        ctx.body = ctx._odata.resultFormat.format(datas as IKeyValues, ctx);
+                        ctx.body = ctx._odata.resultFormat.format(datas as Object, ctx);
                     } else ctx.throw(404);
                 } else if ( (ctx._odata.id && typeof ctx._odata.id == "bigint" && ctx._odata.id > 0) || (typeof ctx._odata.id == "string" && ctx._odata.id != "") ) {
                     const returnValue: IReturnResult | undefined = await objectAccess.getSingle(ctx._odata.id);

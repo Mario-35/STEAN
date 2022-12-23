@@ -11,9 +11,9 @@
 import { Knex } from "knex";
 import { _CONFIGFILE } from "../configuration";
 import { _ENV_VERSION } from "../constants";
-import { getEntityName } from "../helpers";
+import { getEntityName, returnFormats } from "../helpers";
 import { PgVisitor } from "../odata";
-import {  IEntity, returnFormats } from "../types";
+import {  IEntity } from "../types";
 import { RELATIONS } from "../types/entity";
 
 export const isSingular = (input: string): boolean => {

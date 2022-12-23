@@ -6,7 +6,6 @@
  *
  */
 
-import { IKeyString } from ".";
 
 export interface IEntityColumnForm {
         readonly type: string;
@@ -52,7 +51,7 @@ export interface IEntity {
     readonly columns: IEntityColumn;
     readonly admin: boolean;
     readonly relations: { [key: string]: IEntityRelation };
-    readonly constraints?: IKeyString;
-    readonly indexes?: IKeyString;
+    readonly constraints?: {[key: string]: string};
+    readonly indexes?: {[key: string]: string};
     readonly after?: string;
 }

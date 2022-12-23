@@ -6,10 +6,9 @@
  *
  */
 
-import { IKeyValues } from "../../types";
 
-export const recordToKeyValue = (input: string | Record<string, unknown>): IKeyValues[] => {
-    const returnValue: IKeyValues[] = [];
+export const recordToKeyValue = (input: string | Record<string, unknown>): Object => {
+    const returnValue: Object = [];
     if (typeof input == "object") {
         for (const [key, value] of Object.entries(input)) returnValue[key] = value;
     }

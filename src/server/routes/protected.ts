@@ -9,12 +9,12 @@
 import Router from "koa-router";
 import { apiAccess, userAccess } from "../db/dataAccess";
 import { _DBDATAS } from "../db/constants";
-import { upload } from "../helpers";
+import { returnFormats, upload } from "../helpers";
 import fs from "fs";
 import koa from "koa";
 import { checkPassword, emailIsValid, testRoutes } from "./helpers";
 import { message } from "../logger";
-import { IConfigFile, IKeyString, IReturnResult, returnFormats } from "../types";
+import { IConfigFile, IReturnResult } from "../types";
 import { DefaultState, Context } from "koa";
 
 import { db } from "../db";
@@ -51,7 +51,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
         case "REGISTER":
             const body = ctx.request.body;
             const isObject = typeof body != "string";
-            const why: IKeyString = {};
+            const why: {[key: string]: string} = {};
             // Username
             if (isObject && body["username"].trim() === "") {
                 why["username"] = "Empty username";
@@ -138,7 +138,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
             } else ctx.throw(400);
         } else if (ctx.request.type.startsWith("multipart/form-data")) {
             // If upload datas
-            const getDatas = async (): Promise<IKeyString> => {
+            const getDatas = async (): Promise<{[key: string]: string}> => {
                 message(true, "HEAD", "getDatas ...");
                 return new Promise(async (resolve, reject) => {
                     await upload(ctx)

@@ -5,6 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
+
 export interface IConfigFile {
     name: string; // item of the config file
     key?: string; // key for crypto

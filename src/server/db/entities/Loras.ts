@@ -14,7 +14,7 @@
  import { _DOUBLEQUOTE, _QUOTEDCOMA, _VOIDTABLE } from "../../constants";
  import { message } from "../../logger";
  import { decodeLoraPayload } from "../../lora";
- import { IKeyValues, IReturnResult } from "../../types";
+ import { IReturnResult } from "../../types";
  
  export class Loras extends Common {
      constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
@@ -26,7 +26,7 @@
          return temp[0].concat(_DOUBLEQUOTE, input.join(`"${temp[1]}${temp[0]}"`), _DOUBLEQUOTE, temp[1]);
      }
  
-     async add(dataInput: IKeyValues[], silent?: boolean): Promise<IReturnResult | undefined> {
+     async add(dataInput: Object, silent?: boolean): Promise<IReturnResult | undefined> {
         message(true, "OVERRIDE", this.constructor.name, "add");
         // const duplicate = async (idInput: bigint ): Promise<IReturnResult | undefined> => {
         //         message(true, "CLASS", this.constructor.name, "Duplicate");
@@ -270,7 +270,7 @@
              });
      }
  
-     async update(idInput: bigint | string, dataInput: IKeyValues[] | undefined): Promise<IReturnResult | undefined> {
+     async update(idInput: bigint | string, dataInput: Object | undefined): Promise<IReturnResult | undefined> {
          message(true, "OVERRIDE", this.constructor.name, "update");
          return undefined;
      }
