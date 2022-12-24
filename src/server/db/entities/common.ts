@@ -32,8 +32,7 @@ export class Common {
         if (knexInstance) Common.dbContext = knexInstance;
 
         this.nextLinkBase = removeKeyFromUrl(`${this.ctx._odata.options.rootBase}${this.ctx.href.split(`${ctx._version}/`)[1]}`, ["top", "skip"]);
-        this.linkBase = `${this.ctx._odata.options.rootBase}${this.constructor.name}`;        
-        
+        this.linkBase = `${this.ctx._odata.options.rootBase}${this.constructor.name}`;           
     }
 
     // only for override
@@ -122,7 +121,6 @@ export class Common {
             .raw(sql)
             .then(async (res: any) => {    
                 const nb = Number(res.rows[0].count);
-
                 if (nb > 0 && res.rows[0]) {                    
                     return this.createReturnResult({
                         id: isNaN(nb) ? undefined : nb,

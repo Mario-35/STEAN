@@ -23,22 +23,14 @@ import { hidePasswordInJson } from "../../helpers";
 
      async getAll(): Promise<IReturnResult | undefined> {
         message(true, "CLASS", this.constructor.name, `getAll in ${this.ctx._odata.resultFormat} format`);
-
-        const temp = this.ctx._configName === 'admin' ? _CONFIGFILE :_CONFIGFILE[this.ctx._configName];
-        hidePasswordInJson(temp);
-        
-        return this.createReturnResult({
-            body: temp,
-        });       
+        return this.createReturnResult({ body: hidePasswordInJson(this.ctx._configName === 'admin' ? _CONFIGFILE :_CONFIGFILE[this.ctx._configName]) });       
      }
 
      async add(dataInput: Object | undefined): Promise<IReturnResult | undefined> {
         message(true, "OVERRIDE", this.constructor.name, "add");
 
         if (!dataInput) return;
-        return this.createReturnResult({
-            body: addToConfig(dataInput),
-        });
+        return this.createReturnResult({ body: addToConfig(dataInput), });
     }
 
 

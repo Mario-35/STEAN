@@ -49,10 +49,18 @@ function readFile(path) {
   }
 }
 
+function deleteFileSync(path) {
+    try {
+      fs.unlinkSync(path)
+      //file removed
+    } catch(err) {
+      console.error(err)
+    }
+}
+
 function copyFileSync( source, target ) {
-
+  if (source.endsWith(".ts")) return;
     var targetFile = target;
-
     // If target is a directory, a new file with the same name will be created
     if ( fs.existsSync( target ) ) {
         if ( fs.lstatSync( target ).isDirectory() ) {
@@ -65,7 +73,6 @@ function copyFileSync( source, target ) {
 
 function copyFolderRecursiveSync( source, target ) {
     var files = [];
-
     // Check if folder needs to be created or integrated
     var targetFolder = path.join( target, path.basename( source ) );
     if ( !fs.existsSync( targetFolder ) ) {
@@ -135,6 +142,7 @@ function ugly (dirPath, options) {
   
   // minify each file individually
   files.forEach(function (fileName) {
+
     options.output = isEmpty(options.output) ? "_out_" : options.output;
     var newName = path.join(options.output, path.dirname(fileName), path.basename(fileName, path.extname(fileName))) + options.extension;
     var originalCode = readFile(path.join(dirPath, fileName));
@@ -145,7 +153,10 @@ function ugly (dirPath, options) {
       options: options,options,
     }).then(function(min) {
       writeFile(newName, min);
-    });
+      console.log(`\x1b[36m ugly File \x1b[33m ${fileName}\x1b[32m OK\x1b[0m`);
+    }).catch(function(e) {
+      console.log(e);
+    })
    });
 }
 
@@ -176,64 +187,67 @@ const packageJson = require("./package.json");
 delete packageJson.scripts;
 delete packageJson.devDependencies;
 delete packageJson.apidoc;
-fs.writeFileSync("build/package.json", JSON.stringify(packageJson, null, 2), {
+fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
     encoding: "utf-8"
-});
-
-if (process.argv.includes("ugly")) {
-  ugly("./build/apidoc", {
-    compressor: htmlMinifier ,
-    output: "build/apidoc",
-    extension: ".html",
-    patterns: ["**/*.html"],
-    options: {
-      removeAttributeQuotes: true,
-      collapseInlineTagWhitespace: true,
-      minifyCSS: true,
-      minifyJS: true,
-      removeComments: true
-    }
+},function (err) {
+  if (!process.argv.includes("dev")) {
+    // ugly("./build/", {
+    //   compressor: htmlMinifier ,
+    //   output: "build/",
+    //   extension: ".html",
+    //   patterns: ["**/*.html"],
+    //   options: {
+    //     removeAttributeQuotes: true,
+    //     collapseInlineTagWhitespace: true,
+    //     minifyCSS: true,
+    //     minifyJS: true,
+    //     removeComments: true
+    //   }
+    // });
+  
+    // ugly("./build/", {
+    //   compressor: jsonminify ,
+    //   output: "build/apidoc",
+    //   extension: ".json",
+    //   patterns: ["**/*.json"],
+    //     options: {
+    //     removeAttributeQuotes: true,
+    //     collapseInlineTagWhitespace: true,
+    //     removeComments: true
+    //   }
+    // });
+  
+    ugly("./build/", {
+      compressor: cleanCSS ,
+      output: "build/",
+      extension: ".css",
+      patterns: ["**/*.css"],
+        options: {
+        removeAttributeQuotes: true,
+        collapseInlineTagWhitespace: true,
+        removeComments: true
+      }
+    });
+  
+    uglyJs("./build");
+  }
+  // delete datademo
+  deleteFileSync("./build/db/createDBDatas/datasDemo.js");
+  try {
+    const temp =  fs.readFileSync(path.join("./src/server/configuration/", "config.json"), "utf-8");
+    const input = JSON.parse(temp);
+    const retValue = input["production"];
+    fs.writeFileSync("build/configuration/config.json", JSON.stringify(retValue, null, 2), {
+        encoding: "utf-8"
+    });
+    console.log("\x1b[36m configuration \x1b[34m : \x1b[37m Ok\x1b[0m");
+  } catch (error) {
+    console.log("\x1b[31m configuration \x1b[34m : \x1b[37m not write\x1b[0m");
+  }
+  
+  zipDirectory("./build", "dist.zip").then(function (e) {
+    console.log("\x1b[36m compression \x1b[34m : \x1b[37m dist.zip\x1b[0m");
   });
+  
+})
 
-  ugly("./build/apidoc", {
-    compressor: jsonminify ,
-    output: "build/apidoc",
-    extension: ".json",
-    patterns: ["**/*.json"],
-      options: {
-      removeAttributeQuotes: true,
-      collapseInlineTagWhitespace: true,
-      removeComments: true
-    }
-  });
-
-  ugly("./build/apidoc", {
-    compressor: cleanCSS ,
-    output: "build/apidoc",
-    extension: ".css",
-    patterns: ["**/*.css"],
-      options: {
-      removeAttributeQuotes: true,
-      collapseInlineTagWhitespace: true,
-      removeComments: true
-    }
-  });
-
-  uglyJs("./build");
-}
-
-try {
-  const temp =  fs.readFileSync(path.join("./src/server/configuration/", "config.json"), "utf-8");
-  const input = JSON.parse(temp);
-  const retValue = input["production"];
-  fs.writeFileSync("build/configuration/config.json", JSON.stringify(retValue, null, 2), {
-      encoding: "utf-8"
-  });
-  console.log("\x1b[36m configuration \x1b[34m : \x1b[37m Ok\x1b[0m");
-} catch (error) {
-  console.log("\x1b[31m configuration \x1b[34m : \x1b[37m not write\x1b[0m");
-}
-
-zipDirectory("./build", "dist.zip").then(function (e) {
-  console.log("\x1b[36m compression \x1b[34m : \x1b[37m dist.zip\x1b[0m");
-});

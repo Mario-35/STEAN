@@ -112,22 +112,6 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
                             returnValue.push(`RETURNING ${postEntity.table == queryMaker[element].table ? allFields : queryMaker[element].keyId})`);
                         }
                     });
-
-
-
-        //             const returnQueryMaker = QueryMaker(main);
-        //             const myQuery = returnQueryMaker.createQuery({
-        //                 mainEntity: postEntity,
-        //                 subInput: undefined,
-        //     main.id: undefined,
-        //     propertyName: undefined,
-        //     onlyReferences: false,
-        //     oDatas: main
-        // });
-        // if (myQuery) returnQueryMaker.addToQuery("main", myQuery);
-        
-        // returnValue.push(returnQueryMaker.createGetQuery(false));
-        
         // format object quotes
         return returnValue.join("\n").replace(/\'@/g, "").replace(/\@'/g, "");
     };

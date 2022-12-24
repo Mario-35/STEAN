@@ -15,10 +15,13 @@ import { cssFile } from "../views/css";
 import { jsFile } from "../views/js";
 import util from "util";
 
+
+const defaultFunction = (input: string | Object, ctx?: koa.Context) => input;
+
 const _returnFormats: { [key in FORMATS]: IreturnFormat } = {
     json: {
       type: "application/json",
-      format :(input: string | Object, ctx?: koa.Context) => input
+      format : defaultFunction
     },
     graph: {
       type: "text/html;charset=utf8",
@@ -49,11 +52,11 @@ const _returnFormats: { [key in FORMATS]: IreturnFormat } = {
     },
     graphDatas: {
       type: "application/json",
-      format :(input: string | Object, ctx?: koa.Context) => input
+      format : defaultFunction
     },
     dataArray: {
       type: "application/json",
-      format :(input: string | Object, ctx?: koa.Context) => input
+      format : defaultFunction
     },
     csv: {
       type: "text/csv",
@@ -79,35 +82,35 @@ const _returnFormats: { [key in FORMATS]: IreturnFormat } = {
     },
     html: {
       type: "text/html;charset=utf8",
-      format :(input: string | Object, ctx?: koa.Context) => input
+      format : defaultFunction
     },
     css: {
       type: "text/css;charset=utf8",
-      format :(input: string | Object, ctx?: koa.Context) => input
+      format : defaultFunction
     },
     js: {
       type: "application/javascript;charset=utf8",
-      format :(input: string | Object, ctx?: koa.Context) => input
+      format : defaultFunction
     },
     png: {
       type: "image/png",
-      format :(input: string | Object, ctx?: koa.Context) => input
+      format : defaultFunction
     },
     jpeg: {
       type: "image/jpeg",
-      format :(input: string | Object, ctx?: koa.Context) => input
+      format : defaultFunction
     },
     jpg: {
       type: "image/jpeg",
-      format :(input: string | Object, ctx?: koa.Context) => input
+      format : defaultFunction
     },
     icon: {
       type: "image/x-icon",
-      format :(input: string | Object, ctx?: koa.Context) => input
+      format : defaultFunction
     },
     ico: {
       type: "image/x-icon",
-      format :(input: string | Object, ctx?: koa.Context) => input
+      format : defaultFunction
     }
 };
 

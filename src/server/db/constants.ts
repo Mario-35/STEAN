@@ -31,7 +31,29 @@ export const getDateNow = async (conn: Knex | Knex.Transaction): Promise<string>
 const makeIDAlias = (table: string) => `"${table}"."id" AS "@iot.id"`;
 const _DATEFORMAT = 'YYYY-MM-DD"T"HH24:MI:SSZ';
 
-export const _DBDATAS: { [key: string]: IEntity } = {
+enum ENTITIES {    
+    Things = 'Things' ,
+    FeaturesOfInterest = 'FeaturesOfInterest' ,
+    Locations = 'Locations' ,
+    HistoricalLocations = 'HistoricalLocations' ,
+    locationsHistoricalLocations = 'locationsHistoricalLocations' ,
+    ObservedProperties = 'ObservedProperties' ,
+    Sensors = 'Sensors' ,
+    Datastreams = 'Datastreams' ,
+    MultiDatastreams = 'MultiDatastreams' ,
+    MultiDatastreamObservedProperties = 'MultiDatastreamObservedProperties' ,
+    Observations = 'Observations' ,
+    HistoricalObservations = 'HistoricalObservations' ,
+    ThingsLocations = 'ThingsLocations' ,
+    Decoders = 'Decoders' ,
+    Loras = 'Loras' ,
+    CreateObservations = 'CreateObservations' ,
+    Logs = 'Logs',
+    Users = 'Users',
+    Configs= 'Configs',
+}
+
+const DBDATAS: { [key in ENTITIES]: IEntity } = {
     Things: {
         name: "Things",
         singular: "Thing",
@@ -1316,38 +1338,6 @@ export const _DBDATAS: { [key: string]: IEntity } = {
     },    
 };
 
+export const _ENTITIES = Object.values(ENTITIES);
+export const _DBDATAS = Object.freeze(DBDATAS);
 export const _DBADMIN = Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === true));
-
-export const _POSGRESTOJS:{[key:string]: string} = {
-    "timestamptz": "timestamp",
-    "text": "text",
-    "bigint": "bigint",
-    "jsonb": "jsonb",
-    "text[]": "array",
-    "float8[]": "array",
-    "bigint[]": "array",
-    "geometry": "user-defined",
-    "float8": "double",
-}
-
-export type _ENTITIES =
-    'Things' |
-    'FeaturesOfInterest' |
-    'Locations' |
-    'HistoricalLocations' |
-    'locationsHistoricalLocations' |
-    'ObservedProperties' |
-    'Sensors' |
-    'Datastreams' |
-    'MultiDatastreams' |
-    'MultiDatastreamObservedProperties' |
-    'Observations' |
-    'HistoricalObservations' |
-    'ThingsLocations' |
-    'Decoders' |
-    'Loras' |
-    'CreateObservations' |
-    'Logs'|
-    'Configs';
-
-
