@@ -24,7 +24,7 @@
      // different config in different environment
      if(input.hasOwnProperty(_NODE_ENV)) input = input[_NODE_ENV];
  
-     Object.keys(input).forEach((element: string) => (returnValue[element] = formatConfig(input[element], element)));
+     Object.keys(input).forEach((element: string) => (returnValue[element] = formatConfig(input[element], element)));     
  
      return returnValue;
  };

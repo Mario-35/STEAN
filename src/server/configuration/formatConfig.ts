@@ -9,10 +9,12 @@
 import { IConfigFile } from "../types";
 import util from "util";
 import { _APIVERSION } from "../constants";
+import { decrypt } from "../helpers";
 
 export function formatConfig(input: JSON, name?: string): IConfigFile {
+    Object.keys(input).forEach(e => {input[e] = decrypt(input[e])})
     const returnValue = {
-        name: name ? name : input["pg_database"] || "ERROR",
+        name: name ? name : decrypt(input["pg_database"]) || "ERROR",
         port: input["port"] ? +input["port"] : -1,
         pg_host: input["pg_host"] || "ERROR",
         pg_port: input["pg_port"] ? +input["pg_port"] : 5432,

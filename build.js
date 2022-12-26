@@ -13,6 +13,9 @@ var fs = require("graceful-fs");
 var mkdirp = require("mkdirp");
 
 var archiver = require("archiver");
+var crypto = require("crypto");
+
+console.log(`\x1b[32m =========================== \x1b[36m Start \x1b[32m =========================== \x1b[0m`);
 
 
 const encrypt = (text, key) => {
@@ -20,17 +23,6 @@ const encrypt = (text, key) => {
     const cipher = crypto.createCipheriv("aes-256-ctr", String(key), iv);
     const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
     return `${iv.toString("hex")}.${encrypted.toString("hex")}`;
-};
-
-var defaultOptions = {
-  comments: true,
-  output: "js",
-  extension: ".js",
-  patterns: ["**/*.js"],
-  configFile: null,
-  callback: null,
-  logLevel: "info",
-  removeAttributeQuotes: true
 };
 
 function isEmpty(str) {
@@ -102,7 +94,6 @@ function writeFile(filePath, code) {
         console.error("Error: " + err);
         return;
       }
-      console.log(`\x1b[36m File \x1b[33m ${filePath}\x1b[32m written successfully !\x1b[0m`);
     });
   })
   .catch(function (err) {
@@ -128,13 +119,17 @@ function zipDirectory(source, out) {
 }
 
 function ugly (dirPath, options) {
-  options = extend({}, defaultOptions, options);
-  var state = {
-    processCounter: 0,
-    logLevel: options.logLevel,
-    callback: options.callback
-  };
-  
+  options = extend({}, {
+    comments: true,
+    output: "js",
+    extension: ".js",
+    patterns: ["**/*.js"],
+    configFile: null,
+    callback: null,
+    logLevel: "info",
+    removeAttributeQuotes: true
+  }, options);
+    
   // grab and minify all the js files
   var files = globby.sync(options.patterns, {
     cwd: dirPath
@@ -153,9 +148,9 @@ function ugly (dirPath, options) {
       options: options,options,
     }).then(function(min) {
       writeFile(newName, min);
-      console.log(`\x1b[36m ugly File \x1b[33m ${fileName}\x1b[32m OK\x1b[0m`);
     }).catch(function(e) {
-      console.log(e);
+      console.log(`\x1b[31m Error \x1b[34m : \x1b[33m ${e}\x1b[0m`);
+
     })
    });
 }
@@ -190,33 +185,7 @@ delete packageJson.apidoc;
 fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
     encoding: "utf-8"
 },function (err) {
-  if (!process.argv.includes("dev")) {
-    // ugly("./build/", {
-    //   compressor: htmlMinifier ,
-    //   output: "build/",
-    //   extension: ".html",
-    //   patterns: ["**/*.html"],
-    //   options: {
-    //     removeAttributeQuotes: true,
-    //     collapseInlineTagWhitespace: true,
-    //     minifyCSS: true,
-    //     minifyJS: true,
-    //     removeComments: true
-    //   }
-    // });
-  
-    // ugly("./build/", {
-    //   compressor: jsonminify ,
-    //   output: "build/apidoc",
-    //   extension: ".json",
-    //   patterns: ["**/*.json"],
-    //     options: {
-    //     removeAttributeQuotes: true,
-    //     collapseInlineTagWhitespace: true,
-    //     removeComments: true
-    //   }
-    // });
-  
+  if (!process.argv.includes("dev")) {  
     ugly("./build/", {
       compressor: cleanCSS ,
       output: "build/",
@@ -234,14 +203,22 @@ fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
   // delete datademo
   deleteFileSync("./build/db/createDBDatas/datasDemo.js");
   try {
-    const temp =  fs.readFileSync(path.join("./src/server/configuration/", "config.json"), "utf-8");
+    const temp =  fs.readFileSync(path.join("./src/server/configuration/", "_config.json"), "utf-8");
+    const key =  fs.readFileSync(path.join("./src/server/configuration/", ".key"), "utf-8");
     const input = JSON.parse(temp);
-    const retValue = input["production"];
-    fs.writeFileSync("build/configuration/config.json", JSON.stringify(retValue, null, 2), {
+    const what = "production";
+    Object.keys(input[what]).forEach(e => {
+      Object.keys(input[what][e]).forEach(r => {
+        input[what][e][r] = encrypt(String(input[what][e][r]), key);
+      })
+    })
+    console.log(input[what]);
+    fs.writeFileSync("build/configuration/config.json", JSON.stringify(input[what], null, 2), {
         encoding: "utf-8"
     });
     console.log("\x1b[36m configuration \x1b[34m : \x1b[37m Ok\x1b[0m");
   } catch (error) {
+    console.log(error);
     console.log("\x1b[31m configuration \x1b[34m : \x1b[37m not write\x1b[0m");
   }
   

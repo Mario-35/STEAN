@@ -57,7 +57,7 @@ export const message = (
             break;
         }
         case "OVERRIDE": {
-            if (info) console.log(`\x1b[31m ==== \x1b[32m ${cle} \x1b[33m ${info} \x1b[31m ====\x1b[0m`);
+            if (info) console.log(`\x1b[31m ==== \x1b[32m ${cle} [OVERRIDE]\x1b[33m ${info} \x1b[31m ====\x1b[0m`);
             else console.log(`\x1b[31m ==== \x1b[36m ${cle} \x1b[31m ====\x1b[0m`);
             break;
         }
