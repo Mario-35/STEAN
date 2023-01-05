@@ -4,6 +4,11 @@
 
 ![Inrae](https://raw.githubusercontent.com/Mario-35/STEAN/main/doc/assets/inrae.png "Inrae")
 
+## Want to use this with docker
+![Docker](https://raw.githubusercontent.com/Mario-35/STEAN/main/doc/assets/docker.png "Docker")
+
+
+
 ## Want to use this project?
 
 1. Fork/Clone
