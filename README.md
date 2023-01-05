@@ -70,9 +70,10 @@ For views a little :
  ┃ ┃ ┣ 📂createDBDatas // datas to create blank Database
  ┃ ┃ ┣ 📂dataAccess
  ┃ ┃ ┣ 📂entities // SensorThings entities
- ┃ ┃ ┣ 📂helpers
+ ┃ ┃ ┣ 📂helpers 
  ┃ ┃ ┣ 📂interfaces
- ┃ ┃ ┗ 📜constants.ts // Constants for DB
+ ┃ ┃ ┣ 📜constants.ts // Constants for DB
+ ┃ ┃ ┗ 📜index.ts // connections DB
  ┃ ┣ 📂helpers // Application helpers
  ┃ ┣ 📂logger // Logs tools
  ┃ ┣ 📂lora // Specific lora entity
@@ -86,16 +87,12 @@ For views a little :
  ┃ ┃ ┣ 📜protected.ts // protected routes
  ┃ ┃ ┗ 📜unProtected.ts // open routes
  ┃ ┣ 📂types // data types
- ┃ ┣ 📂views // generated views
- ┃ ┃ ┣ 📂admin // admin pages
+ ┃ ┣ 📂views // generated view
  ┃ ┃ ┣ 📂css // CsS filse
- ┃ ┃ ┣ 📂graph // graph views
  ┃ ┃ ┣ 📂helpers
  ┃ ┃ ┣ 📂js // JS filse
- ┃ ┃ ┣ 📂maker // Query maker
  ┃ ┃ ┗ 📂query // Query view
  ┃ ┣ 📜constants.ts // App constants
- ┃ ┣ 📜db.ts // DB connection(s)
  ┃ ┗ 📜index.ts // starting file
  ┣ 📂template // ApiDoc template
  ┣ 📂test
