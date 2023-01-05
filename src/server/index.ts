@@ -20,7 +20,6 @@ import {  userToken } from "./types";
 import serve from "koa-static";
 import path from "path";
 import compress from "koa-compress";
-// import { minifierConfig, helmetConfig, keyApp } from "./constants";
 import { helmetConfig, keyApp, _ENV_VERSION, _NODE_ENV } from "./constants";
 import { _DBDATAS } from "./db/constants";
 import { _CONFIGFILE } from "./configuration";
@@ -76,7 +75,7 @@ export const server = isTest()
       })
     : asyncForEach(
           Object.keys(_CONFIGFILE),
-          async (key: string, index: number) => {
+          async (key: string, index: number) => {            
               await isDbExist(key, true)
                   .then(async (res: boolean) => {                   
                         const port = _CONFIGFILE[key].port;
@@ -86,7 +85,6 @@ export const server = isTest()
                                     ports.push(port);
                                     message(false, "HEAD", "Server listening on port", port);
                                 });
-                            
                         }
                         if (res && !isTest()) logConnection(key);   
                   })

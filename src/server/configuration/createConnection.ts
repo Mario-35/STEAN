@@ -21,7 +21,9 @@ export const createConnection = (configName: string): IDbConnection => {
         user: _CONFIGFILE[configName]["pg_user"] || "ERROR",
         password: _CONFIGFILE[configName]["pg_password"] || "ERROR",
         database: _CONFIGFILE[configName]["pg_database"] || "ERROR",
-        port: _CONFIGFILE[configName]["pg_port"] ? +String(_CONFIGFILE[configName]["pg_port"]) : -1
+        port: _CONFIGFILE[configName]["pg_port"] ? +String(_CONFIGFILE[configName]["pg_port"]) : -1,
+        retry: +String(_CONFIGFILE[configName]["retry"])  || 2
+
     };
     if (Object.values(returnValue).includes("ERROR")) throw new TypeError(`Error in config file [${returnValue}]`);
     return returnValue;

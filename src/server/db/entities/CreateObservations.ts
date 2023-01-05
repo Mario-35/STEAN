@@ -93,7 +93,8 @@ export class CreateObservations extends Common {
                 user: _CONFIGFILE[this.ctx._configName].pg_user,
                 password: _CONFIGFILE[this.ctx._configName].pg_password,
                 database: _CONFIGFILE[this.ctx._configName].pg_database,
-                port: Number(_CONFIGFILE[this.ctx._configName].pg_port)
+                port: Number(_CONFIGFILE[this.ctx._configName].pg_port),
+                retry: Number(_CONFIGFILE[this.ctx._configName].retry)
             }).then((res) => {
                 total = res.length;
                 res.forEach((element: string) => returnValue.push(this.linkBase.replace("CreateObservations", "Observations") + "(" + element + ")"));

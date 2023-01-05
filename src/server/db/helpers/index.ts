@@ -9,7 +9,6 @@
 export { createDatabase } from "./createDatabase";
 export { createGraph } from "./createGraph";
 export { createTable } from "./createTable";
-export { dbSchemaList } from "./dbSchemaList";
 export { extractMessageError } from "./extractMessageError";
 export { getColumnsListType } from "./getColumnsListType";
 export { getConnection } from "./getConnection";
@@ -22,5 +21,6 @@ export { renameProp } from "./renameProp";
 export { testConnection } from "./testConnection";
 export { redoLog } from "./redoLog";
 export { verifyId } from "./verifyId";
+export { pgwait } from "./pgwait";
 // Class
 export { TimeSeries } from "./timeSeries";

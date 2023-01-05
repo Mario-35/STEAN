@@ -14,8 +14,8 @@ import { message } from "../../logger";
 import { IReturnResult } from "../../types";
 import { addToConfig, _CONFIGFILE } from "../../configuration";
 import { hidePasswordInJson } from "../../helpers";
-import { db } from "../../db";
 import { Rights } from "../../types/user";
+import { db } from "..";
 
  
  export class Users extends Common {

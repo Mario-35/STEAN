@@ -9,13 +9,12 @@
  import koa from "koa";
  import jsonwebtoken from "jsonwebtoken";
  import { userAccess } from "../db/dataAccess";
- import { db } from "../db";
  import { _DBADMIN } from "../db/constants";
  import { decrypt } from "../helpers/crypto";
  import { isTest } from "../helpers";
  import { keyApp } from "../constants";
  import { _CONFIGFILE } from "../configuration";
- import { getConnection } from "../db/helpers";
+import { db } from "../db";
  
  export interface IUser {
      id?: number; // integer
@@ -111,8 +110,8 @@
      if (ctx.request.body["username"] && ctx.request.body["password"]) {
          try {
              if (isTest()) {
-                 const tempConnection = getConnection("admin");
-                 if (tempConnection) db["admin"] = tempConnection;
+                //  const tempConnection = getConnection("admin");
+                //  if (tempConnection) getConnection("admin") = tempConnection;
              }
              return await db["admin"]
                  .table(_DBADMIN.Users.table)

@@ -8,9 +8,9 @@
 
 import { IUserDataAccess } from "../interfaces";
 import { IUser } from "../interfaces";
-import { db } from "../../db";
 import { _DBDATAS } from "../constants";
 import { encrypt } from "../../helpers/";
+import { db } from "..";
 
 export const userAccess: IUserDataAccess = {
     getAll: async () => {

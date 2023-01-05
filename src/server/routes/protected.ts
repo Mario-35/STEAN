@@ -16,8 +16,6 @@ import { checkPassword, emailIsValid, testRoutes } from "./helpers";
 import { message } from "../logger";
 import { IConfigFile, IReturnResult } from "../types";
 import { DefaultState, Context } from "koa";
-
-import { db } from "../db";
 import { CreateHtmlView } from "../views/helpers/CreateHtmlView";
 import { formatConfig } from "../configuration";
 import { loginUser, Rights } from "../types/user";
@@ -25,6 +23,7 @@ import { createIqueryFromContext } from "../views/helpers/";
 import { queryHtmlPage } from "../views/query";
 import { createDatabase, redoLog } from "../db/helpers";
 import { createOdata } from "../odata";
+import { db } from "../db";
 
 export const protectedRoutes = new Router<DefaultState, Context>();
 

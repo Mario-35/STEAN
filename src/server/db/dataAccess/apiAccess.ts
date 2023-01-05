@@ -11,11 +11,11 @@ import { DataAccessInterface } from "../interfaces";
 import * as entities from "../entities/index";
 import { Common } from "../entities/common";
 import koa from "koa";
-import { db } from "../../db";
 import { message } from "../../logger";
 import { IReturnResult } from "../../types";
-import { recordToKeyValue } from "../helpers";
+import {  recordToKeyValue } from "../helpers";
 import { getEntityName } from "../../helpers";
+import { db } from "..";
 
 export class apiAccess implements DataAccessInterface {
     readonly myEntity: Common | undefined;

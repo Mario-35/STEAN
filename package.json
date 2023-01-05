@@ -1,26 +1,23 @@
 {
-    "name": "inrae-sensorthing-api",
-    "description": "Sensorthing API for INRAE",
-    "version": "1.1.0",
+    "name": "STEAN",
+    "description": "SensorThings Enhanced API Node",
+    "version": "1.2.0",
     "lockfileVersion": 1,
     "requires": true,
     "repository": {
         "type": "git",
-        "url": "https://github.com/Mario-35/api-sensorthing"
+        "url": "https://github.com/Mario-35/STEAN"
     },
     "scripts": {
         "------DEV-----": "",
         "find-deadcode": "ts-prune",
-        "dev": "nodemon ./src/server/index.ts",
+        "dev": "nodemon --inspect ./src/server/index.ts",
         "debug": "nodemon",
-        "debug2": "node --inspect -r ts-node/register ./src/server/index.ts",
         "lint": "tsc --noEmit && eslint \"./src/server/**/*.{js,ts}\" --quiet --fix",
         "prettier-format": "prettier --config .prettierrc ./src/**/*.ts --write",
         "------BUILD-----": "",
-        "buildUgly": "npm run build-ts && node build.js ugly",
-        "buildUglyRem": "npm run build-ts && node build.js ugly && scp -r -p dist.zip madam@194.167.76.143:./",
-        "buildDemo": "npm run build-ts && node build.js && scp -r -p dist.zip madam@194.167.76.137:./",
-        "buildRem": "npm run build-ts && node build.js && scp -r -p dist.zip madam@194.167.76.143:./",
+        "buildDev": "npm run build-ts && node build.js dev",
+        "buildDocker": "npm run build-ts && node build.js docker && docker-compose up --build -d",
         "build": "npm run build-ts && node build.js",
         "build-ts": "rimraf ./build && tsc",
         "serve": "node build/index.js",
@@ -31,13 +28,13 @@
         "doc": "node bin/apidoc -v -i src/ -o apidoc/",
         "------Docker-------": "",
         "docker": "docker-compose up --build -d"
+        
     },
     "keywords": [],
     "author": "Adam Mario",
     "license": "ISC",
     "dependencies": {
         "@koa/cors": "^3.1.0",
-        "@types/html-minifier": "^4.0.2",
         "busboy": "^0.3.1",
         "cookie": "^0.5.0",
         "cookie-parser": "^1.4.6",
@@ -71,6 +68,7 @@
         "@types/chai": "^4.2.14",
         "@types/cookie": "^0.5.1",
         "@types/cookie-parser": "^1.4.3",
+        "@types/html-minifier-terser": "^7.0.0",
         "@types/json2csv": "^5.0.1",
         "@types/jsonwebtoken": "^8.5.8",
         "@types/koa": "^2.11.6",

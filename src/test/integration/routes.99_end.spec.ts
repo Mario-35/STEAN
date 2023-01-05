@@ -14,7 +14,7 @@ import { _DBDATAS } from "../../server/db/constants";
 
 describe("Delete test Database", function () {
     it("Destroy", async (done) => {
-        // await db["admin"].raw("DROP DATABASE test");
+        // await getConnection("admin"].raw("DROP DATABASE test");
         done();
     });
 });

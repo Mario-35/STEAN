@@ -6,44 +6,56 @@
  *
  */
 
-import { message } from "../../logger";
-import { _CONFIGFILE } from "../../configuration";
-import { getConnection } from "./getConnection";
-import { createDatabase } from ".";
+ import { message } from "../../logger";
+ import { createConnection, _CONFIGFILE } from "../../configuration";
+ import { createDatabase, pgwait } from ".";
+import { IDbConnection } from "../../types";
+import knex from "knex";
+ 
+ /**
+  * 
+  * @param connectName name of the connection
+  * @param create If not exist create or Not the DATABASE
+  * @returns 
+  */
+ 
+ export const isDbExist = async (connectName: string, create: boolean): Promise<boolean> => {
+    const connection: IDbConnection = createConnection(connectName);
 
-/**
- * 
- * @param connectName name of the connection
- * @param create If not exist create or Not the DATABASE
- * @returns 
- */
+    await pgwait(connection);
 
-export const isDbExist = async (connectName: string, create: boolean): Promise<boolean> => {
-    const tempConnection = getConnection(connectName);
-    message(false, "DEBUG", "connectName", `--- ${connectName} ---`);
-    if (!tempConnection) return false;
-    return await tempConnection
-        .raw("select 1+1 as result")
-        .then(async () => {
-            message(false, "INFO", "Database Found", _CONFIGFILE[connectName].pg_database);
-            tempConnection.destroy();
-            return true;
-        })
-        .catch(async (err: any) => {
-            let returnResult = false;
-            if (err.code == "3D000" && create == true) {
-                message(false, "DEBUG", "Try create DATABASE", _CONFIGFILE[connectName].pg_database);
-                returnResult = await createDatabase(connectName)
-                    .then(async () => {
-                        message(false, "INFO", "create DATABASE", "OK");
-                        return true;
-                    })
-                    .catch((err: Error) => {
-                        message(false, "ERROR", "create DATABASE", err.message);
-                        return false;
-                    });
-            }
-            tempConnection.destroy();
-            return returnResult;
-        });
-};
+    const tempConnection = knex({
+        client: "pg",
+        connection: connection,
+        pool: { min: 0, max: 7 },
+        debug: false
+    });
+    
+     message(false, "DEBUG", "connectName", `--- ${connectName} ---`);
+     if (!tempConnection) return false;
+     return await tempConnection
+         .raw("select 1+1 as result")
+         .then(async () => {
+             message(false, "INFO", "Database Found", _CONFIGFILE[connectName].pg_database);
+             tempConnection.destroy();
+             return true;
+         })
+         .catch(async (err: any) => {
+             let returnResult = false;
+             if (err.code == "3D000" && create == true) {
+                 message(false, "DEBUG", "Try create DATABASE", _CONFIGFILE[connectName].pg_database);
+                 returnResult = await createDatabase(connectName)
+                     .then(async () => {
+                         message(false, "INFO", "create DATABASE", "OK");
+                         return true;
+                     })
+                     .catch((err: Error) => {
+                         message(false, "ERROR", "create DATABASE", err.message);
+                         return false;
+                     });
+             }
+             tempConnection.destroy();
+             return returnResult;
+         });
+ };
+ 

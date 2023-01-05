@@ -21,6 +21,7 @@ export interface IConfigFile {
     webSiteDoc: string;
     nb_page: number;
     lineLimit: number;
+    retry: number;
     createUser?: boolean;
     forceHttps: boolean;
 }

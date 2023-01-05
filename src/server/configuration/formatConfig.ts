@@ -12,7 +12,7 @@ import { _APIVERSION } from "../constants";
 import { decrypt } from "../helpers";
 
 export function formatConfig(input: JSON, name?: string): IConfigFile {
-    Object.keys(input).forEach(e => {input[e] = decrypt(input[e])})
+    Object.keys(input).forEach((elem: string) => {input[elem] = decrypt(input[elem])});
     const returnValue = {
         name: name ? name : decrypt(input["pg_database"]) || "ERROR",
         port: input["port"] ? +input["port"] : -1,
@@ -27,7 +27,8 @@ export function formatConfig(input: JSON, name?: string): IConfigFile {
         nb_page: input["nb_page"] ? +input["nb_page"] : 200,
         lineLimit: input["lineLimit"] ? +input["lineLimit"] : 2000,
         seed: name === "test" ? true : input["seed"] || false,
-        forceHttps: input["forceHttps"] ? input["forceHttps"] : false
+        forceHttps: input["forceHttps"] ? input["forceHttps"] : false,
+        retry: input["retry"] ? +input["retry"] : 2
     };
     if (Object.values(returnValue).includes("ERROR"))
         throw new TypeError(`Error in config file [${util.inspect(returnValue, { showHidden: false, depth: null })}]`);

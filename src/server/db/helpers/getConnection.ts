@@ -17,5 +17,5 @@ export const getConnection = (configName: string): Knex<any, unknown[]> => {
         connection: connection,
         pool: { min: 0, max: 7 },
         debug: false
-    });
+    })
 };

@@ -10,16 +10,17 @@ import knex from "knex";
 import koa from "koa";
 import { createTable } from ".";
 import { _CONFIGFILE } from "../../configuration";
-import { db } from "../../db";
-import { asyncForEach } from "../../helpers";
-import { encrypt } from "../../helpers/";
+// import { db } from "../../db";
+import { asyncForEach, encrypt } from "../../helpers";
+// import { encrypt } from "../../helpers/";
 import { message } from "../../logger";
 import { _DBADMIN, _DBDATAS } from "../constants";
 import { IUser } from "../interfaces";
+// import { IUser } from "../interfaces";
 
  
  export const createAdminDatabase = async(configName: string, ctx?: koa.Context): Promise<{ [key: string]: string }> => {
-    message(true, "HEAD", "createAdminDatabase", "createDatabase");
+    message(false, "HEAD", "createAdminDatabase", "createDatabase");
 
     // init result
     const configFile = _CONFIGFILE[configName];
@@ -71,9 +72,20 @@ import { IUser } from "../interfaces";
             })
             .catch((err: Error) => err.message);
 
-    // create tables
+    // create tables    
     await asyncForEach(Object.keys(_DBADMIN), async (keyName: string) => {
-        await createTable(db["admin"], _DBADMIN[keyName], undefined);
+        await createTable(knex({
+            client: "pg",
+            connection: {
+                host: _CONFIGFILE["admin"]["pg_host"],
+                user: _CONFIGFILE["admin"]["pg_user"],
+                password: _CONFIGFILE["admin"]["pg_password"],
+                database: "admin",
+                port: _CONFIGFILE["admin"]["pg_port"] ? +String(_CONFIGFILE["admin"]["pg_port"]) : -1
+            },
+            pool: { min: 0, max: 7 },
+            debug: false
+        }), _DBADMIN[keyName], undefined);
     });
 
     // CREATE USER
@@ -90,7 +102,18 @@ import { IUser } from "../interfaces";
         admin: false
     };
 
-    await db["admin"].table("user").insert({
+    await knex({
+        client: "pg",
+        connection: {
+            host: _CONFIGFILE["admin"]["pg_host"],
+            user: _CONFIGFILE["admin"]["pg_user"],
+            password: _CONFIGFILE["admin"]["pg_password"],
+            database: "admin",
+            port: _CONFIGFILE["admin"]["pg_port"] ? +String(_CONFIGFILE["admin"]["pg_port"]) : -1
+        },
+        pool: { min: 0, max: 7 },
+        debug: false
+    }).table("user").insert({
         username: user.username,
         email: user.email,
         password: encrypt(user.password),

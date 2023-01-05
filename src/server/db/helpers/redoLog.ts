@@ -7,7 +7,7 @@
  */
 
 import koa from "koa";
-import { db } from "../../db";
+import { db } from "..";
 import { message } from "../../logger";
 import { _DBDATAS } from "../constants";
 

@@ -8,10 +8,10 @@
 
 import koa from "koa";
 import { getUserId } from "../helpers";
-import { db } from "../db";
 import { logDebug } from ".";
 import { _CONFIGFILE } from "../configuration";
 import { _DBDATAS } from "../db/constants";
+import { db } from "../db";
 
 export const writeToLog = async (ctx: koa.Context, error?: Object): Promise<void> => {
     if (ctx.method !== "GET" ) {  

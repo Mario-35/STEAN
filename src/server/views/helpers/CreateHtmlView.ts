@@ -254,8 +254,8 @@ export class CreateHtmlView {
 
     public infos = async (): Promise<string> => {
         // const temp = statsDatabase(this.ctx._configName);
-        // const res = await db[this.ctx._configName].raw(temp.tables).then((res) => res.rows[0]);
-        // const admin = await db["admin"].raw(temp.admin).then((res) => res.rows[0]);
+        // const res = await getConnection(this.ctx._configName].raw(temp.tables).then((res) => res.rows[0]);
+        // const admin = await getConnection("admin"].raw(temp.admin).then((res) => res.rows[0]);
 
         // const fillTable = (): string => {
         //     const returnValue: string[] = [`<tr><td>${this.ctx._linkBase}</td><td>${this.ctx._configName}</td></tr>`];

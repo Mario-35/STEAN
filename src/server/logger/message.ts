@@ -50,7 +50,6 @@ export const message = (
             console.log(`\x1b[36m ${cle} \x1b[34m : \x1b[33m ${info}\x1b[0m`);
             break;
         }
-
         case "CLASS": {
             if (info) console.log(`\x1b[31m ==== \x1b[36m ${cle} \x1b[33m ${info} \x1b[31m ====\x1b[0m`);
             else console.log(`\x1b[31m ==== \x1b[36m ${cle} \x1b[31m ====\x1b[0m`);

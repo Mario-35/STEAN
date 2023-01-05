@@ -5,8 +5,8 @@ import { cleanUrl } from "../helpers";
 import { _CONFIGFILE } from "../configuration";
 import { _DBDATAS } from "../db/constants";
 import { PgVisitor } from "./visitor/PgVisitor";
-import { db } from "../db";
 import { SqlOptions } from "./parser/sqlOptions";
+import { db } from "../db";
 export { PgVisitor } from "./visitor/PgVisitor";
 
 const doSomeWarkAfterAst = async (input: PgVisitor, ctx: koa.Context) => {    

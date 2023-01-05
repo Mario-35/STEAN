@@ -17,13 +17,17 @@ var crypto = require("crypto");
 
 console.log(`\x1b[32m =========================== \x1b[36m Start \x1b[32m =========================== \x1b[0m`);
 
+const mode = ["build"];
+
+if (process.argv.includes("dev")) mode.push("dev");
+if (process.argv.includes("docker")) mode.push("docker");
 
 const encrypt = (text, key) => {
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv("aes-256-ctr", String(key), iv);
     const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
     return `${iv.toString("hex")}.${encrypted.toString("hex")}`;
-};
+}
 
 function isEmpty(str) {
   if (typeof str != "string" || str.trim() == "") {
@@ -182,10 +186,11 @@ const packageJson = require("./package.json");
 delete packageJson.scripts;
 delete packageJson.devDependencies;
 delete packageJson.apidoc;
+
 fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
     encoding: "utf-8"
 },function (err) {
-  if (!process.argv.includes("dev")) {  
+  if (!mode.includes("dev")) {  
     ugly("./build/", {
       compressor: cleanCSS ,
       output: "build/",
@@ -201,28 +206,52 @@ fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
     uglyJs("./build");
   }
   // delete datademo
-  deleteFileSync("./build/db/createDBDatas/datasDemo.js");
+  // deleteFileSync("./build/db/createDBDatas/datasDemo.js");
   try {
-    const temp =  fs.readFileSync(path.join("./src/server/configuration/", "_config.json"), "utf-8");
-    const key =  fs.readFileSync(path.join("./src/server/configuration/", ".key"), "utf-8");
-    const input = JSON.parse(temp);
-    const what = "production";
-    Object.keys(input[what]).forEach(e => {
-      Object.keys(input[what][e]).forEach(r => {
-        input[what][e][r] = encrypt(String(input[what][e][r]), key);
-      })
-    })
-    console.log(input[what]);
-    fs.writeFileSync("build/configuration/config.json", JSON.stringify(input[what], null, 2), {
-        encoding: "utf-8"
-    });
-    console.log("\x1b[36m configuration \x1b[34m : \x1b[37m Ok\x1b[0m");
+    try {
+      const temp =  fs.readFileSync(path.join("./src/server/configuration/", "config.json"), "utf-8");
+      const key =  fs.readFileSync(path.join("./src/server/configuration/", ".key"), "utf-8");
+      const input = JSON.parse(temp);
+      const what = "development";
+      Object.keys(input[what]).forEach(e => {
+        Object.keys(input[what][e]).forEach(r => {
+          input[what][e][r] = encrypt(String(input[what][e][r]), key);
+        })
+      });
+      const conf = mode.includes("docker") ? {
+        "admin": {
+            "key": "my qui ses scions",
+            "pg_host": "db",
+            "pg_user": "sensorthings",
+            "pg_password": "sensorthings",
+            "pg_database": "admin",
+            "retry": 10,
+        },
+        "sensorthings": {
+            "port": 8029,
+            "pg_host": "db",
+            "pg_user": "sensorthings",
+            "pg_password": "sensorthings",
+            "pg_database": "sensorthings",
+            "apiVersion": "v1.0",
+            "date_format": "DD/MM/YYYY hh:mm:ss",
+            "webSiteDoc": "https://api.geosas.fr/sensorthings/",
+            "retry": 10,
+        }
+    }: input[what];
+      fs.writeFileSync("build/configuration/config.json", JSON.stringify(conf, null, 2), {
+          encoding: "utf-8"
+      });
+      console.log("\x1b[36m configuration \x1b[34m : \x1b[37m Ok\x1b[0m");
+    }  catch (error) {
+      console.log("\x1b[31m No configuration file \x1b[34m : \x1b[37m found\x1b[0m");
+    }
   } catch (error) {
     console.log(error);
     console.log("\x1b[31m configuration \x1b[34m : \x1b[37m not write\x1b[0m");
   }
   
-  zipDirectory("./build", "dist.zip").then(function (e) {
+  if (!mode.includes("docker")) zipDirectory("./build", "dist.zip").then(function (e) {
     console.log("\x1b[36m compression \x1b[34m : \x1b[37m dist.zip\x1b[0m");
   });
   

@@ -12,4 +12,5 @@ export interface IDbConnection {
     password: string | undefined;
     database: string | undefined;
     port: number | undefined;
+    retry: number;
 }

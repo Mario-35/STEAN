@@ -15,7 +15,6 @@ import { IReturnResult } from "../../types";
 import { createGraph, extractMessageError, knexQueryToSql, removeKeyFromUrl, verifyId } from "../helpers";
 import { _VOIDTABLE } from "../../constants";
 import { _CONFIGFILE } from "../../configuration";
-import { db } from "../../db";
 import { IGraphDatas } from "../helpers/createGraph";
 
 
@@ -32,7 +31,7 @@ export class Common {
         if (knexInstance) Common.dbContext = knexInstance;
 
         this.nextLinkBase = removeKeyFromUrl(`${this.ctx._odata.options.rootBase}${this.ctx.href.split(`${ctx._version}/`)[1]}`, ["top", "skip"]);
-        this.linkBase = `${this.ctx._odata.options.rootBase}${this.constructor.name}`;           
+        this.linkBase = `${this.ctx._odata.options.rootBase}${this.constructor.name}`; 
     }
 
     // only for override
@@ -115,9 +114,7 @@ export class Common {
         
         this.logDebugQuery(sql);
 
-        const conn = this.ctx._odata.entity === "Logs" ? db["admin"] : Common.dbContext;
-
-        return await conn
+        return await Common.dbContext
             .raw(sql)
             .then(async (res: any) => {    
                 const nb = Number(res.rows[0].count);
@@ -149,9 +146,7 @@ export class Common {
 
         this.logDebugQuery(sql);
 
-        const conn = this.ctx._odata.entity === "Logs" ? db["admin"] : Common.dbContext;
-
-        return conn
+        return Common.dbContext
             .raw(sql)
             .then((res: any) => {
                 const nb = Number(res.rows[0].count);
