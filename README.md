@@ -5,9 +5,37 @@
 ![Inrae](https://raw.githubusercontent.com/Mario-35/STEAN/main/doc/assets/inrae.png "Inrae")
 
 ## Want to use this with docker
-![Docker](https://raw.githubusercontent.com/Mario-35/STEAN/main/doc/assets/docker.png "Docker")
 
+![Docker](https://raw.githubusercontent.com/Mario-35/STEAN/main/doc/assets/logo-docker.png "Docker")
 
+docker-compose up --build -d
+
+```yaml
+version: '3.8'
+services:
+    db:
+        container_name: postgis
+        image: postgis/postgis
+        ports:
+            - "5433:5432"
+#        volumes:
+#            - data:/data/db
+        restart: always
+        environment:
+            POSTGRES_USER: sensorthings
+            POSTGRES_DB: postgres
+            POSTGRES_PASSWORD: sensorthings
+            ALLOW_IP_RANGE: 0.0.0.0/0
+    stean:
+        container_name: stean
+        image: mario35/api-stean:latest
+        depends_on:
+            - db
+        ports:
+            - "8029:8029"
+#volumes:
+#     data: {}
+```
 
 ## Want to use this project?
 
