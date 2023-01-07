@@ -28,6 +28,7 @@ export function formatConfig(input: JSON, name?: string): IConfigFile {
         lineLimit: input["lineLimit"] ? +input["lineLimit"] : 2000,
         seed: name === "test" ? true : input["seed"] || false,
         forceHttps: input["forceHttps"] ? input["forceHttps"] : false,
+        alias: input["alias"] ? String(input["alias"]).split(",") : [],
         retry: input["retry"] ? +input["retry"] : 2
     };
     if (Object.values(returnValue).includes("ERROR"))

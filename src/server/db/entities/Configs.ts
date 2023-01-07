@@ -28,10 +28,8 @@ export class Configs extends Common {
      async add(dataInput: Object | undefined): Promise<IReturnResult | undefined> {
         message(true, "OVERRIDE", this.constructor.name, "add");
         if (!dataInput) return;
-        return this.createReturnResult({ body: addToConfig(dataInput), });
+        return this.createReturnResult({ body: await addToConfig(dataInput), });
     }
-
-
 
  }
  

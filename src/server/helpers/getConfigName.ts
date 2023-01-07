@@ -26,7 +26,13 @@ export const getConfigName = (ctx: koa.Context): string | undefined => {
            
     if (name) {
         const databaseName = isTest() ? "test" : Object.keys(_CONFIGFILE).includes(name) ? name: undefined;
+        console.log(`databaseName : ${databaseName}`);
+        
         if (databaseName) return databaseName;
+        let aliasName: undefined | string = undefined;
+        Object.keys(_CONFIGFILE).forEach((configName: string) => { if(_CONFIGFILE[configName].alias.includes(name)) aliasName = configName});        
+        console.log(`aliasName : ${aliasName}`);
+        if (aliasName) return aliasName;
         throw new Error(port ? `No configuration found for ${port} port or ${name} name` :`No configuration found for ${name} name`);
     }
     throw new Error(port ? `No configuration found for ${port} port or name missing` :`name missing`);

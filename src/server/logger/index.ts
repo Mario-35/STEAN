@@ -8,5 +8,4 @@
 
 export { logDebug } from "./logDebug";
 export { message } from "./message";
-export { writeToLog } from "./writeToLog";
-export { logConnection } from "./logConnection";
+export { writeToLog } from "./writeToLog"

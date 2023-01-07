@@ -20,6 +20,8 @@ try {
 
 
 export const keyApp = fs.readFileSync(__dirname + "/configuration/.key", "utf8");
+export const _PORTS: number[] = [];
+
 export const _VOIDTABLE = "spatial_ref_sys";
 export const _DOUBLEQUOTE = '"';
 export const _QUOTEDCOMA = '","';

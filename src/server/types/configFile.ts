@@ -24,6 +24,7 @@ export interface IConfigFile {
     retry: number;
     createUser?: boolean;
     forceHttps: boolean;
+    alias: string[];
 }
 
 export interface IConfigFiles {

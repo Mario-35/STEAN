@@ -8,11 +8,15 @@
 
 import fs from "fs";
 import { formatConfig, _CONFIGFILE } from ".";
+import { app } from "..";
 import { _NODE_ENV } from "../constants";
+import { db } from "../db";
+import { getConnection } from "../db/helpers";
 import { hidePasswordInJson } from "../helpers";
+import { addToServer } from "../helpers/addToServer";
 import { IConfigFile } from "../types";
 
- export const addToConfig = (addJson: any): IConfigFile => {
+ export const addToConfig = async (addJson: any): Promise<IConfigFile> => {
     const tempConfig = formatConfig(addJson);
     const file = fs.readFileSync(__dirname + "/config.json", "utf8");
  
@@ -27,8 +31,11 @@ import { IConfigFile } from "../types";
           console.error(err);
           return false
         }
+        
       });
-      
+      _CONFIGFILE[tempConfig["name"]] = tempConfig;
+      await addToServer(app , tempConfig["name"]);
+      db[tempConfig["name"]] = getConnection(tempConfig["name"]);
       hidePasswordInJson(tempConfig);
      return tempConfig;
  };

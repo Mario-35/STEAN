@@ -21,6 +21,7 @@ import knex from "knex";
  
  export const isDbExist = async (connectName: string, create: boolean): Promise<boolean> => {
     const connection: IDbConnection = createConnection(connectName);
+    message(false, "HEAD", "connectName", connectName);
 
     await pgwait(connection);
 
@@ -31,12 +32,11 @@ import knex from "knex";
         debug: false
     });
     
-     message(false, "DEBUG", "connectName", `--- ${connectName} ---`);
      if (!tempConnection) return false;
      return await tempConnection
          .raw("select 1+1 as result")
          .then(async () => {
-             message(false, "INFO", "Database Found", _CONFIGFILE[connectName].pg_database);
+             message(false, "RESULT", "Database Online", _CONFIGFILE[connectName].pg_database);
              tempConnection.destroy();
              return true;
          })

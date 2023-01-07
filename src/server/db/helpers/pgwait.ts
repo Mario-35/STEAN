@@ -3,14 +3,7 @@ import { message } from "../../logger"
 import { IDbConnection } from "../../types"
 
 export async function pgwait(options: IDbConnection): Promise<boolean> {
-    // setInterval expects time in milliseconds
-    const pool = new pg.Pool({
-        host: options.host,
-        port: options.port,
-        database: "postgres",
-        user: options.user,
-        password: options.password
-    })
+    const pool = new pg.Pool({... options, database: "postgres" });
     let passage = 1;
     const timeStamp = (): string => {
         const d = new Date()
@@ -18,7 +11,7 @@ export async function pgwait(options: IDbConnection): Promise<boolean> {
     }
     
     const printStatusMsg = (status: string): void => {
-        message(false, "RESULT", `Databse ${status}`, timeStamp());
+        message(false, "RESULT", `Databse PostgreSQL ${status}`, timeStamp());
     }
 
     const connect = async (): Promise<boolean> => {

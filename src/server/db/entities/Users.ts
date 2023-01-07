@@ -43,7 +43,7 @@ import { db } from "..";
 
         if (!dataInput) return;
         return this.createReturnResult({
-            body: addToConfig(dataInput),
+            body: await addToConfig(dataInput),
         });
     }
 
