@@ -235,7 +235,7 @@ export class CreateHtmlView {
             "user"
         )} <body> <div class="login-wrap"> <div class="login-html"> <h2>You are authenticated.</h2> <div class="hr"></div> <h3>Username : ${
             user.username
-        }</h3> <h3>Hosting : ${user.database == "all" ? "all" : _CONFIGFILE[user.database].pg_host}</h3> <h3>Database : ${user.database}</h3> <h3>Status : ${
+        }</h3> <h3>Hosting : ${user.database == "all" ? "all" : _CONFIGFILE.config[user.database].pg_host}</h3> <h3>Database : ${user.database}</h3> <h3>Status : ${
             user.admin
         }</h3> ${user.superAdmin ? `<div class="inner"> <a href="${this.ctx._linkBase}/admin" class="button-admin" >users</a> </div>` : ""} ${this.foot([
             { href: this.ctx._linkBase + "/Logout", class: "button-logout", name: "Logout" },
@@ -269,7 +269,7 @@ export class CreateHtmlView {
         )} <body> <div class="login-html"> <div class="table-wrapper"> <table class="fl-table"> <tbody>TODO</tbody></table> </div> ${this.foot([
             { href: this.ctx._linkBase + `/${this.ctx._version}/`, class: "button-submit", name: "Root" },
             { href: this.ctx._linkBase + `/${this.ctx._version}/Query`, class: "button", name: "Query" },
-            { href: `${_CONFIGFILE[this.ctx._configName].webSiteDoc}`, class: "button-logout", name: "Documentation" }
+            { href: `${_CONFIGFILE.config[this.ctx._configName].webSiteDoc}`, class: "button-logout", name: "Documentation" }
         ])} </div> </body> </html> `;
     };
 

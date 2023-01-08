@@ -18,18 +18,18 @@ import koa from "koa";
   
   export const createSensorThingsDatabase = async(configName: string, ctx?: koa.Context): Promise<{ [key: string]: string }> => {
       message(true, "HEAD", "createDatabase", "createDatabase");
-      const configFile = _CONFIGFILE[configName];
+      const configFile = _CONFIGFILE.config[configName];
  
       // init result
      const  returnValue: { [key: string]: string } = { "Start create Database": configFile.pg_database };
      const adminCon =  knex({
         client: "pg",
         connection: {
-            host: _CONFIGFILE["admin"]["pg_host"],
-            user: _CONFIGFILE["admin"]["pg_user"],
-            password: _CONFIGFILE["admin"]["pg_password"],
+            host: _CONFIGFILE.config["admin"]["pg_host"],
+            user: _CONFIGFILE.config["admin"]["pg_user"],
+            password: _CONFIGFILE.config["admin"]["pg_password"],
             database: "postgres",
-            port: _CONFIGFILE["admin"]["pg_port"] ? +String(_CONFIGFILE["admin"]["pg_port"]) : -1
+            port: _CONFIGFILE.config["admin"]["pg_port"] ? +String(_CONFIGFILE.config["admin"]["pg_port"]) : -1
         },
         pool: { min: 0, max: 7 },
         debug: false
@@ -93,10 +93,10 @@ import koa from "koa";
       const connDb =  knex({
         client: "pg",
         connection: {
-            host: _CONFIGFILE["admin"]["pg_host"],
-            user: _CONFIGFILE["admin"]["pg_user"],
-            password: _CONFIGFILE["admin"]["pg_password"],
-            database: _CONFIGFILE[configName]["pg_database"]
+            host: _CONFIGFILE.config["admin"]["pg_host"],
+            user: _CONFIGFILE.config["admin"]["pg_user"],
+            password: _CONFIGFILE.config["admin"]["pg_password"],
+            database: _CONFIGFILE.config[configName]["pg_database"]
         },
         pool: { min: 0, max: 7 },
         debug: false

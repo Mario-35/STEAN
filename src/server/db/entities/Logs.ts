@@ -10,13 +10,13 @@
  import koa from "koa";
  import { Common } from "./common";
  import { _DBDATAS } from "../constants";
-import { getConnection } from "../helpers";
+import { _CONFIGFILE } from "../../configuration";
 
  
  export class Logs extends Common {
      constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {         
          super(ctx, knexInstance);
-         Common.dbContext =  getConnection("admin");    
+         Common.dbContext =  _CONFIGFILE.getConnection("admin");    
      }
 
  }

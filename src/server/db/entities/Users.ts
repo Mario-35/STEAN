@@ -12,7 +12,7 @@ import { Common } from "./common";
 import { _DBDATAS } from "../constants";
 import { message } from "../../logger";
 import { IReturnResult } from "../../types";
-import { addToConfig, _CONFIGFILE } from "../../configuration";
+import { _CONFIGFILE } from "../../configuration";
 import { hidePasswordInJson } from "../../helpers";
 import { Rights } from "../../types/user";
 import { db } from "..";
@@ -43,7 +43,7 @@ import { db } from "..";
 
         if (!dataInput) return;
         return this.createReturnResult({
-            body: await addToConfig(dataInput),
+            body: await _CONFIGFILE.add(dataInput),
         });
     }
 

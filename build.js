@@ -179,7 +179,7 @@ copyFolderRecursiveSync("./src/apidoc", "build/");
 copyFolderRecursiveSync("./src/server/views/js", "build/views");
 copyFolderRecursiveSync( "./src/server/views/css", "build/views" );
 copyFileSync( "./src/server/views/query/query.html", "build/views/query/" );
-copyFileSync( "./src/server/configuration/.key", "build/configuration/" );
+copyFileSync( "./src/server/config/.key", "build/config/" );
 copyFileSync( "./src/server/routes/favicon.ico", "build/routes/" );
 
 const packageJson = require("./package.json");
@@ -209,8 +209,8 @@ fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
   // deleteFileSync("./build/db/createDBDatas/datasDemo.js");
   try {
     try {
-      const temp =  fs.readFileSync(path.join("./src/server/configuration/", "config.json"), "utf-8");
-      const key =  fs.readFileSync(path.join("./src/server/configuration/", ".key"), "utf-8");
+      const temp =  fs.readFileSync(path.join("./src/server/config/", "config.json"), "utf-8");
+      const key =  fs.readFileSync(path.join("./src/server/config/", ".key"), "utf-8");
       const input = JSON.parse(temp);
       const what = "development";
       Object.keys(input[what]).forEach(e => {
@@ -239,7 +239,7 @@ fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
             "retry": 10,
         }
     }: input[what];
-      fs.writeFileSync("build/configuration/config.json", JSON.stringify(conf, null, 2), {
+      fs.writeFileSync("build/config/config.json", JSON.stringify(conf, null, 2), {
           encoding: "utf-8"
       });
       console.log("\x1b[36m configuration \x1b[34m : \x1b[37m Ok\x1b[0m");

@@ -23,18 +23,18 @@ import { IUser } from "../interfaces";
     message(false, "HEAD", "createAdminDatabase", "createDatabase");
 
     // init result
-    const configFile = _CONFIGFILE[configName];
+    const configFile = _CONFIGFILE.config[configName];
     const returnValue = { "Start create Database": configFile.pg_database };
 
     // create blank DATABASE
     const myAdminConnection = knex({
         client: "pg",
         connection: {
-            host: _CONFIGFILE["admin"]["pg_host"],
-            user: _CONFIGFILE["admin"]["pg_user"],
-            password: _CONFIGFILE["admin"]["pg_password"],
+            host: _CONFIGFILE.config["admin"]["pg_host"],
+            user: _CONFIGFILE.config["admin"]["pg_user"],
+            password: _CONFIGFILE.config["admin"]["pg_password"],
             database: "postgres",
-            port: _CONFIGFILE["admin"]["pg_port"] ? +String(_CONFIGFILE["admin"]["pg_port"]) : -1
+            port: _CONFIGFILE.config["admin"]["pg_port"] ? +String(_CONFIGFILE.config["admin"]["pg_port"]) : -1
         },
         pool: { min: 0, max: 7 },
         debug: false
@@ -77,11 +77,11 @@ import { IUser } from "../interfaces";
         await createTable(knex({
             client: "pg",
             connection: {
-                host: _CONFIGFILE["admin"]["pg_host"],
-                user: _CONFIGFILE["admin"]["pg_user"],
-                password: _CONFIGFILE["admin"]["pg_password"],
+                host: _CONFIGFILE.config["admin"]["pg_host"],
+                user: _CONFIGFILE.config["admin"]["pg_user"],
+                password: _CONFIGFILE.config["admin"]["pg_password"],
                 database: "admin",
-                port: _CONFIGFILE["admin"]["pg_port"] ? +String(_CONFIGFILE["admin"]["pg_port"]) : -1
+                port: _CONFIGFILE.config["admin"]["pg_port"] ? +String(_CONFIGFILE.config["admin"]["pg_port"]) : -1
             },
             pool: { min: 0, max: 7 },
             debug: false
@@ -105,11 +105,11 @@ import { IUser } from "../interfaces";
     await knex({
         client: "pg",
         connection: {
-            host: _CONFIGFILE["admin"]["pg_host"],
-            user: _CONFIGFILE["admin"]["pg_user"],
-            password: _CONFIGFILE["admin"]["pg_password"],
+            host: _CONFIGFILE.config["admin"]["pg_host"],
+            user: _CONFIGFILE.config["admin"]["pg_user"],
+            password: _CONFIGFILE.config["admin"]["pg_password"],
             database: "admin",
-            port: _CONFIGFILE["admin"]["pg_port"] ? +String(_CONFIGFILE["admin"]["pg_port"]) : -1
+            port: _CONFIGFILE.config["admin"]["pg_port"] ? +String(_CONFIGFILE.config["admin"]["pg_port"]) : -1
         },
         pool: { min: 0, max: 7 },
         debug: false

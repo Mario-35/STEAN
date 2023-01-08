@@ -73,7 +73,7 @@ export class PgVisitor {
     
     init(ctx: koa.Context, node: Token) {
         message(true, "HEAD", "INIT PgVisitor");
-        this.limit = +_CONFIGFILE[ctx._configName].nb_page || 200;
+        this.limit = +_CONFIGFILE.config[ctx._configName].nb_page || 200;
         const temp = this.VisitRessources(node);
         logDebug(temp);
         this.verifyRessources(ctx);
@@ -195,7 +195,7 @@ export class PgVisitor {
 
     verifyQuery = (ctx: koa.Context): void => {
         message(true, "HEAD", "verifyQuery");
-        if (this.entity === "Logs" && ctx._configName !== "admin") this.where = `database = '${_CONFIGFILE[ctx._configName].pg_database}'`;
+        if (this.entity === "Logs" && ctx._configName !== "admin") this.where = `database = '${_CONFIGFILE.config[ctx._configName].pg_database}'`;
 
         if (this.select.length > 0) {
             const cols = [...Object.keys(_DBDATAS[this.entity].columns), ...Object.keys(_DBDATAS[this.entity].relations)]

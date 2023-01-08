@@ -19,11 +19,10 @@ import {  userToken } from "./types";
 import serve from "koa-static";
 import path from "path";
 import compress from "koa-compress";
-import { helmetConfig, keyApp, _ENV_VERSION, _NODE_ENV, _PORTS } from "./constants";
+import { helmetConfig, keyApp, _ENV_VERSION, _NODE_ENV } from "./constants";
 import { _DBDATAS } from "./db/constants";
 import { _CONFIGFILE } from "./configuration";
 import { PgVisitor } from "./odata";
-import { addToServer } from "./helpers/addToServer";
 
 declare module "koa" {
     // Underscore to identify own context
@@ -69,12 +68,12 @@ message(false, "HEAD", "env", _NODE_ENV);
 message(false, "HEAD", "version", _ENV_VERSION);
 
 export const server = isTest()
-    ? app.listen(_CONFIGFILE["test"].port, async () => {
-          message(false, "HEAD", "Server listening on port", _CONFIGFILE["test"].port);
+    ? app.listen(_CONFIGFILE.config["test"].port, async () => {
+          message(false, "HEAD", "Server listening on port", _CONFIGFILE.config["test"].port);
       })
     : asyncForEach(
-          Object.keys(_CONFIGFILE),
+          Object.keys(_CONFIGFILE.config),
           async (key: string) => {            
-              await addToServer(app, key);
+              await _CONFIGFILE.addToServer(app, key);
           }
       );

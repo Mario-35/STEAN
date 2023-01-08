@@ -7,7 +7,7 @@
  */
 
 import knex from "knex";
-const _CONFIGFILE = require("../server/configuration/config.json")["test"];
+const _CONFIGFILE = require("../server/config/config.json")["test"];
 
 export const dbTest = knex({
     client: "pg",

@@ -11,9 +11,7 @@ export { createGraph } from "./createGraph";
 export { createTable } from "./createTable";
 export { extractMessageError } from "./extractMessageError";
 export { getColumnsListType } from "./getColumnsListType";
-export { getConnection } from "./getConnection";
 export { importCsv } from "./importCsv";
-export { isDbExist } from "./isDbExist";
 export { knexQueryToSql } from "./knexQueryToSql";
 export { recordToKeyValue } from "./recordToKeyValue";
 export { removeKeyFromUrl } from "./removeKeyFromUrl";
@@ -21,6 +19,5 @@ export { renameProp } from "./renameProp";
 export { testConnection } from "./testConnection";
 export { redoLog } from "./redoLog";
 export { verifyId } from "./verifyId";
-export { pgwait } from "./pgwait";
 // Class
 export { TimeSeries } from "./timeSeries";

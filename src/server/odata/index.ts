@@ -17,7 +17,7 @@ const doSomeWarkAfterAst = async (input: PgVisitor, ctx: koa.Context) => {
 }
 
 export const createOdata = async (ctx: koa.Context):Promise<PgVisitor | undefined> => {
-    const blankUrl = `$top=${_CONFIGFILE[ctx._configName].nb_page ? +_CONFIGFILE[ctx._configName].nb_page : 200}`;
+    const blankUrl = `$top=${_CONFIGFILE.config[ctx._configName].nb_page ? +_CONFIGFILE.config[ctx._configName].nb_page : 200}`;
     const options: SqlOptions = {loraId: undefined, rootBase: ctx._rootName, value: false, ref: false, method: ctx.method};
 
     let urlSrc = ctx.href.normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(ctx._version)[1];

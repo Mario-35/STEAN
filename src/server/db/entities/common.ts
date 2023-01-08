@@ -66,7 +66,7 @@ export class Common {
     // create the nextLink
     nextLink = (resLength: number): string | undefined => {
         if (this.ctx._odata.timeSeries) return;       
-        const max: number = this.ctx._odata.limit > 0 ? +this.ctx._odata.limit :  +_CONFIGFILE[this.ctx._configName].nb_page;
+        const max: number = this.ctx._odata.limit > 0 ? +this.ctx._odata.limit :  +_CONFIGFILE.config[this.ctx._configName].nb_page;
         if (resLength >= max) return `${encodeURI(this.nextLinkBase)}${this.nextLinkBase.includes("?") ? "&" : "?"}$top=${this.ctx._odata.limit}&$skip=${this.ctx._odata.skip + this.ctx._odata.limit}`;
     };
     
@@ -74,7 +74,7 @@ export class Common {
     prevLink = (resLength: number): string | undefined => {
         if (this.ctx._odata.timeSeries) return;
         const prev = this.ctx._odata.skip - this.ctx._odata.limit;
-        if ((_CONFIGFILE[this.ctx._configName].nb_page && resLength >= +_CONFIGFILE[this.ctx._configName].nb_page  || this.ctx._odata.limit) && prev >= 0)
+        if ((_CONFIGFILE.config[this.ctx._configName].nb_page && resLength >= +_CONFIGFILE.config[this.ctx._configName].nb_page  || this.ctx._odata.limit) && prev >= 0)
             return `${encodeURI(this.nextLinkBase)}${this.nextLinkBase.includes("?") ? "&" : "?"}$top=${this.ctx._odata.limit}&$skip=${prev}`;
     };
 

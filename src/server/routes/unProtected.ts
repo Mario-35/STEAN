@@ -86,7 +86,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         // case "CONFIGS":
         //     if (token?.PDCUAS[Rights.SuperAdmin] === true) {
         //         ctx.type = returnFormatsString.HTML;
-        //         ctx.body = _CONFIGFILE;
+        //         ctx.body = _CONFIGFILE.config;
         //     } else ctx.redirect(`${ctx._rootName}login`);
         //     return;
 

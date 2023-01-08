@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { db } from "../../server/db";
-const conf = require("../../server/configuration/config.json");
+const conf = require("../../server/config/config.json");
 const apidocJson = require("../apidoc.json");
 export const identification = { "username": conf["test"]["test"].pg_user, "password": conf["test"]["test"].pg_password };
 

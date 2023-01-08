@@ -9,7 +9,7 @@
 import fs from "fs";
 import copyFrom from "pg-copy-streams";
 import { message } from "../../logger";
-import { ICsvColumns, ICsvFile, IDbConnection } from "../../types";
+import { ICsvColumns, ICsvFile } from "../../types";
 import { _DBDATAS } from "../constants";
 import readline from "readline";
 import { Knex } from "knex";
@@ -74,7 +74,7 @@ const dateSqlRequest = async (paramsFile: ICsvFile): Promise<ICsvImport | undefi
     return returnValue;
 };
 
-export const importCsv = async (ctx: koa.Context, knex: Knex | Knex.Transaction, paramsFile: ICsvFile, connection: IDbConnection): Promise<string[]> => {
+export const importCsv = async (ctx: koa.Context, knex: Knex | Knex.Transaction, paramsFile: ICsvFile): Promise<string[]> => {
     message(true, "HEAD", "importCsv");
     const returnValue: string[] = [];
 

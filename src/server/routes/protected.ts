@@ -14,16 +14,16 @@ import fs from "fs";
 import koa from "koa";
 import { checkPassword, emailIsValid, testRoutes } from "./helpers";
 import { message } from "../logger";
-import { IConfigFile, IReturnResult } from "../types";
+import { IReturnResult } from "../types";
 import { DefaultState, Context } from "koa";
 import { CreateHtmlView } from "../views/helpers/CreateHtmlView";
-import { formatConfig } from "../configuration";
 import { loginUser, Rights } from "../types/user";
 import { createIqueryFromContext } from "../views/helpers/";
 import { queryHtmlPage } from "../views/query";
 import { createDatabase, redoLog } from "../db/helpers";
 import { createOdata } from "../odata";
 import { db } from "../db";
+import { _CONFIGFILE } from "../configuration";
 
 export const protectedRoutes = new Router<DefaultState, Context>();
 
@@ -105,7 +105,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
 
         case "CREATEDB":
             message(true, "HEAD", "POST createDB");
-            const conParams: IConfigFile = formatConfig(ctx.request.body);
+            const conParams = _CONFIGFILE.format(ctx.request.body);
             if (Object.values(conParams).includes("ERROR")) throw new TypeError(`Error in config file [${conParams}]`);
             // ?? TODO
             message(true, "DEBUG", "Params", conParams);
