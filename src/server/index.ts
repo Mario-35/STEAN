@@ -21,7 +21,7 @@ import path from "path";
 import compress from "koa-compress";
 import { helmetConfig, keyApp, _ENV_VERSION, _NODE_ENV } from "./constants";
 import { _DBDATAS } from "./db/constants";
-import { _CONFIGFILE } from "./configuration";
+import { _CONFIGS, _CONFIGURATION } from "./configuration";
 import { PgVisitor } from "./odata";
 
 declare module "koa" {
@@ -68,12 +68,12 @@ message(false, "HEAD", "env", _NODE_ENV);
 message(false, "HEAD", "version", _ENV_VERSION);
 
 export const server = isTest()
-    ? app.listen(_CONFIGFILE.config["test"].port, async () => {
-          message(false, "HEAD", "Server listening on port", _CONFIGFILE.config["test"].port);
+    ? app.listen(_CONFIGS["test"].port, async () => {
+          message(false, "HEAD", "Server listening on port", _CONFIGS["test"].port);
       })
     : asyncForEach(
-          Object.keys(_CONFIGFILE.config),
+          Object.keys(_CONFIGS),
           async (key: string) => {            
-              await _CONFIGFILE.addToServer(app, key);
+              await _CONFIGURATION.addToServer(app, key);
           }
       );

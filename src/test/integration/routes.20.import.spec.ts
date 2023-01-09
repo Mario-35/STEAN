@@ -69,9 +69,7 @@ addToApiDoc({
 describe("CSV Import", function () {
     this.timeout(5000);
     let token = "";
-
-    before((done) => {
-        
+    before((done) => {        
         chai.request(server)
             .post("/test/v1.0/login")
             .send(identification)
@@ -80,6 +78,7 @@ describe("CSV Import", function () {
                 done();
             });
     });
+    
     it("should return 12 observations added from csv file", (done) => {
         const infos = {
             api: `{post} CreateObservations with simple csv attached file`,

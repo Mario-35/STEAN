@@ -6,7 +6,7 @@
  *
  */
 
-import { _CONFIGFILE } from "../configuration";
+import { _CONFIGURATION } from "../configuration";
 
 export const testRoutes = (input: string): string => {
     let result: string | undefined =

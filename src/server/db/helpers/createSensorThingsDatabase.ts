@@ -9,7 +9,7 @@
  import knex from "knex";
 import koa from "koa";
  import { createTable, testConnection } from ".";
- import { _CONFIGFILE } from "../../configuration";
+ import { _CONFIGS, _CONFIGURATION } from "../../configuration";
  import { asyncForEach } from "../../helpers";
  import { logDebug, message } from "../../logger";
  import { _DBDATAS } from "../constants";
@@ -18,19 +18,13 @@ import koa from "koa";
   
   export const createSensorThingsDatabase = async(configName: string, ctx?: koa.Context): Promise<{ [key: string]: string }> => {
       message(true, "HEAD", "createDatabase", "createDatabase");
-      const configFile = _CONFIGFILE.config[configName];
- 
+      const config = _CONFIGS[configName];
+      const admin = _CONFIGS["admin"];
       // init result
-     const  returnValue: { [key: string]: string } = { "Start create Database": configFile.pg_database };
+     const  returnValue: { [key: string]: string } = { "Start create Database": config.pg_database };
      const adminCon =  knex({
         client: "pg",
-        connection: {
-            host: _CONFIGFILE.config["admin"]["pg_host"],
-            user: _CONFIGFILE.config["admin"]["pg_user"],
-            password: _CONFIGFILE.config["admin"]["pg_password"],
-            database: "postgres",
-            port: _CONFIGFILE.config["admin"]["pg_port"] ? +String(_CONFIGFILE.config["admin"]["pg_port"]) : -1
-        },
+        connection: _CONFIGURATION.createKnexConnection("admin", "postgres"),
         pool: { min: 0, max: 7 },
         debug: false
     });
@@ -42,30 +36,30 @@ import koa from "koa";
      }
  
      // in case of test always destroy DB
-     if (configFile.pg_database === "test") {
+     if (config.pg_database === "test") {
          returnValue[`DROP Database`] = await adminCon
-             .raw(`DROP Database IF EXISTS ${configFile.pg_database}`)
+             .raw(`DROP Database IF EXISTS ${config.pg_database}`)
              .then(() => "✔")
              .catch((err: Error) => err.message);
      }
  
      // create blank DATABASE
      await adminCon
-         .raw(`CREATE Database ${configFile.pg_database}`)
+         .raw(`CREATE Database ${config.pg_database}`)
          .then(async () => {
-             returnValue[`Create Database`] = `${configFile.pg_database} ✔`;
+             returnValue[`Create Database`] = `${config.pg_database} ✔`;
              // create USER if not exist
-             await adminCon.raw(`select count(*) FROM pg_user WHERE usename = '${configFile.pg_user}';`).then(async (res: any) => {
+             await adminCon.raw(`select count(*) FROM pg_user WHERE usename = '${config.pg_user}';`).then(async (res: any) => {
                  if (res.rowCount < 1) {
-                     returnValue[`Create ROLE ${configFile.pg_user}`] = await adminCon
-                         .raw(`CREATE ROLE ${configFile.pg_user} WITH PASSWORD '${configFile.pg_password}' SUPERUSER;`)
+                     returnValue[`Create ROLE ${config.pg_user}`] = await adminCon
+                         .raw(`CREATE ROLE ${config.pg_user} WITH PASSWORD '${config.pg_password}' SUPERUSER;`)
                          .then(() => "✔")
                          .catch((err: Error) => err.message);
                  } else {
                      await adminCon
-                         .raw(`ALTER ROLE ${configFile.pg_user} WITH PASSWORD '${configFile.pg_password}' SUPERUSER;`)
+                         .raw(`ALTER ROLE ${config.pg_user} WITH PASSWORD '${config.pg_password}' SUPERUSER;`)
                          .then(() => {
-                             returnValue[`Create/Alter ROLE`] = `${configFile.pg_user} ✔`;
+                             returnValue[`Create/Alter ROLE`] = `${config.pg_user} ✔`;
                              adminCon
                                  .destroy()
                                  .then(() => {
@@ -93,10 +87,10 @@ import koa from "koa";
       const connDb =  knex({
         client: "pg",
         connection: {
-            host: _CONFIGFILE.config["admin"]["pg_host"],
-            user: _CONFIGFILE.config["admin"]["pg_user"],
-            password: _CONFIGFILE.config["admin"]["pg_password"],
-            database: _CONFIGFILE.config[configName]["pg_database"]
+            host: admin.pg_host,
+            user: admin.pg_user,
+            password: admin.pg_password,
+            database: _CONFIGS[configName].pg_database
         },
         pool: { min: 0, max: 7 },
         debug: false
@@ -114,7 +108,7 @@ import koa from "koa";
          .catch((err: Error) => err.message);
  
      // create tables
-     // const _DATAS = configFile.createUser && configFile.createUser == true ? _DBADMIN : _DBDATAS;
+     // const _DATAS = config.createUser && config.createUser == true ? _DBADMIN : _DBDATAS;
      await asyncForEach(Object.keys(_DBDATAS), async (keyName: string) => {
          await createTable(connDb, _DBDATAS[keyName], undefined);
      });
@@ -135,7 +129,7 @@ import koa from "koa";
          });
      }
  
-     await connDb.raw(`select count(*) FROM pg_user WHERE usename = '${configFile.pg_user}';`).then(() => {
+     await connDb.raw(`select count(*) FROM pg_user WHERE usename = '${config.pg_user}';`).then(() => {
          returnValue["Create DB"] = "✔";
      });
      

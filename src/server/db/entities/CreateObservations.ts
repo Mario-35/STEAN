@@ -14,7 +14,7 @@ import { message } from "../../logger";
 import { ICsvColumns, ICsvFile, IReturnResult } from "../../types";
 import { extractMessageError, importCsv, renameProp, verifyId } from "../helpers";
 import { stringToBool } from "../../helpers";
-import { _CONFIGFILE } from "../../configuration";
+import { _CONFIGURATION } from "../../configuration";
 
 interface convert {
     key: string;

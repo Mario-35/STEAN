@@ -9,58 +9,48 @@
 import knex from "knex";
 import koa from "koa";
 import { createTable } from ".";
-import { _CONFIGFILE } from "../../configuration";
-// import { db } from "../../db";
+import { _CONFIGS, _CONFIGURATION } from "../../configuration";
 import { asyncForEach, encrypt } from "../../helpers";
-// import { encrypt } from "../../helpers/";
 import { message } from "../../logger";
 import { _DBADMIN, _DBDATAS } from "../constants";
 import { IUser } from "../interfaces";
-// import { IUser } from "../interfaces";
 
  
  export const createAdminDatabase = async(configName: string, ctx?: koa.Context): Promise<{ [key: string]: string }> => {
     message(false, "HEAD", "createAdminDatabase", "createDatabase");
 
     // init result
-    const configFile = _CONFIGFILE.config[configName];
-    const returnValue = { "Start create Database": configFile.pg_database };
-
+    const config = _CONFIGS[configName];
+    const returnValue = { "Start create Database": config.pg_database };
     // create blank DATABASE
     const myAdminConnection = knex({
         client: "pg",
-        connection: {
-            host: _CONFIGFILE.config["admin"]["pg_host"],
-            user: _CONFIGFILE.config["admin"]["pg_user"],
-            password: _CONFIGFILE.config["admin"]["pg_password"],
-            database: "postgres",
-            port: _CONFIGFILE.config["admin"]["pg_port"] ? +String(_CONFIGFILE.config["admin"]["pg_port"]) : -1
-        },
+        connection: _CONFIGURATION.createKnexConnection("admin", "postgres"),
         pool: { min: 0, max: 7 },
         debug: false
     });
 
     if (myAdminConnection)
         await myAdminConnection
-            .raw(`CREATE Database ${configFile.pg_database}`)
+            .raw(`CREATE Database ${config.pg_database}`)
             .then(async () => {
                 returnValue["create Admin DB"] = "✔";
                 returnValue["User"] = await myAdminConnection
-                    .raw(`select count(*) FROM pg_user WHERE usename = '${configFile.pg_user}';`)
+                    .raw(`select count(*) FROM pg_user WHERE usename = '${config.pg_user}';`)
                     .then(async (res) => {
                         if (res.rowCount < 1) {
-                            message(false, "INFO", "Create User", configFile.pg_user);
+                            message(false, "INFO", "Create User", config.pg_user);
                             return myAdminConnection
-                                .raw(`CREATE ROLE ${configFile.pg_user} WITH PASSWORD '${configFile.pg_password}' SUPERUSER;`)
+                                .raw(`CREATE ROLE ${config.pg_user} WITH PASSWORD '${config.pg_password}' SUPERUSER;`)
                                 .then(() => {
                                     myAdminConnection.destroy();
                                     return "Create User ✔";
                                 })
                                 .catch((err: Error) => err.message);
                         } else {
-                            message(false, "INFO", "Update User", configFile.pg_user);
+                            message(false, "INFO", "Update User", config.pg_user);
                             return await myAdminConnection
-                                .raw(`ALTER ROLE ${configFile.pg_user} WITH PASSWORD '${configFile.pg_password}' SUPERUSER;`)
+                                .raw(`ALTER ROLE ${config.pg_user} WITH PASSWORD '${config.pg_password}' SUPERUSER;`)
                                 .then(() => {
                                     myAdminConnection.destroy().catch((err: Error) => err.message);
                                     myAdminConnection.destroy();
@@ -76,13 +66,7 @@ import { IUser } from "../interfaces";
     await asyncForEach(Object.keys(_DBADMIN), async (keyName: string) => {
         await createTable(knex({
             client: "pg",
-            connection: {
-                host: _CONFIGFILE.config["admin"]["pg_host"],
-                user: _CONFIGFILE.config["admin"]["pg_user"],
-                password: _CONFIGFILE.config["admin"]["pg_password"],
-                database: "admin",
-                port: _CONFIGFILE.config["admin"]["pg_port"] ? +String(_CONFIGFILE.config["admin"]["pg_port"]) : -1
-            },
+            connection: _CONFIGURATION.createKnexConnection("admin"),
             pool: { min: 0, max: 7 },
             debug: false
         }), _DBADMIN[keyName], undefined);
@@ -90,9 +74,9 @@ import { IUser } from "../interfaces";
 
     // CREATE USER
     const user: IUser = {
-        username: configFile.pg_user,
+        username: config.pg_user,
         email: "default@email.com",
-        password: configFile.pg_password,
+        password: config.pg_password,
         database: "all",
         canPost: true,
         canDelete: true,
@@ -104,13 +88,7 @@ import { IUser } from "../interfaces";
 
     await knex({
         client: "pg",
-        connection: {
-            host: _CONFIGFILE.config["admin"]["pg_host"],
-            user: _CONFIGFILE.config["admin"]["pg_user"],
-            password: _CONFIGFILE.config["admin"]["pg_password"],
-            database: "admin",
-            port: _CONFIGFILE.config["admin"]["pg_port"] ? +String(_CONFIGFILE.config["admin"]["pg_port"]) : -1
-        },
+        connection: _CONFIGURATION.createKnexConnection("admin"),
         pool: { min: 0, max: 7 },
         debug: false
     }).table("user").insert({

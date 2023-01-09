@@ -58,11 +58,11 @@ interface IDbConnection {
 }
 
 class configuration {
-    public config: {
+    private configurationList: {
         [key: string]: IConfigFile;
     } = {};
     static filePath: fs.PathOrFileDescriptor;
-    static jsonConfig: any;
+    static jsonConfiguration: any;
     static ports: number[] = [];
 
 
@@ -70,9 +70,14 @@ class configuration {
         message(true, "CLASS", this.constructor.name, "Constructor");   
         configuration.filePath = file;    
         const temp = fs.readFileSync(file, "utf8");    
-        const config = JSON.parse(temp);
-        const input = config.hasOwnProperty(_NODE_ENV) ? config[_NODE_ENV] : config;   
-        Object.keys(input).forEach((element: string) => (this.config[element] = this.format(input[element], element)));
+        configuration.jsonConfiguration = JSON.parse(temp);
+        const input = configuration.jsonConfiguration.hasOwnProperty(_NODE_ENV) ? configuration.jsonConfiguration[_NODE_ENV] : configuration.jsonConfiguration;   
+        Object.keys(input).forEach((element: string) => (this.configurationList[element] = this.format(input[element], element)));
+    }
+
+    // return config(s)
+    getConfigs() {
+        return this.configurationList;
     }
 
     format(input: JSON, name?: string): IConfigFile {
@@ -101,33 +106,44 @@ class configuration {
         return returnValue;
     };
 
+    // add new config and create database if not exist
     async add(addJson: any): Promise<IConfigFile> {
         const tempConfig = this.format(addJson);
-        const input = configuration.jsonConfig.hasOwnProperty(_NODE_ENV) ? configuration.jsonConfig[_NODE_ENV] : configuration.jsonConfig;    
-        input[tempConfig["name"]] = tempConfig;
+        const input = configuration.jsonConfiguration.hasOwnProperty(_NODE_ENV) ? configuration.jsonConfiguration[_NODE_ENV] : configuration.jsonConfiguration;    
+        input[tempConfig.name] = tempConfig;
     
          fs.writeFile(configuration.filePath, JSON.stringify(input, null, 4), err => {
             if (err) {
               console.error(err);
-              return false
+              return false;
             }
             
           });
-          this.config[tempConfig["name"]] = tempConfig;
-          await this.addToServer(app , tempConfig["name"]);
-          db[tempConfig["name"]] = this.getConnection(tempConfig["name"]);
+          this.configurationList[tempConfig.name] = tempConfig;
+          await this.addToServer(app , tempConfig.name);
+          db[tempConfig.name] = this.getConnection(tempConfig.name);
           hidePasswordInJson(tempConfig);
          return tempConfig;
     };
 
-    createConnection(configName: string): IDbConnection{
+    createKnexConnection(configName: string, database?: string): IDbConnection {
+        return {
+                host: this.configurationList[configName].pg_host,
+                user: this.configurationList[configName].pg_user,
+                password: this.configurationList[configName].pg_password,
+                database: database ? database : this.configurationList[configName].pg_database,
+                port: this.configurationList[configName].pg_port ? +String(this.configurationList[configName].pg_port) : -1,
+                retry: this.configurationList[configName].retry ? this.configurationList[configName].retry : 2,
+            }
+    }
+    createConnection(configName: string): IDbConnection {
         const returnValue = {
-            host: this.config[configName]["pg_host"] || "ERROR",
-            user: this.config[configName]["pg_user"] || "ERROR",
-            password: this.config[configName]["pg_password"] || "ERROR",
-            database: this.config[configName]["pg_database"] || "ERROR",
-            port: this.config[configName]["pg_port"] ? +String(this.config[configName]["pg_port"]) : -1,
-            retry: +String(this.config[configName]["retry"])  || 2
+            host: this.configurationList[configName].pg_host || "ERROR",
+            user: this.configurationList[configName].pg_user || "ERROR",
+            password: this.configurationList[configName].pg_password || "ERROR",
+            database: this.configurationList[configName].pg_database || "ERROR",
+            port: this.configurationList[configName].pg_port ? +String(this.configurationList[configName].pg_port) : -1,
+            retry: +String(this.configurationList[configName].retry)  || 2
     
         };
         if (Object.values(returnValue).includes("ERROR")) throw new TypeError(`Error in config file [${returnValue}]`);
@@ -146,8 +162,8 @@ class configuration {
 
     createConnections(): { [key: string]: Knex<any, unknown[]> } {
         const returnValue: { [key: string]: Knex<any, unknown[]> } = {};
-        Object.keys(this.config).forEach((key: string) => {
-            const tempConnection = _CONFIGFILE.getConnection(key);
+        Object.keys(this.configurationList).forEach((key: string) => {
+            const tempConnection = _CONFIGURATION.getConnection(key);
             if (tempConnection) returnValue[key] = tempConnection;
         });
         return returnValue;
@@ -156,7 +172,7 @@ class configuration {
     async addToServer(app: Koa<Koa.DefaultState, Koa.DefaultContext>, key: string): Promise<boolean> {   
         await this.isDbExist(key, true)
             .then(async (res: boolean) => {                   
-                  const port = _CONFIGFILE.config[key].port;
+                  const port = _CONFIGS[key].port;
                   if (port  > 0) {
                       if (configuration.ports.includes(port)) message(false, "RESULT", `\x1b[35m[${key}]\x1b[32m add on port`, port);
                       else app.listen(port, () => {
@@ -168,7 +184,7 @@ class configuration {
                   
               })
               .catch((e: any) => {
-                  message(false, "ERROR", "Unable to find or create", _CONFIGFILE.config[key].pg_database);
+                  message(false, "ERROR", "Unable to find or create", _CONFIGS[key].pg_database);
                   console.log(e);
                   process.exit(111);
               });
@@ -192,14 +208,14 @@ class configuration {
          return await tempConnection
              .raw("select 1+1 as result")
              .then(async () => {
-                 message(false, "RESULT", "Database Online", _CONFIGFILE.config[connectName].pg_database);
+                 message(false, "RESULT", "Database Online", _CONFIGS[connectName].pg_database);
                  tempConnection.destroy();
                  return true;
              })
              .catch(async (err: any) => {
                  let returnResult = false;
                  if (err.code == "3D000" && create == true) {
-                     message(false, "DEBUG", "Try create DATABASE", _CONFIGFILE.config[connectName].pg_database);
+                     message(false, "DEBUG", "Try create DATABASE", _CONFIGS[connectName].pg_database);
                      returnResult = await createDatabase(connectName)
                          .then(async () => {
                              message(false, "INFO", "create DATABASE", "OK");
@@ -249,4 +265,6 @@ class configuration {
     }
 }
 
-export const _CONFIGFILE = new configuration(__dirname + "/config/config.json");
+export const _CONFIGURATION = new configuration(__dirname + "/config/config.json");
+export const _CONFIGS = _CONFIGURATION.getConfigs();
+

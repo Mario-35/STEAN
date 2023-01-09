@@ -14,7 +14,7 @@ import {  message } from "../../logger";
 import { IReturnResult } from "../../types";
 import { createGraph, extractMessageError, knexQueryToSql, removeKeyFromUrl, verifyId } from "../helpers";
 import { _VOIDTABLE } from "../../constants";
-import { _CONFIGFILE } from "../../configuration";
+import { _CONFIGS, _CONFIGURATION } from "../../configuration";
 import { IGraphDatas } from "../helpers/createGraph";
 
 
@@ -61,12 +61,10 @@ export class Common {
         };
     }
 
-    
-
     // create the nextLink
     nextLink = (resLength: number): string | undefined => {
         if (this.ctx._odata.timeSeries) return;       
-        const max: number = this.ctx._odata.limit > 0 ? +this.ctx._odata.limit :  +_CONFIGFILE.config[this.ctx._configName].nb_page;
+        const max: number = this.ctx._odata.limit > 0 ? +this.ctx._odata.limit :  +_CONFIGS[this.ctx._configName].nb_page;
         if (resLength >= max) return `${encodeURI(this.nextLinkBase)}${this.nextLinkBase.includes("?") ? "&" : "?"}$top=${this.ctx._odata.limit}&$skip=${this.ctx._odata.skip + this.ctx._odata.limit}`;
     };
     
@@ -74,7 +72,7 @@ export class Common {
     prevLink = (resLength: number): string | undefined => {
         if (this.ctx._odata.timeSeries) return;
         const prev = this.ctx._odata.skip - this.ctx._odata.limit;
-        if ((_CONFIGFILE.config[this.ctx._configName].nb_page && resLength >= +_CONFIGFILE.config[this.ctx._configName].nb_page  || this.ctx._odata.limit) && prev >= 0)
+        if ((_CONFIGS[this.ctx._configName].nb_page && resLength >= +_CONFIGS[this.ctx._configName].nb_page  || this.ctx._odata.limit) && prev >= 0)
             return `${encodeURI(this.nextLinkBase)}${this.nextLinkBase.includes("?") ? "&" : "?"}$top=${this.ctx._odata.limit}&$skip=${prev}`;
     };
 

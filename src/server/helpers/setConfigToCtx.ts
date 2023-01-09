@@ -8,7 +8,7 @@
 
 import koa from "koa";
 import { getConfigName } from ".";
-import { _CONFIGFILE } from "../configuration";
+import { _CONFIGS, _CONFIGURATION } from "../configuration";
 import querystring from "querystring";
 import cookieModule from "cookie";
 import cookieParser from "cookie-parser";
@@ -92,7 +92,7 @@ export const setConfigToCtx = (ctx: koa.Context): void => {
 
     const temp = getConfigName(ctx);
 
-    if (!temp || temp?.trim() === "" || !Object.keys(_CONFIGFILE.config).includes(temp.trim().toLowerCase())) throw new Error(`${temp} Not present in config File`);    
+    if (!temp || temp?.trim() === "" || !Object.keys(_CONFIGS).includes(temp.trim().toLowerCase())) throw new Error(`${temp} Not present in config File`);    
 
     ctx._configName = temp.trim().toLowerCase();
 
@@ -100,7 +100,7 @@ export const setConfigToCtx = (ctx: koa.Context): void => {
 
     const protocol = ctx.request.headers["x-forwarded-proto"]
         ? ctx.request.headers["x-forwarded-proto"]
-        : _CONFIGFILE.config[ctx._configName].forceHttps && _CONFIGFILE.config[ctx._configName].forceHttps == true
+        : _CONFIGS[ctx._configName].forceHttps && _CONFIGS[ctx._configName].forceHttps == true
         ? "https"
         : ctx.protocol;
 

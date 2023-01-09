@@ -7,7 +7,7 @@
  */
 
 import crypto from "crypto";
-import { _CONFIGFILE } from "../configuration";
+import { _CONFIGURATION } from "../configuration";
 import { keyApp } from "../constants";
 
 export const encrypt = (text: string): string => {

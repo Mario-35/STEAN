@@ -21,7 +21,7 @@ import { DefaultState, Context } from "koa";
 import { ensureAuthenticated, getAuthenticatedUser, Rights } from "../types/user";
 import { createDatabase } from "../db/helpers";
 import { createOdata } from "../odata";
-import { _CONFIGFILE } from "../configuration";
+import { _CONFIGURATION } from "../configuration";
 
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 
@@ -86,7 +86,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         // case "CONFIGS":
         //     if (token?.PDCUAS[Rights.SuperAdmin] === true) {
         //         ctx.type = returnFormatsString.HTML;
-        //         ctx.body = _CONFIGFILE.config;
+        //         ctx.body = _CONFIGS;
         //     } else ctx.redirect(`${ctx._rootName}login`);
         //     return;
 

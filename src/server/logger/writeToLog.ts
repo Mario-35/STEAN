@@ -9,7 +9,7 @@
 import koa from "koa";
 import { getUserId } from "../helpers";
 import { logDebug } from ".";
-import { _CONFIGFILE } from "../configuration";
+import { _CONFIGURATION } from "../configuration";
 import { _DBDATAS } from "../db/constants";
 import { db } from "../db";
 

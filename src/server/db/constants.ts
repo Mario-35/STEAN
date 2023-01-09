@@ -9,7 +9,7 @@
 /* eslint-disable quotes */
 
 import { Knex } from "knex";
-import { _CONFIGFILE } from "../configuration";
+import { _CONFIGURATION } from "../configuration";
 import { _ENV_VERSION } from "../constants";
 import { getEntityName, returnFormats } from "../helpers";
 import { PgVisitor } from "../odata";

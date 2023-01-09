@@ -21,7 +21,7 @@ import { knexQueryToSql } from "./knexQueryToSql";
 
 export class TimeSeries {
     private querySrc: string;
-    private adam: string;
+    private resultColumn: string;
 
     constructor(query: Knex.QueryBuilder | string) {
         message(true, "CLASS", this.constructor.name, "Constructor");
@@ -32,7 +32,7 @@ export class TimeSeries {
     createSql(main: PgVisitor): string | undefined {
         if (!main.timeSeries) return;
         const type: TimeSeriesType = main.timeSeries;
-        this.adam =  main.parentEntity && main.parentEntity == _DBDATAS.MultiDatastreams.name ? `("result"->>'result')::float`: `"result"`;
+        this.resultColumn =  main.parentEntity && main.parentEntity == _DBDATAS.MultiDatastreams.name ? `("result"->>'result')::float`: `"result"`;
         switch (Object.values(TimeSeriesType).indexOf(type)) {
             case TimeSeriesType.YEAR:
                 return this.timeYear(false);
@@ -68,7 +68,7 @@ export class TimeSeries {
             `WITH src AS (${this.querySrc}),`,
             `range_values AS (SELECT min(src."resultTime") as minval, max(src."resultTime") as maxval FROM src),`,
             `time_range AS (SELECT generate_series(minval, maxval::date + interval '1 year', '1 year'::interval) as year FROM range_values),`,
-            `result_values AS (SELECT EXTRACT(YEAR FROM "resultTime") as year, AVG(${this.adam}) as result from src group by EXTRACT(YEAR FROM "resultTime"))`,
+            `result_values AS (SELECT EXTRACT(YEAR FROM "resultTime") as year, AVG(${this.resultColumn}) as result from src group by EXTRACT(YEAR FROM "resultTime"))`,
             `SELECT TO_CHAR(time_range.year, 'YYYY')  as "year", result_values."result" FROM time_range ${
                 full === true ? "LEFT" : "RIGHT"
             } JOIN result_values ON (EXTRACT(YEAR from time_range."year") = result_values."year") where time_range."year" is not NULL ORDER BY time_range."year"`,
@@ -88,7 +88,7 @@ export class TimeSeries {
             `WITH src AS (${this.querySrc}),`,
             `range_values AS (SELECT min(src."resultTime") AS minval, max(src."resultTime") AS maxval FROM src),`,
             `time_range AS (SELECT generate_series(minval, maxval, '1 month'::interval) AS month FROM range_values),`,
-            `result_by_month AS (SELECT EXTRACT(MONTH FROM "resultTime") AS month, EXTRACT(YEAR FROM "resultTime") AS year, AVG(${this.adam}) AS result FROM src group by EXTRACT(MONTH FROM "resultTime"), EXTRACT(YEAR FROM "resultTime")),`,
+            `result_by_month AS (SELECT EXTRACT(MONTH FROM "resultTime") AS month, EXTRACT(YEAR FROM "resultTime") AS year, AVG(${this.resultColumn}) AS result FROM src group by EXTRACT(MONTH FROM "resultTime"), EXTRACT(YEAR FROM "resultTime")),`,
             `result_serie AS (select EXTRACT(YEAR FROM time_range."month") AS year, EXTRACT(MONTH FROM time_range."month") AS month, result_by_month."result" `,
             `FROM time_range ${
                 full === true ? "LEFT" : "RIGHT"
@@ -111,7 +111,7 @@ export class TimeSeries {
             `range_values AS (SELECT min(src."resultTime") as minval, max(src."resultTime") as maxval FROM src),`,
             `time_range AS (SELECT generate_series(minval, maxval, '1 week'::interval) as week FROM range_values),`,
             `time_extract as (select distinct EXTRACT(YEAR from time_range."week") as year, EXTRACT(WEEK from time_range."week") as week from time_range),`,
-            `pre_result_values AS (SELECT EXTRACT(YEAR from src."resultTime") as year, EXTRACT(WEEK from src."resultTime") as week,  AVG(${this.adam})  as result from src group by "resultTime"),`,
+            `pre_result_values AS (SELECT EXTRACT(YEAR from src."resultTime") as year, EXTRACT(WEEK from src."resultTime") as week,  AVG(${this.resultColumn})  as result from src group by "resultTime"),`,
             `result_values as (SELECT pre_result_values."year", pre_result_values."week", AVG(pre_result_values."result") as result FROM pre_result_values group by pre_result_values."year", pre_result_values."week"),`,
             `res as (SELECT DISTINCT time_extract."year", time_extract."week", result_values."result" FROM time_extract ${
                 full === true ? "LEFT" : "RIGHT"
@@ -135,7 +135,7 @@ export class TimeSeries {
             `range_values AS (SELECT min(src."resultTime") as minval, max(src."resultTime") as maxval FROM src),`,
             `time_range AS (SELECT generate_series(minval, maxval, '1 day'::interval) as day FROM range_values),`,
             `time_extract as (select distinct EXTRACT(YEAR from time_range."day") as year, EXTRACT(doy from time_range."day") as day from time_range),`,
-            `pre_result_values AS (SELECT EXTRACT(YEAR from src."resultTime") as year, EXTRACT(doy from src."resultTime") as day,  AVG(${this.adam}) as result from src group by "resultTime"),`,
+            `pre_result_values AS (SELECT EXTRACT(YEAR from src."resultTime") as year, EXTRACT(doy from src."resultTime") as day,  AVG(${this.resultColumn}) as result from src group by "resultTime"),`,
             `result_values as (SELECT pre_result_values."year", pre_result_values."day", AVG(pre_result_values."result") as result FROM pre_result_values group by pre_result_values."year", pre_result_values."day"),`,
             `res as (SELECT DISTINCT time_extract."year", time_extract."day", result_values."result" FROM time_extract ${
                 full === true ? "LEFT" : "RIGHT"
