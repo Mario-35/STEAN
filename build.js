@@ -1,9 +1,6 @@
 "use strict";
 const minify = require("@node-minify/core");
-const htmlMinifier = require("@node-minify/html-minifier");
-const jsonminify = require('@node-minify/jsonminify');
 const cleanCSS = require("@node-minify/clean-css");
-
 var UglifyJS = require("uglify-js");
 
 var globby = require("globby");
@@ -15,18 +12,12 @@ var mkdirp = require("mkdirp");
 var archiver = require("archiver");
 var crypto = require("crypto");
 
-console.log(`\x1b[32m =========================== \x1b[36m Start \x1b[32m =========================== \x1b[0m`);
-
-const mode = ["build"];
-
-if (process.argv.includes("dev")) mode.push("dev");
-if (process.argv.includes("docker")) mode.push("docker");
-
+const dataDemo = `"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.datasDemo=void 0;const datasDemo=()=>[];exports.datasDemo=datasDemo;`;
 const encrypt = (text, key) => {
-    const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipheriv("aes-256-ctr", String(key), iv);
-    const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
-    return `${iv.toString("hex")}.${encrypted.toString("hex")}`;
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv("aes-256-ctr", String(key), iv);
+  const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
+  return `${iv.toString("hex")}.${encrypted.toString("hex")}`;
 }
 
 function isEmpty(str) {
@@ -34,9 +25,9 @@ function isEmpty(str) {
     return true;
   }
   return false;
-}
+  }
 
-function readFile(path) {
+  function readFile(path) {
   try {
     return fs.readFileSync(path, "utf-8");
   } catch (e) {
@@ -46,37 +37,36 @@ function readFile(path) {
 }
 
 function deleteFileSync(path) {
-    try {
-      fs.unlinkSync(path)
-      //file removed
-    } catch(err) {
-      console.error(err)
-    }
+  try {
+    fs.unlinkSync(path)
+    //file removed
+  } catch(err) {
+    console.error(err)
+  }
 }
 
 function copyFileSync( source, target ) {
   if (source.endsWith(".ts")) return;
-    var targetFile = target;
-    // If target is a directory, a new file with the same name will be created
-    if ( fs.existsSync( target ) ) {
-        if ( fs.lstatSync( target ).isDirectory() ) {
-            targetFile = path.join( target, path.basename( source ) );
-        }
-    }
-
-    fs.writeFileSync(targetFile, fs.readFileSync(source));
+  var targetFile = target;
+  // If target is a directory, a new file with the same name will be created
+  if ( fs.existsSync( target ) ) {
+      if ( fs.lstatSync( target ).isDirectory() ) {
+          targetFile = path.join( target, path.basename( source ) );
+      }
+  }
+  fs.writeFileSync(targetFile, fs.readFileSync(source));
 }
 
 function copyFolderRecursiveSync( source, target ) {
-    var files = [];
-    // Check if folder needs to be created or integrated
-    var targetFolder = path.join( target, path.basename( source ) );
-    if ( !fs.existsSync( targetFolder ) ) {
-        fs.mkdirSync( targetFolder );
-    }
+  var files = [];
+  // Check if folder needs to be created or integrated
+  var targetFolder = path.join( target, path.basename( source ) );
+  if ( !fs.existsSync( targetFolder ) ) {
+      fs.mkdirSync( targetFolder );
+  }
 
-    // Copy
-    if ( fs.lstatSync( source ).isDirectory() ) {
+  // Copy
+  if ( fs.lstatSync( source ).isDirectory() ) {
     if ( fs.lstatSync( source ).isDirectory() ) {
         files = fs.readdirSync( source );
         files.forEach( function ( file ) {
@@ -88,10 +78,14 @@ function copyFolderRecursiveSync( source, target ) {
             }
         } );
     }
-}
+  }
 }
 
-function writeFile(filePath, code) {
+function messageWrite(message) {
+  console.log(`\x1b[32m write File \x1b[36m ====> \x1b[35m ${message} \x1b[0m`);
+}
+
+function writeFile(filePath, code, silent) {
   mkdirp(path.dirname(filePath)).then(function () {
     fs.writeFile(filePath, code, function (err) {
       if (err) {
@@ -102,8 +96,10 @@ function writeFile(filePath, code) {
   })
   .catch(function (err) {
     console.log(`\x1b[31m Error \x1b[34m : \x1b[33m ${err}\x1b[0m`);
+    return
   });
-  
+  if (silent && silent === true) return
+  messageWrite(filePath);
 } 
 
 function zipDirectory(source, out) {
@@ -123,6 +119,8 @@ function zipDirectory(source, out) {
 }
 
 function ugly (dirPath, options) {
+  console.log(`\x1b[32m uglyFy \x1b[36m ====> \x1b[35m ${dirPath} \x1b[0m`);
+
   options = extend({}, {
     comments: true,
     output: "js",
@@ -138,7 +136,7 @@ function ugly (dirPath, options) {
   var files = globby.sync(options.patterns, {
     cwd: dirPath
   });
-  
+
   // minify each file individually
   files.forEach(function (fileName) {
 
@@ -151,35 +149,44 @@ function ugly (dirPath, options) {
       content: originalCode,
       options: options,options,
     }).then(function(min) {
-      writeFile(newName, min);
+      writeFile(newName, min, true);
     }).catch(function(e) {
       console.log(`\x1b[31m Error \x1b[34m : \x1b[33m ${e}\x1b[0m`);
 
     })
-   });
+  });
 }
 
 function uglyJs (dirPath) {
   var files = globby.sync(["**/*.js"], {
     cwd: dirPath
   });
-  
+
   // minify each file individually
   files.forEach(function (fileName) {
 
     const newName = path.join(dirPath, path.dirname(fileName), path.basename(fileName, path.extname(fileName))) + ".js";
-    const originalCode = readFile(path.join(dirPath, fileName));
+    const originalCode = fileName.includes("datasDemo.js") ? dataDemo : readFile(path.join(dirPath, fileName));
     const temp = UglifyJS.minify(originalCode);
     if (temp.error) console.log(`\x1b[31m Error \x1b[34m : \x1b[33m ${temp.error}\x1b[0m`);
-    writeFile(newName, temp.code);
-   });
+    writeFile(newName, temp.code, true);
+  });
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+const mode = ["build"];
+
+if (process.argv.includes("dev")) mode.push("dev");
+if (process.argv.includes("docker")) mode.push("docker");
+
+console.log(`\x1b[32m =========================== \x1b[36m Start ${mode} \x1b[32m =========================== \x1b[0m`);
+
 
 copyFolderRecursiveSync("./src/apidoc", "build/");
 copyFolderRecursiveSync("./src/server/views/js", "build/views");
 copyFolderRecursiveSync( "./src/server/views/css", "build/views" );
 copyFileSync( "./src/server/views/query/query.html", "build/views/query/" );
-copyFileSync( "./src/server/config/.key", "build/config/" );
 copyFileSync( "./src/server/routes/favicon.ico", "build/routes/" );
 
 const packageJson = require("./package.json");
@@ -190,6 +197,7 @@ delete packageJson.apidoc;
 fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
     encoding: "utf-8"
 },function (err) {
+  messageWrite("package.json");
   if (!mode.includes("dev")) {  
     ugly("./build/", {
       compressor: cleanCSS ,
@@ -205,8 +213,7 @@ fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
   
     uglyJs("./build");
   }
-  // delete datademo
-  // deleteFileSync("./build/db/createDBDatas/datasDemo.js");
+  
   try {
     try {
       const temp =  fs.readFileSync(path.join("./src/server/config/", "config.json"), "utf-8");
@@ -239,10 +246,8 @@ fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
             "retry": 10,
         }
     }: input[what];
-      fs.writeFileSync("build/config/config.json", JSON.stringify(conf, null, 2), {
-          encoding: "utf-8"
-      });
-      console.log("\x1b[36m configuration \x1b[34m : \x1b[37m Ok\x1b[0m");
+      writeFile("build/config/config.json", JSON.stringify(conf, null, 2));
+      writeFile("build/config/.key", key);
     }  catch (error) {
       console.log("\x1b[31m No configuration file \x1b[34m : \x1b[37m found\x1b[0m");
     }
@@ -250,9 +255,11 @@ fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
     console.log(error);
     console.log("\x1b[31m configuration \x1b[34m : \x1b[37m not write\x1b[0m");
   }
-  
+    
+  writeFile("build/db/createDBDatas/datasDemo.js", dataDemo);
+
   if (!mode.includes("docker")) zipDirectory("./build", "dist.zip").then(function (e) {
-    console.log("\x1b[36m compression \x1b[34m : \x1b[37m dist.zip\x1b[0m");
+    console.log(`\x1b[32m ./build \x1b[36m zip to ==> \x1b[35m "dist.zip" \x1b[0m`);
   });
   
 })
