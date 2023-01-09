@@ -182,6 +182,7 @@ if (process.argv.includes("docker")) mode.push("docker");
 
 console.log(`\x1b[32m =========================== \x1b[36m Start ${mode} \x1b[32m =========================== \x1b[0m`);
 
+deleteFileSync("./dist.zip");
 
 copyFolderRecursiveSync("./src/apidoc", "build/");
 copyFolderRecursiveSync("./src/server/views/js", "build/views");
@@ -260,7 +261,7 @@ fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
 
   if (!mode.includes("docker")) zipDirectory("./build", "dist.zip").then(function (e) {
     console.log(`\x1b[32m ./build \x1b[36m zip to ==> \x1b[35m "dist.zip" \x1b[0m`);
-  });
+  }); 
   
 })
 
