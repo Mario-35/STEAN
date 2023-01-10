@@ -14,7 +14,7 @@ import { _DBDATAS } from "../constants";
 import readline from "readline";
 import { Knex } from "knex";
 import koa from "koa";
-import { isModeDebug } from "../../helpers";
+import { _DEBUG } from "../../constants";
 
 /**
  *
@@ -145,7 +145,7 @@ export const importCsv = async (ctx: koa.Context, knex: Knex | Knex.Transaction,
                     scriptSql.push(scriptSqlResult.join(""));
 
                     const mySql = scriptSql.join("");
-                    if (isModeDebug()) message(true, "RESULT", "query", mySql);
+                    if (_DEBUG) message(true, "RESULT", "query", mySql);
                     const res = await client.query(mySql).catch((err: Error) => {
                         cleanup(false, err);
                     });

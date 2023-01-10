@@ -280,7 +280,6 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "id"
             },
             FeatureOfInterest: {
-                //TODO VERIF
                 type: RELATIONS.belongsTo,
                 expand: `"featureofinterest"."id" = "location"."_default_foi"`,
                 // link: "err: 404 : Path is not valid.",

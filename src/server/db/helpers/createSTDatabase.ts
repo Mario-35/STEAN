@@ -1,5 +1,5 @@
 /**
- * createSensorThingsDatabase.
+ * createSTDatabase.
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
@@ -16,7 +16,7 @@ import koa from "koa";
  import { datasDemo } from "../createDBDatas/datasDemo";
  import { triggers } from "../createDBDatas/triggers";
   
-  export const createSensorThingsDatabase = async(configName: string, ctx?: koa.Context): Promise<{ [key: string]: string }> => {
+  export const createSTDatabase = async(configName: string, ctx?: koa.Context): Promise<{ [key: string]: string }> => {
       message(true, "HEAD", "createDatabase", "createDatabase");
       const config = _CONFIGS[configName];
       const admin = _CONFIGS["admin"];

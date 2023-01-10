@@ -31,7 +31,7 @@ import { db } from "../db";
      token?: string; // integer
  }
  
- export enum Rights {
+ export enum userRights {
      Post = 0,
      Delete = 1,
      Create = 2,
@@ -77,13 +77,13 @@ import { db } from "../db";
  
  // export const ensureAdmin = (ctx: koa.Context): boolean => {
  //     const token = decodeToken(ctx);
- //     if (token) return token.PDCUAS[Rights.Admin] === true;
+ //     if (token) return token.PDCUAS[userRights.Admin] === true;
  //     return false;
  // };
  
  // export const ensureSuperAdmin = (ctx: koa.Context): boolean => {
  //     const token = decodeToken(ctx);
- //     if (token) return token.PDCUAS[Rights.SuperAdmin] === true;
+ //     if (token) return token.PDCUAS[userRights.SuperAdmin] === true;
  //     return false;
  // };
  

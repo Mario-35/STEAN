@@ -15,8 +15,7 @@ import koa from "koa";
  */
 
 import { logDebug } from "../logger";
-import { isModeDebug } from ".";
-import { logAll } from "../constants";
+import { logAll, _DEBUG } from "../constants";
 
 export const ConfigCtx = (ctx: koa.Context): any => {
     return {
@@ -50,7 +49,7 @@ export const ConfigCtx = (ctx: koa.Context): any => {
 };
 
 export const showConfigCtx = (ctx: koa.Context, force?: boolean): void => {
-    if (isModeDebug()) logAll(ctx.request);
+    if (_DEBUG) logAll(ctx.request);
     const temp = ConfigCtx(ctx);
     if (force) {
         console.log(temp);

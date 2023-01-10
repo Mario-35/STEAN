@@ -20,7 +20,7 @@ export const createIqueryFromContext = async (ctx: koa.Context): Promise<IQuery>
         id: "",
         methods: ["GET"],
         host: ctx._linkBase,
-        entity: ctx.originalUrl.endsWith("/Assist") ? ctx.originalUrl.split("/Assist")[0].split("/").reverse()[0] : "undefined",
+        entity:  "undefined",
         version: ctx._version,
         options: ctx.querystring ? ctx.querystring : "",
         user: user

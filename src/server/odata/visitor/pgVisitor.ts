@@ -51,7 +51,7 @@ export class PgVisitor {
     parameters: unknown[] = [];
     ast: Token;
     showRelations: boolean = true;
-    test: boolean = !true;
+    test: boolean = true;
 
     constructor(options = <SqlOptions>{}, blank?: boolean) {
         this.options = options;
@@ -573,12 +573,12 @@ export class PgVisitor {
         const params = node.value.parameters || [];
 
         const columnOrData = (index: number): string => {
-            const temp = decodeURI(Literal.convert(params[index].value, params[index].raw));
+            const temp = decodeURIComponent(Literal.convert(params[index].value, params[index].raw));
             return (_DBDATAS[this.entity].columns[temp]) ? `"${temp}"` :  `'${temp}'`;
         }
 
         const geoColumnOrData = (index: number, srid: boolean): string => {
-            const temp = decodeURI(Literal.convert(params[index].value, params[index].raw)).replace("geography", "");
+            const temp = decodeURIComponent(Literal.convert(params[index].value, params[index].raw)).replace("geography", "");
             return (_DBDATAS[this.entity].columns[temp]) ? temp :  `${srid === true ? 'SRID=4326;' : '' }${removeQuotes(temp)}`;
         }
 

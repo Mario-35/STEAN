@@ -80,6 +80,10 @@ class configuration {
         return this.configurationList;
     }
 
+    isInConfig(key: string):boolean {
+        return Object.keys(this.configurationList).includes(key.trim().toLowerCase()) ;  
+    }
+
     format(input: JSON, name?: string): IConfigFile {
         Object.keys(input).forEach((elem: string) => {input[elem] = decrypt(input[elem])});
         const returnValue = {
@@ -136,6 +140,7 @@ class configuration {
                 retry: this.configurationList[configName].retry ? this.configurationList[configName].retry : 2,
             }
     }
+    
     createConnection(configName: string): IDbConnection {
         const returnValue = {
             host: this.configurationList[configName].pg_host || "ERROR",
@@ -231,7 +236,7 @@ class configuration {
              });
      };  
      
-     async pgwait(options: IDbConnection): Promise<boolean> {
+    async pgwait(options: IDbConnection): Promise<boolean> {
         const pool = new pg.Pool({... options, database: "postgres" });
         let passage = 1;
         const timeStamp = (): string => {

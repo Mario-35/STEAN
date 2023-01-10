@@ -92,11 +92,12 @@ export const setConfigToCtx = (ctx: koa.Context): void => {
 
     const temp = getConfigName(ctx);
 
-    if (!temp || temp?.trim() === "" || !Object.keys(_CONFIGS).includes(temp.trim().toLowerCase())) throw new Error(`${temp} Not present in config File`);    
+    if (!temp) throw new Error("No config name found");    
+    if (_CONFIGURATION.isInConfig(temp) === false) throw new Error(`${temp} Not present in config File`);    
 
     ctx._configName = temp.trim().toLowerCase();
 
-    ctx.querystring = decodeURI(querystring.unescape(ctx.querystring));
+    ctx.querystring = decodeURIComponent(querystring.unescape(ctx.querystring));
 
     const protocol = ctx.request.headers["x-forwarded-proto"]
         ? ctx.request.headers["x-forwarded-proto"]

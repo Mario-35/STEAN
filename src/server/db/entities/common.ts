@@ -9,11 +9,11 @@
 import koa from "koa";
 import { Knex } from "knex";
 import { isGraph, _DBDATAS } from "../constants";
-import { getEntityName, isModeDebug, removeQuotes } from "../../helpers/index";
+import { getEntityName, removeQuotes } from "../../helpers/index";
 import {  message } from "../../logger";
 import { IReturnResult } from "../../types";
 import { createGraph, extractMessageError, knexQueryToSql, removeKeyFromUrl, verifyId } from "../helpers";
-import { _VOIDTABLE } from "../../constants";
+import { _DEBUG, _VOIDTABLE } from "../../constants";
 import { _CONFIGS, _CONFIGURATION } from "../../configuration";
 import { IGraphDatas } from "../helpers/createGraph";
 
@@ -40,9 +40,9 @@ export class Common {
     }
 
     // Log full Query
-    logDebugQuery(input: Knex.QueryBuilder | string): void {
+    logQuery(input: Knex.QueryBuilder | string): void {
         const queryString = typeof input === "string" ? input : knexQueryToSql(input);
-        if (isModeDebug()) message(true, "RESULT", "query", queryString);
+        if (_DEBUG) message(true, "RESULT", "query", queryString);
         this.ctx._query = queryString;
     }
 
@@ -110,7 +110,7 @@ export class Common {
 
         if(!sql) return;
         
-        this.logDebugQuery(sql);
+        this.logQuery(sql);
 
         return await Common.dbContext
             .raw(sql)
@@ -129,7 +129,6 @@ export class Common {
             })
             .catch((err: Error) => this.ctx.throw(400, { detail: err.message }));
     }
-
     
     onlyValue(input: string | object): string {
         return (typeof input === "object") ? JSON.stringify(input) : removeQuotes(input);
@@ -142,7 +141,7 @@ export class Common {
 
         if(!sql) return;
 
-        this.logDebugQuery(sql);
+        this.logQuery(sql);
 
         return Common.dbContext
             .raw(sql)
@@ -171,7 +170,7 @@ export class Common {
 
         const sql = this.ctx._odata.asPostSql(dataInput, Common.dbContext);
 
-        this.logDebugQuery(sql);
+        this.logQuery(sql);
 
         return Common.dbContext
             .raw(sql)
@@ -204,7 +203,7 @@ export class Common {
 
         const sql = this.ctx._odata.asPatchSql(dataInput, Common.dbContext);
 
-        this.logDebugQuery(sql);
+        this.logQuery(sql);
 
         return Common.dbContext
             .raw(sql)

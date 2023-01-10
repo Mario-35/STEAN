@@ -28,69 +28,6 @@
  
      async add(dataInput: Object, silent?: boolean): Promise<IReturnResult | undefined> {
         message(true, "OVERRIDE", this.constructor.name, "add");
-        // const duplicate = async (idInput: bigint ): Promise<IReturnResult | undefined> => {
-        //         message(true, "CLASS", this.constructor.name, "Duplicate");
-        //             let setList = "";
-    
-        //             Object.keys(insertObject).forEach((e, i) => {
-        //                 setList += `${i > 0 ? ",": ""}"${e}" = ${insertObject[e]}\n` ;
-        //             })
-    
-        //                 const sqlUpdate = `WITH "${_VOIDTABLE}" as (select srid FROM "${_VOIDTABLE}" LIMIT 1)
-        //                 , featureofinterest1 AS (SELECT id FROM "${_DBDATAS.FeaturesOfInterest.table}"
-        //                                         WHERE id = (SELECT _default_foi FROM "${_DBDATAS.Locations.table}" 
-        //                                         WHERE id = (SELECT location_id FROM "${_DBDATAS.ThingsLocations.table}" 
-        //                                         WHERE thing_id = (SELECT thing_id FROM "${_DBDATAS.MultiDatastreams.table}" 
-        //                                         WHERE id =${multiDatastream.id}))))
-        //                 , multidatastream1 AS (SELECT id, thing_id, ${searchMulti} LIMIT 1)
-        //                 , myValues ( "${Object.keys(insertObject).join(_QUOTEDCOMA)}") AS (values (${Object.values(insertObject).join()}))
-        //                 , observation1 AS (UPDATE  "${_DBDATAS.Observations.table}" SET ${setList} WHERE "${_DBDATAS.Observations.table}"."id" = ${idInput} RETURNING *, resultnumber AS result)
-        //                 , result1 as (select (select observation1.id from  observation1)
-        //                 , (select multidatastream1."keys" from multidatastream1)
-        //                 , ${this.createListQuery(
-        //                     Object.keys(insertObject),
-        //                     "(select observation1.COLUMN from  observation1), "
-        //                 )} (select multidatastream1.id from  multidatastream1) as multidatastream, (select multidatastream1.thing_id from multidatastream1) as thing)
-        //                 SELECT coalesce(json_agg(t), '[]') AS result FROM result1 as t`;
-    
-        //     this.logDebugQuery(sqlUpdate);
-
-        //                 return await Common.dbContext
-        //                 .raw(sqlUpdate)
-        //                 .then((res: any) => {
-        //                     const tempResult = res.rows[0].result[0];
-            
-        //                     if (tempResult.id != null) {
-        //                         const resultnumbers = {};
-        //                         tempResult.keys.forEach((elem: string, index: number) => {
-        //                             resultnumbers[elem] = tempResult["resultnumbers"][index];
-        //                         });
-        //                         const result = {
-        //                             "@iot.id": tempResult.id,
-        //                             "@iot.selfLink": `${this.ctx._odata.options.rootBase}Observations(${tempResult.id})`,
-        //                             "phenomenonTime": `"${tempResult.phenomenonTime}"`,
-        //                             "resultTime": `"${tempResult.resultTime}"`,
-        //                             result: resultnumbers
-        //                         };
-            
-        //                         Object.keys(_DBDATAS["Observations"].relations).forEach((word) => {
-        //                             result[`${word}@iot.navigationLink`] = `${this.ctx._odata.options.rootBase}Observations(${tempResult.id})/${word}`;
-        //                         });
-            
-        //                         return this.createReturnResult({
-        //                             body: result,
-        //                             query: sqlUpdate
-        //                         });
-        //                     } else {
-        //                         const temp = "Observation already exist";               
-        //                         if (silent) return this.createReturnResult({ body: temp });
-        //                         else this.ctx.throw(400, { detail: temp, link: `${this.ctx._odata.options.rootBase}Observations(${[tempResult.duplicate]})` });
-        //                     }
-        //                 })
-        //                 .catch((err: any) => {
-        //                     this.ctx.throw(400, { detail: err.detail });
-        //                 });
-        // }
          if (dataInput["MultiDatastream"]) {
             if (!dataInput["deveui"] || dataInput["deveui"] == null) {
                 const temp = "deveui is missing or Null";
@@ -119,8 +56,7 @@
  
          const searchMulti = `(select jsonb_agg(tmp.units -> 'name') as keys from ( select jsonb_array_elements("unitOfMeasurements") as units ) as tmp) FROM "${
              _DBDATAS.MultiDatastreams.table
-         }" 
-             WHERE "${_DBDATAS.MultiDatastreams.table}".id = (SELECT "${_DBDATAS.Loras.table}"."multidatastream_id" FROM "${_DBDATAS.Loras.table}" WHERE "${_DBDATAS.Loras.table}"."deveui" = '${dataInput["deveui"]}')`;
+         }" WHERE "${_DBDATAS.MultiDatastreams.table}".id = (SELECT "${_DBDATAS.Loras.table}"."multidatastream_id" FROM "${_DBDATAS.Loras.table}" WHERE "${_DBDATAS.Loras.table}"."deveui" = '${dataInput["deveui"]}')`;
          // Get the multiDatastream
          const tempSql = await Common.dbContext.raw(`SELECT id, thing_id, ${searchMulti}`);
          const multiDatastream = tempSql.rows[0];
@@ -234,7 +170,7 @@
               SELECT coalesce(json_agg(t), '[]') AS result FROM result1 as t`;
  
  
-         this.logDebugQuery(sql);
+         this.logQuery(sql);
  
          return await Common.dbContext
              .raw(sql)

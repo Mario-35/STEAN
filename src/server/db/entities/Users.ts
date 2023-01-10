@@ -14,7 +14,7 @@ import { message } from "../../logger";
 import { IReturnResult } from "../../types";
 import { _CONFIGURATION } from "../../configuration";
 import { hidePasswordInJson } from "../../helpers";
-import { Rights } from "../../types/user";
+import { userRights } from "../../types/user";
 import { db } from "..";
 
  
@@ -25,7 +25,7 @@ import { db } from "..";
 
      async getAll(): Promise<IReturnResult | undefined> {
         message(true, "CLASS", this.constructor.name, `getAll in ${this.ctx._odata.resultFormat} format`);
-        if (this.ctx._user?.PDCUAS[Rights.SuperAdmin] === true || this.ctx._user?.PDCUAS[Rights.Admin] === true) {
+        if (this.ctx._user?.PDCUAS[userRights.SuperAdmin] === true || this.ctx._user?.PDCUAS[userRights.Admin] === true) {
             const temp = await db["admin"]
                 .table("user")
                 .select(Object.keys(_DBDATAS.Users.columns))
@@ -46,8 +46,6 @@ import { db } from "..";
             body: await _CONFIGURATION.add(dataInput),
         });
     }
-
-
 
  }
  

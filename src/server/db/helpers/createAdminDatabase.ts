@@ -1,5 +1,5 @@
 /**
- * createAdminDatabase.
+ * createAdminDataBase.
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
@@ -16,44 +16,44 @@ import { _DBADMIN, _DBDATAS } from "../constants";
 import { IUser } from "../interfaces";
 
  
- export const createAdminDatabase = async(configName: string, ctx?: koa.Context): Promise<{ [key: string]: string }> => {
-    message(false, "HEAD", "createAdminDatabase", "createDatabase");
+ export const createAdminDataBase = async(configName: string, ctx?: koa.Context): Promise<{ [key: string]: string }> => {
+    message(false, "HEAD", "createAdminDataBase", "createDatabase");
 
     // init result
     const config = _CONFIGS[configName];
     const returnValue = { "Start create Database": config.pg_database };
     // create blank DATABASE
-    const myAdminConnection = knex({
+    const adminConnection = knex({
         client: "pg",
         connection: _CONFIGURATION.createKnexConnection("admin", "postgres"),
         pool: { min: 0, max: 7 },
         debug: false
     });
 
-    if (myAdminConnection)
-        await myAdminConnection
+    if (adminConnection)
+        await adminConnection
             .raw(`CREATE Database ${config.pg_database}`)
             .then(async () => {
                 returnValue["create Admin DB"] = "✔";
-                returnValue["User"] = await myAdminConnection
+                returnValue["User"] = await adminConnection
                     .raw(`select count(*) FROM pg_user WHERE usename = '${config.pg_user}';`)
                     .then(async (res) => {
                         if (res.rowCount < 1) {
                             message(false, "INFO", "Create User", config.pg_user);
-                            return myAdminConnection
+                            return adminConnection
                                 .raw(`CREATE ROLE ${config.pg_user} WITH PASSWORD '${config.pg_password}' SUPERUSER;`)
                                 .then(() => {
-                                    myAdminConnection.destroy();
+                                    adminConnection.destroy();
                                     return "Create User ✔";
                                 })
                                 .catch((err: Error) => err.message);
                         } else {
                             message(false, "INFO", "Update User", config.pg_user);
-                            return await myAdminConnection
+                            return await adminConnection
                                 .raw(`ALTER ROLE ${config.pg_user} WITH PASSWORD '${config.pg_password}' SUPERUSER;`)
                                 .then(() => {
-                                    myAdminConnection.destroy().catch((err: Error) => err.message);
-                                    myAdminConnection.destroy();
+                                    adminConnection.destroy().catch((err: Error) => err.message);
+                                    adminConnection.destroy();
                                     return "Update User ✔";
                                 })
                                 .catch((err: Error) => err.message);

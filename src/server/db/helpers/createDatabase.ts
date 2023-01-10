@@ -7,9 +7,9 @@
  */
 
  import koa from "koa";
-import { createAdminDatabase } from "./createAdminDatabase";
-import { createSensorThingsDatabase } from "./createSensorThingsDatabase";
+import { createAdminDataBase } from "./createAdminDataBase";
+import { createSTDatabase } from "./createSTDatabase";
   
   export const createDatabase = async(configName: string, ctx?: koa.Context): Promise<{ [key: string]: string }> => {
-    return configName.toUpperCase() === "ADMIN" ? createAdminDatabase(configName, ctx) : createSensorThingsDatabase(configName, ctx); 
+    return configName.toUpperCase() === "ADMIN" ? createAdminDataBase(configName, ctx) : createSTDatabase(configName, ctx); 
  }

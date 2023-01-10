@@ -588,7 +588,7 @@ function init () {
   // as these actions modify the content
   // and would make it jump to the wrong position or not jump at all.
   if (window.location.hash) {
-    const id = decodeURI(window.location.hash);
+    const id = decodeURIComponent(window.location.hash);
     if ($(id).length > 0) { $('html,body').animate({ scrollTop: parseInt($(id).offset().top) }, 0); }
   }
 

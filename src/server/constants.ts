@@ -27,7 +27,7 @@ export const _APIVERSION = "v1.0";
 export const _ENV_VERSION = process.env.npm_package_version ? process.env.npm_package_version : fileConfigJson ? fileConfigJson["version"] : "";
 export const _NODE_ENV = process.env.NODE_ENV ? process.env.NODE_ENV : "production";
 export const logAll = (input: any) => { console.log(util.inspect(input, { showHidden: false, depth: null, colors: true })); }
-
+export const _DEBUG: boolean = process.env.DEBUG?.trim() === "true" || false;
 export const helmetConfig = Object.freeze({
     defaultSrc: ["'self'"],
     scriptSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com"],

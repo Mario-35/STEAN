@@ -17,7 +17,7 @@ import { cleanUrl } from "../../helpers";
  * */
 
 export const removeKeyFromUrl = (input: string, keys: string[]): string => {
-    input = decodeURI(input);
+    input = decodeURIComponent(input);
     if (!input.includes("?")) return input;
     const firstSplit = input.split("?");
     const returnValue: string[] = [];

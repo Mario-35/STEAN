@@ -17,7 +17,7 @@
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export async function asyncForEach<T>(array: T[], callback: (item: T, index: number, allItems: T[]) => void) {
     for (let index = 0; index < array.length; index++) {
-        // ATTENTION AWAIT Before callback is important
+        // ATTENTION AWAIT Before callback is important (it send error BUT IS NOT)
         await callback(array[index], index, array);
     }
 }

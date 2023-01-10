@@ -60,9 +60,9 @@ export const createOdata = async (ctx: koa.Context):Promise<PgVisitor | undefine
         
         if (urlSrcSplit[0].split("(").length != urlSrcSplit[0].split(")").length) urlSrcSplit[0] += ")";        
 
-        const astRessources:Token = <Token>(resourcePath(<string>urlSrcSplit[0]));        
+        const astRessources:Token = <Token>(resourcePath(<string>urlSrcSplit[0]));   
         
-        const astQuery: Token = <Token>query(urlSrcSplit[1]);
+        const astQuery: Token = <Token>query(decodeURIComponent(urlSrcSplit[1]));
 
         const temp = new PgVisitor(options).init(ctx, astRessources).start(ctx, astQuery);
 

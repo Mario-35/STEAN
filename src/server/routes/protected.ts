@@ -17,10 +17,10 @@ import { message } from "../logger";
 import { IReturnResult } from "../types";
 import { DefaultState, Context } from "koa";
 import { CreateHtmlView } from "../views/helpers/CreateHtmlView";
-import { loginUser, Rights } from "../types/user";
+import { loginUser, userRights } from "../types/user";
 import { createIqueryFromContext } from "../views/helpers/";
 import { queryHtmlPage } from "../views/query";
-import { createDatabase, redoLog } from "../db/helpers";
+import { redoLog } from "../db/helpers";
 import { createOdata } from "../odata";
 import { db } from "../db";
 import { _CONFIGURATION } from "../configuration";
@@ -103,22 +103,6 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
             }
             return;
 
-        case "CREATEDB":
-            message(true, "HEAD", "POST createDB");
-            const conParams = _CONFIGURATION.format(ctx.request.body);
-            if (Object.values(conParams).includes("ERROR")) throw new TypeError(`Error in config file [${conParams}]`);
-            // ?? TODO
-            message(true, "DEBUG", "Params", conParams);
-            const returnValue = await createDatabase(conParams.name, ctx);
-
-            if (returnValue) {
-                ctx.status = 201;
-                ctx.body = returnValue;
-            } else {
-                ctx.status = 400;
-                ctx.redirect(`${ctx._rootName}error`);
-            }
-            return;
     }
 
     if ((ctx._user && ctx._user.id > 0) || ctx.request.url.includes("/Lora")) {
@@ -191,7 +175,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
 });
 
 protectedRoutes.patch("/(.*)", async (ctx) => {
-    if (ctx._user.PDCUAS[Rights.Post] === true && Object.keys(ctx.request.body).length > 0) {
+    if (ctx._user.PDCUAS[userRights.Post] === true && Object.keys(ctx.request.body).length > 0) {
         const odataVisitor = await createOdata(ctx); 
         if (odataVisitor)  ctx._odata = odataVisitor;
         if (ctx._odata) {
@@ -216,7 +200,7 @@ protectedRoutes.patch("/(.*)", async (ctx) => {
 });
 
 protectedRoutes.delete("/(.*)", async (ctx) => {
-    if (ctx._user.PDCUAS[Rights.Delete] === true) {
+    if (ctx._user.PDCUAS[userRights.Delete] === true) {
         const odataVisitor = await createOdata(ctx); 
         if (odataVisitor)  ctx._odata = odataVisitor;
         if (ctx._odata) {

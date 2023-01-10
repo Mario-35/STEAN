@@ -17,6 +17,5 @@ export const testConnection = async (instance: Knex<any, unknown[]>): Promise<bo
         return false;
     });
     message(true, "INFO", "testConnection", "OK");
-
     return true;
 };
