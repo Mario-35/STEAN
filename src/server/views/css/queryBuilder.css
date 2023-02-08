@@ -1,4 +1,12 @@
-.query-container {
+/**
+ * QueryBuilder css for Query.
+ *
+ * @copyright 2023-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+ 
+ .query-container {
   min-height: 3rem;
   min-width: 20vw;
   border: 1px solid grey;

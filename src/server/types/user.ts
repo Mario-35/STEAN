@@ -12,7 +12,7 @@
  import { _DBADMIN } from "../db/constants";
  import { decrypt } from "../helpers/crypto";
  import { isTest } from "../helpers";
- import { keyApp } from "../constants";
+ import { _KEYAPP } from "../constants";
  import { _CONFIGURATION } from "../configuration";
 import { db } from "../db";
  
@@ -58,7 +58,7 @@ import { db } from "../db";
              },
              exp: Math.floor(Date.now() / 1000) + 60 * 60 // 60 seconds * 60 minutes = 1 hour
          },
-         keyApp
+         _KEYAPP
      );
  };
  export const decodeToken = (ctx: koa.Context): userToken | undefined => {
@@ -74,18 +74,6 @@ import { db } from "../db";
              });
      }
  };
- 
- // export const ensureAdmin = (ctx: koa.Context): boolean => {
- //     const token = decodeToken(ctx);
- //     if (token) return token.PDCUAS[userRights.Admin] === true;
- //     return false;
- // };
- 
- // export const ensureSuperAdmin = (ctx: koa.Context): boolean => {
- //     const token = decodeToken(ctx);
- //     if (token) return token.PDCUAS[userRights.SuperAdmin] === true;
- //     return false;
- // };
  
  export const ensureAuthenticated = (context: koa.Context): boolean => (isTest() ? true : userAuthenticated(context));
  
@@ -109,10 +97,6 @@ import { db } from "../db";
  export const loginUser = async (ctx: koa.Context): Promise<IUser | undefined> => {
      if (ctx.request.body["username"] && ctx.request.body["password"]) {
          try {
-             if (isTest()) {
-                //  const tempConnection = getConnection("admin");
-                //  if (tempConnection) getConnection("admin") = tempConnection;
-             }
              return await db["admin"]
                  .table(_DBADMIN.Users.table)
                  .where("username", ctx.request.body["username"])

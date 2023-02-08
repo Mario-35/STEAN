@@ -1,9 +1,8 @@
-import { IEntityColumnForm, IUser } from "../types";
+import { IEntity, IUser } from "../types";
 
 export interface IQuery {
     user: IUser;
     methods: string[];
-    entities?: string[];
     entity: string;
     subentity?: string;
     id: string;
@@ -13,11 +12,9 @@ export interface IQuery {
     host: string;
     datas?: JSON;
     results?: JSON | string;
-    relations?: { [key: string]: string[] };
-    columns?: { [key: string]: { [key: string]: IEntityColumnForm } };
-    singulars?: { [key: string]: string };
     graph: boolean;
     admin: boolean;
+    _DATAS : { [k: string]: IEntity; }
 }
 
 export const userHeader: {[key: string]: string} = Object.freeze({

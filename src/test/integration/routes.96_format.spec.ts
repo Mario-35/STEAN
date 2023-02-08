@@ -62,13 +62,14 @@ describe("Output formats", () => {
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: any, res: any) => {                    
+                .end((err: any, res: any) => {                                        
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
+                    // res.body[0]["dataArray@iot.count"].eql(24);
                     res.body[0].component.length.should.eql(4);
                     res.body[0].component[0].should.eql("id");  
-                    res.body[0].dataArray = [res.body[0].dataArray[0], res.body[0].dataArray[1]];
+                    res.body[0].dataArray.length.should.eql(24);
                     addToApiDoc({ ...infos, result: res });
                     done();
                 });
@@ -83,13 +84,14 @@ describe("Output formats", () => {
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: any, res: any) => {    
+                .end((err: any, res: any) => { 
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
                     res.body[0].component.length.should.eql(2);
-                    res.body[0].dataArray[0][1].should.eql(11.6666666666667);  
-                    res.body[0].dataArray = [res.body[0].dataArray[0], res.body[0].dataArray[1]];
+                    res.body[0]['dataArray@iot.count'].should.eql(22);
+                    res.body[0].dataArray.length.should.eql(22);
+                    res.body[0].dataArray[1][1].should.eql(0.1);  
                     addToApiDoc({ ...infos, result: res });
                     done();
                 });

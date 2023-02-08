@@ -1,0 +1,93 @@
+/**
+ * Json viewer css for Query.
+ *
+ * @copyright 2023-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+ 
+ .json-viewer {
+    height: 100%;
+    width: 100%;
+    color: #656d78;
+    padding: 5px 5px 5px 5px;
+    border-radius: 0.4em;
+    margin-bottom: 3px;
+}
+
+
+/* Syntax highlighting for JSON objects */
+ul.json-dict, ol.json-array {
+    list-style-type: none;
+    margin: 0 0 0 1px;
+    border-left: 1px dotted #ccc;
+    padding-left: 2em;
+  }
+  .json-url {
+    color: #e11;
+  }
+  .json-string {
+    color: #0B7500;
+  }
+  .json-literal {
+    color: #1A01CC;
+    font-weight: bold;
+  }
+  .json-code {
+    color: #de9ae7;
+    font-weight: bold;
+  }
+  
+  /* code button */
+  a.json-code {
+    position: relative;
+    color: inherit;
+    text-decoration: none;
+  }
+  a.json-code:focus {
+    outline: none;
+  }
+  a.json-code:before {
+    color: #aaa;
+    content: "\25C6"; /* down arrow */
+    position: absolute;
+    display: inline-block;
+    width: 1em;
+    left: -1em;
+  }
+
+  /* Toggle button */
+  a.json-toggle {
+    position: relative;
+    color: inherit;
+    text-decoration: none;
+  }
+  a.json-toggle:focus {
+    outline: none;
+  }
+  a.json-toggle:before {
+    color: #aaa;
+    content: "\25BC"; /* down arrow */
+    position: absolute;
+    display: inline-block;
+    width: 1em;
+    left: -1em;
+  }
+  a.json-toggle.collapsed:before {
+    content: "\25B6"; /* left arrow */
+  }
+  
+  /* Collapsable placeholder links */
+  a.json-placeholder {
+    color: #aaa;
+    padding: 0 1em;
+    text-decoration: none;
+  }
+  a.json-placeholder:hover {
+    text-decoration: underline;
+  }
+  
+  .pick-path:hover {
+    color: darkgray;
+  }
+  

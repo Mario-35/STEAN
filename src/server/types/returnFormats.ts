@@ -12,6 +12,7 @@ export const enum FORMATS {
     json = "json", 
     csv = "csv",
     txt = "txt", 
+    sql = "sql", 
     html = "html", 
     icon = "icon", 
     graph = "graph", 

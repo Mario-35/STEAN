@@ -157,17 +157,31 @@ function ugly (dirPath, options) {
   });
 }
 
+
 function uglyJs (dirPath) {
   var files = globby.sync(["**/*.js"], {
     cwd: dirPath
   });
-
+  const options = { 
+    mangle: true,
+    compress: {
+      sequences: true,
+      dead_code: true,
+      conditionals: true,
+      booleans: true,
+      unused: true,
+      if_return: true,
+      join_vars: true,
+      drop_console: true
+    }
+  };
   // minify each file individually
   files.forEach(function (fileName) {
+    console.log(`minify : ${fileName}`);
 
     const newName = path.join(dirPath, path.dirname(fileName), path.basename(fileName, path.extname(fileName))) + ".js";
     const originalCode = fileName.includes("datasDemo.js") ? dataDemo : readFile(path.join(dirPath, fileName));
-    const temp = UglifyJS.minify(originalCode);
+    const temp = UglifyJS.minify(originalCode, options);
     if (temp.error) console.log(`\x1b[31m Error \x1b[34m : \x1b[33m ${temp.error}\x1b[0m`);
     writeFile(newName, temp.code, true);
   });
@@ -211,7 +225,6 @@ fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
         removeComments: true
       }
     });
-  
     uglyJs("./build");
   }
   

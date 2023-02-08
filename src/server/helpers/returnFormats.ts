@@ -17,11 +17,14 @@ import util from "util";
 
 
 const defaultFunction = (input: string | Object, ctx?: koa.Context) => input;
-
 const _returnFormats: { [key in FORMATS]: IreturnFormat } = {
     json: {
       type: "application/json",
-      format : defaultFunction
+      format : defaultFunction,
+    },  // IMPORTANT TO HAVE THIS BEFORE GRAPH
+    graphDatas: {
+      type: "application/json",
+      format : defaultFunction,
     },
     graph: {
       type: "text/html;charset=utf8",
@@ -31,7 +34,7 @@ const _returnFormats: { [key in FORMATS]: IreturnFormat } = {
                     <html lang="fr">
                         <head>
                             <style>${cssFile("query.css")}</style>
-                            <!-- htmlmin:ignore --><script>${jsFile("echarts.min.js")}</script><!-- htmlmin:ignore -->
+                            <!-- htmlmin:ignore --><script>${jsFile("echarts.js")}</script><!-- htmlmin:ignore -->
                             <script>${jsFile("modal.js")}</script>
                         </head>
     
@@ -48,15 +51,11 @@ const _returnFormats: { [key in FORMATS]: IreturnFormat } = {
                             </script>
                         </body>
                     </html>`;  
-      }
-    },
-    graphDatas: {
-      type: "application/json",
-      format : defaultFunction
+      },
     },
     dataArray: {
       type: "application/json",
-      format : defaultFunction
+      format : defaultFunction,
     },
     csv: {
       type: "text/csv",
@@ -74,43 +73,47 @@ const _returnFormats: { [key in FORMATS]: IreturnFormat } = {
                 }
             }
         return "No datas";
-      }
+      },
     },
     txt: {
       type: "text/plain",
-      format :(input: string | Object, ctx?: koa.Context) => Object.entries(input).length > 0 ? util.inspect(input, { showHidden: true, depth: 4 }) : JSON.stringify(input)
+      format :(input: string | Object, ctx?: koa.Context) => Object.entries(input).length > 0 ? util.inspect(input, { showHidden: true, depth: 4 }) : JSON.stringify(input),
+    },
+    sql: {
+      type: "text/plain",
+      format : defaultFunction,
     },
     html: {
       type: "text/html;charset=utf8",
-      format : defaultFunction
+      format : defaultFunction,
     },
     css: {
       type: "text/css;charset=utf8",
-      format : defaultFunction
+      format : defaultFunction,
     },
     js: {
       type: "application/javascript;charset=utf8",
-      format : defaultFunction
+      format : defaultFunction,
     },
     png: {
       type: "image/png",
-      format : defaultFunction
+      format : defaultFunction,
     },
     jpeg: {
       type: "image/jpeg",
-      format : defaultFunction
+      format : defaultFunction,
     },
     jpg: {
       type: "image/jpeg",
-      format : defaultFunction
+      format : defaultFunction,
     },
     icon: {
       type: "image/x-icon",
-      format : defaultFunction
+      format : defaultFunction,
     },
     ico: {
       type: "image/x-icon",
-      format : defaultFunction
+      format : defaultFunction,
     }
 };
 

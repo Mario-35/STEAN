@@ -6,10 +6,11 @@
  *
  */
 
-import { logAll, _DEBUG,  } from "../constants";
+import { logAll } from ".";
+import { _debug } from "../constants";
 
 export const logDebug = (input: any, full?: boolean): void => {
-    if (_DEBUG) {
+    if (_debug === true) {
         if (full && full == true) logAll(input);
         else console.log(input);
     }

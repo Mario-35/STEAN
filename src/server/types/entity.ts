@@ -7,21 +7,13 @@
  */
 
 
-export interface IEntityColumnForm {
-        readonly type: string;
-        readonly alias?: string;
-        readonly entity?: string;
-        readonly?: boolean;
-}
-
 interface IEntityColumn {
     [key: string]: {
-        readonly comment: string;
         readonly create: string;
         readonly alias?: string;
         readonly test?: string;
         readonly dataList?: { [key: string]: string };
-        readonly form?: IEntityColumnForm;
+        readonly type?: string;
     };
 }
 

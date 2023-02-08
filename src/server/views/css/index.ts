@@ -9,7 +9,8 @@
 import fs from "fs";
 import path from "path";
 
-  export const cssFile = (name: string):string =>  fs.readFileSync(__dirname + `/${name}`, "utf-8");
+  export const cssFile = (name: string):string =>  (fs.existsSync(__dirname + `/${name}`))  ? fs.readFileSync(__dirname + `/${name}`, "utf-8") : fs.readFileSync(__dirname + `/${name.replace(".css",".min.css")}`, "utf-8");
+
 
   export const listCssFiles = ():string[] => {
     let result: string[] = [];

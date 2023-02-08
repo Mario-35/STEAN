@@ -1,31 +1,16 @@
-var jsonObj = {};
-var jsonViewer = new JSONViewer();
-var listOptions = {};
-var canGo = false;
-var modeDebug = true;
-let builder = undefined;
-let isDebug = true;
-const cardDatas = {};
-let dragText = "";
-
-
-
-function debug(input) { if (isDebug == true) console.log(input); }
-
-const SubOrNot = () => params.admin === false && subentity.value !== _NONE ? subentity.value : entity.value;
+const pretty = new pp();
+const SubOrNot = () => _PARAMS.admin === false && subentity.value !== _NONE ? subentity.value : entity.value;
 const isObservation = () => entity.value == "Observations" || subentity.value == "Observations";
 const testNull = (input) => (input.value == "<empty string>" || input.value.trim() == "" || input.value.trim()[0] == "0" || input.value.startsWith(_NONE)); 
 
 
-document.querySelector("#json").appendChild(jsonViewer.getContainer());
-
-params={};
-
-
+/**
+ * Show spinner for wating
+ * @param {boolean} on 
+ */
 function wait(on) {
-  showHide(spinner, on);
+  toggleShowHide(spinner, on);
 };
-
 
 // load file json
 let importFile = false;
@@ -33,24 +18,46 @@ let importFile = false;
 // DON'T REMOVE !!!!
 // @start@
 
-// ===============================================================================
-// |                                 ERROR DIALOG                                |
-// ===============================================================================
-var notify =  function (titleMess, bodyMess) {
-  wait(false);
-      new Error({
+/**
+ * Show message popup
+ * @param {*} titleMess 
+ * @param {*} bodyMess 
+ */
+function notifyError(titleMess, err) {
+    new Error({
+      title: titleMess,
+      content: typeof err === "object"?  err.message: err
+    });        
+  };
+    
+    function notifyAlert(titleMess, message) {
+      new Alert({
         title: titleMess,
-        content: bodyMess
-    });
+        content: message
+      }); 
+    };
+    function notifyPrompt(titleMess, message,submitText,placeholderText) {
+      new Prompt({
+        title: titleMess,
+        content: message,
+        submitText,
+        placeholderText
+      }); 
+    };
+
+    function notifyJson(titleMess, contentJson) {
+      new ViewJson({
+        title: titleMess,
+        content: contentJson
+      }); 
+    };
+      
+function notifyConfirm(titleMess, message) {
+      new Confirm({
+        title: titleMess,
+        content: message
+    });        
 };
-
-// ===============================================================================
-// |                                 GUI HELPERS                                 |
-// ===============================================================================
-
-
-
-
 
   function getVersion(input) {
     const splitVersion = (str) =>
@@ -58,9 +65,8 @@ var notify =  function (titleMess, bodyMess) {
         .replace(/[//]+/g, '/')
         .split('/')
         .filter((value) => value.match(/v{1}\d\.\d/g));
-
-    const temp = splitVersion(input);
-    return temp[0];
+        
+    return splitVersion(input)[0];
   };
 
   function hide(obj) {
@@ -71,22 +77,15 @@ var notify =  function (titleMess, bodyMess) {
     obj.style.display = "block";
   }
 
-  function showHide(obj, test) {
+  function toggleShowHide(obj, test) {
     obj.style.display = test === true ? "block" : _NONE;
   }
 
-  function EnabledDisabled(obj, test) {
+  function EnabledOrDisabled(obj, test) {
     if (obj.length == undefined) obj = [obj];
     obj.forEach(e => {
       if (test) e.removeAttribute('disabled', ''); 
       else e.setAttribute('disabled', ''); 
-    });
-  }
-
-  function showOnly(obj) {
-    [ 'graphContainer','csvContainer','jsonContainer'].forEach(elem => {
-      if (elem === obj) show(getElement(elem));
-      else hide(getElement(elem));
     });
   }
 
@@ -100,42 +99,42 @@ var notify =  function (titleMess, bodyMess) {
     const index = Number(nb.value);
     return (index > 0);
   };
-
-  function showJson(input) {
-    jsonViewer.showJSON(input);
-    show(json);
-    showOnly('jsonContainer');
-    wait(false);
-  };
   
   function getDefaultValue(obj, list) {
     return obj.value != "" && list.includes(obj.value) ? obj.value : list[0]; 
   };
 
+  function getFormatOptions() {
+    let temp = importFile ? ["json"]  : ["json","csv","txt","dataArray","sql"];
+    if (isObservation() || queryResultFormat.value == "graph") {
+      temp.push("graph")
+      temp.push("graphDatas")
+    };
+    return temp;
+  };
+
   function updateForm() {
-    showHide(observationsTab, isObservation());    
-    showHide(importTab, params.user.canPost);    
-    showHide(logout, params.user.canPost);
-    showHide(fileone, params.user.canPost);
-    showHide(fileonelabel, params.user.canPost);  
-    buttonGoOrSubmit();
+    toggleShowHide(observationsTab, isObservation());    
+    toggleShowHide(importTab, _PARAMS.user.canPost);    
+    toggleShowHide(logout, _PARAMS.user.canPost);
+    toggleShowHide(fileone, _PARAMS.user.canPost);
+    toggleShowHide(fileonelabel, _PARAMS.user.canPost);  
+    buttonGo();
     ToggleOption( getIfChecked("splitResultOption") && isObservation(), 'splitResult',splitResultOptionName.value, "");
 
-    let temp = importFile ? ["json"]  : ["json","csv","txt","dataArray"];
-    if (isObservation() || resultFormatOption.value == "graph") temp.push("graph");
-      populateSelect(resultFormatOption, temp, getDefaultValue(resultFormatOption, temp));
-    };
+    const temp = getFormatOptions() ;
+    populateSelect(queryResultFormat, temp, getDefaultValue(queryResultFormat, temp));
+  };
 
 
 
   function refreshAfterEntityOrSubEntity() {
-    if(params.columns) {
-      populateMultiSelect("querySelect", Object.keys(params.columns[SubOrNot()]), null, "all");
-      populateMultiSelect("queryOrderBy", Object.keys(params.columns[SubOrNot()]), null, _NONE, true);
-      populateSelect(queryProperty, Object.keys(params.columns[SubOrNot()]), params.property != undefined ? params.property :_NONE, true);
-    }
-    if (params.relations) populateMultiSelect("queryExpand", params.relations[SubOrNot()], null, _NONE);
-
+    const tempEntity = SubOrNot();
+    console.log(`refreshAfterEntityOrSubEntity : SubOrNot ${tempEntity}`);
+    populateMultiSelect("querySelect", columnsList(tempEntity) , null, "all");
+    populateMultiSelect("queryOrderBy", columnsList(tempEntity) , null, _NONE, true);
+    populateSelect(queryProperty, columnsList(tempEntity), _PARAMS.property != undefined ? _PARAMS.property :_NONE, true);
+    populateMultiSelect("queryExpand", relationsList(tempEntity), null, _NONE);
     refresh();
     updateForm();
     updateBuilder();
@@ -144,14 +143,15 @@ var notify =  function (titleMess, bodyMess) {
   };
 
   function updateBuilder() {
-    if (!params.columns) return;
     const ent = SubOrNot();
-      const fields = [];
-      Object.keys(params.columns[ent]).forEach(e => {
+    if (!ent) return;
+    const columns = columnsList(ent);
+    const fields = [];
+      relationsList(ent).forEach(e => {
         fields.push({
           "value": e,
           "label": e,
-          "type": params.columns[ent][e],
+          "type":  _PARAMS._DATAS[ent].columns[e] && _PARAMS._DATAS[ent].columns[e].type  ? _PARAMS._DATAS[ent].columns[e].type : "text",
         });
       });
      if (builder) builder.clear("query-builder", fields); else builder = new QueryBuilder("query-builder", fields);
@@ -161,15 +161,25 @@ var notify =  function (titleMess, bodyMess) {
 // ===============================================================================
 // |                                   REFRESH                                   |
 // ===============================================================================
-  function buttonGoOrSubmit() {
+
+
+
+  function whatButton(obj) {
+    [ go, addImport].forEach(elem => {
+      if (elem === obj) show(getElement(elem));
+      else hide(getElement(elem));
+    });
+  }
+
+  function buttonGo() {
     if (importFile == true) {
       hide(go);
       show(addImport);
       
       const textValue = jsonDatas.last_string_content;
-
-      showHide(submit, textValue.match("columns") != null);
-
+      
+      toggleShowHide(submit, textValue.match("columns") != null);
+      
     } else {
       show(go);
       canShowQueryButton();
@@ -179,11 +189,11 @@ var notify =  function (titleMess, bodyMess) {
   };
 
   function canShowQueryButton() {
-    EnabledDisabled([go, btnShowLinks], (!testNull(subentity) && testNull(nb)) ? false : true);    
+    EnabledOrDisabled([go, btnShowLinks], (!testNull(subentity) && testNull(nb)) ? false : true);    
   };
 
   function canShowSplitsElements() {
-    EnabledDisabled([splitResultOption, splitResultOptionName], ((!testNull(subentity) && subentity.value === "Observations") && (!testNull(entity) && entity.value === "MultiDatastreams")));
+    EnabledOrDisabled([splitResultOption, splitResultOptionName], ((!testNull(subentity) && subentity.value === "Observations") && (!testNull(entity) && entity.value === "MultiDatastreams")));
   }
 
 // ===============================================================================
@@ -191,9 +201,9 @@ var notify =  function (titleMess, bodyMess) {
 // ===============================================================================
 
 
-async function editDataClicked(id, params) {
-  const name = params.seriesName;
-  const when = params.name;
+async function editDataClicked(id, _PARAMS) {
+  const name = _PARAMS.seriesName;
+  const when = _PARAMS.name;
   const myUrl = `${optHost.value}/${optVersion.value}/Observations(${id})`;
   let getEditData = await fetch(myUrl, {
     method: "GET",
@@ -208,9 +218,6 @@ async function editDataClicked(id, params) {
         submitText: "Valid",
         content: `date : ${when}`,
         placeholderText: (typeof editData.result === "object") ? `${editData.result[name]}` : `${editData.result}`,
-        onSubmit(component, value) {
-            debug(`Value: ${value}`);
-        }
     });
 }
 
@@ -220,7 +227,7 @@ async function editDataClicked(id, params) {
 
 
 function refresh() {
-  options.value =  createOptionsLine();
+  queryOptions.value =  createOptionsLine();
   const elemForm = getElement("pro-form");
   const elemId = getElement("debug");
   if (elemId && elemForm) {
@@ -252,12 +259,12 @@ var addOption = function(key, value, deleteFalse){
   if ((deleteFalse && value.toUpperCase() === deleteFalse) || !value || value === "" || value === "<empty string>") 
     delete listOptions[key];
    else listOptions[key] = value; 
-  options.value =  createOptionsLine();
+   queryOptions.value =  createOptionsLine();
 };
 
 var deleteOption = function(key){
   delete listOptions[key];
-  options.value =  createOptionsLine();
+  queryOptions.value =  createOptionsLine();
 };
 
   function clear() {
@@ -266,70 +273,50 @@ var deleteOption = function(key){
     topOption.value = 0;
     skipOption.value = 0;
     nb.value = 0;
-    debug.checked = false;
     splitResultOption.checked = false;
     splitResultOptionName.value = "";
-    resultFormatOption.value = "JSON";
+    queryResultFormat.value = "JSON";
     method.value = "GET";
   }
+
 function init() {
-
- 
+  if (isDebug) console.log("==================== Init ====================");
+  if (isDebug) console.log(_PARAMS);
   new SplitterBar(container, first, two);
-  clear();
   wait(false);
+  const tempEntity = _PARAMS.entity &&  _PARAMS.entity != "" ? _PARAMS.entity : "Things";
+  populateSelect(entity, entityList(), tempEntity);
+  const subs = relationsList(tempEntity);
+  populateSelect(subentity, subs, subs.includes(tempEntity) ? _PARAMS.subentity : _NONE, true);
 
-  tempEntity = params.admin === true ? "Logs" :Object.keys(params.relations).includes(params.entity) ? params.entity : "Things";
-  if (params.relations) {
-    populateSelect(entity, Object.keys(params.relations), tempEntity);
-    populateSelect(subentity, params.relations[entity.value], params.relations[tempEntity].includes(params.subentity) ? params.subentity : _NONE, true);
-  }
-  if (params.admin == true) {
-    populateSelect(entity, params.entities, tempEntity);
-  }
-  populateSelect(method, entity.value == "Loras" ? ["GET","POST"]  : params.methods, params.method ? params.method : "GET");
-  populateSelect(logsMethod,  params.methods, params.method ? params.method : "GET");
+  if (_PARAMS.admin == true) populateSelect(entity, Object.keys(_PARAMS._DATAS), tempEntity);
+
+  populateSelect(method, entity.value == "Loras" ? ["GET","POST"]  : _PARAMS.methods, _PARAMS.method ? _PARAMS.method : "GET");
   populateSelect(selectSeries, ["year", "month", "day"], _NONE, true); 
-
   
-  // hide params
-  // history.replaceState({}, null, `${optHost.value}/${optVersion.value}/Query`);
+  
+  // hide _PARAMS
+  if (!isDebug)  history.replaceState({}, null, `${optHost.value}/${optVersion.value}/Query`);
   hide(querySubExpand);
-  nb.value = params.id;
+  nb.value = _PARAMS.id;
   
-  
-  if (decodeUrlOptions(params.options) == false) {
-    onlyValue.checked = params.onlyValue == "true"; 
-    
-    optVersion.value = params.version;
-    optHost.value = params.host;
-    
-    options.value = params.options;
-    if (options.value[0] == "&") options.value = options.value.substring(1);
-    if(params.datas) {
-      jsonDatas.json_value = params.datas;
-    }
-  }
   refreshAfterEntityOrSubEntity();
-  if (params.admin == true) pipo();
-  showOnly('none');
+
+  if (decodeOptions(_PARAMS.options) == false) {
+    onlyValue.checked = _PARAMS.onlyValue == "true"; 
+    
+    optVersion.value = _PARAMS.version;
+    optHost.value = _PARAMS.host;
+    
+    queryOptions.value = _PARAMS.options;
+    if (queryOptions.value[0] == "&") queryOptions.value = queryOptions.value.substring(1);
+    if(_PARAMS.datas) jsonDatas.json_value = _PARAMS.datas;
+  }
+
 };
 
 
 
 init();
-function pipo() {
-  getElement("chck3").setAttribute('disabled', ''); 
-  return;
-  getElement("chck2").setAttribute('disabled', ''); 
-  getElement("chck4").setAttribute('disabled', ''); 
-  getElement("subentity").setAttribute('disabled', ''); 
-  getElement("resultFormatOption").setAttribute('disabled', ''); 
-}
 
-function jsonContainerEvent(event) {
-  console.log("========================================================================> ok"); 
-  console.log(event); 
-  dragText = event.explicitOriginalTarget.innerText;
 
-}

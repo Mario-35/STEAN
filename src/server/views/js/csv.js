@@ -7,9 +7,8 @@
  * @param {*} separator seprator
  */      
 
- buildTableWithCsv = (input, separator) => {
-  hide(json);
-  var tableArea = getElement("csvContainer");
+ buildTableWithCsv = (input, separator, container) => {
+  var tableArea = getElement(container);
   var allRows = input.split(/\r?\n|\r/).filter((row) => row !== "");
   
   var old = getElement("tablewrapper");
@@ -33,10 +32,7 @@
       _tr.appendChild(_td);
     }
     _table.appendChild(_tr);
-  }
-  
-  wait(false);
-  
+  }  
   _wrapper.appendChild(_table);
 
   tableArea.appendChild(_wrapper);

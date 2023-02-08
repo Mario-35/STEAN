@@ -1,3 +1,11 @@
+/**
+ * Splitter css for Query.
+ *
+ * @copyright 2023-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+
 @media only screen and (min-width: 60em) { /* 960px */
   .container {
     width: 75%;
@@ -69,7 +77,6 @@ a {
 	overflow-x: hidden;
     scrollbar-width: thin;
     scrollbar-color: #6060dd #ffffff;	
-	height: 91%;
 }
 
 #two {

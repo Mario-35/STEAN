@@ -1,4 +1,12 @@
-body {
+/**
+ * User login Form css for Query.
+ *
+ * @copyright 2023-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+ 
+ body {
     margin: 0;
     color: #6a6f8c;
     background: #c8c8c8;

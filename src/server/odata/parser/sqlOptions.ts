@@ -4,5 +4,4 @@ export interface SqlOptions {
     loraId: string | undefined;
     ref: boolean;
     value: boolean;
-    // geography?: boolean;
 }

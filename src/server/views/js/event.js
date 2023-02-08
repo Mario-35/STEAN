@@ -6,13 +6,7 @@
   submit.onclick = () => wait(true);
 
   preview.onclick = () => {
-    try {
-      jsonObj = JSON.parse(jsonDatas.last_string_content);
-    }
-    catch (err) {
-      notify("Error", err.message);
-    }
-    showJson(jsonObj);
+    updateWinJsonResult(jsonDatas.innerText, "Preview datas");
   };
 
   logout.onclick = () => {
@@ -33,8 +27,7 @@
 
   btnShowLinks.onclick = () => { 
     const temp = createUrl();
-    jsonObj = JSON.parse(` { "direct" : "@${temp.direct}", "query" : "@${temp.query}"}`);
-    showJson(jsonObj);
+    updateWinLinks(JSON.parse(` { "direct" : "${temp.direct}", "query" : "${temp.query}"}`));
   };
 
   addImport.onclick = () => {
@@ -82,48 +75,78 @@
     refresh();
   };
 
-  go.onclick = async (e) => {
-    if (e) e.preventDefault();
-    wait(true);
+  btnPostTemplate.onclick = () => {
+    const result = {};
+    const src = _PARAMS.columns[entity.value]
+    Object.keys(src).forEach(e => {
+      switch (src[e].split(":")[0]) {
+        case "json":
+          result[e]= {}
+          break;
+        case "relation":
+          result[e.split("_id")[0]]= {"@iot.id": -1}
+          break;
+        case "text":
+          result[e]= ""
+          break;
+      
+        default:
+          break;
+      }
+      
 
-    var tableArea = getElement("tablewrapper");
-    if (tableArea != null) {
-      while (tableArea.firstChild) {
-        tableArea.removeChild(tableArea.lastChild);
+    });
+
+    console.log(result);
+    beautifyDatas(getElement("jsonDatas"), result, "json") ;
+  }
+
+  btnClear.onclick = () => {
+    createBlankJsonDatas();
+    buttonGo();
+  }
+
+
+  go.onclick = async (e) => {
+    wait(true);    
+    if (e) e.preventDefault();
+    const tablewrapper = getElement("tablewrapper");
+    if (tablewrapper) {
+      while (tablewrapper.firstChild) {
+        tablewrapper.removeChild(tablewrapper.lastChild);
       }
     }
-    var tableArea = getElement("two");
-    tableArea.classList.remove("scrolling");
-
+    two.classList.remove("scrolling");
+    
     const temp = createUrl();
-    const url = temp.direct;
+    let url = temp.direct;
     
-    const query = options.value; 
-
-
+    const query = queryOptions.value;
+     
     
-    switch (method.value ) {
+    
+    
+    switch (method.value) {
       case "GET":
         // ===============================================================================
         // |                                     GET                                     |
         // ===============================================================================
-        const value = await getFetchDatas(url.replace("resultFormat=graph","resultFormat=graphDatas"), resultFormatOption.value);
+       if (queryResultFormat.value === "graph") url = url.replace("resultFormat=graph","resultFormat=graphDatas");
+        const jsonObj = await getFetchDatas(url, queryResultFormat.value);
         try {
-          if (query.includes("resultFormat=csv")) {
-            buildTableWithCsv(value,";");
-            showOnly('csvContainer');
-          } else if (query.includes("resultFormat=graph") && (value.title)) {
-            showOnly('graphContainer');
-              showGraph(value);
-              wait(false);
-          }else {
-            jsonObj = value;
-            showJson(jsonObj);
-          }      
-        }
-        catch (err) {
-          notify("Error", err.message);
-        }        
+          if (query && queryResultFormat.value === "sql") 
+            updateWinSqlQuery(jsonObj);
+          else if (query && queryResultFormat.value === "csv") 
+            updateWinCsvResult(jsonObj);
+          else if (query && queryResultFormat.value === "graph" && (jsonObj.title))   {  
+            showGraph(jsonObj);    
+          }        
+          else updateWinJsonResult(jsonObj, `[${method.value}]:${url}`);     
+        } catch (err) {
+          notifyError("Error", err);
+        } finally {
+          wait(false);
+        }       
         break;
       case"POST":
       case "PATCH":
@@ -131,138 +154,86 @@
         // |                               POST $ PATCH                                  |
         // ===============================================================================
         if (entity.value === "createDB") {
-          let response = await fetch(`${optHost.value}/${optVersion.value}/createDB`, {
+          const response = await fetch(`${optHost.value}/${optVersion.value}/createDB`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: jsonDatas.string_value ,
+            body: jsonDatas.innerText ,
           });
-          try {
             const value = await response.text();
             if (response.status == 401) {
-              window.location.href = `${params.inkBase}/${params.version}/login`;
+              window.location.href = `${_PARAMS.inkBase}/${_PARAMS.version}/login`;
             }
             wait(false);
-            jsonObj = JSON.parse(value);
-            showJson(jsonObj);
-          }
-          catch (err) {
-            fetch(`${optHost.value}/${optVersion.value}/error`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: jsonDatas.string_value ,
-            });
-          }
+            updateWinJsonResult(JSON.parse(value), `[${method.value}]:${url}`);    
         } else {
-          let response = await fetch(url, {
+          const response = await fetch(url, {
             method: method.value,
             headers: {
               "Content-Type": "application/json",
             },
-            body: jsonDatas.string_value ,
+            body: jsonDatas.innerText,
           });
-          try {
-            const value = await response.text();
-            if (response.status == 401) {
-              // window.location.replace(value);
-              window.location.href = "/login";
-            }
-            jsonObj = JSON.parse(value);
-            wait(false);
-            showJson(jsonObj);
+          const value =  await response.json();
+          if (response.status == 401) {
+            // window.location.replace(value);
+            window.location.href = "/login";
           }
-          catch (err) {
-            // window.location.href = "/error";
-            debug(err);
-            fetch(`${optHost.value}/${optVersion.value}/error`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: jsonDatas.string_value ,
-            });
-          }
+          wait(false);
+          updateWinJsonResult(value, `[${method.value}]:${url}`);    
         }
         break;
       case"DELETE":
         // ===============================================================================
         // |                                   DELETE                                    |
         // ===============================================================================
-        if (nb.value && Number(nb.value) > 0 || (entity.value == "Loras" && nb.value != "")) {
-          let response = await fetch(url, {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-          
-          try {
+        try {
+          if (nb.value && Number(nb.value) > 0 || (entity.value == "Loras" && nb.value != "")) {
+            let response = await fetch(url, {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            });
+
             if (response.status == 204) 
-            {
-              jsonObj = {"Delete" : "Ok"};
-            } else {
-              jsonObj = {"Delete" : "Error"};
-            }
-            wait(false);
-            showJson(jsonObj);
-          }
-          
-          catch (err) {
-            window.location.href = "/error";
-          }
-        }    
+              notifyAlert("Delete", `delete ${entity.value} id : ${nb.value}`); 
+              else notifyError("Error", `delete ${entity.value} id : ${nb.value}`);  
+          } 
+        } catch (err) {
+          notifyError("Error", err);
+        } finally {
+          wait(false);
+        }  
         break;
       default:
         break;
+      }  
+  };
+
+  function clickLink(event) {
+    canGo = false;
+    const className = Object.values(event.explicitOriginalTarget.classList)[0];
+    if (className === "json-url") {
+      clear();
+      decodeUrl(event.explicitOriginalTarget.innerText);
+      refreshAfterEntityOrSubEntity();
+      canGo = true;
+    } else if (className === "json-code" || (event.previousElementSibling && Object.values(event.previousElementSibling.classList).includes("json-code"))) {
+      try {
+        updateWinDecoderCode(event.explicitOriginalTarget.innerText);  
+      } catch (err) {     
+        notifyError("Error", err);
+      } finally {
+        canGo = true;
+        buttonGo();
+      }
     }
   };
 
-  btnLogs.onclick = async (e) => {
-    if (e) e.preventDefault();
-    wait(true);
-
-    const url =  `${optHost.value}/${optVersion.value}/Logs?$select=date,method,url,datas,return,error&$filter=method eq '${logsMethod.value}'&$orderby=date desc`;
-
-  debug(url);
-    
-        let response = await fetch(url, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        try {
-          const csv = false;
-          const value = csv === true ?  await response.text() : await response.json()  ;
-          
-          if (csv === true) {
-            buildTableWithCsv(value,";");
-            showOnly('csvContainer');
-            wait(false);
-          }else {
-            jsonObj = value;
-            showJson(jsonObj);
-          }
-          
-        }
-        catch (err) {
-          notify("Error", err.message);
-        }        
-  }
-
-  function clickLink(element) {
-    canGo = false;
-    clear();
-    decodeUrlOptions(element.textContent);
-    refreshAfterEntityOrSubEntity();
-    canGo = true;
-  };
-
   function dblClickLink(element) {
-      if (canGo === true) go.onclick();
+      if (canGo === true) go.onclick(element);
   };
 
   nb.addEventListener("change", () => {
@@ -271,22 +242,21 @@
 
   queryExpand.addEventListener("change", () => {
     const test = !queryExpand.value.startsWith(_NONE);
-    showHide(querySubExpand, test);
-    if (test) {
-      populateMultiSelect("querySubExpand", params.relations[subentity.value], null, _NONE);
-    } 
+    toggleShowHide(querySubExpand, test);
+    if (test) populateMultiSelect("querySubExpand",  Object.keys( _PARAMS._DATAS [key].relations)[subentity.value], null, _NONE);
   });
 
   entity.addEventListener("change", () => {
+    const relations = relationsList(entity.value);
+    if (relations.includes(subentity.value)) return;
     subentity.options.length = 0;
-    if ((entity.value.includes("createDB") && params.user.canCreateDb == true) || importFile) method.value = "POST";
+    if ((entity.value.includes("createDB") && _PARAMS.user.canCreateDb == true) || importFile) method.value = "POST";
     else if (entity.value === "createDB") method.value = "POST";
     else {
-      if(params.relations) populateSelect(subentity, params.relations[entity.value], params.relations[tempEntity].includes(params.subentity) ? params.subentity :  _NONE, true);
-      populateSelect(method, entity.value == "Loras" ? ["GET","POST"]  : params.methods ,"GET"); 
+      if(relations) populateSelect(subentity, relations, relations.includes(_PARAMS.subentity) ? _PARAMS.subentity :  _NONE, true);
+      populateSelect(method, entity.value == "Loras" ? ["GET","POST"]  : _PARAMS.methods ,"GET"); 
     }
     refreshAfterEntityOrSubEntity();    
-    
   });
 
   subentity.addEventListener("change", () => {
@@ -298,7 +268,7 @@
     if (test) {
       const element = getElement("splitResultOptionName");
       if(!element) return;
-      EnabledDisabled(element, test);    
+      EnabledOrDisabled(element, test);    
       addOption('splitResult', element.value.trim ()== "" ? "All" : element.value );
     } else deleteOption('splitResult');
     updateForm();
@@ -321,13 +291,12 @@
   });
 
   onlyValue.addEventListener("change", () => {
-    const temp = getIfChecked("onlyValue") ? 'TXT': 'JSON';
-    addOption('resultFormat', temp, 'JSON');
-    getElement("resultFormatOption").value = temp;
+    const temp = getIfChecked("onlyValue") ? 'txt': 'json';
+    getElement("queryResultFormat").value = temp;
   });
 
-  resultFormatOption.addEventListener("change", () => {
-    addOption('resultFormat',getElement("resultFormatOption").value, 'JSON');
+  queryResultFormat.addEventListener("change", () => {
+    addOption('resultFormat',getElement("queryResultFormat").value, 'JSON');
     refresh();
     updateForm();
   });
@@ -336,36 +305,33 @@
     addOption('top',getElement("topOption").value, '0');
   });
 
-skipOption.addEventListener("change", () => {
-  addOption('skip',getElement("skipOption").value, '0');
-});  
+  skipOption.addEventListener("change", () => {
+    addOption('skip',getElement("skipOption").value, '0');
+  });  
 
-fileone.addEventListener( "change", ( e ) => 	{
-var fileName = "";
-try {
-  if (this.files && this.files.length > 1 )
-    fileName = ( this.getAttribute( "data-multiple-caption" ) || "" ).replace( "{count}", this.files.length );
-  else
-    fileName = e.target.value.split( "\\" ).pop();
-  
-  if(fileName ) {
-    fileonelabel.querySelector( "span" ).innerHTML = fileName;
-    method.value = "POST";
-    entity.value = "Datastreams";
-    if (params.relations) populateSelect(subentity, params.relations[entity.value], "Observations", true);
-    importFile = true;
-  }
-  else {
-    fileonelabel.innerHTML = labelVal;
-  }
-} catch (err) {
-  notify("Error", err.message);
-}
-});
+  fileone.addEventListener( "change", ( e ) => 	{
+    var fileName = "";
+    try {
+      if (this.files && this.files.length > 1 )
+        fileName = ( this.getAttribute( "data-multiple-caption" ) || "" ).replace( "{count}", this.files.length );
+      else
+        fileName = e.target.value.split( "\\" ).pop();
+      
+      if(fileName) {
+        fileonelabel.querySelector( "span" ).innerHTML = fileName;
+        method.value = "POST";
+        entity.value = "Datastreams";
+        if (Object.keys( _PARAMS._DATAS [key].relations)) populateSelect(subentity, Object.keys( _PARAMS._DATAS [key].relations)[entity.value], "Observations", true);
+        importFile = true;
+      } else {
+        fileonelabel.innerHTML = labelVal;
+      }
+    } catch (err) {
+      notifyError("Error", err);
+    }
+  });
 
-jsonDatas.addEventListener('paste', function() {
-  setTimeout(function() {
-    console.log("coucou");
-    jsonDatas.format();
-    });
-});
+
+
+
+

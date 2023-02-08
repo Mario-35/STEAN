@@ -64,8 +64,8 @@ export function createQuerySelectPGQuery(main: PgVisitor, element: PgVisitor): P
                     select: select.join(",\n\t"), 
                     from: _DBDATAS[realEntityName].table , 
                     where: element.where, 
-                    groupBy: element.groupBy.join(",\n\t"), 
-                    orderby: element.orderby || "id",
+                    groupBy: element.groupBy.join(",\n\t"),
+                    orderby: realEntityName === _DBDATAS.Observations.name ? `${element.orderby},"observation"."phenomenonTime", "observation"."id"` : `${element.orderby}, "id"`,
                     skip: element.skip,
                     limit: element.limit
                 };

@@ -1,21 +1,8 @@
-// ===============================================================================
-// |                                multiSelect                                  |
-// ===============================================================================
-
-
-const createListWithoutOptions = (inputList) => inputList.split("</option>").join('').split("<option>").filter(e => e != "");
-
-
-
-// ===============================================================================
-// |                                   POPULATE                                  |
-// ===============================================================================
-
-// populate Select
+  const createListWithoutOptions = (inputList) => inputList.split("</option>").join('').split("<option>").filter(e => e != "");
 
   /**
    * 
-   * @param {*} obj object to fill
+   * @param {*} obj HTML object to fill
    * @param {*} list list of items
    * @param {*} defValue default value
    * @param {*} addNone add none at list of th list
@@ -36,6 +23,20 @@ const createListWithoutOptions = (inputList) => inputList.split("</option>").joi
     }
   };
 
+  /**
+   * 
+   * @param {*} obj HTML object to fill
+   * @returns Value
+   */
+  function getMultiSelect(obj) {
+    const element = getElement(obj);
+    if(!obj) return [];
+    const value = element.value.split(_SPACE)[0];
+    if ([_ALL,_NONE].includes(value)) return [];
+    const cleanList = element.innerHTML.split("</option>").join('').split("<option>").filter(e => e != "" && e[0] == _CHECK);
+    return cleanList.map(e => e.split(_CHECK)[1].trim());
+  }
+
     /**
    * 
    * @param {*} obj object to fill
@@ -50,7 +51,7 @@ const createListWithoutOptions = (inputList) => inputList.split("</option>").joi
     const result = cleanList.map((e, i) => i == 0 ? `${value === "X" ? `${_NONE} ${_SELECTED}` : `${_ALL} ${_SELECTED}`}` : `${value === "X" ? "" : value} ${e[1] === _SPACE ? e.split(_SPACE)[1] : e}`.trim());
     obj.innerHTML = result.map(e => `<option>${e}</option>`).join('');
     obj.value = result[0];
-    if (value === "X") deleteOption(key); else options.value =  createOptionsLine();
+    if (value === "X") deleteOption(key); else queryOptions.value =  createOptionsLine();
   };
 
     /**
@@ -102,11 +103,7 @@ const createListWithoutOptions = (inputList) => inputList.split("</option>").joi
       : value.target.innerHTML.replace(actual, `✔ ${actual}`);
 
       const cleanList = createListWithoutOptions(value.target.innerHTML);
-      if (cleanList[0] == actual) {
-        debug("============================== (cleanList[0] == actual) changeMultiSelect=========================================================");
-        debug(cleanList);
-        debug(actual);
-      } else { 
+      if (cleanList[0] != actual) {
         const firstOfList = cleanList.shift();
         const selectedOfList = cleanList.filter(e => e[0] === _CHECK);
         const temp = selectedOfList.length == cleanList.length ? _ALL : selectedOfList.length == 0 ? _NONE : `${selectedOfList.length}`
@@ -117,38 +114,24 @@ const createListWithoutOptions = (inputList) => inputList.split("</option>").joi
     }
   }
 
-  function getMultiSelect(obj) {
+  function getMultiSelectOrderBy(obj){
     const element = getElement(obj);
     if(!obj) return [];
     const value = element.value.split(_SPACE)[0];
     if ([_ALL,_NONE].includes(value)) return [];
-    const cleanList = element.innerHTML.split("</option>").join('').split("<option>").filter(e => e != "" && e[0] == _CHECK);
-    return cleanList.map(e => e.split(_CHECK)[1].trim());
+    const cleanList = createListWithoutOptions(element.innerHTML).filter(e => [_UP, _DOWN].includes(e[0]));
+    return cleanList.map(e => `${e.split(_SPACE)[1]} ${e[0] == _DOWN ? "desc" : "asc"}`);
   }
 
-function getMultiSelectOrderBy(obj){
-  const element = getElement(obj);
-  if(!obj) return [];
-  const value = element.value.split(_SPACE)[0];
-  if ([_ALL,_NONE].includes(value)) return [];
-  const cleanList = createListWithoutOptions(element.innerHTML).filter(e => [_UP, _DOWN].includes(e[0]));
-  return cleanList.map(e => `${e.split(_SPACE)[1]} ${e[0] == _DOWN ? "desc" : "asc"}`);
-}
-
-
-
-
-
-
-function setMultiSelect(obj, listValues) {  
-  obj = getElement(obj);
-  if(!obj) return;
-  const cleanList = createListWithoutOptions(obj.innerHTML);
-  const result = cleanList.map(e => `${e[1] === _SPACE ? e.split(_SPACE)[1] : e}`.trim());
-  result[0] = `${listValues.length} ${_SELECTED}`;
-  obj.innerHTML = result.map(e => `<option>${listValues.includes(e) ? `${_CHECK} ` : ""}${e}</option>`).join('');
-  obj.value = result[0];
-};
+  function setMultiSelect(obj, listValues) {  
+    obj = getElement(obj);
+    if(!obj) return;
+    const cleanList = createListWithoutOptions(obj.innerHTML);
+    const result = cleanList.map(e => `${e[1] === _SPACE ? e.split(_SPACE)[1] : e}`.trim());
+    result[0] = `${listValues.length} ${_SELECTED}`;
+    obj.innerHTML = result.map(e => `<option>${listValues.includes(e) ? `${_CHECK} ` : ""}${e}</option>`).join('');
+    obj.value = result[0];
+  };
 
 
 

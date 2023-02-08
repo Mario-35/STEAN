@@ -11,5 +11,5 @@ export { IReturnResult } from "./returnResult";
 export { FORMATS, IreturnFormat } from "./returnFormats";
 export { TimeSeriesType } from "./timeSeries";
 export { ICsvFile, ICsvColumns } from "./csvFile";
-export { IEntity, IEntityColumnForm } from "./entity";
+export { IEntity } from "./entity";
 export { OperationType } from "./operationType";

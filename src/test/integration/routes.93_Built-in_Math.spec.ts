@@ -48,12 +48,12 @@ describe("Odata BuiltInMath", () => {
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
+            .end((err: any, res: any) => {                
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
-                res.body["value"][0]["@iot.id"].should.eql(2);
+                res.body["value"][0]["@iot.id"].should.eql(5);
                 res.body.value = [res.body.value[0], res.body.value[1], "..."];
                 addToApiDoc({ ...infos, result: res });
                 done();
@@ -79,7 +79,7 @@ describe("Odata BuiltInMath", () => {
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
-                res.body["value"][0]["@iot.id"].should.eql(2);
+                res.body["value"][0]["@iot.id"].should.eql(5);
                 res.body.value = [res.body.value[0], res.body.value[1], "..."];
                 addToApiDoc({ ...infos, result: res });
                 done();
@@ -105,7 +105,7 @@ describe("Odata BuiltInMath", () => {
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
-                res.body["value"][0]["@iot.id"].should.eql(2);
+                res.body["value"][0]["@iot.id"].should.eql(5);
                 res.body.value = [res.body.value[0], res.body.value[1], "..."];
                 addToApiDoc({ ...infos, result: res });
                 done();

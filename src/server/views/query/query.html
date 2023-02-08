@@ -2,20 +2,24 @@
 <html lang="fr">
 
     <head>
+        <script src="constant.js"></script>        
         <link rel="stylesheet" href="query.css">
         <link rel="stylesheet" href="grid.css">
         <link rel="stylesheet" href="spinner.css">
-        <link rel="stylesheet" href="json.css">
+        <link rel="stylesheet" href="jsonViewer.css">
         <link rel="stylesheet" href="modal.css">
         <link rel="stylesheet" href="splitter.css">
-        <link rel="stylesheet" href="tabs.css">
+        <link rel="stylesheet" href="accordionTabs.css">
         <link rel="stylesheet" href="queryBuilder.css">
+        <link rel="stylesheet" href="highLight.css">
         <link rel="stylesheet" href="csv.css">
-        
-        <script src="drop.js"></script>
+        <link rel="stylesheet" href="window.css">
+        <link rel="stylesheet" href="contextMenu.css">
+
         <script src="splitter.js"></script>
-        <script src="json.js"></script>
-        <script src="editor.js"></script>
+        <script src="echarts.js"></script>
+        <script src="prettyJs.js"></script>
+
         <script>(function (e, t, n) { var r = e.querySelectorAll("html")[0]; r.className = r.className.replace(/(^|\s)no-js(\s|$)/, "$1js$2") })(document, window, 0);</script>
     </head>
 
@@ -70,24 +74,10 @@
                                     <!-- Result -->
                                     <div class="col col-span-2">
                                         <div class="field">
-                                            <label for="resultFormatOption">Result</label>
-                                            <select tabindex="1" name="resultFormatOption" id="resultFormatOption">
+                                            <label for="queryResultFormat">Result</label>
+                                            <select tabindex="1" name="queryResultFormat" id="queryResultFormat">
                                             </select>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col col-span-3">
-                                        <button type="button" id="btnShowLinks" class="btn_links _links">urls</button>
-                                    </div>
-
-                                    <!-- Go -->
-                                    <div class="col col-span-4">
-                                        <button  type="button" id="go" class="btn_full _go ">Query</button>
-
-                                        <button type="submit" id="submit" class="btn_full _submit">
-                                            Import file
-                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -310,42 +300,44 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Logs  -->
-
-                        <div class="tab">
-                            <input class="tab-check" type="checkbox" id="chck7">
-                            <label class="tab-label" for="chck7">Logs</label>
-                            <div class="tab-content">
-                                <div class="row">
-                                    <div class="col col-span-6">
-                                        <div class="field">
-                                            <button type="button" id="btnLogs" class="btn_links _links">Logs</button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Operation -->
-                                    <div class="col col-span-6">
-                                        <div class="field">
-                                            <label for="Operation">Operation</label>
-                                            <select tabindex="1" name="method" id="logsMethod">
-                                            </select>
-                                        </div>
-                                    </div>
-
-
-                                </div>
-                            </div>
-                        </div>
+                        </div>                      
 
                     </div>
                     <!-- END ACCORDION -->
+                    <br>
+                    <div class="rowButtons">
+                        <div class="row">
+                            <div class="col col-span-3">
+                                <button type="button" id="btnClear" class="btn_links _clear">clear</button>
+                            </div>
+                            <div class="col col-span-3">
+                                <button type="button" id="btnPostTemplate" class="btn_links _links">Template</button>
+                            </div>
+                            <div class="col col-span-3">
+                                <button type="button" id="btnShowLinks" class="btn_links _links">urls</button>
+                            </div>
 
-                    <div class="row assist">
-                            <input class="fullWidth" id="options" type="text" value="" name="tab">
+                            <!-- Go -->
+                            <div class="col col-span-3">
+                                <button  type="button" id="go" class="btn_full _go ">Query</button>
+                                <button type="submit" id="submit" class="btn_full _submit">
+                                    Import file
+                                </button>
+                            </div>
+                        </div>
+
+
+                        <div class="row assist">
+                            <input class="fullWidth options" id="queryOptions" type="text" name="queryOptions">
+                        </div>
                     </div>
-
+<hr>
+                     <!-- JSON DATAS -->
+                     <div id="jsonDatasContainer" onpaste="jsonDatasPasteEvent(event)" ondrop="jsonDatasPasteEvent(event)"> 
+                         <div contenteditable spellcheck="false" id="jsonDatas" class='blakkAll shj-lang-json'></div>
+                     </div>
+                </form>
+                <div class="rowButtons">
                     <!-- BUTTONS ICONS -->
                     <div class="row">
                         <div class="col col-span-1">
@@ -395,38 +387,35 @@
                             </div>
                         </div>
                     </div>
-
-                     <!-- JSON DATAS -->
-                     <json-editor id="jsonDatas" value='' indent="3"></json-editor>
-                   
-                </form>
+                </div>
             </div>
 
             <div id="two">    
-                <div id="csvContainer">
-                </div>
                 <div id="graphContainer" style="background-color: rgb(240, 242, 243);">
-                    <div id="graph" style="width:100%; height:100%;"></div>
-                </div>
-                <div id="jsonContainer" ondrag="jsonContainerEvent(event)">
-                    <pre><code>
-                        <div id="json"></div>
-                    </code></pre>
+                    <div id="graph" class="lol" style="width:100%; height:100%;"></div>
                 </div>
             </div>
             <div id="modalOverlay"></div>
         </div>
-        <script src="constant.js"></script>
+
+        
         <script src="helper.js"></script>
         <script src="queryBuilder.js"></script>
         <script src="url.js"></script>
         <script src="multiSelect.js"></script>
         <script src="query.js"></script>
+        
         <script src="csv.js"></script>
         <script src="event.js"></script>
         <script src="graph.js"></script>
         <script src="modal.js"></script>
-        <script src="echarts.min.js"></script>
+        <script src="drop.js"></script>
+        <script src="jsonViewer.js"></script>
+        <script src="highLightLangs.js"></script>
+        <script src="highlight.js"></script>
+        <script src="window.js"></script>
+        <script src="contextMenu.js"></script>
+        <script src="windowList.js"></script>     
         
     </body>
     

@@ -17,7 +17,7 @@ export class CreateHtmlView {
     private css = (name: string): string => {
         switch (name.toLowerCase()) {
             case "user":
-                return cssFile("user.css");
+                return cssFile("userForm.css");
             default:
                 return                 cssFile("query.css");
 

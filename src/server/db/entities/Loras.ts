@@ -12,14 +12,29 @@
  import { getBigIntFromString, removeQuotes } from "../../helpers/index";
  import {  _DBDATAS } from "../constants";
  import { _DOUBLEQUOTE, _QUOTEDCOMA, _VOIDTABLE } from "../../constants";
- import { message } from "../../logger";
- import { decodeLoraPayload } from "../../lora";
+ import { logDebug, message } from "../../logger";
  import { IReturnResult } from "../../types";
  
  export class Loras extends Common {
      constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
          super(ctx, knexInstance);
      }
+
+     decodeLoraPayload = async (knexInstance: Knex | Knex.Transaction, loraDeveui: string, input: string): Promise<{[key: string]: string}> => {
+        message(true, "INFO", "decodeLoraPayload", loraDeveui);
+        return await knexInstance(_DBDATAS.Decoders.table).select("code").whereRaw(`id = (SELECT "decoder_id" FROM "${_DBDATAS.Loras.table}" WHERE "deveui" = '${loraDeveui}')`).first().then((res: any) => {
+            try {
+                console.log(res)
+                if (res) {
+                    const F = new Function("input", String(res.code));
+                    return F(input);
+                }
+                return {"error" : "dans le uq"};            
+            } catch (error) {
+                logDebug(error);           
+            }
+        });
+    };
  
      createListQuery(input: string[], essai: string): string {
          const temp = essai.split("COLUMN");
@@ -36,28 +51,32 @@
             }
             return await super.add(dataInput);
          }
- 
-         if (dataInput["payload_deciphered"] && dataInput["payload_deciphered"] != "") {
-             const decodeRaw = decodeLoraPayload(Common.dbContext, dataInput["deveui"], dataInput["payload_deciphered"]);
-             dataInput["data"] = { ...decodeRaw, ...dataInput["data"] };
-         }
- 
-         if (!dataInput["deveui"] || dataInput["deveui"] == null) {
-             const temp = "deveui is missing or Null";
-             if (silent) return this.createReturnResult({ body: temp });
-             else this.ctx.throw(400, { detail: temp });
-         }
- 
-         if (!dataInput["data"] || dataInput["data"] == null) {
-             const temp = "Data is missing or Null";
-             if (silent) return this.createReturnResult({ body: temp });
-             else this.ctx.throw(400, { detail: temp });
-         }
+        if (!dataInput["deveui"] || dataInput["deveui"] == null) {
+            const temp = "deveui is missing or Null";
+            if (silent) return this.createReturnResult({ body: temp });
+            else this.ctx.throw(400, { detail: temp });
+        }
+
+        if (!dataInput["data"] || dataInput["data"] == null) {
+            if (dataInput["payload_deciphered"] && dataInput["payload_deciphered"] != "") {
+                const decodeRaw = await this.decodeLoraPayload(Common.dbContext, dataInput["deveui"], dataInput["payload_deciphered"]);            
+                if (decodeRaw.error) {
+                   if (silent) return this.createReturnResult({ body: decodeRaw.error });
+                   else this.ctx.throw(404, { detail: decodeRaw.error });
+                }
+                
+                dataInput["data"] = decodeRaw["messages"];
+            }
+            const temp = "Data is missing or Null";
+            if (silent) return this.createReturnResult({ body: temp });
+            else this.ctx.throw(400, { detail: temp });
+        }      
  
          const searchMulti = `(select jsonb_agg(tmp.units -> 'name') as keys from ( select jsonb_array_elements("unitOfMeasurements") as units ) as tmp) FROM "${
              _DBDATAS.MultiDatastreams.table
          }" WHERE "${_DBDATAS.MultiDatastreams.table}".id = (SELECT "${_DBDATAS.Loras.table}"."multidatastream_id" FROM "${_DBDATAS.Loras.table}" WHERE "${_DBDATAS.Loras.table}"."deveui" = '${dataInput["deveui"]}')`;
          // Get the multiDatastream
+         
          const tempSql = await Common.dbContext.raw(`SELECT id, thing_id, ${searchMulti}`);
          const multiDatastream = tempSql.rows[0];
  
@@ -171,7 +190,6 @@
  
  
          this.logQuery(sql);
- 
          return await Common.dbContext
              .raw(sql)
              .then(async (res: any) => {

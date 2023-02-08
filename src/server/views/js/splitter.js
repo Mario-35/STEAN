@@ -40,6 +40,7 @@ const SplitterBar = function (container, leftContent, rightContent) {
 
     let mouseIsDown = false;
     let startX = null;
+    let startY = null;
     let globalXCoordinate = null;
 
     // Will not touch
@@ -117,5 +118,9 @@ const SplitterBar = function (container, leftContent, rightContent) {
                 rightSide.style.left = splitter.offsetLeft + splitter.offsetWidth / 2 + "px";
             }
         }
+    });
+
+    window.addEventListener("mouseup", function () {
+        mouseIsDown = false;
     });
 };

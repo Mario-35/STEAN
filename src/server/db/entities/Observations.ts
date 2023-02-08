@@ -34,7 +34,6 @@ export class Observations extends Common {
                 `select jsonb_agg(tmp.units -> 'name') as keys from ( select jsonb_array_elements("unitOfMeasurements") as units from multidatastream where id = ${search} ) as tmp`
                 );
                 const multiDatastream = tempSql.rows[0];
-                
                 if (dataInput["result"] && typeof dataInput["result"] == "object") {
                     message(true, "DEBUG", "resultnumbers : keys", `${Object.keys(dataInput["result"]).length} : ${multiDatastream["keys"].length}`);
                     if (Object.keys(dataInput["result"]).length != multiDatastream["keys"].length) {

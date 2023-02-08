@@ -12,7 +12,7 @@ import { _CONFIGS, _CONFIGURATION } from "../configuration";
 import querystring from "querystring";
 import cookieModule from "cookie";
 import cookieParser from "cookie-parser";
-import { keyApp, _APIVERSION } from "../constants";
+import { _KEYAPP, _APIVERSION } from "../constants";
 
 /**
  *
@@ -28,7 +28,7 @@ const bearerToken = (ctx: koa.Context) => {
     const headerKey = "Bearer";
     const cookie = true;
 
-    if (cookie && !keyApp) {
+    if (cookie && !_KEYAPP) {
         throw new Error("[koa-bearer-token]: You must provide a secret token to cookie attribute, or disable signed property");
     }
 
@@ -60,7 +60,7 @@ const bearerToken = (ctx: koa.Context) => {
         if (cookie && header.cookie) {
             const plainCookie = getCookie(header.cookie, "jwt-session"); // seeks the key
             if (plainCookie) {
-                const cookieToken = cookieParser.signedCookie(plainCookie, keyApp);
+                const cookieToken = cookieParser.signedCookie(plainCookie, _KEYAPP);
 
                 if (cookieToken) {
                     token = cookieToken;
@@ -83,7 +83,6 @@ const bearerToken = (ctx: koa.Context) => {
 
 export const setConfigToCtx = (ctx: koa.Context): void => {
     bearerToken(ctx);
-
     ctx._version =
         ctx.originalUrl
             .replace(/[//]+/g, "/")

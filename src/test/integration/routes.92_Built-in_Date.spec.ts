@@ -131,7 +131,7 @@ describe("Odata BuiltInDate", () => {
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(3);
-                res.body["value"][0]["@iot.id"].should.eql(1);
+                res.body["value"][0]["@iot.id"].should.eql(43);
                 res.body.value = [res.body.value[0], res.body.value[1], "..."];
                 addToApiDoc({ ...infos, result: res });
                 done();
@@ -183,7 +183,7 @@ describe("Odata BuiltInDate", () => {
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
-                res.body["value"][0]["@iot.id"].should.eql(30);
+                res.body["value"][0]["@iot.id"].should.eql(31);
                 res.body.value = [res.body.value[0], res.body.value[1], "..."];
                 addToApiDoc({ ...infos, result: res });
                 done();
@@ -209,7 +209,7 @@ describe("Odata BuiltInDate", () => {
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(9);
-                res.body["value"][0]["@iot.id"].should.eql(2);
+                res.body["value"][0]["@iot.id"].should.eql(3);
                 res.body.value = [res.body.value[0], res.body.value[1], "..."];
                 addToApiDoc({ ...infos, result: res });
                 done();
@@ -261,7 +261,7 @@ describe("Odata BuiltInDate", () => {
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(52);
-                res.body["value"][0]["@iot.id"].should.eql(1);
+                res.body["value"][0]["@iot.id"].should.eql(32);
                 res.body.value = [res.body.value[0], res.body.value[1], "..."];
                 addToApiDoc({ ...infos, result: res });
                 done();

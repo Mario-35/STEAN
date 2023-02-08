@@ -1,4 +1,12 @@
-* {
+/**
+ * Main css for Query.
+ *
+ * @copyright 2023-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+ 
+ * {
 	box-sizing: border-box;
 	-webkit-box-sizing: border-box;
 	-moz-box-sizing: border-box;
@@ -166,7 +174,7 @@ p {
 
 [class^="btn_"] {
 	display: inline-block;
-	border: 0;
+	border: 1px solid #000;
 	border-radius: 0.4em;
 	color: #fff;
 	text-transform: uppercase;
@@ -193,6 +201,10 @@ p {
 
 ._links {
 	background-color: #daa83b;
+}
+
+._Clear {
+	background-color: #da3b46;
 }
 
 .btn_full {
@@ -559,10 +571,6 @@ input .disabled {
     background:#F5F5F5;
   }
 
-  .assist {
-	background: white;
-  }
-
   .error {
     border: 3px solid red;
 }
@@ -570,3 +578,98 @@ input .disabled {
 .good {
     border: 3px solid green;
 }
+
+.decoder
+{
+  width:100%;
+  height:100%;
+}
+.decoderwrapper
+{
+  border:1px solid #999999;
+  margin:5px 0;
+  padding:3px;
+}
+
+#x {
+    position: absolute;
+    background: red;
+    color: white;
+	right: 10px;
+	top: 5px;
+	z-index: 1000;
+	border-radius: 50%;
+}
+br {
+	content: "";
+	margin: 2em;
+	display: block;
+	font-size: 10%;
+  }
+
+.rowButtons {
+border-radius: 10px;
+border-color: white;
+-webkit-box-pack: justify;
+justify-content: space-between;
+padding: 5px 1em;
+background: #2c3e50;
+font-weight: bold;
+
+}
+
+.blakkAll {
+	background-color: #000;
+	width: 100%;
+}
+
+.fullHeight{
+	height: 100%;
+}
+
+.buttonLink {
+	font: 1em Arial, sans-serif;
+	display: inline-block;
+	padding: 1em;margin: 1em;
+	border-radius: 5px;
+	text-decoration: none;
+	color: gray;
+	
+	/* Set up the hover */
+	/* If you aren't using autoprefix, remember to prefix the gradient for other browsers */
+	background-image: linear-gradient(dodgerblue, dodgerblue), linear-gradient(silver, silver);
+	background-size: 0 100%, auto;
+	background-repeat: no-repeat;
+	background-position: center center;
+	transition: all .2s ease-out;
+  }
+  
+  .buttonLink:hover {
+	color: #fff;
+	background-size: 100% 100%, auto;
+  }
+
+.options {
+	background-color: #fff;
+
+}
+.lol {
+	background-color: rgba(227, 222, 222, 0.618);
+
+}
+.linkCcontainer{  
+	text-align: center;  
+	width: 97%;  
+	height: 100%;  
+	}  
+
+.urlForm {
+	background-color: rgba(227, 222, 222, 0.618);
+	width: 97%;
+	display: inline-block;
+	padding: 1em;margin: 1em;
+}
+
+
+
+

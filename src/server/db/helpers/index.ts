@@ -17,7 +17,6 @@ export { recordToKeyValue } from "./recordToKeyValue";
 export { removeKeyFromUrl } from "./removeKeyFromUrl";
 export { renameProp } from "./renameProp";
 export { testConnection } from "./testConnection";
-export { redoLog } from "./redoLog";
 export { verifyId } from "./verifyId";
 // Class
 export { TimeSeries } from "./timeSeries";

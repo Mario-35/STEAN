@@ -288,7 +288,7 @@ class Prompt extends Component {
         if (value === '') {
             return;
         }
-
+        tdb = value;
         this.close();
 
         if (this.options.onSubmit) {
@@ -436,3 +436,136 @@ class Observation extends Component {
 
 }
 
+class ExecuteCode extends Component {
+    
+    constructor(options) {
+        console.log(ExecuteCode);
+        console.log(ExecuteCode);
+        super(options);
+        this.submitText = isString(options.submitText) ? options.submitText : 'Send';
+        this.placeholderText = options.placeholderText ? options.placeholderText : 'Type';
+        this.code = options.code;
+        this.injectTemplate();
+        this.render();
+    }
+
+    handleInput(e, el) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            this.submit();
+        }
+    }
+
+    submit() {
+        const value = this.input.value;
+
+        if (value === '') {
+            return;
+        }
+        const F = new Function("input", String(this.code));
+        const temp =  F(value);
+        this.close();
+    updateWinJsonResult(temp, "testaose");          
+
+    }
+
+    injectTemplate() {
+
+        const head = h('div', {class: 'head',style:"--data-color: #8940af"}, [
+            h('p', {class: 'title'}, [this.title])
+        ]);
+
+        this.port.appendChild(head);
+
+        this.input = h('input', {type: 'text', class: 'input', placeholder: this.placeholderText, keyup: (e, el) => {
+            this.handleInput(e, el);
+        }});
+
+        const inputRow = h('div', {class: 'prompt-elements'}, [
+            this.input,
+            h('button', {class: 'button', click: () => {
+                this.submit();
+            }}, [this.submitText])
+        ]);
+
+        let innerContainer;
+
+        if (this.useInnerHTML) {
+          const content = h('div', {class: 'content'});
+          content.innerHTML = this.content;
+
+          innerContainer = h('div', {class: 'inner-container'}, [
+            content,
+            inputRow
+          ]);
+
+        } else {
+          innerContainer = h('div', {class: 'inner-container'}, [
+              h('p', {class: 'content'}, [this.content]),
+              inputRow
+          ]);
+        }
+
+        this.port.appendChild(head);
+        this.port.appendChild(innerContainer);
+    }
+
+}
+
+class ViewJson extends Component {
+
+    constructor(options) {
+        super(options);
+        console.log(options);
+        this.buttonOk =  'Ok';
+        this.content = JSON.stringify(options.content);
+        this.injectTemplate();
+        this.render();
+    }
+
+    injectTemplate() {
+
+        const head = h('div', {class: 'head', style:"--data-color: #886851"}, [
+            h('p', {class: 'title'}, [this.title])
+        ]);
+
+        this.port.appendChild(head);
+
+        let innerContainer;
+
+        if (this.useInnerHTML) {
+          const content = h('div', {class: 'content'});
+          content.innerHTML = this.content;
+
+          innerContainer = h('div', {class: 'inner-container'}, [
+            content
+          ]);
+
+        } else {
+          innerContainer = h('div', {class: 'inner-container'}, [
+              h('p', {class: 'content'}, [this.content])
+          ]);
+        }
+
+        // <textarea name="" id="myTextarea" cols="30" rows="10">lol</textarea>
+
+
+        innerContainer.appendChild(
+            h('myTextarea', {class: 'lol'}, ["lolo"])
+        );
+
+        innerContainer.appendChild(
+            h('div', {class: 'buttons'}, [
+                h('button', {class: 'button', click: () => {
+                    this.close();
+                    if (this.options.onOk) {
+                        this.options.onOkl(this);
+                    }
+                }}, [this.buttonOk])
+            ])
+        );
+
+        this.port.appendChild(head);
+        this.port.appendChild(innerContainer);
+
+    }
+}

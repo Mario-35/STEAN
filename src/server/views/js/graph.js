@@ -80,12 +80,16 @@ function createOptions(datas) {
 };
 
 function showGraph(value) {
-  echarts.dispose(document.getElementById('graph'));
-  const myChart = echarts.init(document.getElementById('graph'));
-  const option = createOptions(value);
-  myChart.on('click', async function(params) {
-    if (params.dataIndex) await editDataClicked(value["ids"][params.dataIndex], params);
-  });
-  myChart.setOption(option);
+    const container = document.getElementById('graph');
+    if(container) {
+        echarts.dispose(container);
+        const myChart = echarts.init(container);
+        const option = createOptions(value);
+        myChart.on('click', async function(_PARAMS) {
+          if (_PARAMS.dataIndex) await editDataClicked(value["ids"][_PARAMS.dataIndex], _PARAMS);
+        });
+        myChart.setOption(option);
+        show(graphContainer);
+    }
 }
 

@@ -27,7 +27,6 @@ export class PgVisitor {
     parentEntity: string | undefined = undefined;
     extras: undefined;
     timeSeries?: TimeSeriesType;
-    // property: string | undefined = undefined;
     relation: string | undefined = undefined;
     id: bigint | string = BigInt(0);
     parentId: bigint | string = BigInt(0);
@@ -40,7 +39,6 @@ export class PgVisitor {
     splitResult: string[] | undefined;
     skip: number = 0;
     limit: number = 0;
-    debug: boolean = false;
     count: boolean = false;
     ref: boolean = false;
     value: boolean = false;
@@ -51,7 +49,7 @@ export class PgVisitor {
     parameters: unknown[] = [];
     ast: Token;
     showRelations: boolean = true;
-    test: boolean = true;
+    test: boolean = !true;
 
     constructor(options = <SqlOptions>{}, blank?: boolean) {
         this.options = options;
@@ -67,7 +65,7 @@ export class PgVisitor {
     public setEntity(input: string) { this.entity = input; }
     public getEntity()  { return this.entity; } 
     
-    addToArrayNames(key:string, value?:string) {
+    addToArrayNames(key:string, value?:string) {       
          this.ArrayNames[key] = value ? value : `"${key}"`;
     }
     
@@ -171,15 +169,27 @@ export class PgVisitor {
 
    
     asGetSql(): string { 
-        return createGetSql(this);    
+        try {
+            return createGetSql(this);
+        } catch (error) {
+            return "";
+        }
     } 
 
     asPatchSql(datas: Object | Object, knexInstance: Knex | Knex.Transaction): string { 
-        return createPostSql(datas, knexInstance , this);    
+        try {
+            return createPostSql(datas, knexInstance , this);
+        } catch (error) {
+            return "";
+        }
     }  
 
     asPostSql(datas: Object | Object, knexInstance: Knex | Knex.Transaction): string { 
-        return createPostSql(datas, knexInstance , this);    
+        try {
+            return createPostSql(datas, knexInstance , this);
+        } catch (error) {
+            return "";
+        }
     }  
 
 // ***********************************************************************************************************************************************************************
@@ -195,7 +205,7 @@ export class PgVisitor {
 
     verifyQuery = (ctx: koa.Context): void => {
         message(true, "HEAD", "verifyQuery");
-        if (this.entity === "Logs" && ctx._configName !== "admin") this.where = `database = '${_CONFIGS[ctx._configName].pg_database}'`;
+        if (this.entity === "Logs" && ctx._configName !== "admin") this.where += `${this.where.trim() == "" ? "" : " AND "}database = '${_CONFIGS[ctx._configName].pg_database}'`;
 
         if (this.select.length > 0) {
             const cols = [...Object.keys(_DBDATAS[this.entity].columns), ...Object.keys(_DBDATAS[this.entity].relations)]
@@ -305,14 +315,19 @@ export class PgVisitor {
     protected VisitDebug(node: Token, context: any) {      
         this.Visit(node.value.path, context);
         if (node.value.options) node.value.options.forEach((item: Token) => this.Visit(item, context));
-        this.debug = node.value.raw;
+        // do Nothing
+    }
+
+    protected VisitRedo(node: Token, context: any) {      
+        this.Visit(node.value.path, context);
+        if (node.value.options) node.value.options.forEach((item: Token) => this.Visit(item, context));
+        // do Nothing
     }
 
     protected VisitResultFormat(node: Token, context: any) {      
         if (node.value.format) this.resultFormat = returnFormats[node.value.format];
         //ATTTENTION
-        if ([returnFormats.dataArray, returnFormats.graph, returnFormats.graphDatas].includes(this.resultFormat)) this.limit = 0;
-        // if (["dataArray","graph","graphDatas"].includes(this.resultFormat.name)) this.limit = 0;
+        if ([returnFormats.dataArray, returnFormats.graph, returnFormats.graphDatas, returnFormats.csv].includes(this.resultFormat)) this.limit = 0;
         if (isGraph(this)) this.showRelations = false;
     }
 

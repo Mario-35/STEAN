@@ -19,7 +19,7 @@ import {  userToken } from "./types";
 import serve from "koa-static";
 import path from "path";
 import compress from "koa-compress";
-import { helmetConfig, keyApp, _ENV_VERSION, _NODE_ENV } from "./constants";
+import { _HELMETCONFIG, _KEYAPP, _ENV_VERSION, _NODE_ENV } from "./constants";
 import { _DBDATAS } from "./db/constants";
 import { _CONFIGS, _CONFIGURATION } from "./configuration";
 import { PgVisitor } from "./odata";
@@ -33,7 +33,8 @@ declare module "koa" {
         _odata: PgVisitor;
         _datas: {[key: string]: string};
         _query: string;
-        _user: userToken
+        _user: userToken;
+        _addToLog: boolean;
     }
 }
 
@@ -41,11 +42,11 @@ export const app = new Koa();
 
 app.use(serve(path.join(__dirname, "public")));
 
-app.use(helmet.contentSecurityPolicy({ directives: helmetConfig }));
+app.use(helmet.contentSecurityPolicy({ directives: _HELMETCONFIG }));
 
 app.use(routerHandle);
 
-app.use(bodyParser());
+app.use(bodyParser({enableTypes: ['json', 'text', 'form']}));
 
 if (!isTest()) app.use(logger((str) => console.log(`${new Date().toLocaleString()}${str}`)));
 
@@ -58,7 +59,7 @@ app.use(compress());
 app.use(unProtectedRoutes.routes());
 
 app.use((ctx, next) => {
-    ctx.state.secret = keyApp;
+    ctx.state.secret = _KEYAPP;
     return next();
 });
 

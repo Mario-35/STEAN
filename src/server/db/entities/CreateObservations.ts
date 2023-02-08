@@ -25,7 +25,6 @@ export class CreateObservations extends Common {
     constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
         super(ctx, knexInstance);
     }
-
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     testValue(inputValue: any): convert | undefined {
         if (inputValue != null && inputValue !== "" && !isNaN(Number(inputValue.toString()))) return { key: "resultnumber", value: inputValue.toString() };

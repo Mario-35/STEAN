@@ -17,7 +17,6 @@ export const createTable = async(connectionDb: Knex | Knex.Transaction, tableEnt
     let space = 5;
     const tab = () => " ".repeat(space);
     const tabInsertion: string[] = [];
-    const tabComment: string[] = [];
     const tabConstraints: string[] = [];
     const  returnValue: { [key: string]: string } ={};
 
@@ -41,7 +40,6 @@ export const createTable = async(connectionDb: Knex | Knex.Transaction, tableEnt
 
     Object.keys(tableEntity.columns).forEach((column) => {
         if (tableEntity.columns[column].create.trim() != "") tabInsertion.push(`"${column}" ${tableEntity.columns[column].create}`);
-        if (tableEntity.columns[column].create != "") tabComment.push(`comment on column "${tableEntity.table}"."${column}" is '${tableEntity.columns[column].comment}';`);
     });
     insertion = `${tabInsertion.join(", ")}`;
 
@@ -71,12 +69,6 @@ export const createTable = async(connectionDb: Knex | Knex.Transaction, tableEnt
             .raw(tabTemp.join(";"))
             .then(() => "✔")
             .catch((err: Error) => err.message);
-
-    // CREATE COMMENTS
-    if(tabComment.length > 0) returnValue[`${tab()}Create comments for ${tableEntity.table}`] = await connectionDb
-        .raw(tabComment.join(" "))
-        .then(() => "✔")
-        .catch((err: Error) => err.message);
 
     // CREATE CONSTRAINTS
     if (tableEntity.constraints && tabConstraints.length > 0)

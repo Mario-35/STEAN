@@ -22,7 +22,7 @@ import { PgVisitor } from "../PgVisitor";
                 visitor.entity =names[0];
                 visitor.select = "*";
                 visitor.where = "1 = 1";
-                visitor.orderby = "";
+                visitor.orderby =  "";
                 visitor.navigationProperty = names[1];
                 includesItem.includes.push(visitor);
             }
@@ -36,12 +36,14 @@ import { PgVisitor } from "../PgVisitor";
     if (isGraph(main)) {    
         const table = _DBDATAS[main.parentEntity ? main.parentEntity: main.getEntity()].table;
         fields =  [`(select ${table}."description" from ${table} where ${table}."id" = ${main.parentId ? main.parentId: main.id}) AS title, `];
+        
     } 
     
-    const temp = createQuerySelectString(main, main)
+    const temp = createQuerySelectString(main, main);
     switch (main.resultFormat) {        
         case returnFormats.dataArray : return queryAsDataArray(main.ArrayNames, temp, false, fields);
         case returnFormats.csv : return queryAsDataArray(main.ArrayNames, temp, false, fields);
+        case returnFormats.sql : return temp;
         default : return queryAsJson(temp, false, count, fields);
     }
 }

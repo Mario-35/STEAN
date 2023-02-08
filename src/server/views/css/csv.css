@@ -1,3 +1,11 @@
+/**
+ * Csv css wrapper for Query.
+ *
+ * @copyright 2023-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+
 .table-wrapper {
     margin: 4px 10px 10px;
     box-shadow: 0 35px 50px rgba(0, 0, 0, .2)

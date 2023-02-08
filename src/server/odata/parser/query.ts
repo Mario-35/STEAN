@@ -6,6 +6,7 @@ import Lexer from "./lexer";
 import PrimitiveLiteral from "./primitiveLiteral";
 import NameOrIdentifier from "./nameOrIdentifier";
 import Expressions from "./expressions";
+import { returnFormats } from "../../helpers";
 
 namespace Query {
     const addToIndex = (value: Utils.SourceArray, index: number, name: string): number | undefined => {
@@ -138,7 +139,7 @@ namespace Query {
         index = eq;
 
         let format;
-        ["csv", "json", "txt", "graphDatas", "graph", "dataArray"].forEach((key: string) => {
+        Object.keys(returnFormats).forEach((key: string) => {
             if (Utils.equals(value, index, key)) {
                 format = key;
                 index += key.length ;

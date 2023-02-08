@@ -9,11 +9,11 @@
 import koa from "koa";
 import { Knex } from "knex";
 import { isGraph, _DBDATAS } from "../constants";
-import { getEntityName, removeQuotes } from "../../helpers/index";
+import { getEntityName, removeQuotes, returnFormats } from "../../helpers/index";
 import {  message } from "../../logger";
 import { IReturnResult } from "../../types";
 import { createGraph, extractMessageError, knexQueryToSql, removeKeyFromUrl, verifyId } from "../helpers";
-import { _DEBUG, _VOIDTABLE } from "../../constants";
+import { _debug, _VOIDTABLE } from "../../constants";
 import { _CONFIGS, _CONFIGURATION } from "../../configuration";
 import { IGraphDatas } from "../helpers/createGraph";
 
@@ -29,7 +29,6 @@ export class Common {
         this.ctx = ctx;
 
         if (knexInstance) Common.dbContext = knexInstance;
-
         this.nextLinkBase = removeKeyFromUrl(`${this.ctx._odata.options.rootBase}${this.ctx.href.split(`${ctx._version}/`)[1]}`, ["top", "skip"]);
         this.linkBase = `${this.ctx._odata.options.rootBase}${this.constructor.name}`; 
     }
@@ -42,7 +41,7 @@ export class Common {
     // Log full Query
     logQuery(input: Knex.QueryBuilder | string): void {
         const queryString = typeof input === "string" ? input : knexQueryToSql(input);
-        if (_DEBUG) message(true, "RESULT", "query", queryString);
+        if (_debug) message(true, "RESULT", "query", queryString);
         this.ctx._query = queryString;
     }
 
@@ -109,8 +108,10 @@ export class Common {
         const sql = this.ctx._odata.asGetSql();
 
         if(!sql) return;
-        
+
         this.logQuery(sql);
+        
+        if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ body: sql });
 
         return await Common.dbContext
             .raw(sql)
@@ -143,6 +144,8 @@ export class Common {
 
         this.logQuery(sql);
 
+        if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ body: sql });
+
         return Common.dbContext
             .raw(sql)
             .then((res: any) => {
@@ -171,6 +174,8 @@ export class Common {
         const sql = this.ctx._odata.asPostSql(dataInput, Common.dbContext);
 
         this.logQuery(sql);
+
+        if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ body: sql });
 
         return Common.dbContext
             .raw(sql)
@@ -205,6 +210,8 @@ export class Common {
 
         this.logQuery(sql);
 
+        if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ body: sql });
+
         return Common.dbContext
             .raw(sql)
             .then((res: any) => {
@@ -220,6 +227,8 @@ export class Common {
 
     async delete(idInput: bigint | string): Promise<IReturnResult | undefined> {
         message(true, "CLASS", this.constructor.name, "delete");
+
+        if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ id: BigInt(idInput), body: `DELETE FROM "${_DBDATAS[this.constructor.name].table}" WHERE id= ${idInput}` });
 
         const testIfId = await verifyId(Common.dbContext, BigInt(idInput), _DBDATAS[this.constructor.name].table);
         if (testIfId === false) this.ctx.throw(404, { detail: `No id found for : ${idInput}` });

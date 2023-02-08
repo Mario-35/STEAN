@@ -1,4 +1,12 @@
-.row {
+/**
+ * Css grid for Query.
+ *
+ * @copyright 2023-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+ 
+ .row {
   margin-top: 0.5rem;
   display: flex;
   flex-direction: row;
@@ -7,7 +15,7 @@
 
 .col {
   flex: 1 1 8%;
-  padding: 0.5em 3px;
+  padding: 0.5px 3px;
   box-sizing: border-box;
 }
 

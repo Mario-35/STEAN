@@ -22,6 +22,7 @@ import { ensureAuthenticated, getAuthenticatedUser, userRights } from "../types/
 import { createDatabase } from "../db/helpers";
 import { createOdata } from "../odata";
 import { _CONFIGURATION } from "../configuration";
+import { db } from "../db";
 
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 
@@ -83,12 +84,12 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             };
             return;
 
-        // case "CONFIGS":
-        //     if (token?.PDCUAS[userRights.SuperAdmin] === true) {
-        //         ctx.type = returnFormatsString.HTML;
-        //         ctx.body = _CONFIGS;
-        //     } else ctx.redirect(`${ctx._rootName}login`);
-        //     return;
+        case "SQL":
+            const sql = ctx.request.url.split("query=")[1];        
+            const resultSql = await db[ctx._configName].raw(atob(sql));
+            ctx.status = 201;
+            ctx.body = resultSql.rows;
+            return;
 
         case "LOGIN":
             if (ensureAuthenticated(ctx)) ctx.redirect(`${ctx._rootName}status`);

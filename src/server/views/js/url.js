@@ -1,82 +1,139 @@
 
 
-  function decodeUrlOptions(input) {
-    console.log(input);
-    // return true if some works are done (for init to not delete value)
-    let decode = false;
+  function decodeOptions(input) {
+    if (isDebug) console.log("==================== decodeOptions ====================");
+    if (isDebug) console.log(`decode : ${input}`);
 
-    // delete all before
-    let myRoot = input;
-    let myOptions = input;
-    let myPath = input;
-    // get options if exists
-    if (input.includes('?')) {
-      const splitStr = input.split('?');
-      myRoot = splitStr[0];
-      myOptions = splitStr[1];
+    try {
+      // return true if some works are done (for init to not delete value)
+      let decode = false;
+
+      const  myOptions =   (input.includes('?')) ? input.split('?')[1] : input;
+      // process options
+      myOptions.split('&').forEach((element) => {
+        const temp = element.split('=');
+        const key = temp[0].substring(1);
+        switch (key) {
+          case '$splitResult':
+            const objChk = getElement("splitResultOption");
+            const objName = getElement("splitResultOptionName");
+            if(objChk) objChk.checked = true;
+            if(objName) objName.value = temp[1];
+            addOption('splitResult',temp[1], 'FALSE');
+            decode = true;
+            break;
+          case 'resultFormat':
+            queryResultFormat.value = [temp[1].split(",")[0]];
+            decode = true;
+            break;
+          case 'expand':
+            console.log(capitalize(key));
+            setMultiSelect(`query${capitalize(key)}`, [temp[1].split(",")[0]]);
+            decode = true;
+          break;
+          case '$skip':
+          case '$top':
+            const obj = getElement(`${key}Option`);
+            if(obj) {
+              if (typeof obj.add !== "undefined") { 
+                  obj.add(new Option(temp[1]));
+              }
+              obj.value = temp[1];
+              addOption(key,temp[1], '0');
+            }
+            decode = true;
+            break;
+        }
+      });
+      canShowQueryButton();
+      if (isDebug) console.log(listOptions);
+
+      return decode;
+    } catch (error) {
+        return false;
     } 
-    const version = getVersion(input);
-    // get version
-    if (version) {
-      const splitStr = myRoot.split(version);
-      myPath = splitStr[1];
-      myRoot = splitStr[0];
-    }
+  };
 
-    // process my path
-    myPath.split('/')
-          .filter((word) => word !== '')
-          .forEach((element, index) => {
-            if (index === 0) {
-              if (element.includes('(')) {
-                const temp = element.split('(');
-                entity.value = temp[0];
-                nb.value = temp[1].replace(')', '');
-              } else entity.value = element;
-              // this.subEntities = this.getSubEntities();
-          
+  function decodeUrl(input) {
+    if (isDebug) console.log("==================== decodeUrl ====================");
+    if (isDebug) console.log(`decode : ${input}`);
 
-            } else if (index === 1) {
-              if (element.includes('?')) options.value = element;
-              else if (params.relations) populateSelect(subentity, params.relations[entity.value], element, true);
-            }
-          });    
+    try {
+      // return true if some works are done (for init to not delete value)
+      let decode = false;
 
-    // process options
-    myOptions.split('&').forEach((element) => {
-      const temp = element.split('=');
-      const key = temp[0].substring(1);
-      switch (temp[0]) {
-        case '$splitResult':
-          const objChk = getElement("splitResultOption");
-          const objName = getElement("splitResultOptionName");
-          if(objChk) objChk.checked = true;
-          if(objName) objName.value = temp[1];
-          addOption('splitResult',temp[1], 'FALSE');
-          decode = true;
-          break;
-        case '$resultFormat':
-        case '$expand':
-          setMultiSelect(`query${capitalize(key)}`, temp[1].split(","));
-          decode = true;
-        break;
-        case '$skip':
-        case '$top':
-          const obj = getElement(`${key}Option`);
-          if(obj) {
-            if (typeof obj.add !== "undefined") { 
-                obj.add(new Option(temp[1]));
-            }
-            obj.value = temp[1];
-            addOption(key,temp[1], '0');
-          }
-          decode = true;
-          break;
+      // delete all before
+      let myRoot = input;
+      let myOptions = input;
+      let myPath = input;
+      // get options if exists
+      if (input.includes('?')) {
+        const splitStr = input.split('?');
+        myRoot = splitStr[0];
+        myOptions = splitStr[1];
+      } 
+      const version = getVersion(input);
+      // get version
+      if (version) {
+        const splitStr = myRoot.split(version);
+        myPath = splitStr[1];
+        myRoot = splitStr[0];
       }
-    });
 
-    canShowQueryButton();
-    return decode;
+      // process my path
+      myPath.split('/')
+            .filter((word) => word !== '')
+            .forEach((element, index) => {
+              if (index === 0) {
+                if (element.includes('(')) {
+                  const temp = element.split('(');
+                  entity.value = temp[0];
+                  nb.value = temp[1].replace(')', '');
+                } else entity.value = element;          
+              } else if (index === 1) {
+                if (element.includes('?')) queryOptions.value = element;
+                else if (Object.keys( _PARAMS._DATAS [key].relations)) populateSelect(subentity, Object.keys( _PARAMS._DATAS [key].relations)[entity.value], element, true);
+              }
+            });    
+
+      // process options
+      myOptions.split('&').forEach((element) => {
+        const temp = element.split('=');
+        const key = temp[0].substring(1);
+        switch (temp[0]) {
+          case '$splitResult':
+            const objChk = getElement("splitResultOption");
+            const objName = getElement("splitResultOptionName");
+            if(objChk) objChk.checked = true;
+            if(objName) objName.value = temp[1];
+            addOption('splitResult',temp[1], 'FALSE');
+            decode = true;
+            break;
+          case '$resultFormat':
+          case '$expand':
+            setMultiSelect(`query${capitalize(key)}`, temp[1].split(","));
+            decode = true;
+          break;
+          case '$skip':
+          case '$top':
+            const obj = getElement(`${key}Option`);
+            if(obj) {
+              if (typeof obj.add !== "undefined") { 
+                  obj.add(new Option(temp[1]));
+              }
+              obj.value = temp[1];
+              addOption(key,temp[1], '0');
+            }
+            decode = true;
+            break;
+        }
+      });
+      canShowQueryButton();
+      
+      return decode;
+    } catch (error) {
+        return false;
+    } 
   };
 
   createUrl = () => {
@@ -115,14 +172,14 @@
       } 
     }  
   
-    if (jsonDatas.string_value  != "") {
-      const datasEncoded = encodeURIComponent(jsonDatas.string_value );
+    if (jsonDatas.innerText  != "") {
+      const datasEncoded = encodeURIComponent(jsonDatas.innerText );
       queryLink = queryLink + `&datas=${datasEncoded}`;
     }
   
-    if (options.value != "") {
-      listOptions.push(options.value);
-      queryLink += `&options=${options.value}`;
+    if (queryOptions.value != "") {
+      listOptions.push(queryOptions.value);
+      queryLink += `&options=${queryOptions.value}`;
     }
   
     const queryBuilder = getElement("query-builder").innerText;

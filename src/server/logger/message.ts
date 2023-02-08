@@ -7,7 +7,7 @@
  */
 
 import util from "util";
-import { stringToBool } from "../helpers";
+import { _debug } from "../constants";
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const message = (
@@ -21,7 +21,7 @@ export const message = (
         return;
     }
 
-    if (testDebug && !stringToBool(process.env.DEBUG)) return;
+    if (testDebug && !_debug) return;
 
     if (info && typeof info === "object") info = util.inspect(info, { showHidden: false, depth: null, colors: true });
     switch (mode) {

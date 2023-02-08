@@ -38,9 +38,9 @@
  let firstLoraDEVEUI = "";
  
  const dataInput = {
-     "Battery": 3.2800000000000002,
+     "Battery": 3.28,
      "Humidity": 4.5859375,
-     "Temperature": 17.798207397460935
+     "Temperature": 17.7982073974609
  };
  
  
@@ -173,7 +173,11 @@
  
          it("should return the Lora observation that was added", (done) => {
              const datas = {
-                 "data": dataInput,
+                 "data": {
+                    "Battery": 3.28,
+                    "Humidity": 4.5859375,
+                    "Temperature": 17.7982073974609
+                },
                  "deveui": "8cf9574000002d4d",
                  "sensor_id": "8cf9574000002d4d",
                  "timestamp": "2021-10-18T14:53:44+02:00",
@@ -202,8 +206,8 @@
                      res.type.should.equal("application/json");
                      res.body["@iot.selfLink"].should.contain("/Observations(");
                      res.body["result"]["Humidity"].should.eql(dataInput.Humidity);
-                     res.body["result"]["Temperature"].should.eql(17.7982073974609);
-                     res.body["result"]["Battery"].should.eql(3.28);
+                     res.body["result"]["Temperature"].should.eql(dataInput.Temperature);
+                     res.body["result"]["Battery"].should.eql(dataInput.Battery);
                      addToApiDoc({ ...infos, result: res });
                      done();
                  });

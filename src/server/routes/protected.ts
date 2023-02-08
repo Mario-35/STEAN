@@ -20,7 +20,6 @@ import { CreateHtmlView } from "../views/helpers/CreateHtmlView";
 import { loginUser, userRights } from "../types/user";
 import { createIqueryFromContext } from "../views/helpers/";
 import { queryHtmlPage } from "../views/query";
-import { redoLog } from "../db/helpers";
 import { createOdata } from "../odata";
 import { db } from "../db";
 import { _CONFIGURATION } from "../configuration";
@@ -106,6 +105,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
     }
 
     if ((ctx._user && ctx._user.id > 0) || ctx.request.url.includes("/Lora")) {
+        ctx._addToLog = true;
         if (ctx.request.type.startsWith("application/json") && Object.keys(ctx.request.body).length > 0) {
             const odataVisitor = await createOdata(ctx);         
             if (odataVisitor)  ctx._odata = odataVisitor;
@@ -159,12 +159,6 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
                     ctx.throw(400);
                 }
             }
-        } else if (ctx.url.includes(`${ctx._version}/Logs(`)){
-            const odataVisitor = await createOdata(ctx);         
-            if (odataVisitor)  ctx._odata = odataVisitor;
-            if (ctx._odata) {
-                redoLog(ctx, ctx._odata.id);
-            } else   ctx.throw(400, { details: "Payload is malformed" });
         } else {
             // payload is malformed
             ctx.throw(400, { details: "Payload is malformed" });
@@ -175,6 +169,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
 });
 
 protectedRoutes.patch("/(.*)", async (ctx) => {
+    ctx._addToLog = true;
     if (ctx._user.PDCUAS[userRights.Post] === true && Object.keys(ctx.request.body).length > 0) {
         const odataVisitor = await createOdata(ctx); 
         if (odataVisitor)  ctx._odata = odataVisitor;
@@ -200,6 +195,7 @@ protectedRoutes.patch("/(.*)", async (ctx) => {
 });
 
 protectedRoutes.delete("/(.*)", async (ctx) => {
+    ctx._addToLog = true;
     if (ctx._user.PDCUAS[userRights.Delete] === true) {
         const odataVisitor = await createOdata(ctx); 
         if (odataVisitor)  ctx._odata = odataVisitor;

@@ -1117,6 +1117,8 @@ describe("endpoint : Thing [8.2.1]", () => {
                         .delete(`/test${infos.apiExample.http}`)
                         .set("Cookie", `${keyTokenName}=${token}`)
                         .end((err: any, res: any) => {
+                            console.log(res.body);
+                            
                             should.not.exist(err);
                             res.status.should.equal(204);
                             dbTest(entity.table)

@@ -7,20 +7,15 @@
  */
 
 import { getEntityName } from "../../helpers";
-import { IEntityColumnForm } from "../../types";
 import { _DBDATAS } from "../constants";
 
-export const getColumnsListType = (tableName: string): {[key: string]: IEntityColumnForm} | undefined => {
+export const getColumnsListType = (tableName: string): {[key: string]: string} | undefined => {
     if (tableName.trim() == "") return;
     const name = getEntityName(tableName);
     if (!name) return;
-    const returnValue: {[key: string]: IEntityColumnForm} = {};
+    const returnValue: {[key: string]: string} = {};
     Object.keys(_DBDATAS[name].columns).forEach((elem: string) => {
-        let temp = _DBDATAS[name].columns[elem].form;
-        if(temp) {
-            temp.readonly = (_DBDATAS[name].columns[elem].alias != undefined);
-            returnValue[temp.alias ? temp.alias : elem] = temp;
-        }
+        returnValue[elem]  = _DBDATAS[name].columns[elem].type;
     });
     return returnValue;
 }
