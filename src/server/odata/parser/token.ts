@@ -29,6 +29,11 @@ export interface SkipToken extends Token {
   value: LiteralToken;
 }
 
+export interface LogToken extends Token {
+  type: TokenType.Log;
+  value: LiteralToken;
+}
+
 export interface TopToken extends Token {
   type: TokenType.Top;
   value: LiteralToken;

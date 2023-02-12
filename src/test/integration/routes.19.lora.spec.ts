@@ -22,7 +22,7 @@
      "description",
      "properties",
      "@iot.selfLink",
-     "Datastreams@iot.navigationLink",
+     "Datastream@iot.navigationLink",
      "MultiDatastream@iot.navigationLink",
      "Decoder@iot.navigationLink"
  ];

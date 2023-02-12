@@ -108,7 +108,7 @@
   
   .window .window_content{
     overflow: auto;
-    background-color: #2b2b2b;
+    background-color: #282828;
   
     position: absolute;
     top: 2em;

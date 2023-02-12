@@ -2,7 +2,6 @@
 // |                                   EVENTS                                    |
 // ===============================================================================
 
-
   submit.onclick = () => wait(true);
 
   preview.onclick = () => {
@@ -77,24 +76,23 @@
 
   btnPostTemplate.onclick = () => {
     const result = {};
-    const src = _PARAMS.columns[entity.value]
-    Object.keys(src).forEach(e => {
-      switch (src[e].split(":")[0]) {
-        case "json":
-          result[e]= {}
-          break;
-        case "relation":
-          result[e.split("_id")[0]]= {"@iot.id": -1}
-          break;
-        case "text":
-          result[e]= ""
-          break;
-      
-        default:
-          break;
-      }
-      
-
+    const src = Object.keys(_PARAMS._DATAS[entity.value].columns);
+    src.forEach(e => {
+      if(_PARAMS._DATAS[entity.value].columns[e].type)
+        switch (_PARAMS._DATAS[entity.value].columns[e].type.split(":")[0]) {
+          case "json":
+            result[e]= {}
+            break;
+          case "relation":
+            result[e.split("_id")[0]]= {"@iot.id": -1}
+            break;
+          case "text":
+            result[e]= ""
+            break;
+        
+          default:
+            break;
+        } else console.log(e);
     });
 
     console.log(result);
@@ -105,7 +103,6 @@
     createBlankJsonDatas();
     buttonGo();
   }
-
 
   go.onclick = async (e) => {
     wait(true);    
@@ -331,7 +328,100 @@
     }
   });
 
+  function addToResultList(key, value, plus) {
+    var li = document.createElement("li");
+    li.innerText = `${key}: `;
+    var span = document.createElement("span");
+    span.className = "json-literal";
+    span.innerText = value;
+    li.appendChild(span);
+    getElement("listResult").appendChild(li);
+    if (plus) {
+      addToResultList("-->", plus);
+    }
+  };
 
+  
+  btnLoraShowLogs.onclick = async (e) => {
+    updateWinResult(`<div class="json-viewer"><ul id="listResult" class="json-dict"><li data-key-type="object">url: <span class="json-literal">response</span></li></ul></div>`);
 
+    addToResultList("mairo", "adam");
 
-
+    // if (e) e.preventDefault();
+    // wait(true);
+    // let url = `${optHost.value}/${optVersion.value}/`;
+    // if(replayId.value.startsWith("where")) {
+    //   const encoded = btoa(`select * from "log_request" ${replayId.value}`)
+    //   url +=  `Sql?$query=${encoded}`;
+    // } else {
+    //   url +=  `Logs?$filter=method eq 'POST'`;
+    //   if(replayId.value != "")  url += ` and datas/deveui eq '${replayId.value}'`;
+    //   url += ` and code eq 404 and entityid eq null`;
+    //   url += `&$orderby=date desc&$top=200000`;
+    //   url = addDebug(url);
+    // }
+    // try {
+    //   const jsonObj = await getFetchDatas(url, "json");
+    //   wait(false);
+    //   updateWinJsonResult(jsonObj, `[${method.value}]:${url}`); 
+    // } catch (err) {
+    //   notify("Error", err.message);
+    // }        
+  };
+  
+  btnLoraLogs.onclick = async (e) => {
+    if (e) e.preventDefault();
+    wait(true);
+    let url = `${optHost.value}/${optVersion.value}/`;
+    if(replayId.value.startsWith("where")) {
+      const encoded = btoa(`select * from "log_request" ${replayId.value}`)
+      url +=  `Sql?$query=${encoded}`;
+      const jsonObj = await getFetchDatas(url, "json");
+      wait(false);
+      updateWinResult("rien");
+      if (getIfChecked("checkReplay") === false) {
+        updateWinJsonResult(jsonObj, `[${method.value}]:${url}`); 
+        return;
+      }
+      updateWinResult(`<div class="json-viewer"><ul id="listResult" class="json-dict"><li data-key-type="object">url: <span class="json-literal">response</span></li></ul></div>`);
+      jsonObj.forEach(async element => {
+        if(element.datas) {
+          const myUrl = `${optHost.value}/${optVersion.value}/Loras?$log=${element["id"]}`;
+          const response = await fetch(myUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(element["datas"]),
+          });
+          console.log(response);
+          addToResultList(response.status, myUrl, response.statusText);
+        }
+      }); 
+    } else {
+      url +=  `Logs?$filter=method eq 'POST'`;
+      if(replayId.value != "")  url += ` and datas/deveui eq '${replayId.value}'`;
+      url += ` and code eq 404 and entityid eq null`;
+      url += `&$orderby=date desc&$top=200000`;
+      url = addDebug(url);
+      const jsonObj = await getFetchDatas(url, "json");
+      wait(false);
+      updateWinJsonResult(jsonObj, `[${method.value}]:${url}`); 
+      if (getIfChecked("checkReplay") === false) return;
+      for (const property in jsonObj.value) {
+        if(jsonObj.value[property].datas) {
+          const datas = jsonObj.value[property].datas;
+          console.log(datas);
+          const myUrl = `${optHost.value}/${optVersion.value}/Loras?$log=${jsonObj.value[property]["@iot.id"]}`;
+          const response = await fetch(myUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(datas),
+          });
+          if (response.status === 500) return;
+        }
+      }        
+    }
+  }

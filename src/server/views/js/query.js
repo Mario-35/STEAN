@@ -130,7 +130,6 @@ function notifyConfirm(titleMess, message) {
 
   function refreshAfterEntityOrSubEntity() {
     const tempEntity = SubOrNot();
-    console.log(`refreshAfterEntityOrSubEntity : SubOrNot ${tempEntity}`);
     populateMultiSelect("querySelect", columnsList(tempEntity) , null, "all");
     populateMultiSelect("queryOrderBy", columnsList(tempEntity) , null, _NONE, true);
     populateSelect(queryProperty, columnsList(tempEntity), _PARAMS.property != undefined ? _PARAMS.property :_NONE, true);
@@ -296,7 +295,7 @@ function init() {
   
   
   // hide _PARAMS
-  if (!isDebug)  history.replaceState({}, null, `${optHost.value}/${optVersion.value}/Query`);
+  // if (!isDebug)  history.replaceState({}, null, `${optHost.value}/${optVersion.value}/Query`);
   hide(querySubExpand);
   nb.value = _PARAMS.id;
   

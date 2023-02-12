@@ -126,6 +126,7 @@ export enum TokenType {
     OrderByItem = "OrderByItem",
     Skip = "Skip",
     Top = "Top",
+    Log = "Log",
     Format = "Format",
     resultFormat = "ResultFormat",
     timeSeries = "TimeSeries",

@@ -35,7 +35,7 @@ import { db } from "..";
             return this.createReturnResult({
                 body: temp,
             });       
-        } else this.ctx.throw(401);
+        } else this.ctx.throw(401, { code: 401,  detail: `Not Authorized` });
      }
 
      async add(dataInput: Object | undefined): Promise<IReturnResult | undefined> {

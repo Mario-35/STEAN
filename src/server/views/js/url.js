@@ -1,5 +1,9 @@
 
 
+  function addDebug(input) {
+    if (input.trim() != "") input += '&';
+    return getIfChecked("checkDebug") ? `${input}$debug=true`: input;
+  }
   function decodeOptions(input) {
     if (isDebug) console.log("==================== decodeOptions ====================");
     if (isDebug) console.log(`decode : ${input}`);
@@ -92,7 +96,7 @@
                 } else entity.value = element;          
               } else if (index === 1) {
                 if (element.includes('?')) queryOptions.value = element;
-                else if (Object.keys( _PARAMS._DATAS [key].relations)) populateSelect(subentity, Object.keys( _PARAMS._DATAS [key].relations)[entity.value], element, true);
+                else if (_PARAMS._DATAS[element]) populateSelect(subentity, Object.keys(_PARAMS._DATAS[entity.value].relations), element, true);
               }
             });    
 

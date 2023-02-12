@@ -32,7 +32,6 @@ declare module "koa" {
         _version: string;
         _odata: PgVisitor;
         _datas: {[key: string]: string};
-        _query: string;
         _user: userToken;
         _addToLog: boolean;
     }

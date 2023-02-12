@@ -21,3 +21,4 @@
 /test/v1.0/Things(6)?$expand=Datastreams
 /test/v1.0/Things?$select=name,description&$expand=Datastreams
 /test/v1.0/Things(12)?$expand=MultiDatastreams
+/test/v1.0/Things/$ref

@@ -28,7 +28,7 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
             PDCUAS: [false, false, false, false, false, false]
         };
         if (_debug === true) console.log(ConfigCtx(ctx));
-        await next().then(async () => {
+        await next().then(async (res: any) => {            
             await writeToLog(ctx);
         });
     } catch (err: any) {
@@ -37,9 +37,8 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
             err.statusCode = +temp[0];
             err.message = temp[1];
             if(temp[2]) err.detai = temp[2];
-        }
-        
-        writeToLog(ctx, { "error": err.message + " : " + err.detail });
+        }    
+        writeToLog(ctx, err);
 
 
         ctx.status = err.statusCode || err.status || 500;

@@ -56,6 +56,7 @@ namespace Query {
             Query.skip(value, index) ||
             Query.skiptoken(value, index) ||
             Query.top(value, index) ||
+            Query.log(value, index) ||
             Query.debug(value, index) ||
             Query.timeSeries(value, index)
         );
@@ -696,6 +697,25 @@ namespace Query {
         index = token.next;
 
         return Lexer.tokenize(value, start, index, token, Lexer.TokenType.Top);
+    }
+
+    export function log(value: Utils.SourceArray, index: number): Lexer.Token | undefined {
+        const start = index;
+        if (Utils.equals(value, index, "%24log")) {
+            index += 6;
+        } else if (Utils.equals(value, index, "$log")) {
+            index += 4;
+        } else return;
+
+        const eq = Lexer.EQ(value, index);
+        if (!eq) return;
+        index = eq;
+
+        const token = PrimitiveLiteral.int32Value(value, index);
+        if (!token) return;
+        index = token.next;
+
+        return Lexer.tokenize(value, start, index, token, Lexer.TokenType.Log);
     }
 
     export function format(value: Utils.SourceArray, index: number): Lexer.Token | undefined {

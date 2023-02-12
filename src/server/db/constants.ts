@@ -13,7 +13,7 @@ import { _CONFIGURATION } from "../configuration";
 import { _ENV_VERSION } from "../constants";
 import { getEntityName, returnFormats } from "../helpers";
 import { PgVisitor } from "../odata";
-import {  IEntity } from "../types";
+import { IEntity } from "../types";
 import { RELATIONS } from "../types/entity";
 
 export const isSingular = (input: string): boolean => {
@@ -24,8 +24,8 @@ export const isGraph = (input: PgVisitor) =>  input.resultFormat === returnForma
 
 // Get date by Database usefull to have the TimeZone
 export const getDateNow = async (conn: Knex | Knex.Transaction): Promise<string> => {
-    const temp = await conn.raw("select current_timestamp;");
-    return temp["rows"][0]["current_timestamp"];
+    const tempQuery = await conn.raw("select current_timestamp;");
+    return tempQuery["rows"][0]["current_timestamp"];
 }
 
 const makeIDAlias = (table: string) => `"${table}"."id" AS "@iot.id"`;
@@ -594,6 +594,16 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 relationKey: "datastream_id",
                 entityColumn: "id",
                 tableKey: "id"
+            },
+            Loras: {
+                type: RELATIONS.belongsTo,
+                expand: `"lora"."id" = (select "lora"."id" from "lora" where "lora"."datastream_id" = "datastream"."id")`,
+                link: `"lora"."id" = (select "lora"."id" from "lora" where "lora"."datastream_id" = $ID)`,
+                entityName: "loras",
+                tableName: "lora",
+                relationKey: "datastream_id",
+                entityColumn: "id",
+                tableKey: "id"
             }
         },
         constraints: {
@@ -1029,7 +1039,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 type : "relation:Decoders"
             },
             datastream_id: {
-                create: "BIGINT[] NULL",
+                create: "BIGINT NULL",
                 type : "relation:Datastreams"
             },
             multidatastream_id: {
@@ -1051,12 +1061,12 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         },
         admin: false,
         relations: {
-            Datastreams: {
-                type: RELATIONS.hasMany,
+            Datastream: {
+                type: RELATIONS.belongsTo,
                 expand: `"datastream"."id" = "observation"."datastream_id"`,
                 link: `"datastream"."id" (SELECT "observation"."datastream_id" FROM "observation" WHERE "observation"."id" = $ID)`,
                 entityName: "Datastreams",
-                tableName: "observation",
+                tableName: "lora",
                 relationKey: "id",
                 entityColumn: "datastream_id",
                 tableKey: "id"
@@ -1066,7 +1076,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 expand: `"multidatastream"."id" = "lora"."multidatastream_id"`,
                 link: `"multidatastream"."id" = (SELECT "lora"."multidatastream_id" FROM "lora" WHERE "lora"."id" = $ID)`,
                 entityName: "MultiDatastreams",
-                tableName: "observation",
+                tableName: "lora",
                 relationKey: "id",
                 entityColumn: "multidatastream_id",
                 tableKey: "id"
@@ -1140,6 +1150,14 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 alias: makeIDAlias("log_request"),
                 type : "id"
             },
+            entityid: {
+                create: "BIGINT",
+                type : "id"
+            },
+            replayid: {
+                create: "BIGINT",
+                type : "id"
+            },
             date: {
                 create: "timestamptz DEFAULT CURRENT_TIMESTAMP",
                 type : "datetime-local"
@@ -1153,8 +1171,8 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 type : "text"
             },
             code: {
-                create: "text",
-                type : "text"
+                create: "INT",
+                type : "number"
             },
             url: {
                 create: "text NOT NULL",
@@ -1172,19 +1190,11 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 create: "text NULL",
                 type : "text"
             },
-            query: {
-                create: "text NULL",
-                type : "json"
-            },
             return: {
                 create: "text NULL",
                 type : "json"
             },
             error: {
-                create: "text NULL",
-                type : "text"
-            },
-            redo: {
                 create: "text NULL",
                 type : "text"
             },

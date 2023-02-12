@@ -14,34 +14,29 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
     const name = getEntityName(tableName.trim());
     if (!name) return; 
     const graph = isGraph(main);
-    const csvOrArray = main.resultFormat === returnFormats.dataArray || main.resultFormat === returnFormats.csv;
+    const csvOrArray = [returnFormats.dataArray, returnFormats.csv].includes(main.resultFormat);
     const returnValue: string[] = graph == true ? ["id", `to_char("resultTime", 'YYYY-MM-DD HH:mi') as "date"`] : [];
     const isSelect =  (element.select && element.select != "*") || false;
-    const cols =  isSelect ?  element.select.split(",").filter((word: string) => word.trim() != "") : Object.keys(_DBDATAS[name].columns).filter((word) => !["resultnumber","resultnumbers"].includes(word) && !word.startsWith("_") && !word.endsWith("_id") );
+    // create columns list
+    const cols =  isSelect ? element.select.split(",").filter((word: string) => word.trim() != "") : Object.keys(_DBDATAS[name].columns).filter((word) => !["resultnumber","resultnumbers"].includes(word) && !word.startsWith("_") && !word.endsWith("_id") );
+    const selfLink =  `CONCAT('${main.options.rootBase}${_DBDATAS[name].name}(', "${_DBDATAS[name].table}"."id", ')') AS "@iot.selfLink"`; 
     if (graph == false ) { 
-        cols.forEach((elem: string) => {                    
+        // only ref
+        if (element.ref == true ) returnValue.push(selfLink);   
+        else cols.forEach((elem: string) => {                    
             elem = removeQuotes(elem);
-            if(element.ref == true ) {
-                returnValue.push(`CONCAT('${main.options.rootBase}${_DBDATAS[name].name}(', "${_DBDATAS[name].table}"."id", ')') AS "@iot.selfLink"`);                 
-            } else {   
-                if (element.getEntity() === _DBDATAS.Logs.name) {
-                    returnValue.push(`CONCAT('${main.options.rootBase}${_DBDATAS.Logs.name}(', "${_DBDATAS.Logs.table}"."id", ')') AS "@iot.selfLink"`);                 
-                }                
                 if (_DBDATAS[name].columns.hasOwnProperty(elem)) {
                     let alias = csvOrArray ? undefined :_DBDATAS[name].columns[elem].alias;
                     if (main.id && alias) alias = alias.replace(/[$ID]+/g, <string>main.id) ;
-
-                    returnValue.push(`${alias ?  alias : `"${elem}"`}`);
-                    
+                    returnValue.push(`${alias ?  alias : `"${elem}"`}`);                    
                     if (elem === "id" && (element.showRelations == true || csvOrArray)) {
                         if (csvOrArray)  main.addToArrayNames("id");            
-                        else returnValue.push(`CONCAT('${main.options.rootBase}${_DBDATAS[name].name}(', "${_DBDATAS[name].table}"."id", ')') AS "@iot.selfLink"`);    
+                        else returnValue.push(selfLink);    
                     }  else  if (alias != undefined || !isSelect) main.addToArrayNames(elem); 
                 } else if (_DBDATAS[name].relations[elem]) {
                     const tempTable = getEntityName(elem);
                     returnValue.push(`CONCAT('${main.options.rootBase}${_DBDATAS[name].name}(', "${_DBDATAS[name].table}"."id", ')/${tempTable}') AS "${tempTable}@iot.navigationLink"`);                 
                 } 
-            }
         });   
     }
     if (tableName === _DBDATAS.Observations.name && element.ref == false ) {

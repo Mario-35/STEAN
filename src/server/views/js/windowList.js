@@ -182,3 +182,32 @@ function updateWinCsvResult(input) {
   winCsvResult.show();
 }
 
+function updateWinResult(input) {
+  if (! winResult ||  winResult === null ||  winResult.content === null) {
+  const temp = new Window("Result", {
+    state: WindowState.NORMAL,
+    size: {
+      width: 750,
+      height: 500
+    },
+    selected: true,
+    minimizable: false,
+    container: two ,
+    lang: "any"
+  });
+   winResult = temp;
+}
+ winResult.content.innerHTML = `<div spellcheck="false" id=" winResult">${input}</div>`;
+ winResult.show();
+}
+
+function addToResultList(key, value, plus) {
+  var li = document.createElement("li");
+  li.innerText = `${key}: `;
+  var span = document.createElement("span");
+  span.className = "json-literal";
+  span.innerText = value;
+  li.appendChild(span);
+  getElement("listResult").appendChild(li);
+  if (plus) addToResultList("-->", plus);
+};

@@ -567,31 +567,31 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        // it("Return Things association link", (done) => {
-        //     const infos = {
-        //         api: `{get} ${entity.name}(:id) Get Subentity Locations`,
-        //         apiName: `Get${entity.name}RefLinks`,
-        //         apiDescription: "Get Subentity Locations of a specific Thing.",
-        //         apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#41",
-        //         apiExample: {
-        //             http: `/v1.0/${entity.name}/$ref`,
-        //             curl: defaultGet("curl", "KEYHTTP"),
-        //             javascript: defaultGet("javascript", "KEYHTTP"),
-        //             python: defaultGet("python", "KEYHTTP")
-        //         }
-        //     };
-        //     chai.request(server)
-        //         .get(addToFile(`/test${infos.apiExample.http}`))
-        //         .end((err: any, res: any) => {
-        //             should.not.exist(err);
-        //             res.status.should.equal(200);
-        //             res.type.should.equal("application/json");
-        //             res.body["@iot.count"].should.eql("20");
-        //             res.body.value[0]["@iot.selfLink"].should.contain("/Things(1)");
-        //             addToApiDoc({ ...infos, result: res });
-        //             done();
-        //         });
-        // });        
+        it("Return Things association link", (done) => {
+            const infos = {
+                api: `{get} ${entity.name}(:id) Get only references`,
+                apiName: `Get${entity.name}RefLinks`,
+                apiDescription: "Get only references of all Things.",
+                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#42",
+                apiExample: {
+                    http: `/v1.0/${entity.name}/$ref`,
+                    curl: defaultGet("curl", "KEYHTTP"),
+                    javascript: defaultGet("javascript", "KEYHTTP"),
+                    python: defaultGet("python", "KEYHTTP")
+                }
+            };
+            chai.request(server)
+                .get(addToFile(`/test/v1.0/${entity.name}/$ref`))
+                .end((err: any, res: any) => {
+                    should.not.exist(err);
+                    res.status.should.equal(200);
+                    res.type.should.equal("application/json");
+                    res.body["@iot.count"].should.eql("20");
+                    res.body.value[0]["@iot.selfLink"].should.contain("/Things(1)");
+                    addToApiDoc({ ...infos, result: res });
+                    done();
+                });
+        });        
     });
 
     describe(`{post} ${entity.name} Create. [10.2.1]`, () => {
@@ -1100,7 +1100,6 @@ describe("endpoint : Thing [8.2.1]", () => {
                     const thingObject = things[things.length - 1];
                     const lengthBeforeDelete = things.length;
                     myId = thingObject.id;
-
                     const infos = {
                         api: `{delete} ${entity.name} Delete one`,
                         apiName: `Delete${entity.name}`,
@@ -1117,8 +1116,6 @@ describe("endpoint : Thing [8.2.1]", () => {
                         .delete(`/test${infos.apiExample.http}`)
                         .set("Cookie", `${keyTokenName}=${token}`)
                         .end((err: any, res: any) => {
-                            console.log(res.body);
-                            
                             should.not.exist(err);
                             res.status.should.equal(204);
                             dbTest(entity.table)

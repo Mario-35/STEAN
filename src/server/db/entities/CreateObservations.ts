@@ -39,7 +39,7 @@ export class CreateObservations extends Common {
             const extras = this.ctx._datas;
             const datasJson = JSON.parse(extras["datas"]);
 
-            if (!datasJson["columns"]) this.ctx.throw(404, { detail: "No columns parameters found" });
+            if (!datasJson["columns"]) this.ctx.throw(404, { code: 404,  detail: "No columns parameters found" });
             if (!datasJson["duplicates"]) datasJson["duplicates"] = true;
 
             const myColumns: ICsvColumns[] = [];
@@ -71,7 +71,7 @@ export class CreateObservations extends Common {
             if (!testDatastream) {
                 message(true, "INFO", "test Datastream ID", testDatastreamID);
                 this.ctx.throw(404, {
-                    detail: testDatastreamID.length > 0 ? `No id found for : ${testDatastreamID}` : `One of id not found for : ${testDatastreamID}`
+                    code: 404, detail: testDatastreamID.length > 0 ? `No id found for : ${testDatastreamID}` : `One of id not found for : ${testDatastreamID}`
                 });
             }
 
@@ -80,6 +80,7 @@ export class CreateObservations extends Common {
             if (!testFeatureOfInterest) {
                 message(true, "INFO", "test FeatureOfInterest ID", testFeatureOfInterestID);
                 this.ctx.throw(404, {
+                    code: 404, 
                     detail:
                         testFeatureOfInterestID.length > 0
                             ? `No id found for : ${testFeatureOfInterestID}`
@@ -99,21 +100,21 @@ export class CreateObservations extends Common {
 
             const DatastreamIdExist = await verifyId(Common.dbContext, BigInt(dataStreamId), _DBDATAS.Datastreams.table);
             if (!DatastreamIdExist) {
-                this.ctx.throw(404, { detail: `No id found for : ${dataStreamId}` });
+                this.ctx.throw(404, { code: 404,  detail: `No id found for : ${dataStreamId}` });
             }
 
             dataInput["dataArray"].forEach((element: Object) => {
-                const temp: Object = {
+                const tempDatastreamId: Object = {
                     datastream_id: Number(dataStreamId)
                 };
                 
                 dataInput["components"].forEach((title: string, index: number) => {
                     if (title == "result") {
                         const test = this.testValue(element[index]);
-                        if (test) temp[test.key] = test.value;
-                    } else temp[title] = element[index];
+                        if (test) tempDatastreamId[test.key] = test.value;
+                    } else tempDatastreamId[title] = element[index];
                 });
-                dataInsert.push(renameProp("FeatureOfInterest/id", "featureofinterest_id", temp));
+                dataInsert.push(renameProp("FeatureOfInterest/id", "featureofinterest_id", tempDatastreamId));
             });
             try {
                 const tempQuery = await Common.dbContext("observation")
@@ -131,7 +132,7 @@ export class CreateObservations extends Common {
                     body: returnValue
                 });
             } catch (error: any) {
-                this.ctx.throw(400, { detail: extractMessageError(error.message) });
+                this.ctx.throw(400, { code: 400,  detail: extractMessageError(error.message) });
             }
         }
         if (returnValue) {

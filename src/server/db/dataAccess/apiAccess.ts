@@ -23,8 +23,7 @@ export class apiAccess implements DataAccessInterface {
 
     constructor(ctx: koa.Context) {
         this.ctx = ctx;        
-        const temp = this.ctx._odata.entity;
-        const entityName = getEntityName(temp);
+        const entityName = getEntityName(this.ctx._odata.entity);
         if (entityName && entityName in entities) {
             this.myEntity = new entities[(this.ctx, entityName)](ctx, db[this.ctx._configName]);
             if (this.myEntity === undefined) message(true, "ERROR", `Entity Error : ${entityName}`);

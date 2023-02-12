@@ -28,6 +28,7 @@ export class PgVisitor {
     extras: undefined;
     timeSeries?: TimeSeriesType;
     relation: string | undefined = undefined;
+    log: bigint | string = BigInt(0);
     id: bigint | string = BigInt(0);
     parentId: bigint | string = BigInt(0);
     select: string = "";
@@ -49,7 +50,6 @@ export class PgVisitor {
     parameters: unknown[] = [];
     ast: Token;
     showRelations: boolean = true;
-    test: boolean = !true;
 
     constructor(options = <SqlOptions>{}, blank?: boolean) {
         this.options = options;
@@ -92,11 +92,9 @@ export class PgVisitor {
 
     VisitRessources(node: Token, context?: any) {
             var ressource = this[`VisitRessources${node.type}`]; 
-            if (this.test == true) {
-                console.log(`Ressource Visit ==========================> VisitRessources${node.type}`);            
-                console.log(node);
-                console.log(context);          
-            }           
+            // console.log(`Ressource Visit ==========================> VisitRessources${node.type}`);            
+            // console.log(node);
+            // console.log(context);          
             if (ressource) ressource.call(this, node, context);
             else{
                 console.log(`Ressource Not Found ============> VisitRessources${node.type}`);            
@@ -205,7 +203,8 @@ export class PgVisitor {
 
     verifyQuery = (ctx: koa.Context): void => {
         message(true, "HEAD", "verifyQuery");
-        if (this.entity === "Logs" && ctx._configName !== "admin") this.where += `${this.where.trim() == "" ? "" : " AND "}database = '${_CONFIGS[ctx._configName].pg_database}'`;
+        if (this.entity === "Logs" && ctx._configName !== "admin") this.where += `${this.where.trim() == "" ? "" : " AND "} database = '${_CONFIGS[ctx._configName].alias.join("' OR database ='")}'`;
+        // if (this.entity === "Logs" && ctx._configName !== "admin") this.where += `${this.where.trim() == "" ? "" : " AND "}database = '${_CONFIGS[ctx._configName].pg_database}'`;
 
         if (this.select.length > 0) {
             const cols = [...Object.keys(_DBDATAS[this.entity].columns), ...Object.keys(_DBDATAS[this.entity].relations)]
@@ -236,14 +235,11 @@ export class PgVisitor {
             if (!this.splitResult || this.splitResult.length !== 1 ||  this.splitResult[0].toUpperCase() === 'ALL')  ctx.throw(400, { detail:`You must use SplitResult to identify one key result` }); 
         }
         
-        // if((this.entity === _DBDATAS.Observations.name && !this.parentEntity) && this.timeSeries !== undefined) {
-        //     ctx.throw(400, { detail: `Series not allowed for Observations entity use /Datastreams/Observations or /MultiDatastreams/Observations With SplitResult` }); 
-        // }
         if(this.resultFormat === returnFormats.dataArray && BigInt(this.id) > 0 && !this.parentEntity ) {
             ctx.throw(400, { detail: `DataArray not allowed` }); 
 
         }
-
+        // ctx._log = this.log;
     }
 
     Visit(node: Token, context?: any) {
@@ -252,18 +248,14 @@ export class PgVisitor {
 
         if (node) {
             var visitor = this[`Visit${node.type}`];            
-            if (this.test == true) {
-                console.log(`VISIT =============================================> Visit${node.type}`);              
-                console.log(node);
-                console.log(context);          
-                console.log(`Where : ${this.where}`);          
-            }
+            // console.log(`VISIT =============================================> Visit${node.type}`);              
+            // console.log(node);
+            // console.log(context);          
+            // console.log(`Where : ${this.where}`);          
             if (visitor) {
                 visitor.call(this, node, context);
-                if (this.test == true) {
-                    console.log(`AFTER  Visit${node.type} Where : ${this.where}`);          
-                    console.log(`AFTER  Visit${node.type} Select : ${this.select}`);        
-                }  
+                // console.log(`AFTER  Visit${node.type} Where : ${this.where}`);          
+                // console.log(`AFTER  Visit${node.type} Select : ${this.select}`);        
             }
             else { 
                 console.log(`ERROR =================> Visit${node.type}`);            
@@ -381,6 +373,10 @@ export class PgVisitor {
 
     protected VisitTop(node: Token, context: any) {
         this.limit = +node.value.raw;
+    }
+
+    protected VisitLog(node: Token, context: any) {
+        this.log = node.value.raw;
     }
 
     protected VisitSelect(node: Token, context: any) {
@@ -521,9 +517,7 @@ export class PgVisitor {
             this.Visit(node.value.left, context);
             this.where += " = ";
             this.Visit(node.value.right, context);
-            if (context.literal == "NULL") {
-                this.where = this.where.replace(/= NULL$/, "IS NULL").replace(new RegExp(`NULL = "${context.identifier}"$`), `"${context.identifier}" IS NULL`);
-            }
+            this.where = this.where.replace(/= null/, "IS NULL");
         }
     }
 
@@ -531,16 +525,13 @@ export class PgVisitor {
         this.Visit(node.value.left, context);
         this.where += " <> ";
         this.Visit(node.value.right, context);
-        this.where = this.where
-            .replace(/<> NULL$/, "IS NOT NULL")
-            .replace(new RegExp(`NULL <> "${context.identifier}"$`), `"${context.identifier}" IS NOT NULL`);
+        this.where = this.where.replace(/<> null$/, "IS NOT NULL");
     }
 
     protected VisitLiteral(node: Token, context: any): void {
-            if (context.relation && context.table && context.target == "where") {
-             this.where += `(SELECT "${context.table}"."id" FROM "${context.table}" WHERE "${context.table}"."${context.identifier}" = ${SQLLiteral.convert(node.value, node.raw)})`;
-            } else this.where += context.literal = (node.value == 'Edm.Boolean') ? node.raw : SQLLiteral.convert(node.value, node.raw);
-
+        if (context.relation && context.table && context.target == "where") {
+            this.where += `(SELECT "${context.table}"."id" FROM "${context.table}" WHERE "${context.table}"."${context.identifier}" = ${SQLLiteral.convert(node.value, node.raw)})`;
+        } else this.where += context.literal = (node.value == 'Edm.Boolean') ? node.raw : SQLLiteral.convert(node.value, node.raw);
     }
 
     protected VisitInExpression(node: Token, context: any): void {

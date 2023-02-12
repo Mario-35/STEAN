@@ -85,8 +85,8 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             return;
 
         case "SQL":
-            const sql = ctx.request.url.split("query=")[1];        
-            const resultSql = await db[ctx._configName].raw(atob(sql));
+            const sql = atob(ctx.request.url.split("query=")[1]);   
+            const resultSql = sql.includes("log_request") ? await db["admin"].raw(sql) : await db[ctx._configName].raw(sql);
             ctx.status = 201;
             ctx.body = resultSql.rows;
             return;

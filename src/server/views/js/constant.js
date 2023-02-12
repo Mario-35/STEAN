@@ -26,12 +26,13 @@ let winDecoderResult = null;
 let winDecoderCode = null;
 let winJsonResult = null;
 let winCsvResult = null;
+let winResult = null;
 let winLinks = null;
 const cardDatas = {};
 let dragText = "";
 
 // log debug test
-let isDebug = true;
+let isDebug = false;
 
 // replace at execution
 const _PARAMS={};

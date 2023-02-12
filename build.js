@@ -178,12 +178,13 @@ function uglyJs (dirPath) {
   // minify each file individually
   files.forEach(function (fileName) {
     console.log(`minify : ${fileName}`);
-
-    const newName = path.join(dirPath, path.dirname(fileName), path.basename(fileName, path.extname(fileName))) + ".js";
-    const originalCode = fileName.includes("datasDemo.js") ? dataDemo : readFile(path.join(dirPath, fileName));
-    const temp = UglifyJS.minify(originalCode, options);
-    if (temp.error) console.log(`\x1b[31m Error \x1b[34m : \x1b[33m ${temp.error}\x1b[0m`);
-    writeFile(newName, temp.code, true);
+    if (fileName.includes(".zobi.")) {
+      const newName = path.join(dirPath, path.dirname(fileName), path.basename(fileName, path.extname(fileName))) + ".js";
+      const originalCode = fileName.includes("datasDemo.js") ? dataDemo : readFile(path.join(dirPath, fileName));
+      const temp = UglifyJS.minify(originalCode, options);
+      if (temp.error) console.log(`\x1b[31m Error \x1b[34m : \x1b[33m ${temp.error}\x1b[0m`);
+      writeFile(newName, temp.code, true);
+    }
   });
 }
 

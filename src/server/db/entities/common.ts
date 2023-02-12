@@ -42,7 +42,6 @@ export class Common {
     logQuery(input: Knex.QueryBuilder | string): void {
         const queryString = typeof input === "string" ? input : knexQueryToSql(input);
         if (_debug) message(true, "RESULT", "query", queryString);
-        this.ctx._query = queryString;
     }
 
     // create a blank ReturnResult
@@ -128,7 +127,7 @@ export class Common {
                         body: res.rows[0].results || res.rows[0]
                     });
             })
-            .catch((err: Error) => this.ctx.throw(400, { detail: err.message }));
+            .catch((err: Error) => this.ctx.throw(400, { code: 400,detail: err.message }));
     }
     
     onlyValue(input: string | object): string {
@@ -161,7 +160,7 @@ export class Common {
                     });
                 }
             })
-            .catch((err: Error) => this.ctx.throw(400, { detail: err.message }));
+            .catch((err: Error) => this.ctx.throw(400, { code: 400,  detail: err.message }));
     }
 
     async add(dataInput: Object | undefined): Promise<IReturnResult | undefined> {
@@ -189,22 +188,22 @@ export class Common {
                 }
             })
             .catch((err: any) => {
-                this.ctx.throw(400, { detail: err.detail });
+                this.ctx.throw(400, { code: 400,  detail: err.detail });
             });
     }
 
     async update(idInput: bigint | string, dataInput: Object | undefined): Promise<IReturnResult | undefined> {
         message(true, "CLASS", this.constructor.name, "update");
 
-        if (!dataInput) this.ctx.throw(400, { detail: "No data send for update" });
+        if (!dataInput) this.ctx.throw(400, { code: 400,  detail: "No data send for update" });
 
         const testIfId = await verifyId(Common.dbContext, BigInt(idInput), _DBDATAS[this.constructor.name].table);
 
-        if (testIfId === false) this.ctx.throw(404, { detail: `No id found for : ${idInput}` });
+        if (testIfId === false) this.ctx.throw(404, { code: 404,  detail: `No id found for : ${idInput}` });
 
         dataInput = this.formatDataInput(dataInput);
 
-        if (!dataInput) this.ctx.throw(400, { detail: "No data send for update" });
+        if (!dataInput) this.ctx.throw(400, { code: 400,  detail: "No data send for update" });
 
         const sql = this.ctx._odata.asPatchSql(dataInput, Common.dbContext);
 
@@ -221,7 +220,7 @@ export class Common {
                 }
             })
             .catch((err: any) => {
-                this.ctx.throw(400, { detail: err.detail });
+                this.ctx.throw(400, { code: 400,  detail: err.detail });
             });
     }
 
@@ -231,15 +230,14 @@ export class Common {
         if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ id: BigInt(idInput), body: `DELETE FROM "${_DBDATAS[this.constructor.name].table}" WHERE id= ${idInput}` });
 
         const testIfId = await verifyId(Common.dbContext, BigInt(idInput), _DBDATAS[this.constructor.name].table);
-        if (testIfId === false) this.ctx.throw(404, { detail: `No id found for : ${idInput}` });
+        if (testIfId === false) this.ctx.throw(404, { code: 404,  detail: `No id found for : ${idInput}` });
 
         try {
             const query: Knex.QueryBuilder = Common.dbContext(_DBDATAS[this.constructor.name].table).del().where({ id: idInput });
-            this.ctx._query = knexQueryToSql(query);
             const returnValue = await query;
             return this.createReturnResult({ id: BigInt(returnValue) });
         } catch (error: any) {
-            this.ctx.throw(400, { detail: extractMessageError(error.message) });
+            this.ctx.throw(400, { code: 400,  detail: extractMessageError(error.message) });
         }
     }
 }

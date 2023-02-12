@@ -45,13 +45,13 @@ export const commonHtml = (input: string, params: IQuery, ): string => {
     if (params.user.canDelete) params.methods.push("DELETE");
 
     if (params.options) {
-        let essai = params.options;
+        let tempOptions = params.options;
         if (params.options.includes("options=")) {
             const temp = params.options.split("options=");
             params.options = temp[1];
-            essai = temp[0];
+            tempOptions = temp[0];
         } else params.options = "";
-        const splitOptions = essai.split("&");
+        const splitOptions = tempOptions.split("&");
         const valid = ["method", "id", "entity", "subentity", "property", "onlyValue"];
         splitOptions.forEach((element: string) => {
             if (element.includes("=")) {

@@ -14,40 +14,32 @@
  import { db } from "../db";
  
  export const writeToLog = async (ctx: koa.Context, error?: Object): Promise<void> => {
-     if (ctx._addToLog === true ) {  
-         let id:BigInt | undefined = undefined
-         
-         if(ctx.request.body) try {
-             id = <BigInt>ctx.request.body["logId"];            
-         } catch (error) {
-             id = undefined;
-         }
- 
-         
-     
-         try { 
-             if (id) {  
-                 await db["admin"].table(_DBDATAS.Logs.table).update({"redo" : ctx.body}).where({id: id});
-             }
-             else {
-                 const req = {
-                     "method" : ctx.method,
-                     "return" : ctx.body as string,
-                     "code" : ctx.response.status,
-                     "url" : ctx.url,
-                     // "url" : ctx.url.split(ctx._version)[1],
-                     "database" : ctx._configName,
-                     "datas" : ctx.request.body as string,
-                     "user_id" : getUserId(ctx).toString(),
-                     "query" : ctx._query,
-                     "error": error && error["error"]
-                 }  
-                 await db["admin"].table(_DBDATAS.Logs.table).insert(req);
-             }
-         } catch (error) {
-             logDebug(error);
-         }
-     }
+    if (!ctx._addToLog === true ) return;
+    try { 
+        const req = {
+            "method" : ctx.method,
+            "return" : ctx.body as string,
+            "code" : error && error["code"] ? +error["code"] : +ctx.response.status,
+            "url" : ctx.url,
+            "database" : ctx._configName,
+            "datas" : ctx.request.body as string,
+            "user_id" : getUserId(ctx).toString(),
+            "error": error ? error["message"] + " : " + error["detail"] : "No Message",
+            "replayid": ctx._odata.log && BigInt(ctx._odata.log) > 0 ? ctx._odata.log : undefined
+        }  
+        const code = Math.floor(req.code / 100);
+        
+        if (ctx._odata.log && BigInt(ctx._odata.log) > 0 && code !== 2) return;
+        await db["admin"].table(_DBDATAS.Logs.table).insert(req).returning("id").then(async (res: any) => {                         
+            if (code === 2 && ctx._odata.log && BigInt(ctx._odata.log) > 0 && res[0]) {  
+                await db["admin"].table(_DBDATAS.Logs.table).update({"entityid" : res[0]}).where({id: ctx._odata.log});
+            }
+        }).catch((error: any) => {
+            logDebug(error);
+        });
+    } catch (error) {
+        logDebug(error);
+    }
  };
  
  

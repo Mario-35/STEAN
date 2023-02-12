@@ -69,8 +69,8 @@ class configuration {
     constructor(file: fs.PathOrFileDescriptor) {
         message(true, "CLASS", this.constructor.name, "Constructor");   
         configuration.filePath = file;    
-        const temp = fs.readFileSync(file, "utf8");    
-        configuration.jsonConfiguration = JSON.parse(temp);
+        const fileTemp = fs.readFileSync(file, "utf8");    
+        configuration.jsonConfiguration = JSON.parse(fileTemp);
         const input = configuration.jsonConfiguration.hasOwnProperty(_NODE_ENV) ? configuration.jsonConfiguration[_NODE_ENV] : configuration.jsonConfiguration;   
         Object.keys(input).forEach((element: string) => (this.configurationList[element] = this.format(input[element], element)));
     }
