@@ -45,34 +45,31 @@
 }
 
 .criterium {
-  padding: 8px;
+  padding: 1px 3px 1px 3px;
+  margin-top: 0.5rem;
   display: flex;
-	flex-direction: row;
-	flex-wrap: nowrap;
+  flex-direction: row;
+  flex-wrap: nowrap;
 	justify-content: space-between;
-	align-items: stretch;
-	align-content: stretch;
 }
 
 .criteria-choice-container {
-  margin: 3px 2px 1px 1px;
+  flex-basis: 25%;
 }
 
 .condition-container {
-    margin: 3px 2px 1px 1px;
+  flex-basis: 25%;
 }
 
 
 .valueinput {
-  flex-grow: 1;
-  border: 0;
-  margin: 1px 1px 1px 3px;
+  flex-basis: 33.3333%;
 }
 
 
 .remove-criterium-button {
-  border: none;
-  margin: 1px 1px 1px 3px;
+  flex-basis: 15px;
+  height: 22px;
   color: red;
 }
 
@@ -85,9 +82,7 @@
 }
 
 
-.query-container select{
-  border: none;
-}
+
 
 .query-container input:not(.choices__input) {
   border: none;

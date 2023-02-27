@@ -3,7 +3,14 @@
 // |                                   HELPERS                                   |
 // ===============================================================================
 
-  const capitalize = s => s && s[0].toUpperCase() + s.slice(1)
+  const capitalize = s => s && s[0].toUpperCase() + s.slice(1);
+
+  const getVersion = (input) => input .replace(/[//]+/g, '/') .split('/') .filter((value) => value.match(/v{1}\d\.\d/g))[0];
+
+  function header(message, infos) {
+    if (isDebug) console.log(`==================== ${message} ====================`);
+    if (isDebug && infos) typeof infos === "object" ? console.log(infos) : console.log(`==>${infos}<==`);
+  };
 
   // show spinner
   function wait(on) {
@@ -34,59 +41,19 @@
         : undefined;
     }
 
-  function createBlankJsonDatas() {
-    jsonDatas.remove();
-    const newDiv = document.createElement("div");
-    newDiv.setAttribute("contenteditable", "");
-    newDiv.setAttribute("spellcheck", "false");
-    newDiv.id = "jsonDatas";
-    newDiv.clientHeight = "100%";
-    newDiv.classList.add("shj-lang-json");
-    jsonDatasContainer.appendChild(newDiv);
-  }
-
-
-  function isValidJson(json) {
-    try {
-        JSON.parse(json);
-        return true;
-    } catch (e) {
-        return false;
-    }
-  }
-
-  function classIsValidJson(element) {
-    if (isValidJson(element.value)) {
-      element.classList.add("good");
-      element.classList.remove("error");
-      return true;
-    } else {
-      element.classList.remove("good");
-      element.classList.add("error");
-      return false;
-    }
-  };
-
-  const getValue = (element) =>{ 
-    if (element.type == "textarea") {
-         return classIsValidJson (element) ? JSON.parse(element.value) : undefined;
-    }
-    else return element.value.trim() == "" ? undefined :element.value;
-}
 
 async function  getFetchDatas(url, format) {
-  if (isDebug) console.log("==================== getFetchDatas ====================");
-  if (isDebug) console.log(url);
-  const response = await fetch(url, {
+  header("getFetchDatas", url);
+  const response = await fetch(encodeURI(url), {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
     },
   });
 
-  if (format && ["csv","txt","sql"].includes(format))
-      return await response.text();
-      else  return await response.json();
+  return format && ["csv","txt","sql"].includes(format) || url.endsWith("$value") 
+        ? await response.text() 
+        : await response.json();
 }
 
 
@@ -100,9 +67,6 @@ function LoadDatas(source, lang) {
     buttonGo();
   }
 }
-
-
-
 
 function beautifyDatas(element, source, lang) {
   try {

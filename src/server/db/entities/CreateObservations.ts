@@ -27,8 +27,8 @@ export class CreateObservations extends Common {
     }
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     testValue(inputValue: any): convert | undefined {
-        if (inputValue != null && inputValue !== "" && !isNaN(Number(inputValue.toString()))) return { key: "resultnumber", value: inputValue.toString() };
-        else if (typeof inputValue == "object") return { key: "resultnumbers", value: `{"${Object.values(inputValue).join('","')}"}` };
+        if (inputValue != null && inputValue !== "" && !isNaN(Number(inputValue.toString()))) return { key: "_resultnumber", value: inputValue.toString() };
+        else if (typeof inputValue == "object") return { key: "_resultnumbers", value: `{"${Object.values(inputValue).join('","')}"}` };
     }
 
     async add(dataInput: Object): Promise<IReturnResult | undefined> {

@@ -96,7 +96,6 @@
       const howMany = selectedOfList.length == cleanList.length ? _ALL : selectedOfList.length == 0 ? _NONE : `${selectedOfList.length}`
       value.target.innerHTML = value.target.innerHTML.replace(firstOfList, `${howMany} ${_SELECTED}`);
       value.target.value = `${howMany} ${_SELECTED}`;
-      addOption('orderby', selectedOfList.map(e => `${e.split(_SPACE)[1]} ${e[0] == _DOWN ? "desc" : "asc"}`).join(), '0');
     }else {
       value.target.innerHTML = (actual[0] === _CHECK) ? 
       value.target.innerHTML.replace(actual, actual.split(_SPACE)[1])
@@ -108,8 +107,6 @@
         const selectedOfList = cleanList.filter(e => e[0] === _CHECK);
         const temp = selectedOfList.length == cleanList.length ? _ALL : selectedOfList.length == 0 ? _NONE : `${selectedOfList.length}`
         value.target.innerHTML = value.target.innerHTML.replace(firstOfList, `${temp} ${_SELECTED}`);
-        addOption(value.target.name, selectedOfList.map(e => e.split(_CHECK)[1].trim()).join(), '0');
-
       }
     }
   }
@@ -120,7 +117,7 @@
     const value = element.value.split(_SPACE)[0];
     if ([_ALL,_NONE].includes(value)) return [];
     const cleanList = createListWithoutOptions(element.innerHTML).filter(e => [_UP, _DOWN].includes(e[0]));
-    return cleanList.map(e => `${e.split(_SPACE)[1]} ${e[0] == _DOWN ? "desc" : "asc"}`);
+    return cleanList.map(e => `${e.split(_SPACE)[1]} ${e[0] == _DOWN ? "asc" : "desc"}`);
   }
 
   function setMultiSelect(obj, listValues) {  
@@ -134,7 +131,10 @@
   };
 
 
-
+  function getOrderBy() {   
+    const selectedOfList = createListWithoutOptions(queryOrderBy.innerHTML).filter(e => [_UP, _DOWN].includes(e[0]));
+    return selectedOfList.map(e => `${e.split(_SPACE)[1]} ${e[0] == _DOWN ? "asc" : "desc"}`).join();
+  }
 
 
 

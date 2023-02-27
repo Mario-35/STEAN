@@ -6,9 +6,8 @@
  *
  */
 
-import { createQuerySelectString, queryAsDataArray, queryAsJson } from ".";
+import { createQuerySelectString } from ".";
 import { isGraph, _DBDATAS } from "../../../db/constants";
-import { returnFormats } from "../../../helpers";
 import { PgVisitor } from "../PgVisitor";
 
  export function createGetSql(main: PgVisitor): string {   
@@ -40,10 +39,13 @@ import { PgVisitor } from "../PgVisitor";
     } 
     
     const temp = createQuerySelectString(main, main);
-    switch (main.resultFormat) {        
-        case returnFormats.dataArray : return queryAsDataArray(main.ArrayNames, temp, false, fields);
-        case returnFormats.csv : return queryAsDataArray(main.ArrayNames, temp, false, fields);
-        case returnFormats.sql : return temp;
-        default : return queryAsJson(temp, false, count, fields);
-    }
+
+    return main.resultFormat.generateSql({
+            listOfKeys: main.ArrayNames, 
+            id: main.parentId, 
+            query: temp,
+            interval: main.interval,
+            singular: false, 
+            count: count, fields: fields
+        });
 }

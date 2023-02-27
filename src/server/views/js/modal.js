@@ -288,7 +288,7 @@ class Prompt extends Component {
         if (value === '') {
             return;
         }
-        tdb = value;
+        
         this.close();
 
         if (this.options.onSubmit) {

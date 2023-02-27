@@ -167,10 +167,10 @@ describe("CSV Import", function () {
                         .whereIn("id", ids)
                         .orderBy("id")
                         .then((test) => {
-                            test[0].resultnumber.should.eql(13.1);
+                            test[0]._resultnumber.should.eql(13.1);
                             test[0].datastream_id.should.eql("1");
                             test[0].featureofinterest_id.should.eql("1");
-                            test[5].resultnumber.should.eql(20.1);
+                            test[5]._resultnumber.should.eql(20.1);
                             test[5].datastream_id.should.eql("4");
                             test[5].featureofinterest_id.should.eql("1");
                             addToApiDoc({ ...infos, result: res });

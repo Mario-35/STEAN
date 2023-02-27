@@ -31,28 +31,28 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
         await next().then(async (res: any) => {            
             await writeToLog(ctx);
         });
-    } catch (err: any) {
-        if (err.message.includes("|")) {
-            const temp = err.message.split("|");
-            err.statusCode = +temp[0];
-            err.message = temp[1];
-            if(temp[2]) err.detai = temp[2];
+    } catch (error: any) {
+        if (error.message.includes("|")) {
+            const temp = error.message.split("|");
+            error.statusCode = +temp[0];
+            error.message = temp[1];
+            if(temp[2]) error.detai = temp[2];
         }    
-        writeToLog(ctx, err);
+        writeToLog(ctx, error);
 
 
-        ctx.status = err.statusCode || err.status || 500;
-        ctx.body = err.link
+        ctx.status = error.statusCode || error.status || 500;
+        ctx.body = error.link
             ? {
-                  code: err.statusCode,
-                  message: err.message,
-                  detail: err.detail,
-                  link: err.link
+                  code: error.statusCode,
+                  message: error.message,
+                  detail: error.detail,
+                  link: error.link
               }
             : {
-                  code: err.statusCode,
-                  message: err.message,
-                  detail: err.detail
+                  code: error.statusCode,
+                  message: error.message,
+                  detail: error.detail
               };
     }
 };

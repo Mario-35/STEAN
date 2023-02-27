@@ -4,10 +4,10 @@
     if (input.trim() != "") input += '&';
     return getIfChecked("checkDebug") ? `${input}$debug=true`: input;
   }
-  function decodeOptions(input) {
-    if (isDebug) console.log("==================== decodeOptions ====================");
-    if (isDebug) console.log(`decode : ${input}`);
 
+  function decodeOptions() {
+    header("decodeOptions", queryOptions.value);
+    if (queryOptions.value === "") return;
     try {
       // return true if some works are done (for init to not delete value)
       let decode = false;
@@ -16,9 +16,10 @@
       // process options
       myOptions.split('&').forEach((element) => {
         const temp = element.split('=');
-        const key = temp[0].substring(1);
+        const key = temp[0].replace("$","");
+        const value = decodeURIComponent(temp[1]);
         switch (key) {
-          case '$splitResult':
+          case 'splitResult':
             const objChk = getElement("splitResultOption");
             const objName = getElement("splitResultOptionName");
             if(objChk) objChk.checked = true;
@@ -27,13 +28,20 @@
             decode = true;
             break;
           case 'resultFormat':
-            queryResultFormat.value = [temp[1].split(",")[0]];
-            decode = true;
+            getElement("queryResultFormat").value = value;
+            deleteOption(key);
+            break;
+          case 'interval':
+            getElement("intervalOption").value = value;
+            deleteOption(key);
             break;
           case 'expand':
-            console.log(capitalize(key));
             setMultiSelect(`query${capitalize(key)}`, [temp[1].split(",")[0]]);
             decode = true;
+          break;
+          case 'debug':
+            checkDebug.checked = (temp[1] == "true");
+            deleteOption(key);
           break;
           case '$skip':
           case '$top':
@@ -47,11 +55,11 @@
             }
             decode = true;
             break;
+          default :
+          if (isDebug) console.log(`NOT FOUND key : ${key} value : ${value}`);
         }
       });
       canShowQueryButton();
-      if (isDebug) console.log(listOptions);
-
       return decode;
     } catch (error) {
         return false;
@@ -59,9 +67,7 @@
   };
 
   function decodeUrl(input) {
-    if (isDebug) console.log("==================== decodeUrl ====================");
-    if (isDebug) console.log(`decode : ${input}`);
-
+    header("decodeUrl", input);
     try {
       // return true if some works are done (for init to not delete value)
       let decode = false;
@@ -83,7 +89,6 @@
         myPath = splitStr[1];
         myRoot = splitStr[0];
       }
-
       // process my path
       myPath.split('/')
             .filter((word) => word !== '')
@@ -93,10 +98,10 @@
                   const temp = element.split('(');
                   entity.value = temp[0];
                   nb.value = temp[1].replace(')', '');
-                } else entity.value = element;          
+                } else entity.value = getEntityName(element);          
               } else if (index === 1) {
-                if (element.includes('?')) queryOptions.value = element;
-                else if (_PARAMS._DATAS[element]) populateSelect(subentity, Object.keys(_PARAMS._DATAS[entity.value].relations), element, true);
+                if (element.includes('?')) queryOptions.value =  element;
+                else if (_PARAMS._DATAS[getEntityName(element)]) populateSelect(subentity, Object.keys(_PARAMS._DATAS[entity.value].relations), element, true);
               }
             });    
 
@@ -132,8 +137,7 @@
             break;
         }
       });
-      canShowQueryButton();
-      
+      canShowQueryButton();      
       return decode;
     } catch (error) {
         return false;
@@ -141,15 +145,22 @@
   };
 
   createUrl = () => {
-    const listOptions = [];
-    temp = `${optHost.value}/${optVersion.value}`;
-  
-    let directLink = temp;
-    let queryLink = `${temp}/Query?&method=${method.value}`; 
-  
-    queryLink = queryLink + `&entity=${entity.value}`;
-  
+    header("createUrl");
+    const queryOptions = [];
+
+    var addInOption = function(key, value) {
+      if (value != "") queryOptions.push(`${key}=${value}`);
+    };
+
     const index = Number(nb.value);
+
+    const root = `${optHost.value}/${optVersion.value}`;
+  
+    let directLink = root;
+    let queryLink = `${root}/Query?&method=${method.value}`; 
+  
+    queryLink += `&entity=${entity.value}`;
+
     
     if (index > 0) {
       directLink = directLink + "/" + entity.value + "(" + index + ")";
@@ -164,9 +175,9 @@
     if (subentity.value != "none") {
       directLink = directLink + "/" + subentity.value;
       queryLink = queryLink + `&subentity=${subentity.value}`;
-    } else  directLink = directLink;
+    }
 
-    if (queryProperty.value != "none") {
+    if (queryProperty.value != "none" && nb.value != "") {
         directLink = directLink + "/" + queryProperty.value;
         queryLink = queryLink + `&property=${queryProperty.value}`;
     
@@ -181,10 +192,15 @@
       queryLink = queryLink + `&datas=${datasEncoded}`;
     }
   
-    if (queryOptions.value != "") {
-      listOptions.push(queryOptions.value);
-      queryLink += `&options=${queryOptions.value}`;
-    }
+    addInOption("resultFormat", (queryResultFormat.value != "json" ) ? queryResultFormat.value : "");
+    addInOption("debug", getIfChecked("checkDebug") ? "true" : "");
+    if (intervalOption.value != "" && isObservation() ) addInOption("interval",intervalOption.value);
+    if (!["","0"].includes(skipOption.value)) addInOption("skip",skipOption.value);
+    if (!["","0"].includes(topOption.value)) addInOption("top",topOption.value);
+    if (!queryExpand.value.startsWith(_NONE))  addInOption("expand", getMultiSelect(queryExpand));
+    addInOption("orderby",getOrderBy());
+    addInOption("select",getMultiSelect(querySelect));
+
   
     const queryBuilder = getElement("query-builder").innerText;
   
@@ -195,15 +211,34 @@
         if (whereAnd.criterium && whereAnd.criterium != "" && whereAnd.condition && whereAnd.criterium != "" && whereAnd.criterium && whereAnd.value != "")
         {
           const value = isNaN(whereAnd.value) ? `'${whereAnd.value}'` : whereAnd.value;
-          listAnd.push(`${whereAnd.criterium} ${whereAnd.condition} ${value}`);
+          switch (whereAnd.condition) {
+            case "contains":
+              case "endswith":
+                case "startswith":
+              listAnd.push(`${whereAnd.condition}(${whereAnd.criterium},${value})`);              
+              break;
+            case "between":
+              listAnd.push(`${whereAnd.criterium} gt ${whereAnd.value.first} and ${whereAnd.criterium} lt ${whereAnd.value.second} `);              
+              break;
+          
+            default:
+              listAnd.push(`${whereAnd.criterium} ${whereAnd.condition} ${value}`);
+              break;
+          }
         }
         });
       listOr.push(listAnd.join(" and "))
     });
     
     const where = listOr.join(" or ");
-    if (where != "") listOptions.push(`$filter=${where}`);  
+    addInOption("filter", where);  
 
-    const addMark = listOptions.length > 0 ? "?":"";
-    return { "direct" : `${directLink}${addMark}${listOptions.join("&")}`, "query": queryLink};
+    const addMark = queryOptions.length > 0 ? "?$":"";
+    directLink = `${directLink}${addMark}${queryOptions.join("&$")}`;
+    queryLink = `${queryLink}${addMark}options=${encodeURI(queryOptions.join("&"))}`;
+    if (isDebug) {
+      console.log(`direct : ${directLink}`);
+      console.log(`query : ${queryLink}`);
+    }
+    return { "direct" : directLink, "query": queryLink};
   };

@@ -133,15 +133,20 @@
          if (multiDatastream) { 
             message(true, "DEBUG", "multiDatastream", multiDatastream);
 
-             const listOfSortedValues: number | null[] = [];
-     
-             multiDatastream.keys.forEach((element: string) => {
-                 const searchStr = element
-                     .toLowerCase()
-                     .normalize("NFD")
-                     .replace(/[\u0300-\u036f]/g, "");
-                 listOfSortedValues.push(dataInput["data"][searchStr] ? dataInput["data"][searchStr] : null);
-             });
+            const listOfSortedValues: number | null[] = [];
+            
+            multiDatastream.keys.forEach((element: string) => {                 
+                const searchStr = element
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "");
+                    if (dataInput["data"][searchStr]) listOfSortedValues.push(dataInput["data"][searchStr]);
+                    else  Object.keys(dataInput["data"]).forEach((pipo: string) => {
+                        if (element.toUpperCase().includes(pipo.toUpperCase())) listOfSortedValues.push(dataInput["data"][pipo]);
+                    });
+            }); 
+
+            message(true, "DEBUG", "Values", listOfSortedValues);
      
              // If all datas null
              if (listOfSortedValues.filter((word) => word != null).length < 1) {
@@ -180,15 +185,16 @@
                      const errorMessage = `Size of list of results (${tempLength}) is not equal to size of keys (${multiDatastream.keys.length})`;
                      if (silent) return this.createReturnResult({ body: errorMessage });
                      else this.ctx.throw(400, { code: 400,  detail: errorMessage });
-                 }
-             }
+                    }
+                }
+            
      
              const insertObject = {
                  "featureofinterest_id": "(select featureofinterest1.id from featureofinterest1)",
                  "multidatastream_id": "(select multidatastream1.id from multidatastream1)",
                  "phenomenonTime": `to_timestamp('${dataInput["timestamp"]}','YYYY-MM-DD HH24:MI:SS')::timestamp`,
                  "resultTime": `to_timestamp('${dataInput["timestamp"]}','YYYY-MM-DD HH24:MI:SS')::timestamp`,
-                 "resultnumbers": `array ${removeQuotes(JSON.stringify(listOfSortedValues))}`
+                 "_resultnumbers": `array ${removeQuotes(JSON.stringify(listOfSortedValues))}`
              };
      
              let searchDuplicate = "";
@@ -199,7 +205,7 @@
                  });
      
              searchDuplicate = searchDuplicate.concat(
-                 `"resultnumbers" = '{${listOfSortedValues
+                 `"_resultnumbers" = '{${listOfSortedValues
                      .map((elem) => {
                          const tmp = JSON.stringify(elem);
                          return tmp == "null" ? tmp : `${tmp}`;
@@ -219,7 +225,7 @@
                  , observation1 AS (INSERT INTO  "${_DBDATAS.Observations.table}" ("${Object.keys(insertObject).join(_QUOTEDCOMA)}") SELECT * FROM myValues
                                   WHERE NOT EXISTS (SELECT * FROM searchDuplicate)
                                  AND (select id from multidatastream1) IS NOT NULL
-                                 RETURNING *, resultnumber AS result)
+                                 RETURNING *, _resultnumber AS result)
                  , result1 as (select (select observation1.id from  observation1)
                  , (select multidatastream1."keys" from multidatastream1)
                  , (select searchDuplicate.id as duplicate from  searchDuplicate)
@@ -236,16 +242,16 @@
                  .then(async (res: any) => {
                      const tempResult = res.rows[0].result[0];
                      if (tempResult.id != null) {
-                         const resultnumbers = {};
+                         const _resultnumbers = {};
                          tempResult.keys.forEach((elem: string, index: number) => {
-                             resultnumbers[elem] = tempResult["resultnumbers"][index];
+                             _resultnumbers[elem] = tempResult["_resultnumbers"][index];
                          });
                          const result = {
                              "@iot.id": tempResult.id,
                              "@iot.selfLink": `${this.ctx._odata.options.rootBase}Observations(${tempResult.id})`,
                              "phenomenonTime": `"${tempResult.phenomenonTime}"`,
                              "resultTime": `"${tempResult.resultTime}"`,
-                             result: resultnumbers
+                             result: _resultnumbers
                          };
      
                          Object.keys(_DBDATAS["Observations"].relations).forEach((word) => {
@@ -295,7 +301,7 @@
                 "datastream_id": "(select datastream1.id from datastream1)",
                 "phenomenonTime": `to_timestamp('${dataDate}','YYYY-MM-DD HH24:MI:SS')::timestamp`,
                 "resultTime": `to_timestamp('${dataDate}','YYYY-MM-DD HH24:MI:SS')::timestamp`,
-                "resultnumber": `${dataInput["data"]["value"]}`
+                "_resultnumber": `${dataInput["data"]["value"]}`
             };
     
 
@@ -307,7 +313,7 @@
                     searchDuplicate = searchDuplicate.concat(`"${elem}" = ${insertObject[elem]} AND `);
                 });
                 searchDuplicate = searchDuplicate.concat(
-                    `"resultnumber" = ${dataInput["data"]["value"]}`
+                    `"_resultnumber" = ${dataInput["data"]["value"]}`
                 );
                 message(true, "DEBUG", "searchDuplicate", searchDuplicate);
     
@@ -323,7 +329,7 @@
                 , observation1 AS (INSERT INTO  "${_DBDATAS.Observations.table}" ("${Object.keys(insertObject).join(_QUOTEDCOMA)}") SELECT * FROM myValues
                                  WHERE NOT EXISTS (SELECT * FROM searchDuplicate)
                                 AND (select id from datastream1) IS NOT NULL
-                                RETURNING *, resultnumber AS result)
+                                RETURNING *, _resultnumber AS result)
                 , result1 as (select (select observation1.id from  observation1)
                 , (select searchDuplicate.id as duplicate from  searchDuplicate)
                 , ${this.createListQuery(
@@ -344,7 +350,7 @@
                             "@iot.selfLink": `${this.ctx._odata.options.rootBase}Observations(${tempResult.id})`,
                             "phenomenonTime": `"${tempResult.phenomenonTime}"`,
                             "resultTime": `"${tempResult.resultTime}"`,
-                            result: tempResult.resultnumber
+                            result: tempResult._resultnumber
                         };
     
                         Object.keys(_DBDATAS["Observations"].relations).forEach((word) => {

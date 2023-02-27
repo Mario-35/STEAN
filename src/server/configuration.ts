@@ -9,7 +9,7 @@
 import fs from "fs";
 import { _APIVERSION, _NODE_ENV } from "./constants";
 import { message } from "./logger";
-import { decrypt, hidePasswordInJson } from "./helpers";
+import { asyncForEach, decrypt, hidePasswordInJson } from "./helpers";
 import util from "util";
 import Koa from "koa";
 import { app } from ".";
@@ -17,6 +17,7 @@ import { db } from "./db";
 import knex, { Knex } from "knex";
 import { createDatabase } from "./db/helpers";
 import pg from "pg"
+import update  from "./config/update.json"
 
 
 /**
@@ -46,6 +47,7 @@ import pg from "pg"
     createUser?: boolean;
     forceHttps: boolean;
     alias: string[];
+    result_Type: "number" | "json" | "string";
 }
 
 interface IDbConnection {
@@ -102,7 +104,8 @@ class configuration {
             seed: name === "test" ? true : input["seed"] || false,
             forceHttps: input["forceHttps"] ? input["forceHttps"] : false,
             alias: input["alias"] ? String(input["alias"]).split(",") : [],
-            retry: input["retry"] ? +input["retry"] : 2
+            retry: input["retry"] ? +input["retry"] : 2,
+            result_Type: input["result_Type"] ? input["result_Type"] : "number"
         };
         if (Object.values(returnValue).includes("ERROR"))
             throw new TypeError(`Error in config file [${util.inspect(returnValue, { showHidden: false, depth: null })}]`);
@@ -188,9 +191,9 @@ class configuration {
                   return res;
                   
               })
-              .catch((e: any) => {
+              .catch((error: any) => {
                   message(false, "ERROR", "Unable to find or create", _CONFIGS[key].pg_database);
-                  console.log(e);
+                  console.log(error);
                   process.exit(111);
               });
               return false;
@@ -214,6 +217,12 @@ class configuration {
              .raw("select 1+1 as result")
              .then(async () => {
                  message(false, "RESULT", "Database Online", _CONFIGS[connectName].pg_database);
+                 if(update) {
+                    const list = update["database"];
+                    await asyncForEach(list, async (operation: string) => {
+                        message(false, "INFO", connectName, await tempConnection.raw(operation).then(() => "✔").catch((err: Error) => err.message));
+                    }); 
+                 } 
                  tempConnection.destroy();
                  return true;
              })

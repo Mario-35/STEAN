@@ -35,7 +35,7 @@ export class Observations extends Common {
                 );
                 const multiDatastream = tempSql.rows[0];
                 if (dataInput["result"] && typeof dataInput["result"] == "object") {
-                    message(true, "DEBUG", "resultnumbers : keys", `${Object.keys(dataInput["result"]).length} : ${multiDatastream["keys"].length}`);
+                    message(true, "DEBUG", "_resultnumbers : keys", `${Object.keys(dataInput["result"]).length} : ${multiDatastream["keys"].length}`);
                     if (Object.keys(dataInput["result"]).length != multiDatastream["keys"].length) {
                         this.ctx.throw(400, {
                             code: 400, 
@@ -53,13 +53,13 @@ export class Observations extends Common {
                     multiDatastream["keys"].forEach((element: string) => {
                         tempNumbers.push(upperResults[element.toUpperCase()]);
                     });
-                    dataInput["resultnumbers"] = `{"${tempNumbers.join('","')}"}`;
+                    dataInput["_resultnumbers"] = `{"${tempNumbers.join('","')}"}`;
                 delete dataInput["result"];
             }
         } else if (dataInput["result"]) {
             const inputValue = dataInput["result"];
-            if (inputValue != null && inputValue !== "" && !isNaN(Number(inputValue.toString()))) dataInput["resultnumber"] = inputValue.toString();
-            else if (typeof inputValue == "object") dataInput["resultnumbers"] = `{"${Object.values(inputValue).join('","')}"}`;
+            if (inputValue != null && inputValue !== "" && !isNaN(Number(inputValue.toString()))) dataInput["_resultnumber"] = inputValue.toString();
+            else if (typeof inputValue == "object") dataInput["_resultnumbers"] = `{"${Object.values(inputValue).join('","')}"}`;
             delete dataInput["result"];
         }        
         return dataInput;

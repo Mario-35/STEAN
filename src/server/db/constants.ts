@@ -20,13 +20,16 @@ export const isSingular = (input: string): boolean => {
     const entityName = getEntityName(input);
     return entityName ? (_DBDATAS[entityName].singular == input) : false;
 }
-export const isGraph = (input: PgVisitor) =>  input.resultFormat === returnFormats.graph || input.resultFormat === returnFormats.graphDatas;
-
+export const isGraph = (input: PgVisitor) => [returnFormats.graph, returnFormats.graphDatas].includes(input.resultFormat) ? true : undefined;
+export const isCsvOrArray = (input: PgVisitor) => [returnFormats.dataArray, returnFormats.csv].includes(input.resultFormat)  ? true : undefined;
+export const isObservation = (input: IEntity | string) => (typeof input === "string") ? input === _DBDATAS.Observations.name : input.name === _DBDATAS.Observations.name;
 // Get date by Database usefull to have the TimeZone
 export const getDateNow = async (conn: Knex | Knex.Transaction): Promise<string> => {
     const tempQuery = await conn.raw("select current_timestamp;");
     return tempQuery["rows"][0]["current_timestamp"];
 }
+
+export const columnList = (input: IEntity) => Object.keys(input.columns).filter((word) => !word.includes("_"));
 
 const makeIDAlias = (table: string) => `"${table}"."id" AS "@iot.id"`;
 const _DATEFORMAT = 'YYYY-MM-DD"T"HH24:MI:SSZ';
@@ -48,11 +51,11 @@ enum ENTITIES {
     Decoders = 'Decoders' ,
     Loras = 'Loras' ,
     CreateObservations = 'CreateObservations' ,
+    CreateFile = 'CreateFile' ,
     Logs = 'Logs',
     Users = 'Users',
     Configs= 'Configs',
 }
-
 const DBDATAS: { [key in ENTITIES]: IEntity } = {
     Things: {
         name: "Things",
@@ -63,7 +66,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
                 alias: makeIDAlias("thing"),
-                type : "id"
+                type : "number"
             },
             name: {
                 create: "text NOT NULL DEFAULT 'no name'::text",
@@ -107,7 +110,6 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 type: RELATIONS.hasMany,
                 expand: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."thing_id" = "thing"."id")`,
                 link: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."thing_id" =  $ID)`,
-
                 entityName: "Datastreams",
                 tableName: "datastream",
                 relationKey: "thing_id",
@@ -118,7 +120,6 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 type: RELATIONS.hasMany,
                 expand: `"multidatastream"."id" in (select "multidatastream"."id" from "multidatastream" where "multidatastream"."thing_id" = "thing"."id")`,
                 link: `"multidatastream"."id" in (select "multidatastream"."id" from "multidatastream" where "multidatastream"."thing_id" = $ID)`,
-
                 entityName: "MultiDatastreams",
                 tableName: "multidatastream",
                 relationKey: "thing_id",
@@ -137,11 +138,13 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
                 alias: '"featureofinterest"."id" AS "@iot.id"',
-                type : "id"
+                type : "number"
+
             },
             name: {
                 create: "text NOT NULL DEFAULT 'no name'::text",
                 type : "text"
+
             },
             description: {
                 create: "text NOT NULL DEFAULT 'description'::text",
@@ -198,7 +201,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
                 alias: makeIDAlias("location"),
-                type : "id"
+                type : "number"
             },
             name: {
                 create: "text NOT NULL DEFAULT 'no name'::text",
@@ -211,7 +214,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             encodingType: {
                 create: "text NOT NULL",
                 dataList: {
-                    "GeoJSON": "application/vnd.geo+json"
+                   "GeoJSON": "application/vnd.geo+json"
                 },
                 type : "list"
             },
@@ -221,7 +224,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 test: "encodingType"
             },
             _default_foi: {
-                create: "BIGINT",
+                create: "BIGINT"
             },
             geom: {
                 // Not in Sensor 1.1
@@ -289,10 +292,10 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 alias: makeIDAlias("historical_location")
             },
             time: {
-                create: "timestamptz NULL",
+                create: "timestamptz NULL"
             },
             thing_id: {
-                create: "BIGINT NOT NULL",
+                create: "BIGINT NOT NULL"
             }
         },
         constraints: {
@@ -337,10 +340,10 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         order: -1,
         columns: {
             location_id: {
-                create: "BIGINT NOT NULL",
+                create: "BIGINT NOT NULL"
             },
             historical_location_id: {
-                create: "BIGINT NOT NULL",
+                create: "BIGINT NOT NULL"
             }
         },
         constraints: {
@@ -366,7 +369,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
                 alias: makeIDAlias("observedproperty"),
-                type : "id"
+                type : "number"
             },
             name: {
                 create: "text NOT NULL DEFAULT 'no name'::text",
@@ -426,7 +429,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
                 alias: makeIDAlias("sensor"),
-                type : "id"
+                type : "number"
             },
             name: {
                 create: "text NOT NULL DEFAULT 'no name'::text",
@@ -439,8 +442,8 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             encodingType: {
                 create: "text NOT NULL",
                 dataList: {
-                    "PDF": "application/pdf",
-                    "SensorML": "http://www.opengis.net/doc/IS/SensorML/2.0"
+                   "PDF": "application/pdf",
+                   "SensorML": "http://www.opengis.net/doc/IS/SensorML/2.0"
                 },
                 type : "list"
             },
@@ -503,7 +506,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
                 alias: makeIDAlias("datastream"),
-                type : "id"
+                type : "number"
             },
             name: {
                 create: "text NOT NULL DEFAULT 'no name'::text",
@@ -514,8 +517,8 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 type : "text"
             },
             observationType: {
-                create: "text NULL",
-                type : "text"
+                create: "observationtype NOT NULL DEFAULT 'Measurement'::observationtype",
+                type : "list"
             },
             unitOfMeasurement: {
                 create: "jsonb NOT NULL",
@@ -523,7 +526,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             },
             observedArea: {
                 create: "geometry NULL",
-                    type : "json"
+                   type : "json"
             },
             phenomenonTime: {
                 create: "",
@@ -629,7 +632,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
                 alias: makeIDAlias("multidatastream"),
-                type : "id"
+                type : "number"
             },
             name: {
                 create: "text NOT NULL DEFAULT 'no name'::text",
@@ -641,19 +644,19 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             },
             unitOfMeasurements: {
                 create: "jsonb NOT NULL",
-                    type : "json"
+                   type : "json"
             },
             observationType: {
-                create: "text NULL",
-                type : "text"
+                create: "observationtype NOT NULL DEFAULT 'om_complex-observation'::observationtype",
+                type : "list"
             },
             multiObservationDataTypes: {
-                create: "text[] NULL",
+                create: "observationtype[] NULL",
                 type : "text"
             },
             observedArea: {
                 create: "geometry NULL",
-                    type : "json"
+                   type : "json"
             },
             phenomenonTime: {
                 create: "",
@@ -757,10 +760,10 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         order: -1,
         columns: {
             multidatastream_id: {
-                create: "BIGINT NOT NULL",
+                create: "BIGINT NOT NULL"
             },
             observedproperty_id: {
-                create: "BIGINT NOT NULL",
+                create: "BIGINT NOT NULL"
             }
         },
         admin: false,
@@ -779,7 +782,6 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
     },
 
     Observations: {
-        // `case when multidatastream_id  is null then array_prepend(resultnumber, resultnumbers) else resultnumbers end AS mario`
         name: "Observations",
         singular: "Observation",
         table: "observation",
@@ -788,26 +790,52 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
                 alias: makeIDAlias("observation"),
-                type : "id"
+                type : "number"
             },
             phenomenonTime: {
                 create: "timestamptz NOT NULL",
-                type : "datetime-local"
+                type : "date"
             },
-            resultnumber: {
+            result: {
+                create: "",
+                alias: ` CASE 
+                WHEN "observation"."_resultnumber" IS NOT NULL THEN json_object_agg('result',"observation"."_resultnumber")->'result'
+                WHEN "observation"."_resultnumbers" IS NOT NULL THEN ( SELECT json_object_agg(key, value) 
+                  FROM ( SELECT jsonb_array_elements_text("keys") AS key, unnest("observation"."_resultnumbers")::float8 AS value 
+                  FROM (SELECT (SELECT jsonb_agg(tmp.units -> 'name') AS keys FROM (SELECT jsonb_array_elements("unitOfMeasurements") AS units 
+                  FROM "multidatastream" where id = "multidatastream_id" ) AS tmp) ) AS tmp2 ) AS tmp3)
+                WHEN "observation"."_resultjson" IS NOT NULL THEN json_object_agg('result',"observation"."_resultjson")->'result'
+                WHEN "observation"."_resulttexts" IS NOT NULL THEN json_object_agg('result',(SELECT json_object_agg(key, value) 
+                  FROM ( SELECT replace(unnest(keys), '"','') as key, unnest("observation"."_resulttexts") AS value 
+                  FROM ( SELECT keys FROM  string_to_array((select "unitOfMeasurement"->'name'::text 
+                  FROM "datastream" WHERE id = coalesce("datastream_id", "multidatastream_id"))::text, ',') keys ) AS tmp2 ) AS tmp3 ))->'result'
+                WHEN "observation"."_resulttext" IS NOT NULL THEN json_object_agg('result',"observation"."_resulttext")->'result'
+                end as "result"`,
+             type : "json"
+            },
+            _resultnumber: {
                 create: "float8 NULL",
-                alias: ' CASE WHEN "observation"."datastream_id" is not null THEN "observation"."resultnumber" end as "result"',
                 type : "number"
             },
-            resultnumbers: {
+            _resultnumbers: {
                 create: "float8[] NULL",
-                alias: ' CASE WHEN "observation"."multidatastream_id" is not null THEN "observation"."resultnumbers" end as "result"',
                 type : "number[]"
+            },
+            _resultjson: {
+                create: "jsonb NULL",
+                type : "json"
+            },
+            _resulttexts: {
+                create: "text[] NULL",
+                type : "string[]"
+            },
+            _resulttext: {
+                create: "text NULL",
+                type : "string"
             },
             resultTime: {
                 create: "timestamptz NOT NULL",
-                type : "datetime-local"
-                
+                type : "date"
             },
             resultQuality: {
                 create: "jsonb NULL",
@@ -815,7 +843,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             },
             validTime: {
                 create: "timestamptz DEFAULT CURRENT_TIMESTAMP",
-                type : "datetime-local"
+                type : "date"
             },
             parameters: {
                 create: "jsonb NULL",
@@ -896,16 +924,16 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 alias: makeIDAlias("historical_observation")
             },
             validTime: {
-                create: "timestamptz DEFAULT CURRENT_TIMESTAMP",
+                create: "timestamptz DEFAULT CURRENT_TIMESTAMP"
             },
-            resultnumber: {
-                create: "float8 NULL",
+            _resultnumber: {
+                create: "float8 NULL"
             },
-            resultnumbers: {
-                create: "float8[] NULL",
+            _resultnumbers: {
+                create: "float8[] NULL"
             },
             observation_id: {
-                create: "BIGINT NULL",
+                create: "BIGINT NULL"
             }
         },
         constraints: {
@@ -938,10 +966,10 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         order: -1,
         columns: {
             thing_id: {
-                create: "BIGINT NOT NULL",
+                create: "BIGINT NOT NULL"
             },
             location_id: {
-                create: "BIGINT NOT NULL",
+                create: "BIGINT NOT NULL"
             }
         },
         admin: false,
@@ -966,7 +994,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
                 alias: makeIDAlias("decoder"),
-                type : "id"
+                type : "number"
             },
             name: {
                 create: "text NOT NULL DEFAULT 'no name'::text",
@@ -1016,7 +1044,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
                 alias: makeIDAlias("lora"),
-                type : "id"
+                type : "number"
             },
             name: {
                 create: "text NOT NULL DEFAULT 'no name'::text",
@@ -1063,8 +1091,8 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         relations: {
             Datastream: {
                 type: RELATIONS.belongsTo,
-                expand: `"datastream"."id" = "observation"."datastream_id"`,
-                link: `"datastream"."id" (SELECT "observation"."datastream_id" FROM "observation" WHERE "observation"."id" = $ID)`,
+                expand: `"datastream"."id" = "lora"."datastream_id"`,
+                link: `"datastream"."id" (SELECT "lora"."datastream_id" FROM "lara" WHERE "lora"."id" = $ID)`,
                 entityName: "Datastreams",
                 tableName: "lora",
                 relationKey: "id",
@@ -1102,37 +1130,37 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         admin: true,
         columns: {
             id: {
-                create: "BIGINT GENERATED ALWAYS AS IDENTITY",
+                create: "BIGINT GENERATED ALWAYS AS IDENTITY"
             },
             username: {
-                create: "text NOT NULL UNIQUE",
+                create: "text NOT NULL UNIQUE"
             },
             email: {
-                create: "text NOT NULL",
+                create: "text NOT NULL"
             },
             password: {
-                create: "text NOT NULL",
+                create: "text NOT NULL"
             },
             database: {
-                create: "text NOT NULL",
+                create: "text NOT NULL"
             },
             canPost: {
-                create: "bool NULL",
+                create: "bool NULL"
             },
             canDelete: {
-                create: "bool NULL",
+                create: "bool NULL"
             },
             canCreateUser: {
-                create: "bool NULL",
+                create: "bool NULL"
             },
             canCreateDb: {
-                create: "bool NULL",
+                create: "bool NULL"
             },
             admin: {
-                create: "bool NULL",
+                create: "bool NULL"
             },
             superAdmin: {
-                create: "bool NULL",
+                create: "bool NULL"
             }
         },
         relations: {}
@@ -1148,23 +1176,23 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
                 alias: makeIDAlias("log_request"),
-                type : "id"
+                type : "number"
             },
             entityid: {
                 create: "BIGINT",
-                type : "id"
+                type : "number"
             },
             replayid: {
                 create: "BIGINT",
-                type : "id"
+                type : "number"
             },
             date: {
                 create: "timestamptz DEFAULT CURRENT_TIMESTAMP",
-                type : "datetime-local"
+                type : "date"
             },
             user_id: {
                 create: "BIGINT",
-                type : "id"
+                type : "number"
             },
             method: {
                 create: "text",
@@ -1184,7 +1212,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             },
             port: {
                 create: "INT NULL",
-                type : "id"
+                type : "number"
             },
             database: {
                 create: "text NULL",
@@ -1210,7 +1238,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         admin: true,
         columns: {
             name: {
-                create: "TEXT GENERATED ALWAYS AS IDENTITY",
+                create: "TEXT GENERATED ALWAYS AS IDENTITY"
             },
             properties: {
                 create: "jsonb NULL",
@@ -1219,7 +1247,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         },
         relations: {}
     },
-
+    
     CreateObservations: {
         name: "CreateObservations",
         singular: "CreateObservation",
@@ -1231,6 +1259,18 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         constraints: {},
         indexes: {}
     },    
+
+    CreateFile: {
+        name: "CreateFile",
+        singular: "CreateFile",
+        table: "",
+        order: 0,
+        columns: {},
+        admin: false,
+        relations: {},
+        constraints: {},
+        indexes: {}
+    }    
 };
 
 export const _ENTITIES = Object.values(ENTITIES);

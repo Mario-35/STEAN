@@ -132,6 +132,7 @@ export enum TokenType {
     timeSeries = "TimeSeries",
     entity = "Entity",
     splitResult = "SplitResult",
+    interval = "Interval",
     Root = "Root",
     Debug = "Debug",
     InlineCount = "InlineCount",

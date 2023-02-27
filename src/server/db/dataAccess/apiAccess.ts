@@ -22,7 +22,7 @@ export class apiAccess implements DataAccessInterface {
     readonly ctx: koa.Context;
 
     constructor(ctx: koa.Context) {
-        this.ctx = ctx;        
+        this.ctx = ctx;     
         const entityName = getEntityName(this.ctx._odata.entity);
         if (entityName && entityName in entities) {
             this.myEntity = new entities[(this.ctx, entityName)](ctx, db[this.ctx._configName]);

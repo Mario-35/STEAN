@@ -24,8 +24,6 @@ if (input.sqlUrl) {
   str += `<input type="text" class="urlForm" v-model="url" value="${input.sqlUrl}"/>`;
 }
 
-
-
 str += "</div>";
 winLinks.content.innerHTML = str;
 winLinks.show();

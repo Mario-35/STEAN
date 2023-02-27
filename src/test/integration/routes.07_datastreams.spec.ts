@@ -427,7 +427,7 @@ describe("endpoint : Datastream", () => {
                     "name": "PM 2.5 Particulates (ug/m3)",
                     "definition": "http://unitsofmeasure.org/ucum.html"
                 },
-                "observationType": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+                "observationType": "Measurement",
                 "description": "Air quality readings",
                 "name": "air_quality_readings",
                 "Thing": { "@iot.id": 1 },
@@ -481,7 +481,7 @@ describe("endpoint : Datastream", () => {
             const datas = {
                 "name": "Air Temperature DS",
                 "description": "Datastream for recording temperature",
-                "observationType": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+                "observationType": "Measurement",
                 "unitOfMeasurement": {
                     "name": "Degree Celsius",
                     "symbol": "degC",

@@ -6,10 +6,11 @@
  *
  */
 
-import { createSql, getColumnsList, queryAsJson } from ".";
-import { isSingular, _DBDATAS } from "../../../db/constants";
+import { createSql, getColumnsList } from ".";
+import { isObservation, isSingular, _DBDATAS } from "../../../db/constants";
 import { TimeSeries } from "../../../db/helpers";
 import { getEntityName } from "../../../helpers";
+import { queryAsJson } from "../../../helpers/returnFormats";
 import { message } from "../../../logger";
 import { PGQuery, PgVisitor } from "../PgVisitor";
 
@@ -35,7 +36,7 @@ export function createQuerySelectPGQuery(main: PgVisitor, element: PgVisitor): P
         // create select column
         if (element.select.trim() == "") element.select = "*";
         
-        const select: string[] | undefined =  getColumnsList(realEntity, main, element);    
+        const select: string[] | undefined =  getColumnsList(realEntity, main, element);  
         if(select) {
             const realEntityName = getEntityName(realEntity);
             if (realEntityName) {
@@ -52,7 +53,7 @@ export function createQuerySelectPGQuery(main: PgVisitor, element: PgVisitor): P
                 });
                 relations.forEach((rel: string) => {
                     if (rel[0] == "(") select.push(rel);
-                    else if (element.showRelations == true && main.ref == false && !main.timeSeries ) {
+                    else if (element.showRelations == true && main.onlyRef == false && !main.timeSeries ) {
                         const temTable = getEntityName(rel);
                         if (temTable) {
                             select.push(`CONCAT('${main.options.rootBase}${_DBDATAS[realEntityName].name}(', "${_DBDATAS[realEntityName].table}"."id", ')/${rel}') AS "${rel}@iot.navigationLink"`);
@@ -65,7 +66,7 @@ export function createQuerySelectPGQuery(main: PgVisitor, element: PgVisitor): P
                     from: _DBDATAS[realEntityName].table , 
                     where: element.where, 
                     groupBy: element.groupBy.join(",\n\t"),
-                    orderby: realEntityName === _DBDATAS.Observations.name ? `${element.orderby},"observation"."phenomenonTime", "observation"."id"` : `${element.orderby}, "id"`,
+                    orderby: isObservation(realEntityName) === true ? `${element.orderby},"observation"."phenomenonTime", "observation"."id"` : `${element.orderby}, "id"`,
                     skip: element.skip,
                     limit: element.limit
                 };

@@ -18,7 +18,7 @@ import { testsKeys as datastreams_testsKeys } from "./routes.07_datastreams.spec
 import { testsKeys as sensors_testsKeys } from "./routes.09_sensors.spec";
 
 const countHowMany = (nb: number, op: string) => {
-    return `select count(id) from (select id FROM (select *, unnest(resultnumbers) rowz FROM observation) as essai where rowz ${op} ${nb} UNION select "id"  from "observation" where "resultnumber" ${op} ${nb}) as total`;
+    return `select count(id) from (select id FROM (select *, unnest(_resultnumbers) rowz FROM observation) as essai where rowz ${op} ${nb} UNION select "id"  from "observation" where "_resultnumber" ${op} ${nb}) as total`;
 };
 
 chai.use(chaiHttp);
@@ -460,7 +460,7 @@ describe("Odata", () => {
             python: defaultGet("python", "KEYHTTP")  }
         };
 
-        dbTest.raw('select count("id") from "observation" where "resultnumber" > 20 AND "resultnumber" < 22;').then((result) => {
+        dbTest.raw('select count("id") from "observation" where "_resultnumber" > 20 AND "_resultnumber" < 22;').then((result) => {
             const nb = Number(result.rows[0]["count"]);
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)

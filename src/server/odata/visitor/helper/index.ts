@@ -7,24 +7,26 @@
  */
 
 import { _DBDATAS } from "../../../db/constants";
-import { cleanStringComma, removeQuotes } from "../../../helpers";
+import { cleanStringComma } from "../../../helpers";
 import { PGQuery } from "../PgVisitor";
+
+// const  queryAsStep = (query: string, interval: string | undefined): string => {
+//     return interval 
+//         ? `\nWITH src as (\n${query}), \n\trange_values AS (SELECT \n\t\tmin(src.date) as minval, \n\t\tmax(src.date) as maxval \n\tFROM src), \n\ttime_range AS (SELECT \n\t\tgenerate_series(minval::timestamp, maxval::timestamp , '${interval || "1 day"}'::interval)::TIMESTAMP WITHOUT TIME ZONE as step \n\tFROM range_values) \n\tSELECT id, \n\t\tstep as date, \n\t\tresult FROM src \n\t\tRIGHT JOIN time_range on date = step`
+//         : query;
+// };
 
 export const createSql = (input: PGQuery): string => `SELECT ${input.select}\n FROM "${input.from}"\n ${input.where ? `WHERE ${input.where}\n` : ''}${input.groupBy ? `GROUP BY ${cleanStringComma(input.groupBy)}\n` : ''}${input.orderby ? `ORDER BY ${cleanStringComma(input.orderby)}\n` : ''}${input.skip && input.skip > 0 ? `OFFSET ${input.skip}\n` : ''} ${input.limit && input.limit > 0 ? `LIMIT ${input.limit}\n` : ''}`;
 
-export const  queryAsDataArray = (listOfKeys: { [key: string]: string } , query: string, singular: boolean, fields?: string[]): string => {    
-    const sqlString = `SELECT (ARRAY['${Object.keys(listOfKeys).map((e:string) => removeQuotes(e)).join("','")}']) as "component", count(*) as "dataArray@iot.count", jsonb_agg(allkeys) as "dataArray" FROM (SELECT  json_build_array(${Object.values(listOfKeys).join()}) as allkeys FROM (${query}) as p) as l`;
-    return queryAsJson(sqlString, singular, false, fields);
-}
 
-export const  queryAsJson = (query: string, singular: boolean, count: boolean, fields?: string[]): string => {  
-    const returnJson: string = singular === true ? "ROW_TO_JSON" : "json_agg";
-    const returnNull: string = singular === true ? "{}" : "[]";
-    return `SELECT \n${count == true ? "count(t),\n" : ""} ${fields ? fields.join(",\n") : ""}coalesce(${returnJson}(t),\n '${returnNull}') AS results FROM (${query}) as t`;
-};
+
 
 export { createGetSql } from "./createGetSql";
 export { createPostSql } from "./createPostSql";
 export { createQuerySelectString, createQuerySelectPGQuery } from "./createQuery";
 export { getColumnsList } from "./getColumnsList";
 export { oDatatoDate } from "./oDatatoDate";
+
+// export const  queryAsGraph = (query: string, interval: string | undefined): string => {
+//     return queryAsJson(queryAsStep(query, interval), false, true);
+// };

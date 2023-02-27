@@ -1,7 +1,7 @@
 {
     "name": "STEAN",
     "description": "SensorThings Enhanced API Node",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "lockfileVersion": 1,
     "requires": true,
     "repository": {
@@ -17,6 +17,7 @@
         "prettier-format": "prettier --config .prettierrc ./src/**/*.ts --write",
         "------BUILD-----": "",
         "buildDev": "npm run build-ts && node build.js dev",
+        "buildRem": "npm run build-ts && node build.js && scp -r -p dist.zip madam@194.167.76.143:./",
         "buildDocker": "npm run build-ts && node build.js docker && docker-compose up --build -d",
         "build": "npm run build-ts && node build.js",
         "build-ts": "rimraf ./build && tsc",
@@ -28,7 +29,6 @@
         "doc": "node bin/apidoc -v -i src/ -o apidoc/",
         "------Docker-------": "",
         "docker": "docker-compose up --build -d"
-        
     },
     "keywords": [],
     "author": "Adam Mario",
@@ -103,6 +103,6 @@
         "ts-node": "^10.4.0",
         "ts-prune": "^0.10.3",
         "typescript": "^4.4.0-beta",
-        "uglify-js": "^3.14.4"
+        "uglify-js": "^3.17.4"
     }
 }

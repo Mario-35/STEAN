@@ -41,7 +41,7 @@ export class Common {
     // Log full Query
     logQuery(input: Knex.QueryBuilder | string): void {
         const queryString = typeof input === "string" ? input : knexQueryToSql(input);
-        if (_debug) message(true, "RESULT", "query", queryString);
+        if (_debug) message(true, "RESULT", "query", `\n${queryString}`);
     }
 
     // create a blank ReturnResult
@@ -84,19 +84,6 @@ export class Common {
             await Common.dbContext(_DBDATAS[entityName].table).select("name").where({id: this.ctx._odata.parentEntity ? this.ctx._odata.parentId: this.ctx._odata.id}).limit(1).then((res: any) => tempTitle = res[0].name);
             const temp =  createGraph(input, tempTitle);
             return temp ?  temp : JSON.parse('');
-        } // ONLY if OBSERVATIONS ONLY it's slow BUT that make no sens to request anly observations without MultiDatastream OR Datastream
-        else if (this.ctx._odata.entity == _DBDATAS.Observations.name && !this.ctx._odata.parentEntity) {     
-            if (Object(input).forEach)
-                Object(input).forEach((elem: object) => { 
-                    if (elem.hasOwnProperty("result") ) {
-                        elem["result"]  = elem["result"].hasOwnProperty("result") ? elem["result"]["result"] : elem["result"];
-                    }
-                }); else {
-                    if (input["result"].hasOwnProperty("result")) {
-                        input["result"] = input["result"]["result"];
-                        delete Object(input)["result"]["result"];
-                    }   
-                }
         }
         return input;
     };
@@ -130,7 +117,7 @@ export class Common {
             .catch((err: Error) => this.ctx.throw(400, { code: 400,detail: err.message }));
     }
     
-    onlyValue(input: string | object): string {
+    onlyValue(input: string | object): string {        
         return (typeof input === "object") ? JSON.stringify(input) : removeQuotes(input);
     }
 
@@ -145,18 +132,16 @@ export class Common {
 
         if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ body: sql });
 
-        return Common.dbContext
+        return await Common.dbContext
             .raw(sql)
             .then((res: any) => {
                 const nb = Number(res.rows[0].count);
                 if (nb > 0 && res.rows[0].results[0]) {
-                    this.formatResult(res.rows[0].results[0]);
-
                     return this.createReturnResult({
                         id: nb,
                         nextLink: this.nextLink(nb),
                         prevLink: this.prevLink(nb),
-                        body: this.ctx._odata.select && this.ctx._odata.value === true ? this.onlyValue(res.rows[0].results[0][this.ctx._odata.select]) : res.rows[0].results[0]
+                        body: this.ctx._odata.select && this.ctx._odata.onlyValue === true ? this.onlyValue(String(res.rows[0].results[0][this.ctx._odata.select == "id" ? "@iot.id" : this.ctx._odata.select ])) : res.rows[0].results[0]
                     });
                 }
             })
@@ -176,10 +161,11 @@ export class Common {
 
         if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ body: sql });
 
-        return Common.dbContext
+        return await Common.dbContext
             .raw(sql)
-            .then((res: any) => {                
+            .then((res: any) => {                     
                 if (res.rows) {
+                    if (res.rows[0].duplicate) this.ctx.throw(409, { code: 409, detail: `${this.constructor.name} already exist`, link: `${this.linkBase}(${[res.rows[0].duplicate]})` });
                     if (res.rows[0].results[0]) this.formatResult(res.rows[0].results[0]);
                     return this.createReturnResult({
                         body: res.rows[0].results[0],
@@ -187,7 +173,7 @@ export class Common {
                     });
                 }
             })
-            .catch((err: any) => {
+            .catch((err: any) => {          
                 this.ctx.throw(400, { code: 400,  detail: err.detail });
             });
     }
@@ -211,7 +197,7 @@ export class Common {
 
         if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ body: sql });
 
-        return Common.dbContext
+        return await Common.dbContext
             .raw(sql)
             .then((res: any) => {
                 if (res.rows) {

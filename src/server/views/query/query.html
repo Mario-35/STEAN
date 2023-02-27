@@ -16,6 +16,7 @@
         <link rel="stylesheet" href="window.css">
         <link rel="stylesheet" href="contextMenu.css">
 
+        <script src="gui.js"></script>
         <script src="splitter.js"></script>
         <script src="echarts.js"></script>
         <script src="prettyJs.js"></script>
@@ -27,7 +28,7 @@
         <div id="spinner" class="loading">Loading&#8230;</div>
         <div id="container">
             <div id="first">
-                <form name="import" class="pro-form" id="pro-form" enctype="multipart/form-data" action="@action@"
+                <form name="import" class="pro-form" id="actionForm" enctype="multipart/form-data" action=""
                     method="POST">
 
                     <!-- START ACCORDION -->
@@ -231,6 +232,7 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!-- TimeSeries -->
                                 <div class="row">
                                     <!-- Date Min -->
                                     <div class="col col-span-3">
@@ -256,7 +258,21 @@
                                     </div>
                                     
                                 </div>
-                                <!-- TimeSeries -->
+                                <!-- interval Field -->
+                                <div class="row">
+                                    <div class="col col-span-2">
+                                        <div class="field">
+                                            <label for="intervalOption">Interval</label>                                            
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col col-span-2">
+                                        <div class="field">                                          
+                                            <input id="intervalOption" name="intervalOption" type="text" placeholder=" (1 week, 1 day, 15 minutes ...)">
+                                        </div>
+                                    </div>
+                                </div>                                 
+                                <!-- Buttons -->
                                 <div class="row">
                                     <div class="col col-span-6">
                                         <button type="button" id="btnLimit" class="btn_links _links">Get date limits</button>
@@ -266,8 +282,7 @@
                                             class="btn_links _links">?</button>
                                     </div>
                                 </div>
-
-
+                               
                             </div>
                         </div>
 
@@ -303,7 +318,7 @@
                         </div>   
                         
                            <!-- Logs -->
-                           <div id="logsTab" class="tab">
+                        <div id="logsTab" class="tab">
                             <input class="tab-check" type="checkbox" id="chck7">
                             <label class="tab-label" for="chck7">Logs</label>
                             <div class="tab-content">
@@ -345,7 +360,7 @@
                     <!-- END ACCORDION -->
                     <br>
                     <div class="rowButtons">
-                        <div class="row">
+                        <div class="rowWrap">
                             <div class="col col-span-3">
                                 <button type="button" id="btnClear" class="btn_links _clear">clear</button>
                             </div>
@@ -378,7 +393,7 @@
                 </form>
                 <div class="rowButtons">
                     <!-- BUTTONS ICONS -->
-                    <div class="row">
+                    <div class="rowWrap">
                         <div class="col col-span-1">
                         <button type="button" id="preview" class="btn_svg _preview" title="Preview">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -426,9 +441,14 @@
                             </div>
                         </div>
                     </div>
+                </div>               
+                <div class="rowWrap">
+                    <div class="col col-span-12">
+                        <footer> Ver. @version@ by <a href="mailto:mario.adam@inrae.fr">@ADAM mario</a> </footer>
+                    </div>
                 </div>
             </div>
-
+            
             <div id="two">    
                 <div id="graphContainer" style="background-color: rgb(240, 242, 243);">
                     <div id="graph" class="lol" style="width:100%; height:100%;"></div>

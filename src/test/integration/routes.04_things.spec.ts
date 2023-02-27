@@ -831,7 +831,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     {
                         "name": "Air Temperature DS",
                         "description": "Datastream for recording temperature",
-                        "observationType": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+                        "observationType": "Measurement",
                         "unitOfMeasurement": {
                             "name": "Degree Celsius",
                             "symbol": "degC",

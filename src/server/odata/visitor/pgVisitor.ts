@@ -1,4 +1,4 @@
-import { isGraph, _DBDATAS, _ENTITIES } from "../../db/constants";
+import { isGraph, isObservation, _DBDATAS, _ENTITIES } from "../../db/constants";
 import {  getEntityName, removeQuotes, returnFormats } from "../../helpers";
 import { IreturnFormat, TimeSeriesType } from "../../types";
 import { Token } from "../parser/lexer";
@@ -38,11 +38,12 @@ export class PgVisitor {
     groupBy: string[] = [];
     expand: string[] = [];
     splitResult: string[] | undefined;
+    interval: string | undefined;
     skip: number = 0;
     limit: number = 0;
     count: boolean = false;
-    ref: boolean = false;
-    value: boolean = false;
+    onlyRef: boolean = false;
+    onlyValue: boolean = false;
     InlineCount: boolean;
     navigationProperty: string;
     resultFormat: IreturnFormat = returnFormats.json;
@@ -53,9 +54,9 @@ export class PgVisitor {
 
     constructor(options = <SqlOptions>{}, blank?: boolean) {
         this.options = options;
-        this.ref = options.ref;
-        this.value = options.value;
-        if (this.value  === true) this.resultFormat = returnFormats.txt;        
+        this.onlyRef = options.onlyRef;
+        this.onlyValue = options.onlyValue;
+        if (this.onlyValue  === true) this.resultFormat = returnFormats.txt;        
     }
     
     
@@ -115,11 +116,11 @@ export class PgVisitor {
     }
 
     protected VisitRessourcesRefExpression(node: Token, context: any) {
-        if (node.type == "RefExpression" && node.raw == '/$ref') this.ref = true;        
+        if (node.type == "RefExpression" && node.raw == '/$ref') this.onlyRef = true;        
     }
 
     protected VisitRessourcesValueExpression(node: Token, context: any) {
-        if (node.type == "ValueExpression" && node.raw == '/$value') this.value = true;        
+        if (node.type == "ValueExpression" && node.raw == '/$value') this.onlyValue = true;        
     }
 
     protected VisitRessourcesCollectionNavigation(node: Token, context: any) {           
@@ -211,7 +212,7 @@ export class PgVisitor {
             
             this.select.split(",").filter((e:string) => e.trim() != "").forEach((element:string) => {
                 const test = removeQuotes(element);   
-                if (!cols.includes(test))  ctx.throw(404, { detail:`Invalid name ${test}` });   
+                if (!cols.includes(test) && test !== "result")  ctx.throw(404, { detail:`Invalid name ${test}` });   
             }); 
         }
         const expands: string[] = [];
@@ -227,7 +228,7 @@ export class PgVisitor {
             }  else  ctx.throw(400, { detail:`Invalid entity ${elems[0]}` });  
         });    
         
-        if(this.entity === _DBDATAS.Observations.name && this.splitResult !== undefined && Number(this.parentId) == 0) {
+        if(isObservation(this.entity) === true && this.splitResult !== undefined && Number(this.parentId) == 0) {
             ctx.throw(400, { detail:`Split result not allowed for Observations entity use /Datastreams/Observations or /MultiDatastreams/Observations` }); 
         }
 
@@ -290,13 +291,19 @@ export class PgVisitor {
     protected VisitEntity(node: Token, context: any) {
         this.Visit(node.value.path, context);
         if (node.value.options) node.value.options.forEach((item: Token) => this.Visit(item, context));
-        this.splitResult = node.value.split;
+        // this.splitResult = node.value.split;
     }
 
     protected VisitSplitResult(node: Token, context: any) {
         this.Visit(node.value.path, context);
         if (node.value.options) node.value.options.forEach((item: Token) => this.Visit(item, context));
         this.splitResult = node.value.split(",");
+    }
+
+    protected VisitInterval(node: Token, context: any) {
+        this.Visit(node.value.path, context);
+        if (node.value.options) node.value.options.forEach((item: Token) => this.Visit(item, context));
+        this.interval = node.value;
     }
 
     protected VisitresultFormat(node: Token, context: any) {

@@ -30,7 +30,7 @@
   };
 
   addImport.onclick = () => {
-    jsonDatas.json_value = {
+    jsonDatas.innerText = JSON.stringify({
       "header": true,
       "nan": true,
       "duplicates": true,
@@ -40,7 +40,7 @@
           "featureOfInterest": "1"
         }
       }
-    };
+    });
     
   };
 
@@ -66,12 +66,10 @@
       useInnerHTML:true,
       content: `count : ${value["count"]} item(s)<br>Date min : ${value["min"]} <br>Date max: ${value["max"]}`
     });
-    refresh();
   };
 
   btnCreateDateFilter.onclick = async () => {
     addOption('filter', `phenomenonTime gt '${dateMin.value}' and phenomenonTime lt '${dateMax.value}'`, '');
-    refresh();
   };
 
   btnPostTemplate.onclick = () => {
@@ -94,13 +92,11 @@
             break;
         } else console.log(e);
     });
-
-    console.log(result);
     beautifyDatas(getElement("jsonDatas"), result, "json") ;
   }
 
   btnClear.onclick = () => {
-    createBlankJsonDatas();
+    jsonDatas.innerText = "";
     buttonGo();
   }
 
@@ -128,15 +124,16 @@
         // ===============================================================================
         // |                                     GET                                     |
         // ===============================================================================
-       if (queryResultFormat.value === "graph") url = url.replace("resultFormat=graph","resultFormat=graphDatas");
+        console.log(queryResultFormat.value );
+        if (queryResultFormat.value === "graph") url=url.replace("resultFormat=graph","resultFormat=graphDatas");
         const jsonObj = await getFetchDatas(url, queryResultFormat.value);
         try {
           if (query && queryResultFormat.value === "sql") 
             updateWinSqlQuery(jsonObj);
           else if (query && queryResultFormat.value === "csv") 
             updateWinCsvResult(jsonObj);
-          else if (query && queryResultFormat.value === "graph" && (jsonObj.title))   {  
-            showGraph(jsonObj);    
+          else if (query && queryResultFormat.value === "graph")   {
+            showGraph(jsonObj);
           }        
           else updateWinJsonResult(jsonObj, `[${method.value}]:${url}`);     
         } catch (err) {
@@ -215,7 +212,7 @@
     if (className === "json-url") {
       clear();
       decodeUrl(event.explicitOriginalTarget.innerText);
-      refreshAfterEntityOrSubEntity();
+      refresh();
       canGo = true;
     } else if (className === "json-code" || (event.previousElementSibling && Object.values(event.previousElementSibling.classList).includes("json-code"))) {
       try {
@@ -240,24 +237,25 @@
   queryExpand.addEventListener("change", () => {
     const test = !queryExpand.value.startsWith(_NONE);
     toggleShowHide(querySubExpand, test);
-    if (test) populateMultiSelect("querySubExpand",  Object.keys( _PARAMS._DATAS [key].relations)[subentity.value], null, _NONE);
+    if (test) populateMultiSelect("querySubExpand",  Object.keys( _PARAMS._DATAS [queryExpand.value].relations)[subentity.value], null, _NONE);
   });
 
   entity.addEventListener("change", () => {
     const relations = relationsList(entity.value);
-    if (relations.includes(subentity.value)) return;
-    subentity.options.length = 0;
-    if ((entity.value.includes("createDB") && _PARAMS.user.canCreateDb == true) || importFile) method.value = "POST";
-    else if (entity.value === "createDB") method.value = "POST";
-    else {
-      if(relations) populateSelect(subentity, relations, relations.includes(_PARAMS.subentity) ? _PARAMS.subentity :  _NONE, true);
-      populateSelect(method, entity.value == "Loras" ? ["GET","POST"]  : _PARAMS.methods ,"GET"); 
+    if (!relations.includes(subentity.value)) {
+      subentity.options.length = 0;
+      if ((entity.value.includes("createDB") && _PARAMS.user.canCreateDb == true) || importFile) method.value = "POST";
+      else if (entity.value === "createDB") method.value = "POST";
+      else {
+        if (relations) populateSelect(subentity, relations, relations.includes(_PARAMS.subentity) ? _PARAMS.subentity :  _NONE, true);
+        populateSelect(method, entity.value == "Loras" ? ["GET","POST"]  : _PARAMS.methods ,"GET"); 
+      }
     }
-    refreshAfterEntityOrSubEntity();    
+    refresh();    
   });
 
   subentity.addEventListener("change", () => {
-    refreshAfterEntityOrSubEntity();
+    refresh();
   });  
 
   splitResultOption.addEventListener("change", () => {
@@ -271,40 +269,20 @@
     updateForm();
   });
 
+
   splitResultOptionName.addEventListener("change", () => {
     if (getElement("splitResultOptionName").value === "") getElement("splitResultOptionName").value = "All";
     addOption('splitResult', getIfChecked("splitResultOption") ? getElement("splitResultOptionName").value : 'false', 'FALSE');
     updateForm();
   });
 
-  checkDebug.addEventListener("change", () => {
-    addOption('debug', getIfChecked("checkDebug") ? 'true': 'false', 'FALSE');
-    refresh();
-  });
-
-  selectSeries.addEventListener("change", () => {
-    addOption('series',  selectSeries.value, '');
-    refresh();
-  });
-
-  onlyValue.addEventListener("change", () => {
-    const temp = getIfChecked("onlyValue") ? 'txt': 'json';
-    getElement("queryResultFormat").value = temp;
-  });
-
-  queryResultFormat.addEventListener("change", () => {
-    addOption('resultFormat',getElement("queryResultFormat").value, 'JSON');
-    refresh();
+  queryProperty.addEventListener("change", () => {
     updateForm();
   });
 
-  topOption.addEventListener("change", () => {
-    addOption('top',getElement("topOption").value, '0');
+  queryResultFormat.addEventListener("change", () => {
+    updateForm();
   });
-
-  skipOption.addEventListener("change", () => {
-    addOption('skip',getElement("skipOption").value, '0');
-  });  
 
   fileone.addEventListener( "change", ( e ) => 	{
     var fileName = "";
@@ -317,14 +295,17 @@
       if(fileName) {
         fileonelabel.querySelector( "span" ).innerHTML = fileName;
         method.value = "POST";
-        entity.value = "Datastreams";
-        if (Object.keys( _PARAMS._DATAS [key].relations)) populateSelect(subentity, Object.keys( _PARAMS._DATAS [key].relations)[entity.value], "Observations", true);
+        // const key = "Datastreams";
+        // entity.value = key;
+        // if (Object.keys( _PARAMS._DATAS [key].relations)) populateSelect(subentity, Object.keys( _PARAMS._DATAS [key].relations)[entity.value], "Observations", true);
         importFile = true;
       } else {
         fileonelabel.innerHTML = labelVal;
       }
     } catch (err) {
       notifyError("Error", err);
+    } finally {
+      buttonGo();
     }
   });
 
@@ -344,8 +325,6 @@
   
   btnLoraShowLogs.onclick = async (e) => {
     updateWinResult(`<div class="json-viewer"><ul id="listResult" class="json-dict"><li data-key-type="object">url: <span class="json-literal">response</span></li></ul></div>`);
-
-    addToResultList("mairo", "adam");
 
     // if (e) e.preventDefault();
     // wait(true);
@@ -394,7 +373,6 @@
             },
             body: JSON.stringify(element["datas"]),
           });
-          console.log(response);
           addToResultList(response.status, myUrl, response.statusText);
         }
       }); 
@@ -411,7 +389,6 @@
       for (const property in jsonObj.value) {
         if(jsonObj.value[property].datas) {
           const datas = jsonObj.value[property].datas;
-          console.log(datas);
           const myUrl = `${optHost.value}/${optVersion.value}/Loras?$log=${jsonObj.value[property]["@iot.id"]}`;
           const response = await fetch(myUrl, {
             method: "POST",

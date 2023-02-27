@@ -73,7 +73,28 @@ const dateSqlRequest = async (paramsFile: ICsvFile): Promise<ICsvImport | undefi
     }
     return returnValue;
 };
+export const createColumnHeaderName = async (filename: string): Promise<string[] | undefined> => {
+    const fileStream = fs.createReadStream(filename);
 
+    const rl = readline.createInterface({
+        input: fileStream,
+        crlfDelay: Infinity
+    });
+
+    // Note: we use the crlfDelay option to recognize all instances of CR LF
+    // ('\r\n') in filename as a single line break.
+
+    for await (const line of rl) {
+        try {
+            const cols = line.split(";");
+            fileStream.destroy();
+            return cols;
+        } catch (error) {
+            console.log(error);
+            
+        }
+    }
+};
 export const importCsv = async (ctx: koa.Context, knex: Knex | Knex.Transaction, paramsFile: ICsvFile): Promise<string[]> => {
     message(true, "HEAD", "importCsv");
     const returnValue: string[] = [];
@@ -131,12 +152,12 @@ export const importCsv = async (ctx: koa.Context, knex: Knex | Knex.Transaction,
                         const whereNotIn =
                             paramsFile.duplicates == false
                                 ? ""
-                                : ` WHERE "${paramsFile.tempTable}".id NOT IN (SELECT "${paramsFile.tempTable}".id FROM "${paramsFile.tempTable}", "${_DBDATAS.Observations.table}" WHERE "${_DBDATAS.Observations.table}"."datastream_id" = ${csvColumn.datastream} AND "${_DBDATAS.Observations.table}"."featureofinterest_id" = ${csvColumn.featureOfInterest} AND "${_DBDATAS.Observations.table}"."phenomenonTime" = ${sqlRequest.dateSql} AND "${_DBDATAS.Observations.table}"."resultTime" = ${sqlRequest.dateSql} AND "${_DBDATAS.Observations.table}"."resultnumber" = ${valueSql})`;
+                                : ` WHERE "${paramsFile.tempTable}".id NOT IN (SELECT "${paramsFile.tempTable}".id FROM "${paramsFile.tempTable}", "${_DBDATAS.Observations.table}" WHERE "${_DBDATAS.Observations.table}"."datastream_id" = ${csvColumn.datastream} AND "${_DBDATAS.Observations.table}"."featureofinterest_id" = ${csvColumn.featureOfInterest} AND "${_DBDATAS.Observations.table}"."phenomenonTime" = ${sqlRequest.dateSql} AND "${_DBDATAS.Observations.table}"."resultTime" = ${sqlRequest.dateSql} AND "${_DBDATAS.Observations.table}"."_resultnumber" = ${valueSql})`;
 
                         scriptSql.push(
                             `${index == 0 ? "WITH" : ","} updated${index + 1} as (INSERT into "${
                                 _DBDATAS.Observations.table
-                            }" ("datastream_id", "featureofinterest_id", "phenomenonTime","resultTime", "resultnumber") SELECT ${csvColumn.datastream}, ${
+                            }" ("datastream_id", "featureofinterest_id", "phenomenonTime","resultTime", "_resultnumber") SELECT ${csvColumn.datastream}, ${
                                 csvColumn.featureOfInterest
                             },  ${sqlRequest.dateSql}, ${sqlRequest.dateSql},${valueSql} FROM "${paramsFile.tempTable}"${whereNotIn} returning id)`
                         );
@@ -170,4 +191,6 @@ export const importCsv = async (ctx: koa.Context, knex: Knex | Knex.Transaction,
         });
     }
     return returnValue;
+
 };
+

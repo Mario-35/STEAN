@@ -27,10 +27,10 @@ CREATE OR REPLACE FUNCTION func_trigger_after_update_observation()
     $$
     DECLARE t_id integer;    
     BEGIN
-      INSERT INTO historical_observation("validTime", "resultnumber", "resultnumbers", "observation_id") values (OLD."validTime", OLD."resultnumber", OLD."resultnumbers", OLD."id") returning id into t_id;
+      INSERT INTO historical_observation("validTime", "_resultnumber", "_resultnumbers", "observation_id") values (OLD."validTime", OLD."_resultnumber", OLD."_resultnumbers", OLD."id") returning id into t_id;
       RETURN NEW;
     END;
     $$ LANGUAGE 'plpgsql';
 
-  CREATE TRIGGER trigger_after_update_observation_resultnumbers AFTER update ON observation FOR EACH ROW EXECUTE PROCEDURE func_trigger_after_update_observation();
+  CREATE TRIGGER trigger_after_update_observation__resultnumbers AFTER update ON observation FOR EACH ROW EXECUTE PROCEDURE func_trigger_after_update_observation();
 `;

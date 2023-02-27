@@ -15,6 +15,10 @@ import koa from "koa";
  import { _DBDATAS } from "../constants";
  import { datasDemo } from "../createDBDatas/datasDemo";
  import { triggers } from "../createDBDatas/triggers";
+ import OM_observation_types  from "../../config/OMObservationTypes.json"
+
+
+
   
   export const createSTDatabase = async(configName: string, ctx?: koa.Context): Promise<{ [key: string]: string }> => {
       message(true, "HEAD", "createDatabase", "createDatabase");
@@ -101,6 +105,11 @@ import koa from "koa";
          .raw("CREATE EXTENSION IF NOT EXISTS postgis;")
          .then(() => "✔")
          .catch((err: Error) => err.message);
+     // create OM_observation_types
+     returnValue[`Create OM_observation_types`] = await connDb
+         .raw(`CREATE TYPE observationtype AS ENUM ('${Object.keys(OM_observation_types).join("','")}');`)
+         .then(() => "✔")
+         .catch((err: Error) => err.message);
  
      returnValue[`Create tablefunc`] = await connDb
          .raw("CREATE EXTENSION IF NOT EXISTS tablefunc;")
@@ -118,15 +127,17 @@ import koa from "koa";
          .then(() => "✔")
          .catch((e: any) => e);
      if  (configName.toUpperCase() === "TEST" ||  (ctx && ctx.request.body.seed && ctx.request.body.seed === true)){
-         datasDemo().forEach(async (sql: string) => {
-             returnValue["Feed datas"] = await connDb
-                 .raw(sql)
-                 .then(() => "✔")
-                 .catch((e: any) => {
-                     console.log(e);
-                     return e;
-                 });
-         });
+
+        await asyncForEach(datasDemo(), async (sql: string) => {
+            returnValue["Feed datas"] = await connDb
+            .raw(sql)
+            .then(() => "✔")
+            .catch((error: any) => {
+                console.log(error);
+                return error;
+            });
+            // await connDb.raw('COMMIT');
+        });
      }
  
      await connDb.raw(`select count(*) FROM pg_user WHERE usename = '${config.pg_user}';`).then(() => {

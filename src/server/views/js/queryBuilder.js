@@ -12,11 +12,16 @@ class QueryBuilder {
             },
             "number": {
                 "gt": "Greater than",
-                "st": "Smaller than",
+                "lt": "Lesser than",
+                "between": "Between",
+            },
+            "date": {
+                "gt": "Greater than",
+                "lt": "Lesser than",
                 "between": "Between",
             },
             "text": {
-                "includes": "Includes",
+                "contains": "Includes",
                 "notincludes": "Does not include",
                 "startswith": "Starts with",
                 "endswith": "Ends with",
@@ -30,7 +35,7 @@ class QueryBuilder {
             },
         };
         this.inputTypes = {
-            "singleinput": ["eq", "ne", "includes", "notincludes", "startswith", "endswith", "gt", "st", "regex"],
+            "singleinput": ["eq", "ne", "contains", "notincludes", "startswith", "endswith", "gt", "lt", "regex"],
             "doubleinput": ["between"],
             "select": ["isoneof", "isall", "notall", "notoneof"],
         };
@@ -261,7 +266,9 @@ class QueryBuilder {
     }
 
     addValueInput(criteriumElement, value = null) {
+        console.log("=============================================================================");
         const condition = criteriumElement.querySelector(".condition-select");
+        console.log(this);
         if (criteriumElement.querySelector(".valueinput") !== null) {
             criteriumElement.querySelector(".valueinput").remove();
         }
@@ -271,7 +278,7 @@ class QueryBuilder {
         if (this.inputTypes["singleinput"].includes(condition.value)) {
             // Everything is set up to create a new input element
             const singleValueInput = document.createElement("span");
-            singleValueInput['role'] = "textbox";
+            singleValueInput['role'] = "text";
             singleValueInput.contentEditable = "true";
             singleValueInput.classList.add("value-singleinput");
             singleValueInput.classList.add("textarea");

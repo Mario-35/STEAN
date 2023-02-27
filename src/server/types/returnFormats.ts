@@ -27,7 +27,9 @@ export const enum FORMATS {
 }
 
  export interface IreturnFormat {
+    name: string; 
     type: string; 
     format(input: string | Object, ctx?: koa.Context): string | Object;
+    generateSql(arr: {[key: string]: any}): string ;
 }
 

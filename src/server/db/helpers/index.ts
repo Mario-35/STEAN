@@ -11,7 +11,7 @@ export { createGraph } from "./createGraph";
 export { createTable } from "./createTable";
 export { extractMessageError } from "./extractMessageError";
 export { getColumnsListType } from "./getColumnsListType";
-export { importCsv } from "./importCsv";
+export { importCsv, createColumnHeaderName } from "./importCsv";
 export { knexQueryToSql } from "./knexQueryToSql";
 export { recordToKeyValue } from "./recordToKeyValue";
 export { removeKeyFromUrl } from "./removeKeyFromUrl";

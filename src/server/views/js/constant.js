@@ -14,7 +14,9 @@ const _DOWN = "↓";
 const _ALL = "all";
 const _SELECTED = "selcted";
 
-let tdb = '';
+
+// load file json
+let importFile = false;
 
 var jsonObj = {};
 var listOptions = {};
@@ -42,9 +44,11 @@ function entityList() {
   }
   
 function columnsList(input) {
-    return Object.keys(_PARAMS._DATAS[getEntityName(input)].columns)
+    const ent = getEntityName(input);
+    return ent ? Object.keys(_PARAMS._DATAS[ent].columns) : undefined;
 }
 
 function relationsList(input) {
-    return Object.keys(_PARAMS._DATAS[getEntityName(input)].relations)
+    const ent = getEntityName(input);
+    return ent ? Object.keys(_PARAMS._DATAS[ent].relations) : undefined;
 }

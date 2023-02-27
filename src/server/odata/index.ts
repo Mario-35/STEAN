@@ -18,7 +18,7 @@ const doSomeWarkAfterAst = async (input: PgVisitor, ctx: koa.Context) => {
 
 export const createOdata = async (ctx: koa.Context):Promise<PgVisitor | undefined> => {
     const blankUrl = `$top=${_CONFIGS[ctx._configName].nb_page ? +_CONFIGS[ctx._configName].nb_page : 200}`;
-    const options: SqlOptions = {loraId: undefined, rootBase: ctx._rootName, value: false, ref: false, method: ctx.method};
+    const options: SqlOptions = {loraId: undefined, rootBase: ctx._rootName, onlyValue: false, onlyRef: false, method: ctx.method};
 
     let urlSrc = ctx.href.normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(ctx._version)[1];
 
@@ -35,20 +35,20 @@ export const createOdata = async (ctx: koa.Context):Promise<PgVisitor | undefine
         }        
     };
 
-    urlSrc = cleanUrl(urlSrc.replace(/\@iot.id\b/, "id").split(/(r)esult(?![a-zA-Z])/).filter((e: string) => e != "r").join('resultnumber'));
-
+    urlSrc = cleanUrl(urlSrc.replace(/\@iot.id\b/, "id"));
+    
     if (urlSrc === "/") return;
-
+    
     if (urlSrc.includes("$"))
-        urlSrc.split("$").forEach((element: string) => {
+    urlSrc.split("$").forEach((element: string) => {
             switch (element) {            
-                case "value&":                        
+                case "value?":                        
                 case "value":                        
-                options.value = true;
+                options.onlyValue = true;
                     removeElement(`/$${element}`);
                     break;
                 case "ref":                        
-                options.ref = true;
+                options.onlyRef = true;
                     removeElement(`/$${element}`);
                     break;
             }
@@ -58,17 +58,16 @@ export const createOdata = async (ctx: koa.Context):Promise<PgVisitor | undefine
         
         if(!urlSrcSplit[1]) urlSrcSplit.push(blankUrl);  
         
-        if (urlSrcSplit[0].split("(").length != urlSrcSplit[0].split(")").length) urlSrcSplit[0] += ")";        
-
+        if (urlSrcSplit[0].split("(").length != urlSrcSplit[0].split(")").length) urlSrcSplit[0] += ")";
+        
         const astRessources:Token = <Token>(resourcePath(<string>urlSrcSplit[0]));   
         
         const astQuery: Token = <Token>query(decodeURIComponent(urlSrcSplit[1]));
-
+        
         const temp = new PgVisitor(options).init(ctx, astRessources).start(ctx, astQuery);
 
         await doSomeWarkAfterAst(temp, ctx);
         
         return temp;
-
 }
 

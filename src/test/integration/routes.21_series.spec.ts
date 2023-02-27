@@ -45,6 +45,8 @@ describe("TimeSeries", () => {
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
                 .end((err, res) => {
+                    console.log(res.body);
+                    
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");

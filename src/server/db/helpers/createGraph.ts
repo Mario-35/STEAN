@@ -14,21 +14,20 @@ export interface IGraphDatas {
     title: string;
     keys: string[];
     ids: string[];
-    values: { [key: string]: number[] };
+    values: { [key: string]: [number | null] };
     dates: string[];
 }
 
 export const createGraph = (input: JSON, mainTitle: string): IGraphDatas | undefined => {
     message(true, "CLASS", "createGraph");
-
     if (input)
         try {
             const multi = typeof input[0]["result"] === "object" && input[0]["result"] != null;
             const keys = multi ? Object.keys(input[0]["result"]) : ["result"];
-            const values: { [key: string]: number[] } = {};
+            const values: { [key: string]: [number | null] } = {};
 
             // create blank value to avoid undefined error
-            keys.forEach((elem: string) => (values[elem] = []));
+            keys.forEach((elem: string) => (values[elem] = [null]));
 
             const returnResult: IGraphDatas = {
                 title: mainTitle,
@@ -39,15 +38,15 @@ export const createGraph = (input: JSON, mainTitle: string): IGraphDatas | undef
             };
 
             Object(input).forEach((inputElement: JSON) => {
-                returnResult.ids.push(inputElement["id"]);
-                returnResult.dates.push(inputElement["date"]);
                 if (multi) {
-                    Object.keys(inputElement["result"]).forEach((subElement: string) => {
-                        returnResult.values[subElement].push(inputElement["result"][subElement]);
-                    });
-                } else if (returnResult.values["result"]) returnResult.values["result"].push(inputElement["result"]);
+                    keys.forEach(key => {returnResult.values[key].push(inputElement["result"] && inputElement["result"][key] ? inputElement["result"][key] : null);});
+                    returnResult.ids.push(inputElement["id"]);
+                    returnResult.dates.push(inputElement["date"]);
+                } else {
+                    returnResult.ids.push(inputElement["id"]);
+                    returnResult.dates.push(inputElement["date"]);
+                    returnResult.values["result"].push(inputElement["result"]);}
             });
-
             return returnResult;
         } catch (error) {
             logDebug(error);

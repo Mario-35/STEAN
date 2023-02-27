@@ -387,7 +387,7 @@ describe("endpoint : MultiDatastream", () => {
                 Sensor: {
                     "@iot.id": 1
                 },
-                multiObservationDataTypes: ["humidity", "Temperature"],
+                multiObservationDataTypes: ["Measurement", "Measurement"],
                 unitOfMeasurements: [
                     {
                         symbol: "%",
@@ -474,15 +474,15 @@ describe("endpoint : MultiDatastream", () => {
                     encodingType: "application/pdf",
                     metadata: "https://cdn-shop.adafruit.com/datasheets/DHT72.pdf"
                 },
-                multiObservationDataTypes: ["humidity", "Temperature"],
+                multiObservationDataTypes: ["Measurement", "Measurement"],
                 unitOfMeasurements: [
                     {
                         symbol: "%",
-                        name: "humidity",
+                        name: "Soil humidity",
                         definition: "http://unitsofmeasure.org/ucum.html"
                     },
                     {
-                        name: "Temperature",
+                        name: "Soil Temperature",
                         symbol: "°",
                         definition: "http://unitsofmeasure.org/blank.html"
                     }
@@ -541,7 +541,7 @@ describe("endpoint : MultiDatastream", () => {
                     Sensor: {
                         "@iot.id": 1
                     },
-                    multiObservationDataTypes: ["humidity", "Temperature"],
+                    multiObservationDataTypes: ["Measurement", "Measurement"],
                     unitOfMeasurements: [
                         {
                             symbol: "%",
@@ -583,7 +583,7 @@ describe("endpoint : MultiDatastream", () => {
                     Sensor: {
                         "@iot.id": 1
                     },
-                    multiObservationDataTypes: ["humidity", "Temperature"],
+                    multiObservationDataTypes: ["Measurement", "Measurement"],
                     unitOfMeasurements: [
                         {
                             symbol: "%",

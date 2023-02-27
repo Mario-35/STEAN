@@ -140,7 +140,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
             if (ctx._odata) {
                 message(true, "HEAD", "POST FORM");
                 const objectAccess = new apiAccess(ctx);
-                const returnValue: IReturnResult | undefined | void = await objectAccess.add();
+                const returnValue: IReturnResult | undefined | void = await objectAccess.add();                        
                 if (ctx._datas) fs.unlinkSync(ctx._datas.file);
                 if (returnValue) {
                     if (ctx._datas["source"] == "query") {
@@ -159,6 +159,27 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
                     ctx.throw(400);
                 }
             }
+                // case "CREATEFILE":
+                //     const objectAccess = new apiAccess(ctx);
+                //     const returnValue: IReturnResult | undefined | void = await objectAccess.add();                        
+                //     if (ctx._datas) fs.unlinkSync(ctx._datas.file);
+                //     if (returnValue) {
+                //         if (ctx._datas["source"] == "query") {
+                //             const temp = await createIqueryFromContext(ctx);
+                //             ctx.type = "html";
+                //             ctx.body = queryHtmlPage({
+                //                 ...temp,
+                //                 results: JSON.stringify({ added: returnValue.total, value: returnValue.body })
+                //             });
+                //         } else {
+                //             returnFormats.json.type;
+                //             ctx.status = 201;
+                //             ctx.body = returnValue.body ? returnValue.body : returnValue.body;
+                //         }
+                //     } else {
+                //         ctx.throw(400);
+                //     }
+                // return;
         } else {
             // payload is malformed
             ctx.throw(400, { details: "Payload is malformed" });

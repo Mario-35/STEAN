@@ -89,7 +89,7 @@ function showGraph(value) {
           if (_PARAMS.dataIndex) await editDataClicked(value["ids"][_PARAMS.dataIndex], _PARAMS);
         });
         myChart.setOption(option);
-        show(graphContainer);
+        graphContainer.style.display = "block";
     }
 }
 

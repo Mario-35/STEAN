@@ -31,12 +31,12 @@ export const createTable = async(connectionDb: Knex | Knex.Transaction, tableEnt
     returnValue[`${tab()}Create postgis`] = await connectionDb
         .raw("CREATE EXTENSION IF NOT EXISTS postgis;")
         .then(() => "✔")
-        .catch((err: Error) => err.message);
+        .catch((error: Error) => error.message);
 
     returnValue[`${tab()}Create tablefunc`] = await connectionDb
         .raw("CREATE EXTENSION IF NOT EXISTS tablefunc;")
         .then(() => "✔")
-        .catch((err: Error) => err.message);
+        .catch((error: Error) => error.message);
 
     Object.keys(tableEntity.columns).forEach((column) => {
         if (tableEntity.columns[column].create.trim() != "") tabInsertion.push(`"${column}" ${tableEntity.columns[column].create}`);
@@ -53,7 +53,7 @@ export const createTable = async(connectionDb: Knex | Knex.Transaction, tableEnt
     if (tableEntity.table.trim() != "") returnValue[String(`Create table ${tableEntity.table}`)] = await connectionDb
         .raw(`CREATE TABLE "${tableEntity.table}" (${insertion});`)
         .then(() => "✔")
-        .catch((err: Error) => err.message);
+        .catch((error: Error) => error.message);
 
     const indexes = tableEntity.indexes;
     const tabTemp: string[] = [];
@@ -68,14 +68,14 @@ export const createTable = async(connectionDb: Knex | Knex.Transaction, tableEnt
         returnValue[`${tab()}Create indexes for ${tableEntity.name}`] = await connectionDb
             .raw(tabTemp.join(";"))
             .then(() => "✔")
-            .catch((err: Error) => err.message);
+            .catch((error: Error) => error.message);
 
     // CREATE CONSTRAINTS
     if (tableEntity.constraints && tabConstraints.length > 0)
         returnValue[`${tab()}Create constraints for ${tableEntity.table}`] = await connectionDb
             .raw(tabConstraints.join(" "))
             .then(() => "✔")
-            .catch((err: Error) => err.message);
+            .catch((error: Error) => error.message);
 
     // CREATE SOMETHING AFTER
     if (tableEntity.after) {        
@@ -83,7 +83,7 @@ export const createTable = async(connectionDb: Knex | Knex.Transaction, tableEnt
             returnValue[`${tab()}Something to do after for ${tableEntity.table}`] = await connectionDb
                 .raw(tableEntity.after)
                 .then(() => "✔")
-                .catch((err: Error) => { console.log (err);return err.message});
+                .catch((error: Error) => { console.log (error);return error.message});
     }
 
     // CREATE SOMETHING AFTER (migration)
@@ -91,7 +91,7 @@ export const createTable = async(connectionDb: Knex | Knex.Transaction, tableEnt
             returnValue[`${tab()} doAfter ${tableEntity.table}`] = await connectionDb
                 .raw(doAfter)
                 .then(() => "✔")
-                .catch((err: Error) => err.message);
+                .catch((error: Error) => error.message);
     }
 
     return returnValue;

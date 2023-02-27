@@ -7,10 +7,11 @@
  */
 
 import { Knex } from "knex";
-import { createQuerySelectPGQuery, queryAsJson } from ".";
+import { createQuerySelectPGQuery } from ".";
 import { _VOIDTABLE } from "../../../constants";
 import { _DBDATAS } from "../../../db/constants";
 import { getBigIntFromString, getEntityName } from "../../../helpers";
+import { queryAsJson } from "../../../helpers/returnFormats";
 import { logDebug, message } from "../../../logger";
 import { IEntity } from "../../../types";
 import { OperationType } from "../../../types/";
@@ -30,7 +31,8 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
             keyId: string;
         };
     } = {};
-    const postEntity: IEntity = _DBDATAS[main.getEntity()];
+    const tempEntity = main.getEntity();
+    const postEntity: IEntity = _DBDATAS[tempEntity == "CreateFile" ? "Datastreams" : tempEntity];
     const postParentEntity: IEntity | undefined = main.parentEntity ? _DBDATAS[main.parentEntity ] : undefined;
     const names: { [key: string]: string } = {
         [postEntity.table]: postEntity.table
@@ -234,8 +236,7 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
                         if (relation.tableName == subParentEntity.table) {
                             const tableName = names[subEntity.table];
                             const parentTableName = names[subParentEntity.table];
-                            message(true, "INFO", `Add parent relation ${tableName} in`, parentTableName);
-                            
+                            message(true, "INFO", `Add parent relation ${tableName} in`, parentTableName);                            
                             addToQueryMaker(
                                 OperationType.Relation,
                                 parentTableName,
@@ -357,9 +358,7 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
 
             }
     const temp = createQuerySelectPGQuery(main, main); 
-    sqlResult += queryAsJson(` SELECT ${temp?.select} FROM ${names[postEntity.table]} ${temp && temp.groupBy ? `GROUP BY ${temp.groupBy}` : ''}`, false, false);
-
-
+    sqlResult += queryAsJson(`SELECT ${temp && temp.select ? temp.select : "*"} FROM ${names[postEntity.table]} ${temp && temp.groupBy ? `GROUP BY ${temp.groupBy}` : ''}`, false, false);
     logDebug(sqlResult);        
     return sqlResult;
 
