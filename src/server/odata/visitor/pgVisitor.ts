@@ -28,7 +28,7 @@ export class PgVisitor {
     extras: undefined;
     timeSeries?: TimeSeriesType;
     relation: string | undefined = undefined;
-    log: bigint | string = BigInt(0);
+    idLog: bigint | string = BigInt(0);
     id: bigint | string = BigInt(0);
     parentId: bigint | string = BigInt(0);
     select: string = "";
@@ -51,6 +51,7 @@ export class PgVisitor {
     parameters: unknown[] = [];
     ast: Token;
     showRelations: boolean = true;
+    results: { [key: string]: string } = {}
 
     constructor(options = <SqlOptions>{}, blank?: boolean) {
         this.options = options;
@@ -253,6 +254,7 @@ export class PgVisitor {
             // console.log(node);
             // console.log(context);          
             // console.log(`Where : ${this.where}`);          
+            // console.log(`select : ${this.select}`);          
             if (visitor) {
                 visitor.call(this, node, context);
                 // console.log(`AFTER  Visit${node.type} Where : ${this.where}`);          
@@ -383,7 +385,7 @@ export class PgVisitor {
     }
 
     protected VisitLog(node: Token, context: any) {
-        this.log = node.value.raw;
+        this.idLog = node.value.raw;
     }
 
     protected VisitSelect(node: Token, context: any) {
@@ -485,8 +487,8 @@ export class PgVisitor {
  
 
     protected VisitODataIdentifier(node: Token, context: any) {
-        context.identifier = node.value.name;        
-        
+        node.value.name = node.value.name === "result" ? "_resultnumber" : node.value.name;
+        context.identifier = node.value.name;
         if (this.entity != "" && context.target) 
             if (Object.keys(_DBDATAS[this.entity].columns).includes(node.value.name)) {
                 
@@ -518,6 +520,8 @@ export class PgVisitor {
 
     protected VisitEqualsExpression(node: Token, context: any): void {
         const testIsDate = oDatatoDate(node.value.right.raw);
+
+
         if (testIsDate) {            
             this.where += ` "${node.value.left.raw}" >= TO_DATE(${testIsDate}) - interval '1 day' AND "${node.value.left.raw}" <= TO_DATE(${testIsDate}) + interval '1 day'`;
         } else {
@@ -586,7 +590,9 @@ export class PgVisitor {
         const params = node.value.parameters || [];
 
         const columnOrData = (index: number): string => {
-            const temp = decodeURIComponent(Literal.convert(params[index].value, params[index].raw));
+            let temp = decodeURIComponent(Literal.convert(params[index].value, params[index].raw));
+            temp = temp === "result" ? "_resultnumber" : temp;
+
             return (_DBDATAS[this.entity].columns[temp]) ? `"${temp}"` :  `'${temp}'`;
         }
 

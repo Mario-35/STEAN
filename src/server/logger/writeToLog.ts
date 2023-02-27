@@ -25,14 +25,14 @@
             "datas" : ctx.request.body as string,
             "user_id" : getUserId(ctx).toString(),
             "error": error ? error["message"] + " : " + error["detail"] : "No Message",
-            "replayid": ctx._odata.log && BigInt(ctx._odata.log) > 0 ? ctx._odata.log : undefined
+            "replayid": ctx._odata.idLog && BigInt(ctx._odata.idLog) > 0 ? ctx._odata.idLog : undefined
         }  
         const code = Math.floor(req.code / 100);
         
-        if (ctx._odata.log && BigInt(ctx._odata.log) > 0 && code !== 2) return;
+        if (ctx._odata.idLog && BigInt(ctx._odata.idLog) > 0 && code !== 2) return;
         await db["admin"].table(_DBDATAS.Logs.table).insert(req).returning("id").then(async (res: any) => {                         
-            if (code === 2 && ctx._odata.log && BigInt(ctx._odata.log) > 0 && res[0]) {  
-                await db["admin"].table(_DBDATAS.Logs.table).update({"entityid" : res[0]}).where({id: ctx._odata.log});
+            if (code === 2 && ctx._odata.idLog && BigInt(ctx._odata.idLog) > 0 && res[0]) {  
+                await db["admin"].table(_DBDATAS.Logs.table).update({"entityid" : res[0]}).where({id: ctx._odata.idLog});
             }
         }).catch((error: any) => {
             logDebug(error);

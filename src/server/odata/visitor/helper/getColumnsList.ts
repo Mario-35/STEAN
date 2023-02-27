@@ -43,7 +43,7 @@ if (element.splitResult) cols = cols.filter(e => e != "result");
                     if (elem === "id" && (element.showRelations == true || csvOrArray)) {
                         if (csvOrArray)  main.addToArrayNames("id");            
                         else returnValue.push(selfLink);    
-                    }  else  if (!isSelect) main.addToArrayNames(elem); 
+                    }  else  main.addToArrayNames(elem); 
                 } else if (tempEntity.relations[elem]) {
                     const tempTable = getEntityName(elem);
                     returnValue.push(`CONCAT('${main.options.rootBase}${tempEntity.name}(', "${tempEntity.table}"."id", ')/${tempTable}') AS "${tempTable}@iot.navigationLink"`);                 

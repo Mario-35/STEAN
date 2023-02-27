@@ -87,7 +87,7 @@ const _returnFormats: { [key in FORMATS]: IreturnFormat } = {
             name : "dataArray",
       type: "application/json",
       format : defaultFunction,      
-      generateSql(arr: {[key: string]: any}) { 
+      generateSql(arr: {[key: string]: any}) {         
         return queryAsDataArray(arr["listOfKeys"], arr["query"] , arr["singular"] , arr["fields"]);
       }
     },
