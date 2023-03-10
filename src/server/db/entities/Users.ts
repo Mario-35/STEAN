@@ -16,6 +16,7 @@ import { _CONFIGURATION } from "../../configuration";
 import { hidePasswordInJson } from "../../helpers";
 import { userRights } from "../../types/user";
 import { db } from "..";
+import { messages } from "../../messages/";
 
  
  export class Users extends Common {
@@ -35,7 +36,7 @@ import { db } from "..";
             return this.createReturnResult({
                 body: temp,
             });       
-        } else this.ctx.throw(401, { code: 401,  detail: `Not Authorized` });
+        } else this.ctx.throw(401, { code: 401,  detail: messages.errors[401] });
      }
 
      async add(dataInput: Object | undefined): Promise<IReturnResult | undefined> {

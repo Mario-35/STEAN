@@ -10,7 +10,7 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet } from "./constant";
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult } from "./constant";
 import { server } from "../../server/index";
 
 
@@ -40,7 +40,7 @@ describe("Odata BuiltInQuery", () => {
             apiName: "BuiltInQuerySubstringof",
             apiDescription: "This string function filters all the records that contain with string in property.",
             apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
-            apiExample: {   http: "/v1.0/Things?$filter=substringof('name', '1') eq true",
+            apiExample: {   http: "/v1.0/Things?$filter=substringof('description', 'one') eq true",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -52,34 +52,21 @@ describe("Odata BuiltInQuery", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(4);
+                res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(1);
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
 
     it("substringof('name', '1')", (done) => {
         chai.request(server)
-            .get(`/test/v1.0/Things?$filter=substringof('name', '1')`)
+            .get(`/test/v1.0/Things?$filter=substringof('description', 'one')`)
             .end((err: any, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(4);
-                res.body["value"][0]["@iot.id"].should.eql(1);
-                done();
-            });
-    });
-
-    it("substringof(name, '1')", (done) => {
-        chai.request(server)
-            .get(`/test/v1.0/Things?$filter=substringof(name, '1') `)
-            .end((err: any, res: any) => {
-                should.not.exist(err);
-                res.status.should.equal(200);
-                res.type.should.equal("application/json");
-                res.body.value.length.should.eql(4);
+                res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(1);
                 done();
             });
@@ -105,7 +92,7 @@ describe("Odata BuiltInQuery", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(22);
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -156,7 +143,7 @@ describe("Odata BuiltInQuery", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(1);
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -187,13 +174,13 @@ describe("Odata BuiltInQuery", () => {
             });
     });
 
-    it("length(name) le 15", (done) => {
+    it("length(description) le 22", (done) => {
         const infos = {
             api: "{get} Things(:id) Length",
             apiName: "BuiltInQueryLength",
             apiDescription: "This string function return the length of the parameters to be test in filter.",
             apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
-            apiExample: {   http: "/v1.0/Things?$filter=length(name) le 15",
+            apiExample: {   http: "/v1.0/Things?$filter=length(description) le 22",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -207,7 +194,7 @@ describe("Odata BuiltInQuery", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(21);
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -232,18 +219,18 @@ describe("Odata BuiltInQuery", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(22);
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
 
-    it("substring('name', 1) eq 'ensorWebThing'", (done) => {
+    it("substring('name', 1) eq 'ame of new Things 1'", (done) => {
         const infos = {
             api: "{get} Things substring",
             apiName: "BuiltInQuerySubstringOne",
             apiDescription: "This string function filters all the records that contain with part of the string extract all characters from a particular position of a column name .",
             apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
-            apiExample: {   http: "/v1.0/Things?$filter=substring('name', 1) eq 'ensorWebThing'",
+            apiExample: {   http: "/v1.0/Things?$filter=substring('name', 1) eq 'ame of new Things 1'",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -255,9 +242,9 @@ describe("Odata BuiltInQuery", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(2);
+                res.body.value.length.should.eql(1);
                 res.body["value"][0]["@iot.id"].should.eql(21);
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -282,7 +269,7 @@ describe("Odata BuiltInQuery", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(22);
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -307,7 +294,7 @@ describe("Odata BuiltInQuery", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body["value"][0]["@iot.id"].should.eql(2);
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -332,7 +319,7 @@ describe("Odata BuiltInQuery", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body["value"][0]["@iot.id"].should.eql(2);
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -357,7 +344,7 @@ describe("Odata BuiltInQuery", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body["value"][0]["@iot.id"].should.eql(20);
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -382,7 +369,7 @@ describe("Odata BuiltInQuery", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body["value"][0]["@iot.id"].should.eql(2);
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -407,7 +394,7 @@ describe("Odata BuiltInQuery", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body["value"][0]["@iot.id"].should.eql(20);
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });

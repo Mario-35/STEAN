@@ -16,6 +16,7 @@ import { IReturnResult } from "../../types";
 import {  recordToKeyValue } from "../helpers";
 import { getEntityName } from "../../helpers";
 import { db } from "..";
+import { messages } from "../../messages";
 
 export class apiAccess implements DataAccessInterface {
     readonly myEntity: Common | undefined;
@@ -26,9 +27,9 @@ export class apiAccess implements DataAccessInterface {
         const entityName = getEntityName(this.ctx._odata.entity);
         if (entityName && entityName in entities) {
             this.myEntity = new entities[(this.ctx, entityName)](ctx, db[this.ctx._configName]);
-            if (this.myEntity === undefined) message(true, "ERROR", `Entity Error : ${entityName}`);
+            if (this.myEntity === undefined) message(true, "ERROR", `${messages.errors.entity} : ${entityName}`);
             else message(true, "CLASS", "constructor apiAccess", "Ok");
-        } else message(true, "ERROR", `Entity Error : ${entityName}`);
+        } else message(true, "ERROR", `${messages.errors.entity} : ${entityName}`);
     }
 
     formatDataInput(input: Object | undefined): Object | undefined {

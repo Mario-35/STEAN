@@ -3,341 +3,259 @@
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
- *
- */
+*
+*/
 
- import { Knex } from "knex";
- import koa from "koa";
- import { Common } from "./common";
- import { getBigIntFromString, removeQuotes } from "../../helpers/index";
- import {  _DBDATAS } from "../constants";
- import { _DOUBLEQUOTE, _QUOTEDCOMA, _VOIDTABLE } from "../../constants";
- import { logDebug, message } from "../../logger";
- import { IReturnResult } from "../../types";
- 
- export class Loras extends Common {
-     constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
-         super(ctx, knexInstance);
-     }
+import { Knex } from "knex";
+import koa from "koa";
+import { Common } from "./common";
+import { getBigIntFromString, isNotNull, removeQuotes } from "../../helpers/index";
+import {  _DBDATAS } from "../constants";
+import { _DOUBLEQUOTE, _QUOTEDCOMA, _VOIDTABLE } from "../../constants";
+import { logDebug, message } from "../../logger";
+import { IReturnResult } from "../../types";
+import { messages, messagesReplace } from "../../messages/";
 
-     decodeLoraPayload = async (knexInstance: Knex | Knex.Transaction, loraDeveui: string, input: string): Promise<{[key: string]: string}> => {
-        message(true, "INFO", "decodeLoraPayload", loraDeveui);
-        return await knexInstance(_DBDATAS.Decoders.table).select("code").whereRaw(`id = (SELECT "decoder_id" FROM "${_DBDATAS.Loras.table}" WHERE "deveui" = '${loraDeveui}')`).first().then((res: any) => {
-            try {
-                if (res) {
-                    const F = new Function("input", String(res.code));
-                    return F(input);
-                }
-                return {"error" : "decoder error"};            
-            } catch (error) {
-                logDebug(error);           
-            }
+
+export class Loras extends Common {
+    synonym: object = {};
+    constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
+        super(ctx, knexInstance);
+    }
+    async prepareInputResult(dataInput: Object): Promise<Object> {
+        message(true, "CLASS", this.constructor.name, "prepareInputResult"); 
+        ["deveui", "sensor_id", "payload_deciphered"].forEach((key: string) => {
+            if (dataInput[key]) dataInput[key] = dataInput[key].toUpperCase();
         });
-    };
+        return dataInput;    
+    }
+    // load decoder and decode payload with the code
+    decodeLoraPayload = async (knexInstance: Knex | Knex.Transaction, loraDeveui: string, input: string): Promise<any> => {
+       message(true, "INFO", `decodeLoraPayload deveui : [${loraDeveui}]`, input);
+       const ErrorMessage = "Decoding Payload error";
+       return await knexInstance(_DBDATAS.Decoders.table).select("code", "nomenclature", "synonym").whereRaw(`id = (SELECT "decoder_id" FROM "${_DBDATAS.Loras.table}" WHERE "deveui" = '${loraDeveui}')`).first().then((res: any) => {
+           try {
+               if (res) {     
+                   this.synonym = res.synonym ? res.synonym : {};
+                   const F = new Function("input", `${String(res.code)}; const nomenclature = ${JSON.stringify(res.nomenclature)}; return decode(input, nomenclature);`);                   
+                   const temp =  F(input);
+                   return temp;
+               }
+            } catch (error) {
+                return {"error" : ErrorMessage};         
+            }
+            return {"error" : ErrorMessage};            
+       });
+   };
 
-     async decodeLoraValues(knexInstance: Knex | Knex.Transaction, loraDeveui: string, input: any): Promise<{[key: string]: string}>  {       
-        message(true, "INFO", "decodeLoraValues", loraDeveui);
-        try {
-            return await knexInstance(_DBDATAS.Decoders.table).select("code").whereRaw(`id = (SELECT "decoder_id" FROM "${_DBDATAS.Loras.table}" WHERE "deveui" = '${loraDeveui}')`).first().then((res: any) => {
-                if (res) {
-                    try {
-                        const F = new Function("input", String(res.code));                       
-                        return F(input);
-                    } catch (error) {
-                        return {"error" : "decoder error"};            
-                    }
-                }
-                return {"error" : "decoder error"};            
-            });
-        } catch (error) {
-            logDebug(error);           
-        }
-        return {"error" : "decoder error"};            
-    };
- 
-     createListQuery(input: string[], columnListString: string): string {
-         const tempList = columnListString.split("COLUMN");
-         return tempList[0].concat(_DOUBLEQUOTE, input.join(`"${tempList[1]}${tempList[0]}"`), _DOUBLEQUOTE, tempList[1]);
-     }
- 
-     async add(dataInput: Object, silent?: boolean): Promise<IReturnResult | undefined> {
-        message(true, "OVERRIDE", this.constructor.name, "add");
+    async decodeLoraValues(knexInstance: Knex | Knex.Transaction, loraDeveui: string, input: any): Promise<{[key: string]: string}>  {   
+            
+       message(true, "INFO", "decodeLoraValues", loraDeveui);
+       try {
+           return await knexInstance(_DBDATAS.Decoders.table).select("code").whereRaw(`id = (SELECT "decoder_id" FROM "${_DBDATAS.Loras.table}" WHERE "deveui" = '${loraDeveui}')`).first().then((res: any) => {
+               if (res) {
+                   try {
+                       const F = new Function("input", String(res.code));                       
+                       return F(input);
+                   } catch (error) {
+                       return {"error" : "decoder error"};            
+                   }
+               }
+               return {"error" : "decoder error"};            
+           });
+       } catch (error) {
+           logDebug(error);           
+       }
+       return {"error" : "decoder error"};            
+   };
+
+    createListQuery(input: string[], columnListString: string): string {
+        const tempList = columnListString.split("COLUMN");
+        return tempList[0].concat(_DOUBLEQUOTE, input.join(`"${tempList[1]}${tempList[0]}"`), _DOUBLEQUOTE, tempList[1]);
+    }
+
+    async add(dataInput: Object, silent?: boolean): Promise<IReturnResult | undefined> {
+        message(true, "OVERRIDE", messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));    
+        if (dataInput) dataInput = await this.prepareInputResult(dataInput);
+        
+
+
         function getDate(): string | undefined {
             if (dataInput["datetime"]) return String(dataInput["datetime"]);
             if (dataInput["timestamp"]) return String(dataInput["timestamp"]);
-         }
+        }
 
-         if (dataInput["MultiDatastream"]) {
-            if (!dataInput["deveui"] || dataInput["deveui"] == null) {
-                const errorMessage = "deveui is missing or Null";
+        if (isNotNull(dataInput["MultiDatastream"])) {
+           if (!isNotNull(dataInput["deveui"])) {
+               if (silent) 
+                    return this.createReturnResult({ body: messages.errors.deveuiMessage });
+                    else this.ctx.throw(400, { code: 400,  detail: messages.errors.deveuiMessage });
+           }
+           return await super.add(dataInput);
+        }
+
+        if (isNotNull(dataInput["Datastream"])) {
+            if (!isNotNull(dataInput["deveui"])) {
+               if (silent) 
+                    return this.createReturnResult({ body: messages.errors.deveuiMessage });
+                    else this.ctx.throw(400, { code: 400,  detail: messages.errors.deveuiMessage });
+           }
+           return await super.add(dataInput);
+        }
+
+        
+        if (!isNotNull(dataInput["deveui"])) {
+            if (silent) 
+                return this.createReturnResult({ body: messages.errors.deveuiMessage });
+                else this.ctx.throw(400, { code: 400,  detail: messages.errors.deveuiMessage });
+        }
+
+        if (isNotNull(dataInput["payload_deciphered"])) {
+            dataInput["decodedPayload"] = await this.decodeLoraPayload(Common.dbContext, dataInput["deveui"], dataInput["payload_deciphered"]);             
+            if (dataInput["decodedPayload"].error && !dataInput["data"]) {
+                if (silent) 
+                    return this.createReturnResult({ body: dataInput["decodedPayload"].error });
+                    else this.ctx.throw(400, { code: 400,  detail: dataInput["decodedPayload"].error });
+            };
+        }
+
+        const searchMulti = `(SELECT jsonb_agg(tmp.units -> 'name') AS keys 
+                                FROM ( SELECT jsonb_array_elements("unitOfMeasurements") AS units ) AS tmp) 
+                                    FROM "${ _DBDATAS.MultiDatastreams.table }" 
+                                    WHERE "${_DBDATAS.MultiDatastreams.table}".id = (
+                                        SELECT "${_DBDATAS.Loras.table}"."multidatastream_id" 
+                                        FROM "${_DBDATAS.Loras.table}" 
+                                        WHERE "${_DBDATAS.Loras.table}"."deveui" = '${dataInput["deveui"]}')`; 
+        const tempSql = await Common.dbContext.raw(`SELECT id, thing_id, ${searchMulti}`);
+        const multiDatastream = tempSql.rows[0];
+        let datastream = undefined;
+
+        if (!multiDatastream) {
+            
+           const tempSql = await Common.dbContext.raw(`SELECT id, thing_id FROM "${_DBDATAS.Datastreams.table}" WHERE "${_DBDATAS.Datastreams.table}".id = (SELECT "${_DBDATAS.Loras.table}"."datastream_id" FROM "${_DBDATAS.Loras.table}" WHERE "${_DBDATAS.Loras.table}"."deveui" = '${dataInput["deveui"]}')`);
+           datastream = tempSql.rows[0];
+           if (!datastream) {
+               const errorMessage = messages.errors.noStreamDeveui + dataInput["deveui"];
+               if (silent) return this.createReturnResult({ body: errorMessage });
+               else this.ctx.throw(404, { code: 404,  detail: errorMessage });
+           }
+        }
+
+        dataInput["formatedDatas"] = {};
+        // convert all keys in lowercase
+        if (isNotNull(dataInput["data"])) Object.keys(dataInput["data"]).forEach((key) => {
+            dataInput["formatedDatas"][key.toLowerCase()] = dataInput["data"][key];
+        });
+
+        if (!isNotNull(dataInput["formatedDatas"])) {
+            if (silent) 
+                 return this.createReturnResult({ body: messages.errors.dataMessage });
+                 else this.ctx.throw(400, { code: 400,  detail: messages.errors.dataMessage });
+        }
+      
+        dataInput["date"] = getDate();
+        if (!dataInput["date"]) {
+            if (silent) 
+                return this.createReturnResult({ body: messages.errors.noValidDate });
+                else this.ctx.throw(400, { code: 400,  detail: messages.errors.noValidDate });
+        }
+
+        if (multiDatastream) { 
+           message(true, "DEBUG", "multiDatastream", multiDatastream);
+           const listOfSortedValues: {[key: string]: number | null} = {};           
+           multiDatastream.keys.forEach((element: string) => {  
+               listOfSortedValues[element] = null;               
+               const searchStr = element
+               .toLowerCase()
+               .normalize("NFD")
+               .replace(/[\u0300-\u036f]/g, "");
+                   if (dataInput["formatedDatas"][searchStr]) listOfSortedValues[element] = dataInput["formatedDatas"][searchStr];
+                   else Object.keys(dataInput["formatedDatas"]).forEach((subElem: string) => {
+                       if (element.toUpperCase().includes(subElem.toUpperCase())) listOfSortedValues[element] = dataInput["formatedDatas"][subElem];
+                       else if(this.synonym[element]) this.synonym[element].forEach((key: string) => {
+                         if (key.toUpperCase().includes(subElem.toUpperCase())) listOfSortedValues[element] = dataInput["formatedDatas"][subElem];
+                        });
+                   }); 
+           }); 
+
+           message(true, "DEBUG", "Values", listOfSortedValues);
+    
+            // If all datas null
+            if (Object.values(listOfSortedValues).filter((word) => word != null).length < 1) {
+                const errorMessage = `${messages.errors.dataNotCorresponding} [${multiDatastream.keys}]`;
                 if (silent) return this.createReturnResult({ body: errorMessage });
                 else this.ctx.throw(400, { code: 400,  detail: errorMessage });
             }
-            return await super.add(dataInput);
-         }
-         if (dataInput["Datastream"]) {
-            if (!dataInput["deveui"] || dataInput["deveui"] == null) {
-                const errorMessage = "deveui is missing or Null";
-                if (silent) return this.createReturnResult({ body: errorMessage });
-                else this.ctx.throw(400, { code: 400,  detail: errorMessage });
-            }
-            return await super.add(dataInput);
-         }
-        if (!dataInput["deveui"] || dataInput["deveui"] == null) {
-            const errorMessage = "deveui is missing or Null";
-            if (silent) return this.createReturnResult({ body: errorMessage });
-            else this.ctx.throw(400, { code: 400,  detail: errorMessage });
-        }
-
-        if (!dataInput["data"] || dataInput["data"] == null) {
-            if (dataInput["payload_deciphered"] && dataInput["payload_deciphered"] != "") {
-                const decodeRaw = await this.decodeLoraPayload(Common.dbContext, dataInput["deveui"], dataInput["payload_deciphered"]);            
-                if (decodeRaw.error) {
-                   if (silent) return this.createReturnResult({ body: decodeRaw.error });
-                   else this.ctx.throw(404, { code: 404,  detail: decodeRaw.error });
-                }
-                dataInput["data"] = decodeRaw["messages"];
-            }
-            const errorMessage = "Data is missing or Null";
-            if (silent) return this.createReturnResult({ body: errorMessage });
-            else this.ctx.throw(400, { code: 400,  detail: errorMessage });
-        } else {
-            const decodeValue = await this.decodeLoraValues(Common.dbContext, dataInput["deveui"], dataInput["data"]);   
-            if (!decodeValue.error) dataInput["data"] = decodeValue;                
-        }
-         const searchMulti = `(select jsonb_agg(tmp.units -> 'name') as keys from ( select jsonb_array_elements("unitOfMeasurements") as units ) as tmp) FROM "${
-             _DBDATAS.MultiDatastreams.table
-         }" WHERE "${_DBDATAS.MultiDatastreams.table}".id = (SELECT "${_DBDATAS.Loras.table}"."multidatastream_id" FROM "${_DBDATAS.Loras.table}" WHERE "${_DBDATAS.Loras.table}"."deveui" = '${dataInput["deveui"]}')`;
-         // Get the multiDatastream
-         
-         const tempSql = await Common.dbContext.raw(`SELECT id, thing_id, ${searchMulti}`);
-         const multiDatastream = tempSql.rows[0];
-         let datastream = undefined;
- 
-         if (!multiDatastream) {
-            const tempSql = await Common.dbContext.raw(`SELECT id, thing_id FROM "${_DBDATAS.Datastreams.table}" WHERE "${_DBDATAS.Datastreams.table}".id = (SELECT "${_DBDATAS.Loras.table}"."datastream_id" FROM "${_DBDATAS.Loras.table}" WHERE "${_DBDATAS.Loras.table}"."deveui" = '${dataInput["deveui"]}')`);
-            datastream = tempSql.rows[0];
-            if (!datastream) {
-                const errorMessage = `No datastream or multiDatastream found for deveui ${dataInput["deveui"]}`;
-                if (silent) return this.createReturnResult({ body: errorMessage });
-                else this.ctx.throw(404, { code: 404,  detail: errorMessage });
-            }
-         }
- 
-         // convert all keys in lowercase
-         dataInput["data"] = Object.keys(dataInput["data"]).reduce((destination, key) => {
-             destination[key.toLowerCase()] = dataInput["data"][key];
-             return destination;
-         }, {});
- 
-         if (multiDatastream) { 
-            message(true, "DEBUG", "multiDatastream", multiDatastream);
-
-            const listOfSortedValues: number | null[] = [];
-            
-            multiDatastream.keys.forEach((element: string) => {                 
-                const searchStr = element
-                    .toLowerCase()
-                    .normalize("NFD")
-                    .replace(/[\u0300-\u036f]/g, "");
-                    if (dataInput["data"][searchStr]) listOfSortedValues.push(dataInput["data"][searchStr]);
-                    else  Object.keys(dataInput["data"]).forEach((pipo: string) => {
-                        if (element.toUpperCase().includes(pipo.toUpperCase())) listOfSortedValues.push(dataInput["data"][pipo]);
-                    });
-            }); 
-
-            message(true, "DEBUG", "Values", listOfSortedValues);
-     
-             // If all datas null
-             if (listOfSortedValues.filter((word) => word != null).length < 1) {
-                 const errorMessage = `Data not corresponding [${multiDatastream.keys}]`;
-                 if (silent) return this.createReturnResult({ body: errorMessage });
-                 else this.ctx.throw(400, { code: 400,  detail: errorMessage });
-             }
-     
-             if (listOfSortedValues.filter((word) => word != null).length < 1) {
-                 const errorMessage = "No Data correspondence found";
-                 if (silent) return this.createReturnResult({ body: errorMessage });
-                 else this.ctx.throw(400, { code: 400,  detail: errorMessage });
-             }
-     
-             const getFeatureOfInterest = getBigIntFromString(dataInput["FeatureOfInterest"]);
-
-             const searchFOI = await Common.dbContext.raw(
-                 getFeatureOfInterest
-                     ? `select coalesce((select "id" from "featureofinterest" where "id" = ${getFeatureOfInterest}), ${getFeatureOfInterest}) AS id `
-                     : `SELECT id FROM ${_DBDATAS.FeaturesOfInterest.table} WHERE id = (SELECT _default_foi FROM "${_DBDATAS.Locations.table}" WHERE id = (SELECT location_id FROM ${_DBDATAS.ThingsLocations.table} WHERE thing_id = (SELECT thing_id FROM ${_DBDATAS.MultiDatastreams.table} WHERE id =${multiDatastream.id})))`
-             );
-     
-             if (searchFOI["rows"].length < 1) {
-                 const errorMessage = "No featureofinterest found";
-                 if (silent) return this.createReturnResult({ body: errorMessage });
-                 else this.ctx.throw(400, { code: 400,  detail: errorMessage });
-             }
-     
-             const temp = listOfSortedValues;
-     
-             if (temp && typeof temp == "object") {
-                 const tempLength = Object.keys(temp).length;
-     
-                 message(true, "DEBUG", "data : Keys", `${tempLength} : ${multiDatastream.keys.length}`);
-                 if (tempLength != multiDatastream.keys.length) {
-                     const errorMessage = `Size of list of results (${tempLength}) is not equal to size of keys (${multiDatastream.keys.length})`;
-                     if (silent) return this.createReturnResult({ body: errorMessage });
-                     else this.ctx.throw(400, { code: 400,  detail: errorMessage });
-                    }
-                }
-            
-     
-             const insertObject = {
-                 "featureofinterest_id": "(select featureofinterest1.id from featureofinterest1)",
-                 "multidatastream_id": "(select multidatastream1.id from multidatastream1)",
-                 "phenomenonTime": `to_timestamp('${dataInput["timestamp"]}','YYYY-MM-DD HH24:MI:SS')::timestamp`,
-                 "resultTime": `to_timestamp('${dataInput["timestamp"]}','YYYY-MM-DD HH24:MI:SS')::timestamp`,
-                 "_resultnumbers": `array ${removeQuotes(JSON.stringify(listOfSortedValues))}`
-             };
-     
-             let searchDuplicate = "";
-             Object.keys(insertObject)
-                 .slice(0, -1)
-                 .forEach((elem: string) => {
-                     searchDuplicate = searchDuplicate.concat(`"${elem}" = ${insertObject[elem]} AND `);
-                 });
-     
-             searchDuplicate = searchDuplicate.concat(
-                 `"_resultnumbers" = '{${listOfSortedValues
-                     .map((elem) => {
-                         const tmp = JSON.stringify(elem);
-                         return tmp == "null" ? tmp : `${tmp}`;
-                     })
-                     .join(",")}}'::float8[]`
-             );
-     
-             const sql = `WITH "${_VOIDTABLE}" as (select srid FROM "${_VOIDTABLE}" LIMIT 1)
-                 , featureofinterest1 AS (SELECT id FROM "${_DBDATAS.FeaturesOfInterest.table}"
-                                          WHERE id = (SELECT _default_foi FROM "${_DBDATAS.Locations.table}" 
-                                          WHERE id = (SELECT location_id FROM "${_DBDATAS.ThingsLocations.table}" 
-                                          WHERE thing_id = (SELECT thing_id FROM "${_DBDATAS.MultiDatastreams.table}" 
-                                          WHERE id =${multiDatastream.id}))))
-                 , multidatastream1 AS (SELECT id, thing_id, ${searchMulti} LIMIT 1)
-                 , myValues ( "${Object.keys(insertObject).join(_QUOTEDCOMA)}") AS (values (${Object.values(insertObject).join()}))
-                 , searchDuplicate as (SELECT * FROM "${_DBDATAS.Observations.table}" WHERE ${searchDuplicate})
-                 , observation1 AS (INSERT INTO  "${_DBDATAS.Observations.table}" ("${Object.keys(insertObject).join(_QUOTEDCOMA)}") SELECT * FROM myValues
-                                  WHERE NOT EXISTS (SELECT * FROM searchDuplicate)
-                                 AND (select id from multidatastream1) IS NOT NULL
-                                 RETURNING *, _resultnumber AS result)
-                 , result1 as (select (select observation1.id from  observation1)
-                 , (select multidatastream1."keys" from multidatastream1)
-                 , (select searchDuplicate.id as duplicate from  searchDuplicate)
-                 , ${this.createListQuery(
-                     Object.keys(insertObject),
-                     "(select observation1.COLUMN from  observation1), "
-                 )} (select multidatastream1.id from  multidatastream1) as multidatastream, (select multidatastream1.thing_id from multidatastream1) as thing)
-                  SELECT coalesce(json_agg(t), '[]') AS result FROM result1 as t`;
-     
-     
-             this.logQuery(sql);
-             return await Common.dbContext
-                 .raw(sql)
-                 .then(async (res: any) => {
-                     const tempResult = res.rows[0].result[0];
-                     if (tempResult.id != null) {
-                         const _resultnumbers = {};
-                         tempResult.keys.forEach((elem: string, index: number) => {
-                             _resultnumbers[elem] = tempResult["_resultnumbers"][index];
-                         });
-                         const result = {
-                             "@iot.id": tempResult.id,
-                             "@iot.selfLink": `${this.ctx._odata.options.rootBase}Observations(${tempResult.id})`,
-                             "phenomenonTime": `"${tempResult.phenomenonTime}"`,
-                             "resultTime": `"${tempResult.resultTime}"`,
-                             result: _resultnumbers
-                         };
-     
-                         Object.keys(_DBDATAS["Observations"].relations).forEach((word) => {
-                             result[`${word}@iot.navigationLink`] = `${this.ctx._odata.options.rootBase}Observations(${tempResult.id})/${word}`;
-                         });
-     
-                         return this.createReturnResult({
-                             body: result,
-                             query: sql
-                         });
-                     } else {                    
-                        //  return await duplicate(tempResult.duplicate);
-                         const errorMessage = "Observation already exist";
-                         if (silent) return this.createReturnResult({ body: errorMessage });
-                         else this.ctx.throw(409, { code: 409, detail: errorMessage, link: `${this.ctx._odata.options.rootBase}Observations(${[tempResult.duplicate]})` });
-                     }
-                 });
-         } else if (datastream) { 
-            message(true, "DEBUG", "datastream", datastream);
-
     
             const getFeatureOfInterest = getBigIntFromString(dataInput["FeatureOfInterest"]);
-    
+
             const searchFOI = await Common.dbContext.raw(
                 getFeatureOfInterest
                     ? `select coalesce((select "id" from "featureofinterest" where "id" = ${getFeatureOfInterest}), ${getFeatureOfInterest}) AS id `
-                    : `SELECT id FROM ${_DBDATAS.FeaturesOfInterest.table} WHERE id = (SELECT _default_foi FROM "${_DBDATAS.Locations.table}" WHERE id = (SELECT location_id FROM ${_DBDATAS.ThingsLocations.table} WHERE thing_id = (SELECT thing_id FROM ${_DBDATAS.Datastreams.table} WHERE id =${datastream.id})))`
+                    : `SELECT id FROM ${_DBDATAS.FeaturesOfInterest.table} WHERE id = (SELECT _default_foi FROM "${_DBDATAS.Locations.table}" WHERE id = (SELECT location_id FROM ${_DBDATAS.ThingsLocations.table} WHERE thing_id = (SELECT thing_id FROM ${_DBDATAS.MultiDatastreams.table} WHERE id =${multiDatastream.id})))`
             );
     
             if (searchFOI["rows"].length < 1) {
-                const errorMessage = "No featureofinterest found";
-                if (silent) return this.createReturnResult({ body: errorMessage });
-                else this.ctx.throw(400, { code: 400,  detail: errorMessage });
+                if (silent) return this.createReturnResult({ body: messages.errors.noFoi });
+                else this.ctx.throw(400, { code: 400,  detail: messages.errors.noFoi });
             }
-            // dataInput["data"] = adam(dataInput["data"]);
+            const temp = listOfSortedValues;
+            if (temp && typeof temp == "object") {
+                const tempLength = Object.keys(temp).length;
     
-            message(true, "DEBUG", "value", dataInput["data"]);
-
-            const dataDate = getDate();
-            if (!dataDate) {
-                const errorMessage = "No valid date found";
-                if (silent) return this.createReturnResult({ body: errorMessage });
-                else this.ctx.throw(400, { code: 400,  detail: errorMessage });
-            }            
+                message(true, "DEBUG", "data : Keys", `${tempLength} : ${multiDatastream.keys.length}`);
+                if (tempLength != multiDatastream.keys.length) {
+                    const errorMessage = messagesReplace(messages.errors.sizeListKeys, [String(tempLength), multiDatastream.keys.length]);
+                    if (silent) return this.createReturnResult({ body: errorMessage });
+                    else this.ctx.throw(400, { code: 400,  detail: errorMessage });
+                   }
+               }
+    
             const insertObject = {
                 "featureofinterest_id": "(select featureofinterest1.id from featureofinterest1)",
-                "datastream_id": "(select datastream1.id from datastream1)",
-                "phenomenonTime": `to_timestamp('${dataDate}','YYYY-MM-DD HH24:MI:SS')::timestamp`,
-                "resultTime": `to_timestamp('${dataDate}','YYYY-MM-DD HH24:MI:SS')::timestamp`,
-                "_resultnumber": `${dataInput["data"]["value"]}`
+                "multidatastream_id": "(select multidatastream1.id from multidatastream1)",
+                "phenomenonTime": `to_timestamp('${dataInput["timestamp"]}','YYYY-MM-DD HH24:MI:SS')::timestamp`,
+                "resultTime": `to_timestamp('${dataInput["timestamp"]}','YYYY-MM-DD HH24:MI:SS')::timestamp`,
+                "_resultnumbers": `array ${removeQuotes(JSON.stringify(Object.values(listOfSortedValues)))}`
             };
     
-
-            
             let searchDuplicate = "";
             Object.keys(insertObject)
                 .slice(0, -1)
                 .forEach((elem: string) => {
                     searchDuplicate = searchDuplicate.concat(`"${elem}" = ${insertObject[elem]} AND `);
                 });
-                searchDuplicate = searchDuplicate.concat(
-                    `"_resultnumber" = ${dataInput["data"]["value"]}`
-                );
-                message(true, "DEBUG", "searchDuplicate", searchDuplicate);
+    
+            searchDuplicate = searchDuplicate.concat(
+                `"_resultnumbers" = '{${Object.values(listOfSortedValues)
+                    .map((elem) => {
+                        const tmp = JSON.stringify(elem);
+                        return tmp == "null" ? tmp : `${tmp}`;
+                    })
+                    .join(",")}}'::float8[]`
+            );
     
             const sql = `WITH "${_VOIDTABLE}" as (select srid FROM "${_VOIDTABLE}" LIMIT 1)
                 , featureofinterest1 AS (SELECT id FROM "${_DBDATAS.FeaturesOfInterest.table}"
                                          WHERE id = (SELECT _default_foi FROM "${_DBDATAS.Locations.table}" 
                                          WHERE id = (SELECT location_id FROM "${_DBDATAS.ThingsLocations.table}" 
-                                         WHERE thing_id = (SELECT thing_id FROM "${_DBDATAS.Datastreams.table}" 
-                                         WHERE id =${datastream.id}))))
-                , datastream1 AS (SELECT id, thing_id FROM "${_DBDATAS.Datastreams.table}" WHERE id =${datastream.id})
+                                         WHERE thing_id = (SELECT thing_id FROM "${_DBDATAS.MultiDatastreams.table}" 
+                                         WHERE id =${multiDatastream.id}))))
+                , multidatastream1 AS (SELECT id, thing_id, ${searchMulti} LIMIT 1)
                 , myValues ( "${Object.keys(insertObject).join(_QUOTEDCOMA)}") AS (values (${Object.values(insertObject).join()}))
                 , searchDuplicate as (SELECT * FROM "${_DBDATAS.Observations.table}" WHERE ${searchDuplicate})
                 , observation1 AS (INSERT INTO  "${_DBDATAS.Observations.table}" ("${Object.keys(insertObject).join(_QUOTEDCOMA)}") SELECT * FROM myValues
-                                 WHERE NOT EXISTS (SELECT * FROM searchDuplicate)
-                                AND (select id from datastream1) IS NOT NULL
-                                RETURNING *, _resultnumber AS result)
-                , result1 as (select (select observation1.id from  observation1)
-                , (select searchDuplicate.id as duplicate from  searchDuplicate)
+                                WHERE NOT EXISTS (SELECT * FROM searchDuplicate)
+                                AND (SELECT id FROM multidatastream1) IS NOT NULL
+                                RETURNING *, _resultnumbers AS result)
+                , result1 AS (SELECT (SELECT observation1.id FROM observation1)
+                , (SELECT multidatastream1."keys" FROM multidatastream1)
+                , (SELECT searchDuplicate.id AS duplicate FROM  searchDuplicate)
                 , ${this.createListQuery(
                     Object.keys(insertObject),
-                    "(select observation1.COLUMN from  observation1), "
-                )} (select datastream1.id from datastream1) as datastream, (select datastream1.thing_id from datastream1) as thing)
-                 SELECT coalesce(json_agg(t), '[]') AS result FROM result1 as t`;
-    
+                    "(SELECT observation1.COLUMN FROM observation1), "
+                )} (SELECT multidatastream1.id FROM multidatastream1) AS multidatastream, (SELECT multidatastream1.thing_id FROM multidatastream1) AS thing)
+                 SELECT coalesce(json_agg(t), '[]') AS result FROM result1 AS t`;
     
             this.logQuery(sql);
             return await Common.dbContext
@@ -345,12 +263,16 @@
                 .then(async (res: any) => {
                     const tempResult = res.rows[0].result[0];
                     if (tempResult.id != null) {
+                        const _resultnumbers = {};
+                        tempResult.keys.forEach((elem: string, index: number) => {
+                            _resultnumbers[elem] = tempResult["_resultnumbers"][index];
+                        });
                         const result = {
                             "@iot.id": tempResult.id,
                             "@iot.selfLink": `${this.ctx._odata.options.rootBase}Observations(${tempResult.id})`,
                             "phenomenonTime": `"${tempResult.phenomenonTime}"`,
                             "resultTime": `"${tempResult.resultTime}"`,
-                            result: tempResult._resultnumber
+                            result: _resultnumbers
                         };
     
                         Object.keys(_DBDATAS["Observations"].relations).forEach((word) => {
@@ -363,19 +285,98 @@
                         });
                     } else {                    
                        //  return await duplicate(tempResult.duplicate);
-                        const errorMessage = "Observation already exist";
-                        if (silent) return this.createReturnResult({ body: errorMessage });
-                        else this.ctx.throw(409, { code: 409, detail: errorMessage, link: `${this.ctx._odata.options.rootBase}Observations(${[tempResult.duplicate]})` });
+                        if (silent) return this.createReturnResult({ body: messages.errors.observationExist });
+                        else this.ctx.throw(409, { code: 409, detail: messages.errors.observationExist, link: `${this.ctx._odata.options.rootBase}Observations(${[tempResult.duplicate]})` });
                     }
                 });
-        }
+        } else if (datastream) { 
+           message(true, "DEBUG", "datastream", datastream);
+           const getFeatureOfInterest = getBigIntFromString(dataInput["FeatureOfInterest"]);
+           const searchFOI = await Common.dbContext.raw(
+               getFeatureOfInterest
+                   ? `SELECT coalesce((SELECT "id" FROM "featureofinterest" WHERE "id" = ${getFeatureOfInterest}), ${getFeatureOfInterest}) AS id `
+                   : `SELECT id FROM ${_DBDATAS.FeaturesOfInterest.table} WHERE id = (SELECT _default_foi FROM "${_DBDATAS.Locations.table}" WHERE id = (SELECT location_id FROM ${_DBDATAS.ThingsLocations.table} WHERE thing_id = (SELECT thing_id FROM ${_DBDATAS.Datastreams.table} WHERE id =${datastream.id})))`
+           );
+   
+           if (searchFOI["rows"].length < 1) {
+               if (silent) 
+                    return this.createReturnResult({ body: messages.errors.noFoi });
+                    else this.ctx.throw(400, { code: 400,  detail: messages.errors.noFoi });
+           }
 
+           const insertObject = {
+               "featureofinterest_id": "(select featureofinterest1.id from featureofinterest1)",
+               "datastream_id": "(select datastream1.id from datastream1)",
+               "phenomenonTime": `to_timestamp('${dataInput["date"]}','YYYY-MM-DD HH24:MI:SS')::timestamp`,
+               "resultTime": `to_timestamp('${dataInput["date"]}}','YYYY-MM-DD HH24:MI:SS')::timestamp`,
+               "_resultnumber": `${dataInput["decodedPayload"]["messages"][0]["measurementValue"]}`
+           };
+           let searchDuplicate = "";
+           Object.keys(insertObject)
+               .slice(0, -1)
+               .forEach((elem: string) => {
+                   searchDuplicate = searchDuplicate.concat(`"${elem}" = ${insertObject[elem]} AND `);
+               });
+               searchDuplicate = searchDuplicate.concat(
+                   `"_resultnumber" = ${insertObject["_resultnumber"]}`
+               );
+               message(true, "DEBUG", "searchDuplicate", searchDuplicate);
+   
+           const sql = `WITH "${_VOIDTABLE}" as (select srid FROM "${_VOIDTABLE}" LIMIT 1)
+               , featureofinterest1 AS (SELECT id FROM "${_DBDATAS.FeaturesOfInterest.table}"
+                                        WHERE id = (SELECT _default_foi FROM "${_DBDATAS.Locations.table}" 
+                                        WHERE id = (SELECT location_id FROM "${_DBDATAS.ThingsLocations.table}" 
+                                        WHERE thing_id = (SELECT thing_id FROM "${_DBDATAS.Datastreams.table}" 
+                                        WHERE id =${datastream.id}))))
+               , datastream1 AS (SELECT id, thing_id FROM "${_DBDATAS.Datastreams.table}" WHERE id =${datastream.id})
+               , myValues ( "${Object.keys(insertObject).join(_QUOTEDCOMA)}") AS (values (${Object.values(insertObject).join()}))
+               , searchDuplicate as (SELECT * FROM "${_DBDATAS.Observations.table}" WHERE ${searchDuplicate})
+               , observation1 AS (INSERT INTO  "${_DBDATAS.Observations.table}" ("${Object.keys(insertObject).join(_QUOTEDCOMA)}") SELECT * FROM myValues
+                                WHERE NOT EXISTS (SELECT * FROM searchDuplicate)
+                               AND (select id from datastream1) IS NOT NULL
+                               RETURNING *, _resultnumber AS result)
+               , result1 as (select (select observation1.id from  observation1)
+               , (select searchDuplicate.id as duplicate from  searchDuplicate)
+               , ${this.createListQuery(
+                   Object.keys(insertObject),
+                   "(select observation1.COLUMN from  observation1), "
+               )} (select datastream1.id from datastream1) as datastream, (select datastream1.thing_id from datastream1) as thing)
+                SELECT coalesce(json_agg(t), '[]') AS result FROM result1 as t`;
+   
+   
+           this.logQuery(sql);
+           return await Common.dbContext
+               .raw(sql)
+               .then(async (res: any) => {
+                   const tempResult = res.rows[0].result[0];
+                   if (tempResult.id != null) {
+                       const result = {
+                           "@iot.id": tempResult.id,
+                           "@iot.selfLink": `${this.ctx._odata.options.rootBase}Observations(${tempResult.id})`,
+                           "phenomenonTime": `"${tempResult.phenomenonTime}"`,
+                           "resultTime": `"${tempResult.resultTime}"`,
+                           result: tempResult._resultnumbers
+                       };
+   
+                       Object.keys(_DBDATAS["Observations"].relations).forEach((word) => {
+                           result[`${word}@iot.navigationLink`] = `${this.ctx._odata.options.rootBase}Observations(${tempResult.id})/${word}`;
+                       });
+   
+                       return this.createReturnResult({
+                           body: result,
+                           query: sql
+                       });
+                   } else {                    
+                      //  return await duplicate(tempResult.duplicate);
+                       if (silent) return this.createReturnResult({ body: messages.errors.observationExist });
+                       else this.ctx.throw(409, { code: 409, detail: messages.errors.observationExist, link: `${this.ctx._odata.options.rootBase}Observations(${[tempResult.duplicate]})` });
+                   }
+               });
+       }
+    }
 
-     }
- 
-     async update(idInput: bigint | string, dataInput: Object | undefined): Promise<IReturnResult | undefined> {
-         message(true, "OVERRIDE", this.constructor.name, "update");
-         return undefined;
-     }
- }
- 
+    async update(idInput: bigint | string, dataInput: Object | undefined): Promise<IReturnResult | undefined> {
+        message(true, "OVERRIDE", messagesReplace(messages.infos.classConstructor, [this.constructor.name, `update`]));
+        return undefined;
+    }
+}

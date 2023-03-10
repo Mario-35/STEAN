@@ -1,9 +1,13 @@
 import fs from "fs";
 import path from "path";
 import { db } from "../../server/db";
+import { IEntity } from "../../server/types";
 const conf = require("../../server/config/config.json");
 const apidocJson = require("../apidoc.json");
 export const identification = { "username": conf["test"]["test"].pg_user, "password": conf["test"]["test"].pg_password };
+
+let nb = 0;
+export function getNB(message: string): string {nb +=1; return `${message} ${String(nb)}`;} 
 
 // Institut Agro Rennes-Angers 48.1140652783794, -1.7062956999598533 
 export const geoPos: { [key: string]: number[] }  = {
@@ -158,7 +162,8 @@ export const generateApiDoc = (input: IApiDoc[], filename: string): boolean => {
         for (const [key, value] of Object.entries(element)) {
             if (key === "apiSuccess" && value) {
                 value.forEach((tab: string) => {
-                    lines.push(`*    @apiSuccess ${tab.replace("[", "").replace("]", "")}`);
+                    lines.push(`*    @apiSuccess ${tab}`);
+                    // lines.push(`*    @apiSuccess ${tab.replace("[", "").replace("]", "")}`);
                 });
             } else if (key === "apiParam" && value) {
                 value.forEach((tab: string) => {
@@ -211,7 +216,7 @@ export const generateApiDoc = (input: IApiDoc[], filename: string): boolean => {
     return true;
 };
 
-export const createListColumns = async (table: string, fn: any): Promise<void> => {
+export const createList_Columns = async (table: string, fn: any): Promise<void> => {
     const returnSuccess: string[] = [];
     const returnParam: string[] = [];
 
@@ -249,7 +254,7 @@ export const createListColumns = async (table: string, fn: any): Promise<void> =
                     : `{${type}} [${element["column_name"]}] ${element["description"]}`
             );
         }
-    });
+    });    
     fn(null, returnSuccess, returnParam);
 };
 export const addToFile = (requette: string): string => {
@@ -261,3 +266,30 @@ export const writeAddToFile = (): void => {
         encoding: "utf-8"
     });
 };
+
+export const listOfColumns = (inputEntity: IEntity) => {
+    const success:string[] = [];
+    const params:string[] = [];
+    Object.keys(inputEntity.columns).filter(e => !e.includes('_')).forEach((elem: string) => {
+        success.push(`{${inputEntity.columns[elem].type}} ${elem} ${elem}`);
+        if (inputEntity.columns[elem].create.includes("NOT NULL"))
+            params.push(`{${inputEntity.columns[elem].type}} ${elem} ${elem}`);
+            else if (!inputEntity.columns[elem].create.includes("GENERATED")) 
+            params.push(`{${inputEntity.columns[elem].type}} [${elem}] ${elem}`);
+    });
+    Object.keys(inputEntity.relations).forEach((elem: string) => {
+        success.push(`{relation} ${elem} ${elem}@iot.navigationLink`);
+        const temp =  (inputEntity.relations[elem].tableName == inputEntity.table) ? elem : `[${elem}]`;
+        params.push(`{relation} ${temp} ${elem}@iot.navigationLink`);
+    });
+    return {
+        success, params
+    }
+}
+
+export const limitResult = (input: object, keyName?: string) => {  
+    const key:string = keyName || "value";
+    // console.log(input["body"]);
+    if (input["body"][key]) input["body"][key] = [input["body"][key][0], input["body"][key][1], "..."];
+    return input;
+}

@@ -15,13 +15,15 @@ import {
     generateApiDoc,
     IApiInput,
     prepareToApiDoc,
-    createListColumns,
     identification,
     keyTokenName,
     defaultGet,
     defaultPost,
     defaultPatch,
-    defaultDelete
+    defaultDelete,
+    getNB,
+    listOfColumns,
+    limitResult
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
@@ -55,32 +57,19 @@ addToApiDoc({
 
 describe("endpoint : ObservedProperties", () => {
     let myId = "";
-    let success: string[] = [];
-    let params: string[] = [];
+    const temp = listOfColumns(entity);
+    const success = temp.success;
+    const params = temp.params;
     let token = "";
 
     before((done) => {
-        
-        createListColumns(entity.table, (err: any, valueSuccess: any, valueParam: any) => {
-            success = valueSuccess;
-            params = valueParam;
-            Object.keys(entity.relations).forEach((elem: string) => {
-                success.push(`{relation} [${elem}] ${elem}@iot.navigationLink`);
-                if (entity.relations[elem].tableName == entity.table) {
-                    params.push(`{relation} ${elem} ${elem}@iot.navigationLink`);
-                } else {
-                    params.push(`{relation} [${elem}] ${elem}@iot.navigationLink`);
-                }
+        chai.request(server)
+            .post("/test/v1.0/login")
+            .send(identification)
+            .end((err: any, res: any) => {
+                token = String(res.body["token"]);
+                done();
             });
-
-            chai.request(server)
-                .post("/test/v1.0/login")
-                .send(identification)
-                .end((err: any, res: any) => {
-                    token = String(res.body["token"]);
-                    done();
-                });
-        });
     });
 
     describe(`{get} ${entity.name}`, () => {
@@ -111,8 +100,7 @@ describe("endpoint : ObservedProperties", () => {
                             res.body.value.length.should.eql(nb);
                             res.body.should.include.keys("@iot.count", "value");
                             res.body.value[0].should.include.keys(testsKeys);
-                            res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                            addToApiDoc({ ...infos, result: res });
+                            addToApiDoc({ ...infos, result: limitResult(res) });
                             docs[docs.length - 1].apiErrorExample = JSON.stringify({ "code": 404, "message": "Not Found" }, null, 4);
                             done();
                         });
@@ -142,7 +130,7 @@ describe("endpoint : ObservedProperties", () => {
                     res.body["@iot.selfLink"].should.contain("/ObservedProperties(2)");
                     res.body["@iot.id"].should.eql(2);
                     res.body["Datastreams@iot.navigationLink"].should.contain("/ObservedProperties(2)/Datastreams");
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -185,7 +173,7 @@ describe("endpoint : ObservedProperties", () => {
                     res.body.value[0]["@iot.id"].should.eql(id);
                     res.body.value[0]["@iot.selfLink"].should.contain(`/ObservedProperties(${id})`);
                     res.body.value[0]["Datastreams@iot.navigationLink"].should.contain(`/ObservedProperties(${id})/Datastreams`);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -211,8 +199,7 @@ describe("endpoint : ObservedProperties", () => {
                     res.body.should.include.keys("Datastreams");
                     res.body.Datastreams[0].should.include.keys(datastreams_testsKeys);
                     res.body["@iot.id"].should.eql(1);
-                    res.body.Datastreams = [res.body.Datastreams[0], res.body.Datastreams[1], "..."];
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res, "Datastreams") });
                     done();
                 });
         });
@@ -237,7 +224,7 @@ describe("endpoint : ObservedProperties", () => {
                     res.type.should.equal("application/json");
                     Object.keys(res.body).length.should.eql(1);
                     res.body.should.include.keys("description");
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
 
@@ -319,7 +306,7 @@ describe("endpoint : ObservedProperties", () => {
     describe(`{post} ${entity.name} Create,`, () => {
         it("Return ObservedProperty Thing", (done) => {
             const datas = {
-                name: "Area Temperature",
+                name: `Area ${getNB(entity.name)}`,
                 description: "The degree or intensity of heat present in the area",
                 definition: "http://www.qudt.org/qudt/owl/1.0.0/quantity/Instances.html#AreaTemperature"
             };
@@ -346,7 +333,7 @@ describe("endpoint : ObservedProperties", () => {
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
                     res.body.should.include.keys(testsKeys);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -376,7 +363,7 @@ describe("endpoint : ObservedProperties", () => {
                     const itemObject = items[items.length - 1];
                     myId = itemObject.id;
                     const datas = {
-                        name: "New PM 2.5 Observation"
+                        name: `New PM 2.5 ${getNB(entity.name)}`,
                     };
                     const infos = {
                         api: `{patch} ${entity.name} Patch one`,
@@ -401,7 +388,7 @@ describe("endpoint : ObservedProperties", () => {
                             res.type.should.equal("application/json");
                             res.body.should.include.keys(testsKeys);
                             res.body.name.should.not.eql(itemObject.name);
-                            addToApiDoc({ ...infos, result: res });
+                            addToApiDoc({ ...infos, result: limitResult(res) });
                             done();
                         });
                 });
@@ -456,7 +443,7 @@ describe("endpoint : ObservedProperties", () => {
                                 .orderBy("id")
                                 .then((newItems) => {
                                     newItems.length.should.eql(lengthBeforeDelete - 1);
-                                    addToApiDoc({ ...infos, result: res });
+                                    addToApiDoc({ ...infos, result: limitResult(res) });
                                     done();
                                 });
                         });

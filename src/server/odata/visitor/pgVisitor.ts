@@ -10,6 +10,8 @@ import { logDebug, message } from "../../logger";
 import { createGetSql, createPostSql, oDatatoDate } from "./helper";
 import { Knex } from "knex";
 import { _CONFIGS, _CONFIGURATION } from "../../configuration";
+import { messages } from "../../messages/";
+
 
 export interface PGQuery {
     from: string;
@@ -85,10 +87,10 @@ export class PgVisitor {
         // TODO REMOVE AFTER ALL 
         
         if (this.entity.toUpperCase() === "LORA") this.setEntity("Loras");
+       
         if (this.parentEntity) {
-            if (!_DBDATAS[this.parentEntity].relations[this.entity])  ctx.throw(404, { detail:`Invalid path ${this.entity.trim()}` }); 
-            
-        } else if (!_DBDATAS[this.entity])  ctx.throw(404, { detail:`Invalid path ${this.entity.trim()}` }); 
+            if (!_DBDATAS[this.parentEntity].relations[this.entity])  ctx.throw(40, { detail: messages.errors.invalidPath + this.entity.trim() }); 
+        } else if (!_DBDATAS[this.entity])  ctx.throw(404, { detail: messages.errors.invalidPath + this.entity.trim() }); 
     
     }
 
@@ -158,7 +160,7 @@ export class PgVisitor {
                     this.select = node.raw; 
                     this.showRelations = false;
                     // SPACE IS VERY IMPORTANT TO PROVOQUE ERROR
-            } else this.entity = ` ${node.raw}`;
+            } else this.entity = node.raw;
         }    
     }
 
@@ -213,7 +215,7 @@ export class PgVisitor {
             
             this.select.split(",").filter((e:string) => e.trim() != "").forEach((element:string) => {
                 const test = removeQuotes(element);   
-                if (!cols.includes(test) && test !== "result")  ctx.throw(404, { detail:`Invalid name ${test}` });   
+                if (!cols.includes(test) && test !== "result")  ctx.throw(404, {  detail: messages.errors.invalidName +  test} );   
             }); 
         }
         const expands: string[] = [];
@@ -226,19 +228,19 @@ export class PgVisitor {
             elems.unshift(this.entity);     
             if(elems[0]) {            
                 if (!Object.keys(_DBDATAS[elems[0]].relations).includes(elems[1]) )  ctx.throw(400, { detail:`Invalid expand path ${elems[1]} for ${elems[0]}` });  
-            }  else  ctx.throw(400, { detail:`Invalid entity ${elems[0]}` });  
+            }  else  ctx.throw(400, { detail: messages.errors.invalidEntity + elems[0] });  
         });    
         
         if(isObservation(this.entity) === true && this.splitResult !== undefined && Number(this.parentId) == 0) {
-            ctx.throw(400, { detail:`Split result not allowed for Observations entity use /Datastreams/Observations or /MultiDatastreams/Observations` }); 
+            ctx.throw(400, { detail: messages.errors.splitNotAllowed }); 
         }
 
         if(this.entity === _DBDATAS.MultiDatastreams.name && this.timeSeries !== undefined) {
-            if (!this.splitResult || this.splitResult.length !== 1 ||  this.splitResult[0].toUpperCase() === 'ALL')  ctx.throw(400, { detail:`You must use SplitResult to identify one key result` }); 
+            if (!this.splitResult || this.splitResult.length !== 1 ||  this.splitResult[0].toUpperCase() === 'ALL')  ctx.throw(400, { detail: messages.errors.splitKey }); 
         }
         
         if(this.resultFormat === returnFormats.dataArray && BigInt(this.id) > 0 && !this.parentEntity ) {
-            ctx.throw(400, { detail: `DataArray not allowed` }); 
+            ctx.throw(400, { detail: messages.errors.dataArrayNotAllowed }); 
 
         }
         // ctx._log = this.log;

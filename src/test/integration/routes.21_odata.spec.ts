@@ -10,7 +10,7 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet } from "./constant";
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
 import { testsKeys as things_testsKeys } from "./routes.04_things.spec";
@@ -68,7 +68,7 @@ describe("Odata", () => {
                 res.body.Datastreams.length.should.eql(3);
                 res.body.Datastreams[0].should.include.keys(datastreams_testsKeys);
                 res.body["@iot.id"].should.eql(6);
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -102,7 +102,7 @@ describe("Odata", () => {
                 res.body.Datastreams[1].should.include.keys("Sensor");
                 res.body.Datastreams[1].Sensor.should.include.keys(sensors_testsKeys);
 
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -131,7 +131,7 @@ describe("Odata", () => {
                 res.body.should.include.keys(things_testsKeys.filter((elem) => elem !== "MultiDatastreams@iot.navigationLink"));
                 res.body.should.include.keys("MultiDatastreams");
                 res.body.MultiDatastreams.length.should.eql(0);
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -161,7 +161,7 @@ describe("Odata", () => {
                 res.body.should.include.keys("Observations");
                 res.body.Observations.length.should.eql(1);
                 res.body.Observations[0]["@iot.id"].should.eql(7);
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -191,7 +191,7 @@ describe("Odata", () => {
                 res.body.value[0].should.include.keys("Observations");
                 res.body.value[0].Observations.length.should.eql(10);
                 Object.keys(res.body.value[0].Observations[0]).length.should.eql(2);
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -214,7 +214,7 @@ describe("Odata", () => {
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.should.include.keys("description");
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -243,8 +243,7 @@ describe("Odata", () => {
                         res.body.value.length.should.eql(nb);
                         res.body.should.include.keys("@iot.count", "value");
                         res.body.value[0].should.include.keys("description", "name");
-                        res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                        addToApiDoc({ ...infos, result: res });
+                        addToApiDoc({ ...infos, result: limitResult(res) });
                         done();
                     });
             });
@@ -275,8 +274,7 @@ describe("Odata", () => {
                         res.body.value.length.should.eql(nb);
                         res.body.should.include.keys("@iot.count", "value");
                         res.body.value[0].should.include.keys("description", "name");
-                        res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                        addToApiDoc({ ...infos, result: res });
+                        addToApiDoc({ ...infos, result: limitResult(res) });
                         done();
                     });
             });
@@ -301,8 +299,7 @@ describe("Odata", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(5);
                 res.body.should.include.keys("@iot.count", "value");
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -330,8 +327,7 @@ describe("Odata", () => {
                         res.type.should.equal("application/json");
                         res.body.value.length.should.eql(nb - 3);
                         res.body.should.include.keys("@iot.count", "value");
-                        res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                        addToApiDoc({ ...infos, result: res });
+                        addToApiDoc({ ...infos, result: limitResult(res) });
                         done();
                     });
             });
@@ -358,8 +354,7 @@ describe("Odata", () => {
                     res.type.should.equal("application/json");
                     res.body.value.length.should.eql(3);
                     res.body.should.include.keys("@iot.count", "value");
-                    res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -385,8 +380,7 @@ describe("Odata", () => {
                     res.type.should.equal("application/json");
                     res.body.value.length.should.eql(37);
                     res.body.should.include.keys("@iot.count", "value");
-                    res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -413,8 +407,7 @@ describe("Odata", () => {
                     res.type.should.equal("application/json");
                     res.body.value.length.should.eql(33);
                     res.body.should.include.keys("@iot.count", "value");
-                    res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -441,8 +434,7 @@ describe("Odata", () => {
                     res.type.should.equal("application/json");
                     res.body.value.length.should.eql(4);
                     res.body.should.include.keys("@iot.count", "value");
-                    res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -470,8 +462,7 @@ describe("Odata", () => {
                     res.type.should.equal("application/json");
                     res.body.value.length.should.eql(nb);
                     res.body.should.include.keys("@iot.count", "value");
-                    res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -497,7 +488,7 @@ describe("Odata", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -522,7 +513,7 @@ describe("Odata", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -547,7 +538,7 @@ describe("Odata", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -573,7 +564,7 @@ describe("Odata", () => {
                 res.body.value.length.should.eql(1);
                 res.body.should.include.keys("@iot.count", "value");
                 res.body.value[0]["@iot.id"].should.eql(10);
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -584,7 +575,7 @@ describe("Odata", () => {
             apiName: "OdataFilterOr",
             apiDescription: "Use filter with OR",
             apiReference:"http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
-            apiExample: { http: "/v1.0/Things?$filter=name eq 'SensorWebThing 9' or description eq 'A SensorWeb thing'",
+            apiExample: { http: "/v1.0/Things?$filter=name eq 'SensorWebThing 9' or description eq 'A New SensorWeb thing'",
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP")  }
@@ -598,7 +589,7 @@ describe("Odata", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -623,7 +614,7 @@ describe("Odata", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -648,7 +639,7 @@ describe("Odata", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -673,7 +664,7 @@ describe("Odata", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -698,7 +689,7 @@ describe("Odata", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -726,7 +717,7 @@ describe("Odata", () => {
                 res.body.value[0]["result"].should.eql(92);
                 res.body.value[0]["resultTime"].should.contains("2017-02-13");
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -751,7 +742,7 @@ describe("Odata", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });

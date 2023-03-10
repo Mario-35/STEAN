@@ -96,7 +96,7 @@ const _returnFormats: { [key in FORMATS]: IreturnFormat } = {
       type: "text/csv",
       format :(input: string | Object) => {
         const opts = { delimiter: ";", includeEmptyRows: true, escapedQuote: "",header: false};            
-        if (input)
+        if (input && input[0].dataArray)
         try {
           const parser = new Parser(opts);
           input[0].dataArray.unshift(input[0].component);

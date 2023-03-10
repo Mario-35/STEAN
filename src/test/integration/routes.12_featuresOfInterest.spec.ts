@@ -14,13 +14,14 @@ import {
     generateApiDoc,
     IApiInput,
     prepareToApiDoc,
-    createListColumns,
     identification,
     keyTokenName,
     defaultGet,
     defaultPost,
     defaultPatch,
-    defaultDelete
+    defaultDelete,
+    listOfColumns,
+    limitResult
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
@@ -50,32 +51,20 @@ addToApiDoc({
 });
 
 describe("endpoint : Features of Interest", () => {
-    let success: string[] = [];
-    let params: string[] = [];
+    const temp = listOfColumns(entity);
+    const success = temp.success;
+    const params = temp.params;
     let myId = "";
     let token = "";
 
     before((done) => {
-        
-        createListColumns(entity.table, (err: any, valueSuccess: any, valueParam: any) => {
-            success = valueSuccess;
-            params = valueParam;
-            Object.keys(entity.relations).forEach((elem: string) => {
-                success.push(`{relation} [${elem}] ${elem}@iot.navigationLink`);
-                if (entity.relations[elem].tableName == entity.table) {
-                    params.push(`{relation} ${elem} ${elem}@iot.navigationLink`);
-                } else {
-                    params.push(`{relation} [${elem}] ${elem}@iot.navigationLink`);
-                }
+        chai.request(server)
+            .post("/test/v1.0/login")
+            .send(identification)
+            .end((err: any, res: any) => {
+                token = String(res.body["token"]);
+                done();
             });
-            chai.request(server)
-                .post("/test/v1.0/login")
-                .send(identification)
-                .end((err: any, res: any) => {
-                    token = String(res.body["token"]);
-                    done();
-                });
-        });
     });
 
     describe(`{get} ${entity.name}`, () => {
@@ -106,8 +95,7 @@ describe("endpoint : Features of Interest", () => {
                             res.body.value.length.should.eql(nb);
                             res.body.should.include.keys("@iot.count", "value");
                             res.body.value[0].should.include.keys(testsKeys);
-                            res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                            addToApiDoc({ ...infos, result: res });
+                            addToApiDoc({ ...infos, result: limitResult(res) });
                             docs[docs.length - 1].apiErrorExample = JSON.stringify({ "code": 404, "message": "Not Found" }, null, 4);
                             done();
                         });
@@ -132,7 +120,7 @@ describe("endpoint : Features of Interest", () => {
                     res.body["@iot.selfLink"].should.contain("/FeaturesOfInterest(1)");
                     res.body["@iot.id"].should.eql(1);
                     res.body["Observations@iot.navigationLink"].should.contain("/FeaturesOfInterest(1)/Observations");
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -166,8 +154,7 @@ describe("endpoint : Features of Interest", () => {
                     res.body.should.include.keys("Observations");
                     res.body.Observations[0].should.include.keys(observations_testsKeys);
                     res.body["@iot.id"].should.eql(1);
-                    res.body.Observations = [res.body.Observations[0], res.body.Observations[1], "..."];
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res, "Observations") });
                     done();
                 });
         });
@@ -241,7 +228,7 @@ describe("endpoint : Features of Interest", () => {
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
                     res.body.should.include.keys(testsKeys);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -365,7 +352,7 @@ describe("endpoint : Features of Interest", () => {
                                 .orderBy("id")
                                 .then((updatedThings) => {
                                     updatedThings.length.should.eql(lengthBeforeDelete - 1);
-                                    addToApiDoc({ ...infos, result: res });
+                                    addToApiDoc({ ...infos, result: limitResult(res) });
                                     done();
                                 });
                         });

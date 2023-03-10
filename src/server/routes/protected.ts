@@ -23,6 +23,7 @@ import { queryHtmlPage } from "../views/query";
 import { createOdata } from "../odata";
 import { db } from "../db";
 import { _CONFIGURATION } from "../configuration";
+import { messages } from "../messages";
 
 export const protectedRoutes = new Router<DefaultState, Context>();
 
@@ -36,7 +37,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
                     if (ctx.request.header.accept && ctx.request.header.accept.includes("text/html")) ctx.redirect(`${ctx._rootName}Status`);
                     else
                         ctx.body = {
-                            message: "login succeeded",
+                            message: messages.infos.loginOk,
                             user: user.username,
                             token: user.token
                         };
@@ -52,29 +53,29 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
             const why: {[key: string]: string} = {};
             // Username
             if (isObject && body["username"].trim() === "") {
-                why["username"] = "Empty username";
+                why["username"] = messages.errors.emptyUsername;
             } else {
                 const user = await db["admin"].table("user").select("username").where({ username: ctx.request.body["username"] }).first();
-                if (user) why["username"] = "Already present";
+                if (user) why["username"] = messages.errors.alreadyPresent;
             }
             // Email
             if (isObject && body["email"].trim() === "") {
-                why["email"] = "Empty email";
+                why["email"] = messages.errors.emptyEmail;
             } else {
-                if (emailIsValid(body["email"]) === false) why["email"] = "Invalid email";
+                if (emailIsValid(body["email"]) === false) why["email"] = messages.errors.invalidEmail;
             }
             // Password
             if (isObject && body["password"].trim() === "") {
-                why["password"] = "Empty password";
+                why["password"] = messages.errors.emptyPass;
             }
             // Repeat password
             if (isObject && (body["repeat"] as string).trim() === "") {
-                why["repeat"] = "Empty repeat password";
+                why["repeat"] = messages.errors.emptyRepeatPass;
             } else {
                 if (body["password"] != body.repeat) {
-                    why["repeat"] = "Password are different";
+                    why["repeat"] = messages.errors.differentPass;
                 } else {
-                    if (checkPassword(body["password"]) === false) why["password"] = "Invalid password";
+                    if (checkPassword(body["password"]) === false) why["password"] = messages.errors.invalidPass;
                 }
             }
 
@@ -120,7 +121,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
                 }
             } else ctx.throw(400);
         } else if (ctx.request.type.startsWith("multipart/form-data")) {
-            // If upload datas
+            // If upload datas            
             const getDatas = async (): Promise<{[key: string]: string}> => {
                 message(true, "HEAD", "getDatas ...");
                 return new Promise(async (resolve, reject) => {
@@ -159,30 +160,9 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
                     ctx.throw(400);
                 }
             }
-                // case "CREATEFILE":
-                //     const objectAccess = new apiAccess(ctx);
-                //     const returnValue: IReturnResult | undefined | void = await objectAccess.add();                        
-                //     if (ctx._datas) fs.unlinkSync(ctx._datas.file);
-                //     if (returnValue) {
-                //         if (ctx._datas["source"] == "query") {
-                //             const temp = await createIqueryFromContext(ctx);
-                //             ctx.type = "html";
-                //             ctx.body = queryHtmlPage({
-                //                 ...temp,
-                //                 results: JSON.stringify({ added: returnValue.total, value: returnValue.body })
-                //             });
-                //         } else {
-                //             returnFormats.json.type;
-                //             ctx.status = 201;
-                //             ctx.body = returnValue.body ? returnValue.body : returnValue.body;
-                //         }
-                //     } else {
-                //         ctx.throw(400);
-                //     }
-                // return;
         } else {
             // payload is malformed
-            ctx.throw(400, { details: "Payload is malformed" });
+            ctx.throw(400, { details: messages.errors.payloadIsMalformed });
         }
     } else {
         ctx.throw(401);
@@ -205,7 +185,7 @@ protectedRoutes.patch("/(.*)", async (ctx) => {
                     ctx.body = returnValue.body;
                 }
             } else {
-                ctx.throw(400, { detail: "Id is required" });
+                ctx.throw(400, { detail: messages.errors.idRequired });
             }
         } else {
             ctx.throw(404);
@@ -230,7 +210,7 @@ protectedRoutes.delete("/(.*)", async (ctx) => {
                     ctx.status = 204;
                 }
             } else {
-                ctx.throw(400, { detail: "Id is required" });
+                ctx.throw(400, { detail: messages.errors.idRequired });
             }
         } else {
             ctx.throw(404);

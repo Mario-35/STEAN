@@ -15,13 +15,14 @@ import {
     generateApiDoc,
     IApiInput,
     prepareToApiDoc,
-    createListColumns,
     identification,
     keyTokenName,
     defaultDelete,
     defaultPatch,
     defaultPost,
-    defaultGet
+    defaultGet,
+    listOfColumns,
+    limitResult
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
@@ -68,31 +69,19 @@ let firstID = 0;
 
 describe("endpoint : Observations", () => {
     let myId = "";
-    let success: string[] = [];
-    let params: string[] = [];
+    const temp = listOfColumns(entity);
+    const success = temp.success;
+    const params = temp.params;
     let token = "";
 
     before((done) => {
-        
-        createListColumns(entity.table, (err: any, valueSuccess: any, valueParam: any) => {
-            success = valueSuccess;
-            params = valueParam;
-            Object.keys(entity.relations).forEach((elem: string) => {
-                success.push(`{relation} [${elem}] ${elem}@iot.navigationLink`);
-                if (entity.relations[elem].tableName == entity.table) {
-                    params.push(`{relation} ${elem} ${elem}@iot.navigationLink`);
-                } else {
-                    params.push(`{relation} [${elem}] ${elem}@iot.navigationLink`);
-                }
+        chai.request(server)
+            .post("/test/v1.0/login")
+            .send(identification)
+            .end((err: any, res: any) => {
+                token = String(res.body["token"]);
+                done();
             });
-            chai.request(server)
-                .post("/test/v1.0/login")
-                .send(identification)
-                .end((err: any, res: any) => {
-                    token = String(res.body["token"]);
-                    done();
-                });
-        });
     });
 
     describe(`{get} ${entity.name}`, () => {
@@ -123,8 +112,7 @@ describe("endpoint : Observations", () => {
                             res.body.value.length.should.eql(nb);
                             res.body.should.include.keys("@iot.count", "value");
                             res.body.value[0].should.include.keys(testsKeys);
-                            res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                            addToApiDoc({ ...infos, result: res });
+                            addToApiDoc({ ...infos, result: limitResult(res) });
                             firstID = res.body.value[0]["@iot.id"];
                             docs[docs.length - 1].apiErrorExample = JSON.stringify({ "code": 404, "message": "Not Found" }, null, 4);
                             done();
@@ -155,7 +143,7 @@ describe("endpoint : Observations", () => {
                     res.body["@iot.selfLink"].should.contain(`/Observations(${firstID})`);
                     res.body["@iot.id"].should.eql(firstID);
                     res.body["Datastream@iot.navigationLink"].should.contain(`/Observations(${firstID})/Datastream`);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -191,9 +179,7 @@ describe("endpoint : Observations", () => {
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
                     res.body.should.include.keys("value");
-
-                    res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -219,7 +205,7 @@ describe("endpoint : Observations", () => {
         //             res.body.should.include.keys("value");
         //             res.body.value.length.should.eql(3);
         //             res.body.value[0]["@iot.selfLink"].should.contain("/Observations(8)");
-        //             addToApiDoc({ ...infos, result: res });
+        //             addToApiDoc({ ...infos, result: limitResult(res) });
         //             done();
         //         });
         // });
@@ -246,7 +232,7 @@ describe("endpoint : Observations", () => {
                     res.body.should.include.keys("Datastream");
                     res.body.Datastream.should.include.keys(Datastreams_testsKeys);
                     res.body["@iot.id"].should.eql(1);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -272,7 +258,7 @@ describe("endpoint : Observations", () => {
                     Object.keys(res.body).length.should.eql(2);
                     res.body.should.include.keys("phenomenonTime");
                     res.body.should.include.keys("result");
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -298,7 +284,7 @@ describe("endpoint : Observations", () => {
                     res.body.result.should.include.keys("Humidity");
                     res.body.result.should.include.keys("Temperature");
                     res.body.result.should.include.keys("Battery");
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -336,7 +322,7 @@ describe("endpoint : Observations", () => {
                     res.body.value[0].should.include.keys("temperature");
                     temp = res.body.value[0]["temperature"];
                     res.body.value[0].should.include.keys("battery");
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -363,7 +349,7 @@ describe("endpoint : Observations", () => {
                     Object.keys(res.body).length.should.eql(2);
                     res.body.value[0].should.include.keys("result");
                     res.body.value[0]["result"].should.eql(temp);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -401,7 +387,7 @@ describe("endpoint : Observations", () => {
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
                     res.body.should.include.keys(testsKeys);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -459,7 +445,7 @@ describe("endpoint : Observations", () => {
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
                     res.body.should.include.keys(testsKeys);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -492,7 +478,7 @@ describe("endpoint : Observations", () => {
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
                     res.body.should.include.keys(testsKeys);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -503,7 +489,7 @@ describe("endpoint : Observations", () => {
                 "resultTime": "2017-02-07T18:02:05.000Z",
                 "result": 21.6,
                 "FeatureOfInterest": {
-                    "name": "Au Comptoir Vénitien (Created new location)",
+                    "name": "Au Comptoir Vénitien [7]",
                     "description": "Au Comptoir Vénitien",
                     "encodingType": "application/vnd.geo+json",
                     "feature": {
@@ -539,7 +525,7 @@ describe("endpoint : Observations", () => {
                         .raw("select id from observation where featureofinterest_id = (select id from featureofinterest order by id desc limit 1);")
                         .then((testRes) => {
                             testRes.rows[0].id.should.eql(String(observationId));
-                            addToApiDoc({ ...infos, result: res });
+                            addToApiDoc({ ...infos, result: limitResult(res) });
                             done();
                         })
                         .catch((e) => console.log(e));
@@ -556,7 +542,7 @@ describe("endpoint : Observations", () => {
                     "battery": 10.3
                 },
                 "FeatureOfInterest": {
-                    "name": "Au Comptoir Vénitien (Created new location)",
+                    "name": "Au Comptoir Vénitien [8]",
                     "description": "Au Comptoir Vénitien",
                     "encodingType": "application/vnd.geo+json",
                     "feature": {
@@ -603,7 +589,7 @@ describe("endpoint : Observations", () => {
                     "humidity": 10.2
                 },
                 "FeatureOfInterest": {
-                    "name": "Au Comptoir Vénitien (Created new location)",
+                    "name": "Au Comptoir Vénitien[9]",
                     "description": "Au Comptoir Vénitien",
                     "encodingType": "application/vnd.geo+json",
                     "feature": {
@@ -675,7 +661,7 @@ describe("endpoint : Observations", () => {
                             res.body.should.include.keys(testsKeys);
                             const newItems = res.body;
                             newItems.resultTime.should.not.eql(itemObject.resultTime);
-                            addToApiDoc({ ...infos, result: res });
+                            addToApiDoc({ ...infos, result: limitResult(res) });
                             done();
                         });
                 });
@@ -736,7 +722,7 @@ describe("endpoint : Observations", () => {
                             res.body.should.include.keys(testsKeys);
                             const newItems = res.body;
                             newItems.result.should.not.eql(itemObject.result);
-                            addToApiDoc({ ...infos, result: res });
+                            addToApiDoc({ ...infos, result: limitResult(res) });
                             done();
                         });
                 });
@@ -775,7 +761,7 @@ describe("endpoint : Observations", () => {
                                 .orderBy("id")
                                 .then((newItems) => {
                                     newItems.length.should.eql(lengthBeforeDelete - 1);
-                                    addToApiDoc({ ...infos, result: res });
+                                    addToApiDoc({ ...infos, result: limitResult(res) });
                                     done();
                                 });
                         });

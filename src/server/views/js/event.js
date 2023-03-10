@@ -112,12 +112,7 @@
     two.classList.remove("scrolling");
     
     const temp = createUrl();
-    let url = temp.direct;
-    
-    const query = queryOptions.value;
-     
-    
-    
+    let url = temp.direct;   
     
     switch (method.value) {
       case "GET":
@@ -128,13 +123,12 @@
         if (queryResultFormat.value === "graph") url=url.replace("resultFormat=graph","resultFormat=graphDatas");
         const jsonObj = await getFetchDatas(url, queryResultFormat.value);
         try {
-          if (query && queryResultFormat.value === "sql") 
+          if (queryResultFormat.value === "sql") 
             updateWinSqlQuery(jsonObj);
-          else if (query && queryResultFormat.value === "csv") 
+          else if (queryResultFormat.value === "csv") 
             updateWinCsvResult(jsonObj);
-          else if (query && queryResultFormat.value === "graph")   {
-            showGraph(jsonObj);
-          }        
+          else if (queryResultFormat.value === "graph")   
+            showGraph(jsonObj);   
           else updateWinJsonResult(jsonObj, `[${method.value}]:${url}`);     
         } catch (err) {
           notifyError("Error", err);
@@ -321,32 +315,6 @@
       addToResultList("-->", plus);
     }
   };
-
-  
-  btnLoraShowLogs.onclick = async (e) => {
-    updateWinResult(`<div class="json-viewer"><ul id="listResult" class="json-dict"><li data-key-type="object">url: <span class="json-literal">response</span></li></ul></div>`);
-
-    // if (e) e.preventDefault();
-    // wait(true);
-    // let url = `${optHost.value}/${optVersion.value}/`;
-    // if(replayId.value.startsWith("where")) {
-    //   const encoded = btoa(`select * from "log_request" ${replayId.value}`)
-    //   url +=  `Sql?$query=${encoded}`;
-    // } else {
-    //   url +=  `Logs?$filter=method eq 'POST'`;
-    //   if(replayId.value != "")  url += ` and datas/deveui eq '${replayId.value}'`;
-    //   url += ` and code eq 404 and entityid eq null`;
-    //   url += `&$orderby=date desc&$top=200000`;
-    //   url = addDebug(url);
-    // }
-    // try {
-    //   const jsonObj = await getFetchDatas(url, "json");
-    //   wait(false);
-    //   updateWinJsonResult(jsonObj, `[${method.value}]:${url}`); 
-    // } catch (err) {
-    //   notify("Error", err.message);
-    // }        
-  };
   
   btnLoraLogs.onclick = async (e) => {
     if (e) e.preventDefault();
@@ -379,7 +347,7 @@
     } else {
       url +=  `Logs?$filter=method eq 'POST'`;
       if(replayId.value != "")  url += ` and datas/deveui eq '${replayId.value}'`;
-      url += ` and code eq 404 and entityid eq null`;
+      url += ` and code eq 404 and code eq 400 and entityid eq null`;
       url += `&$orderby=date desc&$top=200000`;
       url = addDebug(url);
       const jsonObj = await getFetchDatas(url, "json");

@@ -15,13 +15,15 @@ import {
     generateApiDoc,
     IApiInput,
     prepareToApiDoc,
-    createListColumns,
     identification,
     keyTokenName,
     defaultPost,
     defaultPatch,
     defaultDelete,
-    defaultGet
+    defaultGet,
+    getNB,
+    listOfColumns,
+    limitResult
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
@@ -61,24 +63,25 @@ const _PARAMS: string[] = [
 
 describe("endpoint : Sensors", () => {
     let myId = "";
-    let columns: string[] = [];
+    const temp = listOfColumns(entity);
+    const success = temp.success;
+    // const params = temp.params;
     let token = "";
 
     before((done) => {
         
-        createListColumns(entity.table, (err: any, value: any) => {
-            columns = ["{number} id @iot.id", "{relation} selfLink @iot.selfLink", ...value];
-            Object.keys(entity.relations).forEach((elem: string) => {
-                columns.push(`{relation} ${elem} ${elem}@iot.navigationLink`);
+    //     createListColumns(entity.table, (err: any, value: any) => {
+    //         columns = ["{number} id @iot.id", "{relation} selfLink @iot.selfLink", ...value];
+    //         Object.keys(entity.relations).forEach((elem: string) => {
+    //             columns.push(`{relation} ${elem} ${elem}@iot.navigationLink`);
+    //         });
+        chai.request(server)
+            .post("/test/v1.0/login")
+            .send(identification)
+            .end((err: any, res: any) => {
+                token = String(res.body["token"]);
+                done();
             });
-            chai.request(server)
-                .post("/test/v1.0/login")
-                .send(identification)
-                .end((err: any, res: any) => {
-                    token = String(res.body["token"]);
-                    done();
-                });
-        });
     });
 
     describe(`{get} ${entity.name}`, () => {
@@ -94,7 +97,7 @@ describe("endpoint : Sensors", () => {
                     javascript: defaultGet("javascript", "KEYHTTP"),
                     python: defaultGet("python", "KEYHTTP")
                 },
-                apiSuccess: columns
+                apiSuccess: success
             };
             dbTest("sensor")
                 .count()
@@ -109,8 +112,7 @@ describe("endpoint : Sensors", () => {
                             res.body.value.length.should.eql(nb);
                             res.body.should.include.keys("@iot.count", "value");
                             res.body.value[0].should.include.keys(testsKeys);
-                            res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                            addToApiDoc({ ...infos, result: res });
+                            addToApiDoc({ ...infos, result: limitResult(res) });
                             docs[docs.length - 1].apiErrorExample = JSON.stringify({ "code": 404, "message": "Not Found" }, null, 4);
                             done();
                         });
@@ -140,7 +142,7 @@ describe("endpoint : Sensors", () => {
                     res.body["@iot.selfLink"].should.contain("/Sensors(1)");
                     res.body["@iot.id"].should.eql(1);
                     res.body["Datastreams@iot.navigationLink"].should.contain("/Sensors(1)/Datastreams");
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -179,9 +181,7 @@ describe("endpoint : Sensors", () => {
                     res.body.should.include.keys("Datastreams");
                     res.body.Datastreams[0].should.include.keys(datastreams_testsKeys);
                     res.body["@iot.id"].should.eql(1);
-                    res.body.Datastreams = [res.body.Datastreams[0], res.body.Datastreams[1], "..."];
-
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res, "Datastreams") });
                     done();
                 });
         });
@@ -206,7 +206,7 @@ describe("endpoint : Sensors", () => {
                     res.type.should.equal("application/json");
                     Object.keys(res.body).length.should.eql(1);
                     res.body.should.include.keys("description");
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -289,7 +289,7 @@ describe("endpoint : Sensors", () => {
         it("Return added Sensor", (done) => {
             const datas = {
                 description: "PM 2.5 sensor",
-                name: "PM25sensor",
+                name: `PM25 ${getNB(entity.name)}`,
                 encodingType: "application/pdf",
                 metadata: "http://particle-sensor.com/"
             };
@@ -316,7 +316,7 @@ describe("endpoint : Sensors", () => {
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
                     res.body.should.include.keys(testsKeys);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -434,7 +434,7 @@ describe("endpoint : Sensors", () => {
                                 .orderBy("id")
                                 .then((newItems) => {
                                     newItems.length.should.eql(lengthBefore - 1);
-                                    addToApiDoc({ ...infos, result: res });
+                                    addToApiDoc({ ...infos, result: limitResult(res) });
                                     done();
                                 });
                         });

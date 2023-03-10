@@ -15,10 +15,8 @@ import { cleanUrl } from "../../helpers";
 import { cssFile, listCssFiles } from "../css";
 import { jsFile, listJsFiles } from "../js";
 import { IQuery } from "../constant";
-import pjson from "../../../../package.json";
 
 const fileWithOutMin = (input: string): string => input.replace(".min",'');
-
 
 export const commonHtml = (input: string, params: IQuery, ): string => {
     message(true, "HEAD", "commonHtml");
@@ -77,6 +75,5 @@ export const commonHtml = (input: string, params: IQuery, ): string => {
 
     return result.join("").replace("_PARAMS={}", "_PARAMS=" + util.inspect(params, { showHidden: false, depth: null }))
         .replace("// @start@", start)
-        .replace("@action@", action)
-        .replace("@version@", pjson.version);
+        .replace("@action@", action);
 };

@@ -55,8 +55,8 @@ describe("TimeSeries", () => {
                     res.body.value[0].result.should.eql(13.3);
                     res.body.value[1].year.should.eql("2016");
                     res.body.value[1].result.should.eql(11.6666666666667);
-                    res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                    addToApiDoc({ ...infos, result: res });
+                    pipo
+                    addToApiDoc({ ...infos, result: limitRes(res) });
                     done();
                 });
         });
@@ -104,8 +104,8 @@ describe("TimeSeries", () => {
                     res.body.value[0].may.should.eql(13.3);
                     res.body.value[1].year.should.eql(2016);
                     res.body.value[1].november.should.eql(11.6666666666667);
-                    res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                    addToApiDoc({ ...infos, result: res });
+                    pipo
+                    addToApiDoc({ ...infos, result: limitRes(res) });
                     done();
                 });
         });
@@ -153,8 +153,8 @@ describe("TimeSeries", () => {
                     res.body.value[0]["18"].should.eql(13.3);
                     res.body.value[1].year.should.eql(2016);
                     res.body.value[1]["46"].should.eql(11.6666666666667);
-                    res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                    addToApiDoc({ ...infos, result: res });
+                    pipo
+                    addToApiDoc({ ...infos, result: limitRes(res) });
                     done();
                 });
         });
@@ -197,8 +197,8 @@ describe("TimeSeries", () => {
                     res.body.value[0]["122"].should.eql(13.1);
                     res.body.value[1].year.should.eql(2016);
                     res.body.value[1]["323"].should.eql(11.6666666666667);
-                    res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                    addToApiDoc({ ...infos, result: res });
+                    pipo
+                    addToApiDoc({ ...infos, result: limitRes(res) });
                     done();
                 });
         });

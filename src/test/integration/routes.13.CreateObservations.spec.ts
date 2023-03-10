@@ -9,7 +9,7 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, IApiInput, prepareToApiDoc, generateApiDoc, identification, keyTokenName, defaultPost } from "./constant";
+import { IApiDoc, IApiInput, prepareToApiDoc, generateApiDoc, identification, keyTokenName, defaultPost, limitResult } from "./constant";
 
 import { server } from "../../server/index";
 
@@ -83,7 +83,7 @@ describe("endpoint : Create Observations", () => {
                 res.body[0].should.include("/v1.0/Observations(");
                 res.body[1].should.include("/v1.0/Observations(");
                 res.body[2].should.include("/v1.0/Observations(");
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });

@@ -1,7 +1,6 @@
 
 {
-    "database": ["ALTER TABLE observation ADD COLUMN _resulttexts text[]",
-    "ALTER TABLE observation ADD COLUMN _resulttext text"
+    "database": [""
 ]
 }
 

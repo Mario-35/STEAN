@@ -1,0 +1,16 @@
+{
+	"ListenPort": "Listening on port",
+	"addPort": "Add on port",
+	"connectName": "connectName",
+	"create": "Create",
+	"db": "dataBase",
+	"dbOnline": "Database Online",
+	"dbPg": "Database PostgreSQL",
+    "logoutOk" : "Logout succeeded",
+    "loginOk" : "Login succeeded",
+	"offLine": "Offline",
+	"serverListening": "Server listening on port",
+	"tryCreate": "Try create $1",
+    "constructor": "Constructor",
+    "classConstructor" : "class $1 override $2"
+}

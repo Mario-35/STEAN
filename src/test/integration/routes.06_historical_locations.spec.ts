@@ -15,12 +15,13 @@ import {
     generateApiDoc,
     IApiInput,
     prepareToApiDoc,
-    createListColumns,
     identification,
     keyTokenName,
     defaultDelete,
     defaultPatch,
-    defaultGet
+    defaultGet,
+    listOfColumns,
+    limitResult
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
@@ -50,33 +51,19 @@ addToApiDoc({
 });
 
 describe("endpoint : HistoricalLocations", () => {
-    let success: string[] = [];
-    let params: string[] = [];
+    const temp = listOfColumns(entity);
+    const success = temp.success;
+    // const params = temp.params;
     let token = "";
 
     before((done) => {
-        
-
-        createListColumns(entity.table, (err: any, valueSuccess: any, valueParam: any) => {
-            success = valueSuccess;
-            params = valueParam;
-            Object.keys(entity.relations).forEach((elem: string) => {
-                success.push(`{relation} [${elem}] ${elem}@iot.navigationLink`);
-                if (entity.relations[elem].tableName == entity.table) {
-                    params.push(`{relation} ${elem} ${elem}@iot.navigationLink`);
-                } else {
-                    params.push(`{relation} [${elem}] ${elem}@iot.navigationLink`);
-                }
+        chai.request(server)
+            .post("/test/v1.0/login")
+            .send(identification)
+            .end((err: any, res: any) => {
+                token = String(res.body["token"]);
+                done();
             });
-
-            chai.request(server)
-                .post("/test/v1.0/login")
-                .send(identification)
-                .end((err: any, res: any) => {
-                    token = String(res.body["token"]);
-                    done();
-                });
-        });
     });
 
     describe(`{get} ${entity.name}`, () => {
@@ -108,8 +95,7 @@ describe("endpoint : HistoricalLocations", () => {
                             res.body.value.length.should.eql(nb);
                             res.body.should.include.keys("@iot.count", "value");
                             res.body.value[0].should.include.keys(testsKeys);
-                            res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                            addToApiDoc({ ...infos, result: res });
+                            addToApiDoc({ ...infos, result: limitResult(res) });
                             docs[docs.length - 1].apiErrorExample = JSON.stringify({ "code": 404, "message": "Not Found" }, null, 4);
 
                             done();
@@ -140,7 +126,7 @@ describe("endpoint : HistoricalLocations", () => {
                     res.body["@iot.selfLink"].should.contain("/HistoricalLocations(1)");
                     res.body["@iot.id"].should.eql(1);
                     res.body["Things@iot.navigationLink"].should.contain("/HistoricalLocations(1)/Things");
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -180,7 +166,7 @@ describe("endpoint : HistoricalLocations", () => {
                     res.body.Locations.length.should.eql(1);
                     res.body.Locations[0].should.include.keys(locations_testsKeys);
                     res.body["@iot.id"].should.eql(6);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -204,7 +190,7 @@ describe("endpoint : HistoricalLocations", () => {
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
                     res.body.should.include.keys("time");
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -314,7 +300,7 @@ describe("endpoint : HistoricalLocations", () => {
                             // res.body.should.include.keys(testsKeys);
                             // const newLocationObject = res.body;
                             // newLocationObject.should.not.eql(locationObject.time);
-                            addToApiDoc({ ...infos, result: res });
+                            addToApiDoc({ ...infos, result: limitResult(res) });
                             done();
                         });
                 });
@@ -369,7 +355,7 @@ describe("endpoint : HistoricalLocations", () => {
                                 .orderBy("id")
                                 .then((updatedLocations) => {
                                     updatedLocations.length.should.eql(lengthBeforeDelete - 1);
-                                    addToApiDoc({ ...infos, result: res });
+                                    addToApiDoc({ ...infos, result: limitResult(res) });
                                     done();
                                 });
                         });

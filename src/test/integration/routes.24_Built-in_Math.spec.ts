@@ -10,7 +10,7 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet } from "./constant";
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult } from "./constant";
 import { server } from "../../server/index";
 
 
@@ -54,8 +54,7 @@ describe("Odata BuiltInMath", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(5);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -80,8 +79,7 @@ describe("Odata BuiltInMath", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(5);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -106,8 +104,7 @@ describe("Odata BuiltInMath", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(5);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });

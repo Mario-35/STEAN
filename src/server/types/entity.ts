@@ -11,6 +11,7 @@ interface IEntityColumn {
     [key: string]: {
         readonly create: string;
         readonly alias?: string;
+        readonly unique?: boolean;
         readonly test?: string;
         readonly dataList?: { [key: string]: string };
         readonly type?: string;

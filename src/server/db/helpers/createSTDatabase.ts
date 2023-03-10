@@ -130,7 +130,7 @@ import koa from "koa";
 
         await asyncForEach(datasDemo(), async (sql: string) => {
             returnValue["Feed datas"] = await connDb
-            .raw(sql)
+            .raw(sql.split("\n").join(""))
             .then(() => "✔")
             .catch((error: any) => {
                 console.log(error);

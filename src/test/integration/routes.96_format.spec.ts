@@ -10,7 +10,7 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc } from "./constant";
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, limitResult } from "./constant";
 import { server } from "../../server/index";
 
 chai.use(chaiHttp);
@@ -46,7 +46,7 @@ describe("Output formats", () => {
                     res.status.should.equal(200);
                     res.type.should.equal("text/csv");
                     res.text.startsWith(`"@iot.${"id"}";`);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -70,7 +70,7 @@ describe("Output formats", () => {
                     res.body[0].component.length.should.eql(4);
                     res.body[0].component[0].should.eql("id");  
                     res.body[0].dataArray.length.should.eql(24);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -92,7 +92,7 @@ describe("Output formats", () => {
                     res.body[0]['dataArray@iot.count'].should.eql(22);
                     res.body[0].dataArray.length.should.eql(22);
                     res.body[0].dataArray[1][1].should.eql(0.1);  
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -113,7 +113,7 @@ describe("Output formats", () => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("text/html");
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -135,7 +135,7 @@ describe("Output formats", () => {
                     res.type.should.equal("application/json");
                     res.body.should.include.keys(["ids", "values", "dates"]);
 
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });

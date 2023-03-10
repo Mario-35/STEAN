@@ -41,7 +41,7 @@ addToApiDoc({
         FeatureOfInterest. Together, these relationships provide a flexible standard way to describe and model any sensing
         system. It allows SensorThings to be a single data exchange system for heterogeneous devices within any
         organization.</p>
-    </div> <br> <img src="./assets/entities.jpg" alt="Model">`,
+    </div> <br> <img src="./assets/entities.png" alt="Model">`,
     apiReference: "https://docs.ogc.org/is/15-078r6/15-078r6.html",
     result: ""
 });

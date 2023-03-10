@@ -56,6 +56,8 @@ enum ENTITIES {
     Users = 'Users',
     Configs= 'Configs',
 }
+
+
 const DBDATAS: { [key in ENTITIES]: IEntity } = {
     Things: {
         name: "Things",
@@ -82,7 +84,8 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             }
         },
         constraints: {
-            thing_pkey: 'PRIMARY KEY ("id")'
+            thing_pkey: 'PRIMARY KEY ("id")',
+            thing_unik_name: 'UNIQUE ("name")',
         },
         admin: false,
         relations: {
@@ -187,7 +190,8 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             }
         },
         constraints: {
-            featureofinterest_pkey: 'PRIMARY KEY ("id")'
+            featureofinterest_pkey: 'PRIMARY KEY ("id")',
+            featureofinterest_unik_name: 'UNIQUE ("name")',
         },
         after: "INSERT INTO featureofinterest (name, description, \"encodingType\", feature) VALUES ('Default Feature of Interest', 'Default Feature of Interest', 'application/vnd.geo+json', '{}');"
     },
@@ -238,7 +242,8 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             }
         },
         constraints: {
-            location_pkey: 'PRIMARY KEY ("id")'
+            location_pkey: 'PRIMARY KEY ("id")',
+            location_unik_name: 'UNIQUE ("name")',
         },
         admin: false,
         relations: {
@@ -390,7 +395,8 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             }
         },
         constraints: {
-            observedproperty_pkey: 'PRIMARY KEY ("id")'
+            observedproperty_pkey: 'PRIMARY KEY ("id")',
+            observedproperty_unik_name: 'UNIQUE ("name")',
         },
         admin: false,
         relations: {
@@ -458,7 +464,8 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             }
         },
         constraints: {
-            sensor_pkey: 'PRIMARY KEY ("id")'
+            sensor_pkey: 'PRIMARY KEY ("id")',
+            sensor_unik_name: 'UNIQUE ("name")',
         },
         admin: false,
         relations: {
@@ -466,7 +473,6 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 type: RELATIONS.hasMany,
                 expand: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."id" = "sensor"."id")`,
                 link: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."sensor_id" = $ID)`,
-
                 entityName: "Datastreams",
                 tableName: "datastream",
                 relationKey: "sensor_id",
@@ -611,7 +617,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         },
         constraints: {
             datastream_pkey: 'PRIMARY KEY ("id")',
-            // datastream_deveui: 'UNIQUE ("deveui")',
+            datastream_unik_name: 'UNIQUE ("name")',
             datastream_observedproperty_id_fkey: 'FOREIGN KEY ("observedproperty_id") REFERENCES "observedproperty"("id") ON UPDATE CASCADE ON DELETE CASCADE',
             datastream_sensor_id_fkey: 'FOREIGN KEY ("sensor_id") REFERENCES "sensor"("id") ON UPDATE CASCADE ON DELETE CASCADE',
             datastream_thing_id_fkey: 'FOREIGN KEY ("thing_id") REFERENCES "thing"("id") ON UPDATE CASCADE ON DELETE CASCADE'
@@ -744,6 +750,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         },
         constraints: {
             multidatastream_pkey: 'PRIMARY KEY ("id")',
+            multidatastream_unik_name: 'UNIQUE ("name")',
             multidatastream_sensor_id_fkey: 'FOREIGN KEY ("sensor_id") REFERENCES "sensor"("id") ON UPDATE CASCADE ON DELETE CASCADE',
             multidatastream_thing_id_fkey: 'FOREIGN KEY ("thing_id") REFERENCES "thing"("id") ON UPDATE CASCADE ON DELETE CASCADE'
         },
@@ -813,6 +820,10 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 end as "result"`,
              type : "json"
             },
+            _resultint: {
+                create: "int NULL",
+                type : "number"
+            },
             _resultnumber: {
                 create: "float8 NULL",
                 type : "number"
@@ -864,6 +875,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         },
         constraints: {
             observation_pkey: 'PRIMARY KEY ("id")',
+            observation_unik_result: 'UNIQUE ("_resultnumber", "_resultnumbers", "_resultjson", "_resulttexts", "_resulttext", "resultTime", "datastream_id", "multidatastream_id")',
             observation_datastream_id_fkey: 'FOREIGN KEY ("datastream_id") REFERENCES "datastream"("id") ON UPDATE CASCADE ON DELETE CASCADE',
             observation_multidatastream_id_fkey: 'FOREIGN KEY ("multidatastream_id") REFERENCES "multidatastream"("id") ON UPDATE CASCADE ON DELETE CASCADE',
             observation_featureofinterest_id_fkey:
@@ -1012,13 +1024,22 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 create: "text NOT NULL DEFAULT 'const decoded = null; return decoded;'::text",
                 type : "text"
             },
+            nomenclature: {
+                create: "text NOT NULL DEFAULT 'const nomenclature = {}'::text",
+                type : "jsonb"
+            },
+            synonym: {
+                create: "text NULL",
+                type : "jsonb"
+            },
             test: {
                 create: "text NULL",
                 type : "text"
             }
         },
         constraints: {
-            decoder_pkey: 'PRIMARY KEY ("id")'
+            decoder_pkey: 'PRIMARY KEY ("id")',
+            decoder_unik_name: 'UNIQUE ("name")',
         },
         admin: false,
         relations: {
@@ -1063,7 +1084,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 type : "text"
             },
             decoder_id: {
-                create: "BIGINT NULL",
+                create: "BIGINT NOT NULL",
                 type : "relation:Decoders"
             },
             datastream_id: {

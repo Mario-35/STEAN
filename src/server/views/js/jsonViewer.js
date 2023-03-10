@@ -16,7 +16,7 @@
   }
   
   function isCode(string) {
-    return string.includes("const decoded = {");
+    return string.startsWith("function decode(");
   }
 
   /**

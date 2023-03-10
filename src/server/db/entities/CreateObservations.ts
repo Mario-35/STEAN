@@ -15,6 +15,7 @@ import { ICsvColumns, ICsvFile, IReturnResult } from "../../types";
 import { extractMessageError, importCsv, renameProp, verifyId } from "../helpers";
 import { stringToBool } from "../../helpers";
 import { _CONFIGURATION } from "../../configuration";
+import { messages, messagesReplace } from "../../messages/";
 
 interface convert {
     key: string;
@@ -32,14 +33,14 @@ export class CreateObservations extends Common {
     }
 
     async add(dataInput: Object): Promise<IReturnResult | undefined> {
-        message(true, "HEAD", `class ${this.constructor.name} override add`);
+        message(true, "OVERRIDE", messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));    
         const returnValue: string[] = [];
         let total = 0;
         if (this.ctx._datas) {
             const extras = this.ctx._datas;
             const datasJson = JSON.parse(extras["datas"]);
 
-            if (!datasJson["columns"]) this.ctx.throw(404, { code: 404,  detail: "No columns parameters found" });
+            if (!datasJson["columns"]) this.ctx.throw(404, { code: 404,  detail: messages.errors.noColumn });
             if (!datasJson["duplicates"]) datasJson["duplicates"] = true;
 
             const myColumns: ICsvColumns[] = [];
@@ -71,7 +72,7 @@ export class CreateObservations extends Common {
             if (!testDatastream) {
                 message(true, "INFO", "test Datastream ID", testDatastreamID);
                 this.ctx.throw(404, {
-                    code: 404, detail: testDatastreamID.length > 0 ? `No id found for : ${testDatastreamID}` : `One of id not found for : ${testDatastreamID}`
+                    code: 404, detail: testDatastreamID.length > 0 ? messages.errors.noId + testDatastreamID : messages.errors.noIds + testDatastreamID
                 });
             }
 
@@ -100,7 +101,7 @@ export class CreateObservations extends Common {
 
             const DatastreamIdExist = await verifyId(Common.dbContext, BigInt(dataStreamId), _DBDATAS.Datastreams.table);
             if (!DatastreamIdExist) {
-                this.ctx.throw(404, { code: 404,  detail: `No id found for : ${dataStreamId}` });
+                this.ctx.throw(404, { code: 404,  detail: messages.errors.noId + dataStreamId });
             }
 
             dataInput["dataArray"].forEach((element: Object) => {

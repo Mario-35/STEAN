@@ -8,6 +8,7 @@
 
 import { Knex } from "knex";
 import { message } from "../../logger";
+import { messages, messagesReplace } from "../../messages";
 import { PgVisitor } from "../../odata";
 import { TimeSeriesType } from "../../types";
 import { _DBDATAS } from "../constants";
@@ -24,7 +25,7 @@ export class TimeSeries {
     private resultColumn: string;
 
     constructor(query: Knex.QueryBuilder | string) {
-        message(true, "CLASS", this.constructor.name, "Constructor");
+        message(true, "CLASS", this.constructor.name, messages.infos.constructor);
         this.querySrc =
             typeof query === "string" ? query : knexQueryToSql(query.clone().clear("order").clear("limit").clear("select").select("resultTime", "result"));           
     }
@@ -63,7 +64,7 @@ export class TimeSeries {
     }
 
     private timeYear(full: boolean): string {
-        message(true, "HEAD", `class ${this.constructor.name} timeYear`);
+        message(true, "OVERRIDE", messagesReplace(messages.infos.classConstructor, [this.constructor.name, `timeYear`]));    
         const returnValue = [
             `WITH src AS (${this.querySrc}),`,
             `range_values AS (SELECT min(src."resultTime") as minval, max(src."resultTime") as maxval FROM src),`,
@@ -78,8 +79,7 @@ export class TimeSeries {
     }
 
     private timeMonth(full: boolean): string {
-        message(true, "HEAD", `class ${this.constructor.name} timeMonth`);
-
+        message(true, "OVERRIDE", messagesReplace(messages.infos.classConstructor, [this.constructor.name, `timeMonth`]));    
         const months = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
         const returnValue = [
             `SELECT * FROM`,
@@ -100,7 +100,7 @@ export class TimeSeries {
     }
 
     private timeWeek(full: boolean): string {
-        message(true, "HEAD", `class ${this.constructor.name} timeWeek`);
+        message(true, "OVERRIDE", messagesReplace(messages.infos.classConstructor, [this.constructor.name, `timeWeek`]));    
         const weeks: string[] = [];
         for (let pas = 1; pas < 53; pas++) {
             weeks.push(`${pas}`);
@@ -124,7 +124,7 @@ export class TimeSeries {
     }
 
     private timeDay(full: boolean): string {
-        message(true, "HEAD", `class ${this.constructor.name} timeWeek`);
+        message(true, "OVERRIDE", messagesReplace(messages.infos.classConstructor, [this.constructor.name, `timeDay`]));    
         const days: string[] = [];
         for (let pas = 1; pas < 366; pas++) {
             days.push(`${pas}`);

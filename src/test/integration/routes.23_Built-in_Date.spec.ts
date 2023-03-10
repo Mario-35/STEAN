@@ -10,7 +10,7 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet } from "./constant";
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult } from "./constant";
 import { server } from "../../server/index";
 
 
@@ -54,8 +54,7 @@ describe("Odata BuiltInDate", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(10);
                 res.body["value"][0]["@iot.id"].should.eql(44);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -80,8 +79,7 @@ describe("Odata BuiltInDate", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body["value"][0]["@iot.id"].should.eql(43);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -106,8 +104,7 @@ describe("Odata BuiltInDate", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body["value"][0]["@iot.id"].should.eql(42);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -132,8 +129,7 @@ describe("Odata BuiltInDate", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(3);
                 res.body["value"][0]["@iot.id"].should.eql(43);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -158,8 +154,7 @@ describe("Odata BuiltInDate", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(44);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -184,8 +179,7 @@ describe("Odata BuiltInDate", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(31);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -210,8 +204,7 @@ describe("Odata BuiltInDate", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(9);
                 res.body["value"][0]["@iot.id"].should.eql(3);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -236,8 +229,7 @@ describe("Odata BuiltInDate", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(14);
                 res.body["value"][0]["@iot.id"].should.eql(11);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -262,8 +254,7 @@ describe("Odata BuiltInDate", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(52);
                 res.body["value"][0]["@iot.id"].should.eql(32);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -288,8 +279,8 @@ describe("Odata BuiltInDate", () => {
     //             res.type.should.equal("application/json");
     //             res.body.value.length.should.eql(52);
     //             res.body["value"][0]["@iot.id"].should.eql(1);
-    //             res.body.value = [res.body.value[0], res.body.value[1], "..."];
-    //             addToApiDoc({ ...infos, result: res });
+    //             pipo
+    //             addToApiDoc({ ...infos, result: limitResult(res) });
     //             done();
     //         });
     // });
@@ -314,8 +305,8 @@ describe("Odata BuiltInDate", () => {
     //             res.type.should.equal("application/json");
     //             res.body.value.length.should.eql(52);
     //             res.body["value"][0]["@iot.id"].should.eql(1);
-    //             res.body.value = [res.body.value[0], res.body.value[1], "..."];
-    //             addToApiDoc({ ...infos, result: res });
+    //             pipo
+    //             addToApiDoc({ ...infos, result: limitResult(res) });
     //             done();
     //         });
     // });
@@ -340,8 +331,8 @@ describe("Odata BuiltInDate", () => {
     //             res.type.should.equal("application/json");
     //             res.body.value.length.should.eql(52);
     //             res.body["value"][0]["@iot.id"].should.eql(1);
-    //             res.body.value = [res.body.value[0], res.body.value[1], "..."];
-    //             addToApiDoc({ ...infos, result: res });
+    //             pipo
+    //             addToApiDoc({ ...infos, result: limitResult(res) });
     //             done();
     //         });
     // });    

@@ -13,6 +13,7 @@ import { getDateNow, _DBDATAS } from "../constants";
 import { message } from "../../logger";
 import { IReturnResult } from "../../types";
 import { getBigIntFromString } from "../../helpers";
+import { messages, messagesReplace } from "../../messages";
 
 export class Observations extends Common {
     constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
@@ -28,7 +29,7 @@ export class Observations extends Common {
             ? BigInt(dataInput["MultiDatastream"]["@iot.id"])
             : getBigIntFromString(this.ctx._odata.parentId);
             
-            if (!search) this.ctx.throw(404, { code: 404,  detail: "No MultiDatastreams found" });
+            if (!search) this.ctx.throw(404, { code: 404, detail: messagesReplace(messages.errors.noFound, ["MultiDatastreams"]) });
             
             const tempSql = await Common.dbContext.raw(
                 `select jsonb_agg(tmp.units -> 'name') as keys from ( select jsonb_array_elements("unitOfMeasurements") as units from multidatastream where id = ${search} ) as tmp`
@@ -39,9 +40,7 @@ export class Observations extends Common {
                     if (Object.keys(dataInput["result"]).length != multiDatastream["keys"].length) {
                         this.ctx.throw(400, {
                             code: 400, 
-                            detail: `Size of list of results (${Object.keys(dataInput["result"]).length}) is not equal to size of unitOfMeasurements (${
-                                multiDatastream["keys"].length
-                            })`
+                            detail: messagesReplace(messages.errors.sizeResultUnitOfMeasurements, [String(Object.keys(dataInput["result"]).length), multiDatastream["keys"].length])
                         });
                     }
                     const upperResults = {};

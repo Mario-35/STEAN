@@ -10,7 +10,7 @@
 
  import chai from "chai";
  import chaiHttp from "chai-http";
- import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, identification, keyTokenName, defaultPost } from "./constant";
+ import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, identification, keyTokenName, defaultPost, getNB, limitResult } from "./constant";
  import { server } from "../../server/index";
  import { _DBDATAS } from "../../server/db/constants";
  import { IEntity } from "../../server/types";
@@ -92,8 +92,7 @@
                              // res.body.value.length.should.eql(4);
                              res.body.should.include.keys("@iot.count", "value");
                              res.body.value[0].should.include.keys(testsKeys);
-                             res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                             addToApiDoc({ ...infos, result: res });
+                             addToApiDoc({ ...infos, result: limitResult(res) });
                              firstLoraDEVEUI = res.body.value[0].deveui;
                              firstLoraID = res.body.value[0]["@iot.id"];
                              done();
@@ -116,7 +115,7 @@
                      res.type.should.equal("application/json");
                      res.body["@iot.selfLink"].should.contain(`/Loras(${firstLoraID})`);
                      res.body["@iot.id"].should.eql(Number(firstLoraID));
-                     addToApiDoc({ ...infos, result: res });
+                     addToApiDoc({ ...infos, result: limitResult(res) });
                      done();
                  });
          });
@@ -141,7 +140,10 @@
                  "MultiDatastream": {
                      "@iot.id": 2
                  },
-                 "name": "My new Lora name",
+                 "Decoder": {
+                     "@iot.id": 1
+                 },
+                 "name": `My new ${getNB(entity.name)}`,
                  "description": "My new Lora Description",
                  "deveui": "8cf9574000009L8C"
              };
@@ -166,7 +168,7 @@
                      res.status.should.equal(201);
                      res.type.should.equal("application/json");
                      res.body.should.include.keys(testsKeys);
-                     addToApiDoc({ ...infos, result: res });
+                     addToApiDoc({ ...infos, result: limitResult(res) });
                      done();
                  });
          });
@@ -208,11 +210,45 @@
                      res.body["result"]["Humidity"].should.eql(dataInput.Humidity);
                      res.body["result"]["Temperature"].should.eql(dataInput.Temperature);
                      res.body["result"]["Battery"].should.eql(dataInput.Battery);
-                     addToApiDoc({ ...infos, result: res });
+                     addToApiDoc({ ...infos, result: limitResult(res) });
                      done();
                  });
          });
  
+         it("should return Error decoder Message", (done) => {
+            const datas = {
+                "deveui": "8cf9574000002d4d",
+                "sensor_id": "8cf9574000002d4d",
+                "timestamp": "2021-10-18T14:53:44+02:00",
+                "payload_ciphered": null,
+                "payload_deciphered": "012f5ecec2014a1ab2"
+            };
+            const infos = {
+                api: `{post} ${entity.name} Post basic`,
+                apiName: `Post${entity.name}Multi`,
+                apiDescription: `Post a new Observation in a Lora Thing.`,
+                apiExample: {
+                    http: `/v1.0/${entity.name}`,
+                    curl: defaultPost("curl", "KEYHTTP", datas),
+                    javascript: defaultPost("javascript", "KEYHTTP", datas),
+                    python: defaultPost("python", "KEYHTTP", datas)
+                },
+                apiParamExample: datas
+            };
+            chai.request(server)
+                .post(`/test${infos.apiExample.http}`)
+                .send(infos.apiParamExample)
+                .set("Cookie", `${keyTokenName}=${token}`)
+                .end((err: any, res: any) => {
+                    should.not.exist(err);
+                    res.status.should.equal(400);
+                    res.type.should.equal("application/json");
+                    res.body["detail"].should.eql('Decoding Payload error');
+                    done();
+                });
+        });
+
+
          it("Return Error if the payload is malformed", (done) => {
              chai.request(server)
                  .post(`/test/v1.0/${entity.name}`)
@@ -300,7 +336,7 @@
                      res.body["result"]["Temperature"].should.eql(25);
                      res.body["result"]["Battery"].should.eql(50);
                      // res.body["phenomenonTime"].should.eql("2021-10-15T12:53:44.000Z");
-                     addToApiDoc({ ...infos, result: res });
+                     addToApiDoc({ ...infos, result: limitResult(res) });
                      done();
                  });
          });
@@ -413,7 +449,7 @@
      //                                 console.log(items);
  
      //                                 newItems.length.should.eql(lengthBeforeDelete - 1);
-     //                                 addToApiDoc({ ...infos, result: res });
+     //                                 addToApiDoc({ ...infos, result: limitRes(res) });
      //                                 done();
      //                             });
      //                     });

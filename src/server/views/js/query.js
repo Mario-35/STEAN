@@ -76,7 +76,7 @@ function wait(on) {
     populateSelect(queryResultFormat, tempOptions, getDefaultValue(queryResultFormat, tempOptions));
     EnabledOrDisabled([queryProperty], (nb.value != ""));
     EnabledOrDisabled([onlyValue], (!queryProperty.value.startsWith(_NONE) && nb.value != ""));
-    getElement("actionForm").action = `${optHost.value}/${optVersion.value}/${isObservation() ? "CreateObservations" : "CreateFile" }`;
+    getElement("actionForm").action = `${optHost.value}/${optVersion.value}/${isObservation() ? "CreateObservations" : `${entity.value}(${nb.value})/CreateFile` }`;
     if (getIfChecked("checkDebug"))  getElement("actionForm").action += "?$debug=true";
   };
 

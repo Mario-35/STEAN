@@ -6,7 +6,7 @@
  *
  */
 
- import koa from "koa";
+import koa from "koa";
 import { createAdminDataBase } from "./createAdminDataBase";
 import { createSTDatabase } from "./createSTDatabase";
   

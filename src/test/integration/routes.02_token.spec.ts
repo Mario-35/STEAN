@@ -53,7 +53,7 @@ describe("Identification : Token", () => {
                     should.not.exist(err);
                     res.body.should.include.keys("token");
                     res.body.should.include.keys("message");
-                    res.body.message.should.eql("login succeeded");
+                    res.body.message.should.eql("Login succeeded");
                     res.status.should.equal(200);
                     addToApiDoc({ ...infos, result: res });
                     done();

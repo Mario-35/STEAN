@@ -9,7 +9,7 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, IApiInput, prepareToApiDoc, generateApiDoc, identification, keyTokenName } from "./constant";
+import { IApiDoc, IApiInput, prepareToApiDoc, generateApiDoc, identification, keyTokenName, limitResult } from "./constant";
 
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
@@ -102,7 +102,7 @@ describe("CSV Import", function () {
                     res.body.length.should.eql(12);
                 }
                 should.not.exist(err);
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -173,7 +173,7 @@ describe("CSV Import", function () {
                             test[5]._resultnumber.should.eql(20.1);
                             test[5].datastream_id.should.eql("4");
                             test[5].featureofinterest_id.should.eql("1");
-                            addToApiDoc({ ...infos, result: res });
+                            addToApiDoc({ ...infos, result: limitResult(res) });
                             done();
                         })
                         .catch((err) => console.log(err));
@@ -210,4 +210,5 @@ describe("CSV Import", function () {
                 done();
             });
     });
+    
 });

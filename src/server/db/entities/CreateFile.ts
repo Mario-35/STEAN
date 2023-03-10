@@ -16,9 +16,12 @@ import { createColumnHeaderName} from "../helpers";
 import { _CONFIGURATION } from "../../configuration";
 import copyFrom from "pg-copy-streams";
 import fs from "fs";
+import { messages, messagesReplace } from "../../messages/";
+
 
 // import { db } from "..";
 import * as entities from "../entities/index";
+import { returnFormats } from "../../helpers";
 
 
 interface convert {
@@ -30,19 +33,71 @@ export class CreateFile extends Common {
     constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
         super(ctx, knexInstance);
     }
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    
     testValue(inputValue: any): convert | undefined {
         if (inputValue != null && inputValue !== "" && !isNaN(Number(inputValue.toString()))) return { key: "_resultnumber", value: inputValue.toString() };
         else if (typeof inputValue == "object") return { key: "_resultnumbers", value: `{"${Object.values(inputValue).join('","')}"}` };
     }
 
-    importCsvFileInDatastream = async (ctx: koa.Context, knex: Knex | Knex.Transaction, paramsFile: ICsvFile): Promise<string[]> => {
+    importCsvFileInDatastream = async (ctx: koa.Context, knex: Knex | Knex.Transaction, paramsFile: ICsvFile): Promise<IReturnResult | undefined> => {
         message(true, "HEAD", "importCsvFileInDatastream");
-        const returnValue: string[] = [];
-    
+        let returnValue: IReturnResult | undefined = undefined;
         const headers = await createColumnHeaderName(paramsFile.filename);
-    
+        
         if (headers) {
+            const createDataStream = async () => {
+                const nameOfFile = paramsFile.filename.split("/").reverse()[0];
+                const copyCtx =  Object.assign({}, ctx._odata);
+                const tempId= ctx._odata.id.toString();
+                ctx._odata.entity = "Datastreams";
+                // IMPORTANT TO ADD instead update
+                ctx._odata.id = "";
+                ctx._odata.resultFormat = returnFormats.json;
+                ctx._addToLog = false;                        
+                const objectDatastream = new entities[("Datastreams")](ctx, Common.dbContext);
+                const myDatas = {
+                    "name": `Dastastream import file ${nameOfFile}`,
+                    "description": "Description in meta ?",
+                    "observationType": "SWE Array Observation",
+                    "Thing": { "@iot.id": tempId },
+                    "unitOfMeasurement": {
+                        "name": headers.join(),
+                        "symbol": "csv",
+                        "definition": "https://www.rfc-editor.org/rfc/pdfrfc/rfc4180.txt.pdf"
+                    },
+                    "ObservedProperty": {
+                        "name": `is Generik ${nameOfFile}`,
+                        "description": "KOIKE observe",
+                        "definition": "http://www.qudt.org/qudt/owl/1.0.0/quantity/Instances.html#AreaTemperature"
+                    },
+                    "Sensor": {
+                        "name": `Nom du Kapteur${nameOfFile}`,
+                        "description": "Capte heures a la seconde",
+                        "encodingType": "application/pdf",
+                        "metadata": "https://time.com/datasheets/capteHour.pdf"
+                    }
+                };
+                try {
+                    const temp = await objectDatastream.add(myDatas);
+                    return temp;
+                    
+                } catch (error: any) {
+                    ctx._odata.where = `"name" ~* '${nameOfFile}'`;
+                    const returnValueError = await objectDatastream.getAll(); 
+                    ctx._odata = copyCtx;
+                    if (returnValueError) {
+                        returnValueError.body = returnValueError.body ?  returnValueError.body[0] : {};
+                        if (returnValueError.body)
+                            await Common.dbContext.raw(`DELETE FROM "${_DBDATAS.Observations.table}" WHERE "datastream_id" = ${returnValueError.body["@iot.id"]}`)
+                        return returnValueError;
+                    }
+                } finally  {
+                    ctx._odata = copyCtx;
+                }
+
+            };
+
+            returnValue = await createDataStream();
             await knex.schema
                 .createTable(paramsFile.tempTable, (table: any) => {
                     // table.increments("id").unsigned().notNullable().primary();
@@ -57,6 +112,7 @@ export class CreateFile extends Common {
                         if (valid == true) tx.commit();
                         else tx.rollback();
                         if (err) reject(err);
+                        resolve();
                     };
     
                     const client = await tx.client.acquireConnection().catch((err: Error) => reject(err));
@@ -64,71 +120,46 @@ export class CreateFile extends Common {
                     const stream = client
                         .query( copyFrom.from( `COPY ${paramsFile.tempTable} FROM STDIN WITH (FORMAT csv)`))
                         .on("error", (err: Error) => {
-                            message(true, "ERROR", "stream error", err);
+                            message(true, "ERROR", messages.errors.stream, err);
                             reject(err);
                         });
-    
+                    
                     const fileStream = fs.createReadStream(paramsFile.filename);
-    
                     fileStream.on("error", (err: Error) => {
-                        message(true, "ERROR", "fileStream error", err);
+                        message(true, "ERROR", messages.errors.fileStream, err);
                         cleanup(false, err);
                     });
     
                     fileStream.on("end", async () => {
                         message(true, "INFO", "COPY TO ", paramsFile.tempTable);
-                        cleanup(true);
-                        const objectDatastream = new entities[("Datastreams")](ctx, Common.dbContext);
-                        const myDatas = {
-                                    "name": "Dastastream Name",
-                                    "description": "Description in meta ?",
-                                    "observationType": "SWE Array Observation",
-                                    "Thing": { "@iot.id": 26 },
-                                    "unitOfMeasurement": {
-                                        "name": headers.join(),
-                                        "symbol": "csv",
-                                        "definition": "https://www.rfc-editor.org/rfc/pdfrfc/rfc4180.txt.pdf"
-                                    },
-                                    "ObservedProperty": {
-                                        "name": "is Generik ?",
-                                        "description": "KOIKE observe",
-                                        "definition": "http://www.qudt.org/qudt/owl/1.0.0/quantity/Instances.html#AreaTemperature"
-                                    },
-                                    "Sensor": {
-                                        "name": "Nom du Kapteur",
-                                        "description": "Capte heures a la seconde",
-                                        "encodingType": "application/pdf",
-                                        "metadata": "https://time.com/datasheets/capteHour.pdf"
-                                    }
-                                };
-                        const temppDatastream = await objectDatastream.add(myDatas);
-                        if (temppDatastream && temppDatastream.body && temppDatastream.body["id"]) {
-                            const id = temppDatastream.body["id"];
+                        if (returnValue && returnValue.body && returnValue.body["@iot.id"]) {
+                            const id: string = returnValue.body["@iot.id"];
+                            await Common.dbContext.raw(`DELETE FROM "${paramsFile.tempTable}" WHERE value = '${headers.join(";")}';`); 
                             const sql = `INSERT INTO "${_DBDATAS.Observations.table}" ("datastream_id", "phenomenonTime", "resultTime", "_resulttexts")
                             SELECT '${id}', '2021-09-17T14:56:36+02:00', '2021-09-17T14:56:36+02:00', string_to_array("value", ';') FROM "${paramsFile.tempTable}"`;
-                            const tempQuery = await Common.dbContext.raw(sql);
-                            console.log(tempQuery);
+                            await Common.dbContext.raw(sql); 
+                            cleanup(true);
+                            return returnValue;
                             
                         }
-                        resolve();
                     });
     
                     fileStream.pipe(stream);
                 }).catch((err: Error) => reject(err));
-            }).catch((err: Error) => {
-                ctx.throw(400, { detail: err.message });
             });
         } else {
+            
             ctx.throw(400, {
                 code: 400, 
-                detail: `No Header i foudd in csv file : ${paramsFile.filename}`
+                detail: messages.errors.noHeaderCsv + paramsFile.filename
             });
         }
-        return returnValue;
+        return returnValue;        
     };
 
     async add(dataInput: Object): Promise<IReturnResult | undefined> {
-        message(true, "HEAD", `class ${this.constructor.name} override add`);
+        message(true, "HEAD", messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));
+        
         if (this.ctx._datas) {
             const extras = this.ctx._datas;
             const myColumns: ICsvColumns[] = [];
@@ -140,11 +171,14 @@ export class CreateFile extends Common {
                 dataStreamId: BigInt("1"),
                 duplicates: true
             };
-            await this.importCsvFileInDatastream(this.ctx, Common.dbContext, paramsFile);
-            message(true, "INFO", "importCsv", "OK");
-
+            const temp = await this.importCsvFileInDatastream(this.ctx, Common.dbContext, paramsFile);
+            return this.createReturnResult({
+                body: temp?.body
+            });
             
         } else {
+            console.log("fini else");
+            
         return;       
         }
     }

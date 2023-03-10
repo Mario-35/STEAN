@@ -1,0 +1,22 @@
+{
+    "name": "Dastastream import file",
+    "description": "Description in meta ?",
+    "observationType": "SWE Array Observation",
+    "Thing": { "@iot.id": 22 },
+    "unitOfMeasurement": {
+        "name": 'Programme,Protocole,Code_Methode,Annee,ID_Site,Code_Parcelle,Modalite,Cadre,Sous.cadre,Bloc,Repetition,CE.Deter.Terrain,Deter.Code.Taxon,Code_Taxon,GF,Stade,Incomplet,Nbr_VDT,Pds,Pds_GF,Stockage,Phrase_Fiche_P1,Phrase_Fiche_P2,Commentaires,AB_cor,BM_cor,Occupation,Modalite_bis,CE',
+        "symbol": "csv",
+        "definition": "https://www.rfc-editor.org/rfc/pdfrfc/rfc4180.txt.pdf"
+    },
+    "ObservedProperty": {
+        "name": "is Generik ?",
+        "description": "KOIKE observe",
+        "definition": "http://www.qudt.org/qudt/owl/1.0.0/quantity/Instances.html#AreaTemperature"
+    },
+    "Sensor": {
+        "name": "Nom du Kapteur",
+        "description": "Capte heures a la seconde",
+        "encodingType": "application/pdf",
+        "metadata": "https://time.com/datasheets/capteHour.pdf"
+    }
+}

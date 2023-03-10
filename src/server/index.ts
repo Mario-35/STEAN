@@ -23,6 +23,7 @@ import { _HELMETCONFIG, _KEYAPP, _ENV_VERSION, _NODE_ENV } from "./constants";
 import { _DBDATAS } from "./db/constants";
 import { _CONFIGS, _CONFIGURATION } from "./configuration";
 import { PgVisitor } from "./odata";
+import { messages } from "./messages";
 
 declare module "koa" {
     // Underscore to identify own context
@@ -69,7 +70,7 @@ message(false, "HEAD", "version", _ENV_VERSION);
 
 export const server = isTest()
     ? app.listen(_CONFIGS["test"].port, async () => {
-          message(false, "HEAD", "Server listening on port", _CONFIGS["test"].port);
+          message(false, "HEAD", messages.infos.serverListening, _CONFIGS["test"].port);
       })
     : asyncForEach(
           Object.keys(_CONFIGS),

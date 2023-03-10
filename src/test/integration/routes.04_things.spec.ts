@@ -15,7 +15,6 @@ import {
     generateApiDoc,
     IApiInput,
     prepareToApiDoc,
-    createListColumns,
     defaultGet,
     defaultPost,
     identification,
@@ -23,7 +22,10 @@ import {
     defaultPatch,
     defaultDelete,
     addToFile,
-    writeAddToFile
+    writeAddToFile,
+    getNB,
+    listOfColumns,
+    limitResult
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
@@ -51,6 +53,8 @@ const entity: IEntity = _DBDATAS.Things;
 
 
 
+
+
 const addToApiDoc = (input: IApiInput) => {
     docs.push(prepareToApiDoc(input, entity.name));
 };
@@ -68,32 +72,20 @@ addToApiDoc({
 
 describe("endpoint : Thing [8.2.1]", () => {
     let myId = "";
-
-    let success: string[] = [];
-    let params: string[] = [];
+    const temp = listOfColumns(entity);
+    const success = temp.success;
+    const params = temp.params;
     let token = "";
 
     before((done) => {
-        createListColumns(entity.table, (err: any, valueSuccess: any, valueParam: any) => {
-            success = valueSuccess;
-            params = valueParam;
-            Object.keys(entity.relations).forEach((elem: string) => {
-                success.push(`{relation} [${elem}] ${elem}@iot.navigationLink`);
-                if (entity.relations[elem].tableName == entity.table) {
-                    params.push(`{relation} ${elem} ${elem}@iot.navigationLink`);
-                } else {
-                    params.push(`{relation} [${elem}] ${elem}@iot.navigationLink`);
-                }
-            });
-            chai.request(server)
-                .post("/test/v1.0/login")
-                .send(identification)
-                .type("form")
-                .end((err: any, res: any) => {
-                    token = String(res.body["token"]);
-                    done();
+        chai.request(server)
+            .post("/test/v1.0/login")
+            .send(identification)
+            .type("form")
+            .end((err: any, res: any) => {
+                token = String(res.body["token"]);
+                done();
                 });
-        });
     });
 
     describe(`{get} ${entity.name}`, () => {
@@ -119,8 +111,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
                     res.body.value.length.should.eql(20);
-                    res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res)  });
                     docs[docs.length - 1].apiErrorExample = JSON.stringify({ "code": 404, "message": "Not Found" }, null, 4);
                     done();
                 });
@@ -195,7 +186,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     // key-value pair of {"value": 1 thing object}
                     res.body.should.include.keys("name");
                     Object.keys(res.body).length.should.eql(1);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -235,7 +226,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     // the response should be text plain
                     res.type.should.equal("text/plain");
                     res.text.should.contain("SensorWebThing");
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -262,7 +253,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     res.body["@iot.count"].should.eql("20");
                     res.body.value[0]["@iot.id"].should.eql(1);
                     Object.keys(res.body.value[0]).length.should.eql(3);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -303,7 +294,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     res.body["@iot.count"].should.eql("20");
                     res.body.value[0]["Datastreams@iot.navigationLink"].should.contain("/Things(1)/Datastreams");
                     Object.keys(res.body.value[0]).length.should.eql(3);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -332,7 +323,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     res.body.value[0]["@iot.selfLink"].should.contain("/Locations(1)");
                     res.body.value[0]["Things@iot.navigationLink"].should.contain("/Locations(1)/Things");
                     res.body.value[0]["HistoricalLocations@iot.navigationLink"].should.contain("Locations(1)/HistoricalLocations");
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -413,7 +404,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     res.body.Locations[0]["@iot.selfLink"].should.contain("/Locations(1)");
                     res.body.Locations[0]["Things@iot.navigationLink"].should.contain("/Locations(1)/Things");
                     res.body.Locations[0]["HistoricalLocations@iot.navigationLink"].should.contain("Locations(1)/HistoricalLocations");
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -439,7 +430,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     res.type.should.equal("application/json");
                     Object.keys(res.body.Locations[0]).should.contain("location");
                     Object.keys(res.body.Locations[0]).length.should.equal(1);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -467,7 +458,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     res.body.Locations[0]["@iot.selfLink"].should.contain("Locations(1)");
                     res.body.HistoricalLocations[0]["@iot.id"].should.eql(1);
                     res.body.HistoricalLocations[0]["@iot.selfLink"].should.contain("HistoricalLocations(1)");
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
 
                     done();
                 });
@@ -496,7 +487,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     res.body.Locations[0]["@iot.selfLink"].should.contain("Locations(1)");
                     res.body.Locations[0].HistoricalLocations[0]["@iot.id"].should.eql(1);
                     res.body.Locations[0].HistoricalLocations[0]["@iot.selfLink"].should.contain("HistoricalLocations(1)");
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -588,7 +579,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     res.type.should.equal("application/json");
                     res.body["@iot.count"].should.eql("20");
                     res.body.value[0]["@iot.selfLink"].should.contain("/Things(1)");
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });        
@@ -600,8 +591,8 @@ describe("endpoint : Thing [8.2.1]", () => {
         // http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#61
         it("Return added Thing", (done) => {
             const datas = {
-                "description": "A SensorWeb thing",
-                "name": "SensorWebThing",
+                "description": "Create a new thing",
+                "name": `name of new ${getNB(entity.name)}`,
                 "properties": {
                     "organization": "Mozilla",
                     "owner": "Mozilla"
@@ -631,7 +622,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
                     res.body.should.include.keys(testsKeys);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -654,14 +645,14 @@ describe("endpoint : Thing [8.2.1]", () => {
 
         it("POST Thing with new Location", (done) => {
             const datas = {
-                "name": "Temperature Monitoring System",
-                "description": "Thing (POST with new Location)",
+                "name": `Temperature Monitoring ${getNB(entity.name)}`,
+                "description": `${entity.name} (POST with new Location)`,
                 "properties": {
                     "Deployment Condition": "Deployed in a third floor balcony",
                     "Case Used": "Radiation shield"
                 },
                 "Locations": {
-                    "name": "Au Comptoir Vénitien (Created new location)",
+                    "name": "Au Comptoir Vénitien [new created]",
                     "description": "Au Comptoir Vénitien",
                     "encodingType": "application/vnd.geo+json",
                     "location": {
@@ -713,7 +704,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                                             .then((historical_locationRes) => {
                                                 if (historical_locationRes && historical_locationRes) {
                                                     historical_locationRes["thing_id"].should.eql(thingId);
-                                                    addToApiDoc({ ...infos, result: res });
+                                                    addToApiDoc({ ...infos, result: limitResult(res) });
                                                     docs[docs.length - 1].apiErrorExample = myError;
                                                     done();
                                                 }
@@ -729,7 +720,7 @@ describe("endpoint : Thing [8.2.1]", () => {
 
         it("POST Thing with existing Location", (done) => {
             const datas = {
-                "name": "Temperature Monitoring System",
+                "name": `Temperature Monitoring ${getNB(entity.name)}`,
                 "description": "Sensor (POST with existing Location)",
                 "properties": {
                     "Deployment Condition": "Deployed in a third floor balcony",
@@ -773,7 +764,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                                     .then((historical_locationRes) => {
                                         if (historical_locationRes && historical_locationRes) {
                                             historical_locationRes["thing_id"].should.eql(thingId);
-                                            addToApiDoc({ ...infos, result: res });
+                                            addToApiDoc({ ...infos, result: limitResult(res) });
                                             docs[docs.length - 1].apiErrorExample = myError;
 
                                             done();
@@ -791,7 +782,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 .post("/test/v1.0/Things")
                 .set("Cookie", `${keyTokenName}=${token}`)
                 .send({
-                    "name": "Temperature Monitoring System",
+                    "name": `Temperature Monitoring ${getNB(entity.name)}`,
                     "description": "Sensor (POST with existing Location not exist)",
                     "properties": {
                         "Deployment Condition": "Deployed in a third floor balcony",
@@ -803,8 +794,6 @@ describe("endpoint : Thing [8.2.1]", () => {
                     should.not.exist(err);
                     res.status.should.equal(400);
                     res.type.should.equal("application/json");
-
-                    // res.body.message.should.eql("No id found for Locations : 1908");
                     docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);
                     done();
                 });
@@ -812,14 +801,14 @@ describe("endpoint : Thing [8.2.1]", () => {
 
         it("POST Thing with new Location & Datastream", (done) => {
             const datas = {
-                "name": "Temperature Monitoring System",
+                "name": "Temperature Monitoring[4]",
                 "description": "Sensor system monitoring area temperature Hot",
                 "properties": {
                     "Deployment Condition": "Deployed in a third floor balcony",
                     "Case Used": "Radiation shield"
                 },
                 "Locations": [{
-                    "name": "Au Comptoir Vénitien (Created new location)",
+                    "name": `Au Comptoir Vénitien  ${getNB("location")}`,
                     "description": "Au Comptoir Vénitien",
                     "encodingType": "application/vnd.geo+json",
                     "location": {
@@ -833,17 +822,17 @@ describe("endpoint : Thing [8.2.1]", () => {
                         "description": "Datastream for recording temperature",
                         "observationType": "Measurement",
                         "unitOfMeasurement": {
-                            "name": "Degree Celsius",
+                            "name": `Degree Celsius ${getNB("unitOfMeasurement")}`,
                             "symbol": "degC",
                             "definition": "http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#DegreeCelsius"
                         },
                         "ObservedProperty": {
-                            "name": "Area Temperature",
+                            "name": `Area Temperature ${getNB("unitOfMeasurement")}`,
                             "description": "The degree or intensity of heat present in the area",
                             "definition": "http://www.qudt.org/qudt/owl/1.0.0/quantity/Instances.html#AreaTemperature"
                         },
                         "Sensor": {
-                            "name": "DHT22",
+                            "name": `DHT22 ${getNB("unitOfMeasurement")}`,
                             "description": "DHT22 temperature sensor",
                             "encodingType": "application/pdf",
                             "metadata": "https://cdn-shop.adafruit.com/datasheets/DHT22.pdf"
@@ -891,7 +880,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                                             datastreamRes["thing_id"].should.eql(thingId);
                                             datastreamRes["sensor_id"].should.eql(sensorRes.id);
                                             datastreamRes["observedproperty_id"].should.eql(observedpropertyRes.id);
-                                            addToApiDoc({ ...infos, result: res });
+                                            addToApiDoc({ ...infos, result: limitResult(res) });
                                             docs[docs.length - 1].apiErrorExample = myError;
                                             done();
                                         })
@@ -943,7 +932,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                             res.body.should.include.keys(testsKeys);
                             const newThingObject = res.body;
                             newThingObject.name.should.not.eql(thingObject.name);
-                            addToApiDoc({ ...infos, result: res });
+                            addToApiDoc({ ...infos, result: limitResult(res) });
                             done();
                         });
                 });
@@ -1021,7 +1010,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                                             .then((historical_locationRes) => {
                                                 if (historical_locationRes && historical_locationRes) {
                                                     historical_locationRes["thing_id"].should.eql(thingId);
-                                                    addToApiDoc({ ...infos, result: res });
+                                                    addToApiDoc({ ...infos, result: limitResult(res) });
                                                     done();
                                                 }
                                             })
@@ -1078,7 +1067,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                                             .then((historical_locationRes) => {
                                                 if (historical_locationRes && historical_locationRes) {
                                                     historical_locationRes["thing_id"].should.eql(thingId);
-                                                    addToApiDoc({ ...infos, result: res });
+                                                    addToApiDoc({ ...infos, result: limitResult(res) });
                                                     done();
                                                 }
                                             })
@@ -1129,7 +1118,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                                         .where({ thing_id: thingObject.id })
                                         .then((hists) => {
                                             hists.length.should.eql(0);
-                                            addToApiDoc({ ...infos, result: res });
+                                            addToApiDoc({ ...infos, result: limitResult(res) });
                                             done();
                                         });
                                 });

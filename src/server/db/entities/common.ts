@@ -12,11 +12,11 @@ import { isGraph, _DBDATAS } from "../constants";
 import { getEntityName, removeQuotes, returnFormats } from "../../helpers/index";
 import {  message } from "../../logger";
 import { IReturnResult } from "../../types";
-import { createGraph, extractMessageError, knexQueryToSql, removeKeyFromUrl, verifyId } from "../helpers";
+import { createGraph, extractMessageError, knexQueryToSql, parseSql, removeKeyFromUrl, verifyId } from "../helpers";
 import { _debug, _VOIDTABLE } from "../../constants";
 import { _CONFIGS, _CONFIGURATION } from "../../configuration";
 import { IGraphDatas } from "../helpers/createGraph";
-
+import { messages } from "../../messages/";
 
 export class Common {
     readonly ctx: koa.Context;
@@ -25,9 +25,8 @@ export class Common {
     public linkBase: string;
 
     constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
-        message(true, "CLASS", this.constructor.name, "Constructor");
+        message(true, "CLASS", this.constructor.name, messages.infos.constructor);
         this.ctx = ctx;
-
         if (knexInstance) Common.dbContext = knexInstance;
         this.nextLinkBase = removeKeyFromUrl(`${this.ctx._odata.options.rootBase}${this.ctx.href.split(`${ctx._version}/`)[1]}`, ["top", "skip"]);
         this.linkBase = `${this.ctx._odata.options.rootBase}${this.constructor.name}`; 
@@ -41,7 +40,7 @@ export class Common {
     // Log full Query
     logQuery(input: Knex.QueryBuilder | string): void {
         const queryString = typeof input === "string" ? input : knexQueryToSql(input);
-        if (_debug) message(true, "RESULT", "query", `\n${queryString}`);
+        if (_debug) message(true, "RESULT", "query", `\n${parseSql(queryString)}`);
     }
 
     // create a blank ReturnResult
@@ -149,12 +148,13 @@ export class Common {
     }
 
     async add(dataInput: Object | undefined): Promise<IReturnResult | undefined> {
+        
         message(true, "CLASS", this.constructor.name, "add");
-
+        
         dataInput = this.formatDataInput(dataInput);
-
+        
         if (!dataInput) return;
-
+        
         const sql = this.ctx._odata.asPostSql(dataInput, Common.dbContext);
 
         this.logQuery(sql);
@@ -181,15 +181,15 @@ export class Common {
     async update(idInput: bigint | string, dataInput: Object | undefined): Promise<IReturnResult | undefined> {
         message(true, "CLASS", this.constructor.name, "update");
 
-        if (!dataInput) this.ctx.throw(400, { code: 400,  detail: "No data send for update" });
+        if (!dataInput) this.ctx.throw(400, { code: 400,  detail: messages.errors.noDataSend + "update" });
 
         const testIfId = await verifyId(Common.dbContext, BigInt(idInput), _DBDATAS[this.constructor.name].table);
 
-        if (testIfId === false) this.ctx.throw(404, { code: 404,  detail: `No id found for : ${idInput}` });
+        if (testIfId === false) this.ctx.throw(404, { code: 404,  detail: messages.errors.noId + idInput });
 
         dataInput = this.formatDataInput(dataInput);
 
-        if (!dataInput) this.ctx.throw(400, { code: 400,  detail: "No data send for update" });
+        if (!dataInput) this.ctx.throw(400, { code: 400,  detail: messages.errors.noDataSend + "update" });
 
         const sql = this.ctx._odata.asPatchSql(dataInput, Common.dbContext);
 
@@ -216,7 +216,7 @@ export class Common {
         if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ id: BigInt(idInput), body: `DELETE FROM "${_DBDATAS[this.constructor.name].table}" WHERE id= ${idInput}` });
 
         const testIfId = await verifyId(Common.dbContext, BigInt(idInput), _DBDATAS[this.constructor.name].table);
-        if (testIfId === false) this.ctx.throw(404, { code: 404,  detail: `No id found for : ${idInput}` });
+        if (testIfId === false) this.ctx.throw(404, { code: 404,  detail: messages.errors.noId + idInput });
 
         try {
             const query: Knex.QueryBuilder = Common.dbContext(_DBDATAS[this.constructor.name].table).del().where({ id: idInput });

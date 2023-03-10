@@ -11,6 +11,7 @@ import { apiAccess, userAccess } from "../db/dataAccess";
 import { _DBDATAS } from "../db/constants";
 import { ConfigCtx, returnFormats } from "../helpers";
 import fs from "fs";
+import { db } from "../db";
 import { message } from "../logger";
 import { IReturnResult } from "../types";
 import { _APIVERSION } from "../constants";
@@ -22,11 +23,8 @@ import { ensureAuthenticated, getAuthenticatedUser, userRights } from "../types/
 import { createDatabase } from "../db/helpers";
 import { createOdata } from "../odata";
 import { _CONFIGURATION } from "../configuration";
-import { db } from "../db";
-
+import { messages } from "../messages";
 export const unProtectedRoutes = new Router<DefaultState, Context>();
-
-
 
 // ALl others
 unProtectedRoutes.get("/(.*)", async (ctx) => {
@@ -80,7 +78,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             if (ctx.request.header.accept && ctx.request.header.accept.includes("text/html")) ctx.redirect(`${ctx._rootName}login`);
             else ctx.status = 200;
             ctx.body = {
-                message: "Logout succeeded"
+                message: messages.infos.logoutOk
             };
             return;
 

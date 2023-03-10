@@ -18,6 +18,7 @@ import knex, { Knex } from "knex";
 import { createDatabase } from "./db/helpers";
 import pg from "pg"
 import update  from "./config/update.json"
+import { messages, messagesReplace } from "./messages";
 
 
 /**
@@ -69,7 +70,7 @@ class configuration {
 
 
     constructor(file: fs.PathOrFileDescriptor) {
-        message(true, "CLASS", this.constructor.name, "Constructor");   
+        message(true, "CLASS", this.constructor.name, messages.infos.constructor);   
         configuration.filePath = file;    
         const fileTemp = fs.readFileSync(file, "utf8");    
         configuration.jsonConfiguration = JSON.parse(fileTemp);
@@ -108,7 +109,7 @@ class configuration {
             result_Type: input["result_Type"] ? input["result_Type"] : "number"
         };
         if (Object.values(returnValue).includes("ERROR"))
-            throw new TypeError(`Error in config file [${util.inspect(returnValue, { showHidden: false, depth: null })}]`);
+            throw new TypeError(`${messages.errors.configFile} [${util.inspect(returnValue, { showHidden: false, depth: null })}]`);
     
         return returnValue;
     };
@@ -154,7 +155,7 @@ class configuration {
             retry: +String(this.configurationList[configName].retry)  || 2
     
         };
-        if (Object.values(returnValue).includes("ERROR")) throw new TypeError(`Error in config file [${returnValue}]`);
+        if (Object.values(returnValue).includes("ERROR")) throw new TypeError(`${messages.errors.configFile} [${returnValue}]`);
         return returnValue;
     };
 
@@ -182,17 +183,17 @@ class configuration {
             .then(async (res: boolean) => {                   
                   const port = _CONFIGS[key].port;
                   if (port  > 0) {
-                      if (configuration.ports.includes(port)) message(false, "RESULT", `\x1b[35m[${key}]\x1b[32m add on port`, port);
+                      if (configuration.ports.includes(port)) message(false, "RESULT", `\x1b[35m[${key}]\x1b[32m ${messages.infos.addPort}`, port);
                       else app.listen(port, () => {
                         configuration.ports.push(port);
-                              message(false, "RESULT", `\x1b[33m[${key}]\x1b[32m listening on port`, port);
+                              message(false, "RESULT", `\x1b[33m[${key}]\x1b[32m ${messages.infos.ListenPort}`, port);
                           });
                   }
                   return res;
                   
               })
               .catch((error: any) => {
-                  message(false, "ERROR", "Unable to find or create", _CONFIGS[key].pg_database);
+                  message(false, "ERROR", messages.errors.unableFindCreate, _CONFIGS[key].pg_database);
                   console.log(error);
                   process.exit(111);
               });
@@ -201,7 +202,7 @@ class configuration {
 
     async isDbExist(connectName: string, create: boolean): Promise<boolean> {
         const connection: IDbConnection = this.createConnection(connectName);
-        message(false, "HEAD", "connectName", connectName);
+        message(false, "HEAD", messages.infos.connectName, connectName);
     
         await this.pgwait(connection);
     
@@ -216,7 +217,7 @@ class configuration {
          return await tempConnection
              .raw("select 1+1 as result")
              .then(async () => {
-                 message(false, "RESULT", "Database Online", _CONFIGS[connectName].pg_database);
+                 message(false, "RESULT", messages.infos.dbOnline, _CONFIGS[connectName].pg_database);
                  if(update) {
                     const list = update["database"];
                     await asyncForEach(list, async (operation: string) => {
@@ -229,14 +230,14 @@ class configuration {
              .catch(async (err: any) => {
                  let returnResult = false;
                  if (err.code == "3D000" && create == true) {
-                     message(false, "DEBUG", "Try create DATABASE", _CONFIGS[connectName].pg_database);
+                     message(false, "DEBUG", messagesReplace(messages.infos.tryCreate, [messages.infos.db]), _CONFIGS[connectName].pg_database);
                      returnResult = await createDatabase(connectName)
                          .then(async () => {
-                             message(false, "INFO", "create DATABASE", "OK");
+                             message(false, "INFO", messagesReplace(messages.infos.create, [messages.infos.db]), "OK");
                              return true;
                          })
                          .catch((err: Error) => {
-                             message(false, "ERROR", "create DATABASE", err.message);
+                             message(false, "ERROR", messagesReplace(messages.infos.create, [messages.infos.db]), err.message);
                              return false;
                          });
                  }
@@ -254,18 +255,18 @@ class configuration {
         }
         
         const printStatusMsg = (status: string): void => {
-            message(false, "RESULT", `Databse PostgreSQL ${status}`, timeStamp());
+            message(false, "RESULT", messagesReplace(messages.infos.dbPg, [status]), timeStamp());
         }
     
         const connect = async (): Promise<boolean> => {
                 try {
                     await pool.query('SELECT 1')
-                    printStatusMsg('Online')
+                    printStatusMsg(messages.infos.offLine)
                     await pool.end();
                     return true;
                 }   
                 catch (e) {
-                    if (passage === 1) printStatusMsg('Offline')
+                    if (passage === 1) printStatusMsg(messages.infos.offLine)
                     return false;
                 }
         }

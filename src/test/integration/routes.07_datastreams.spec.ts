@@ -15,13 +15,15 @@ import {
     generateApiDoc,
     IApiInput,
     prepareToApiDoc,
-    createListColumns,
     identification,
     keyTokenName,
     defaultGet,
     defaultDelete,
     defaultPost,
-    defaultPatch
+    defaultPatch,
+    getNB,
+    listOfColumns,
+    limitResult
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
@@ -66,33 +68,19 @@ addToApiDoc({
 let firstID = 0;
 
 describe("endpoint : Datastream", () => {
-    let success: string[] = [];
-    let params: string[] = [];
+    const temp = listOfColumns(entity);
+    const success = temp.success;
+    const params = temp.params;
     let token = "";
 
     before((done) => {
-        
-
-        createListColumns(entity.table, (err: any, valueSuccess: any, valueParam: any) => {
-            success = valueSuccess;
-            params = valueParam;
-            Object.keys(entity.relations).forEach((elem: string) => {
-                success.push(`{relation} [${elem}] ${elem}@iot.navigationLink`);
-                if (entity.relations[elem].tableName == entity.table) {
-                    params.push(`{relation} ${elem} ${elem}@iot.navigationLink`);
-                } else {
-                    params.push(`{relation} [${elem}] ${elem}@iot.navigationLink`);
-                }
+        chai.request(server)
+            .post("/test/v1.0/login")
+            .send(identification)
+            .end((err: any, res: any) => {
+                token = String(res.body["token"]);
+                done();
             });
-
-            chai.request(server)
-                .post("/test/v1.0/login")
-                .send(identification)
-                .end((err: any, res: any) => {
-                    token = String(res.body["token"]);
-                    done();
-                });
-        });
     });
 
     describe(`{get} ${entity.name}`, () => {
@@ -123,8 +111,7 @@ describe("endpoint : Datastream", () => {
                             res.body.value.length.should.eql(nb);
                             res.body.should.include.keys("@iot.count", "value");
                             res.body.value[0].should.include.keys(testsKeys);
-                            res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                            addToApiDoc({ ...infos, result: res });
+                            addToApiDoc({ ...infos, result: limitResult(res) });
                             firstID = res.body.value[0]["@iot.id"];
                             docs[docs.length - 1].apiErrorExample = JSON.stringify({ "code": 404, "message": "Not Found" }, null, 4);
 
@@ -159,7 +146,7 @@ describe("endpoint : Datastream", () => {
                     res.body["Sensor@iot.navigationLink"].should.contain(`/Datastreams(${id})/Sensor`);
                     res.body["ObservedProperty@iot.navigationLink"].should.contain(`/Datastreams(${id})/ObservedProperty`);
                     res.body["Observations@iot.navigationLink"].should.contain(`/Datastreams(${id})/Observations`);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -204,8 +191,7 @@ describe("endpoint : Datastream", () => {
                     res.body.value[0]["Sensor@iot.navigationLink"].should.contain("/Datastreams(8)/Sensor");
                     res.body.value[0]["ObservedProperty@iot.navigationLink"].should.contain("/Datastreams(8)/ObservedProperty");
                     res.body.value[0]["Observations@iot.navigationLink"].should.contain("/Datastreams(8)/Observations");
-                    res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -235,7 +221,7 @@ describe("endpoint : Datastream", () => {
                     // res.body.Observations.length.should.eql(9);
                     res.body.Observations[0].should.include.keys(Observations_testsKeys);
                     res.body["@iot.id"].should.eql(10);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -262,7 +248,7 @@ describe("endpoint : Datastream", () => {
                     res.body["Thing"]['@iot.id'].should.eql(6);
                     res.body["Sensor"]['@iot.id'].should.eql(5);
                     res.body["ObservedProperty"]['@iot.id'].should.eql(8);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -428,8 +414,8 @@ describe("endpoint : Datastream", () => {
                     "definition": "http://unitsofmeasure.org/ucum.html"
                 },
                 "observationType": "Measurement",
-                "description": "Air quality readings",
-                "name": "air_quality_readings",
+                "description": `Air quality readings ${getNB(entity.name)}`,
+                "name": `Air quality readings ${getNB(entity.name)}`,
                 "Thing": { "@iot.id": 1 },
                 "ObservedProperty": { "@iot.id": 1 },
                 "Sensor": { "@iot.id": 1 }
@@ -457,7 +443,7 @@ describe("endpoint : Datastream", () => {
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
                     res.body.should.include.keys(testsKeys);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -480,21 +466,21 @@ describe("endpoint : Datastream", () => {
         it("Return added Datastream from Thing", (done) => {
             const datas = {
                 "name": "Air Temperature DS",
-                "description": "Datastream for recording temperature",
+                "description": "Datastream for recording temperature [6]",
                 "observationType": "Measurement",
                 "unitOfMeasurement": {
-                    "name": "Degree Celsius",
+                    "name": `Degree Celsius ${getNB("unitOfMeasurement")}`,
                     "symbol": "degC",
                     "definition": "http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#DegreeCelsius"
                 },
                 "ObservedProperty": {
-                    "name": "Area Temperature",
+                    "name": `Area Temperature ${getNB("unitOfMeasurement")}`,
                     "description": "The degree or intensity of heat present in the area",
                     "definition": "http://www.qudt.org/qudt/owl/1.0.0/quantity/Instances.html#AreaTemperature"
                 },
-                "Sensor": {
-                    "name": "DHT22",
-                    "description": "DHT22 temperature sensor",
+                "Sensor": {  
+                    "name": `DHT22 ${getNB("unitOfMeasurement")}`,
+                    "description": "DHT22 temperature sensor [1]",
                     "encodingType": "application/pdf",
                     "metadata": "https://cdn-shop.adafruit.com/datasheets/DHT22.pdf"
                 }
@@ -521,7 +507,7 @@ describe("endpoint : Datastream", () => {
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
                     res.body.should.include.keys(testsKeys);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     docs[docs.length - 1].apiErrorExample = myError;
 
                     done();
@@ -568,7 +554,7 @@ describe("endpoint : Datastream", () => {
                             res.body.should.include.keys(testsKeys);
                             const newItems = res.body;
                             newItems.description.should.not.eql(itemObject.description);
-                            addToApiDoc({ ...infos, result: res });
+                            addToApiDoc({ ...infos, result: limitResult(res) });
                             done();
                         });
                 });
@@ -631,7 +617,7 @@ describe("endpoint : Datastream", () => {
                                 .orderBy("id")
                                 .then((newItems) => {
                                     newItems.length.should.eql(lengthBeforeDelete - 1);
-                                    addToApiDoc({ ...infos, result: res });
+                                    addToApiDoc({ ...infos, result: limitResult(res) });
                                     done();
                                 });
                         });

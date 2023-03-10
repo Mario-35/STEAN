@@ -10,7 +10,7 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { positions, IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet } from "./constant";
+import { positions, IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult } from "./constant";
 import { server } from "../../server/index";
 
 // Institut Agro Rennes-Angers 48.1140652783794, -1.7062956999598533 
@@ -60,8 +60,7 @@ describe("{get} BuiltInGeospatial", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(3);
                 res.body["value"][0]["@iot.id"].should.eql(8);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -86,8 +85,7 @@ describe("{get} BuiltInGeospatial", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(5);
                 res.body["value"][0]["@iot.id"].should.eql(5);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -112,8 +110,7 @@ describe("{get} BuiltInGeospatial", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(3);
                 res.body["value"][0]["@iot.id"].should.eql(8);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -138,8 +135,7 @@ describe("{get} BuiltInGeospatial", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(5);
                 res.body["value"][0]["@iot.id"].should.eql(5);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });    
@@ -164,8 +160,7 @@ describe("{get} BuiltInGeospatial", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(1);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -190,8 +185,7 @@ describe("{get} BuiltInGeospatial", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(22);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -216,8 +210,8 @@ describe("{get} BuiltInGeospatial", () => {
     //             res.type.should.equal("application/json");
     //             res.body.value.length.should.eql(2);
     //             res.body["value"][0]["@iot.id"].should.eql(22);
-    //             res.body.value = [res.body.value[0], res.body.value[1], "..."];
-    //             addToApiDoc({ ...infos, result: res });
+    //             pipo
+    //             addToApiDoc({ ...infos, result: limitResult(res) });
     //             done();
     //         });
     // });
@@ -242,8 +236,7 @@ describe("{get} BuiltInGeospatial", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body["value"][0]["@iot.id"].should.eql(20);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -268,8 +261,7 @@ describe("{get} BuiltInGeospatial", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(4);
                 res.body["value"][0]["@iot.id"].should.eql(3);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });    
@@ -296,8 +288,8 @@ describe("{get} BuiltInGeospatial", () => {
     //             res.type.should.equal("application/json");
     //             res.body.value.length.should.eql(1);
     //             res.body["value"][0]["@iot.id"].should.eql(20);
-    //             res.body.value = [res.body.value[0], res.body.value[1], "..."];
-    //             addToApiDoc({ ...infos, result: res });
+    //             pipo
+    //             addToApiDoc({ ...infos, result: limitResult(res) });
     //             done();
     //         });
     // });
@@ -323,8 +315,7 @@ describe("{get} BuiltInGeospatial", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(4);
                 res.body["value"][0]["@iot.id"].should.eql(21);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });    
@@ -349,8 +340,7 @@ describe("{get} BuiltInGeospatial", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(22);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });    
@@ -375,8 +365,7 @@ describe("{get} BuiltInGeospatial", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body["value"][0]["@iot.id"].should.eql(7);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     }); 
@@ -401,8 +390,7 @@ describe("{get} BuiltInGeospatial", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(4);
                 res.body["value"][0]["@iot.id"].should.eql(3);
-                res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                addToApiDoc({ ...infos, result: res });
+                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });   
@@ -428,8 +416,8 @@ describe("{get} BuiltInGeospatial", () => {
     //             res.type.should.equal("application/json");
     //             res.body.value.length.should.eql(1);
     //             res.body["value"][0]["@iot.id"].should.eql(7);
-    //             res.body.value = [res.body.value[0], res.body.value[1], "..."];
-    //             addToApiDoc({ ...infos, result: res });
+    //             pipo
+    //             addToApiDoc({ ...infos, result: limitResult(res) });
     //             done();
     //         });
     // }); 

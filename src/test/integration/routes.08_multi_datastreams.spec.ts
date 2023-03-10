@@ -15,13 +15,15 @@ import {
     generateApiDoc,
     IApiInput,
     prepareToApiDoc,
-    createListColumns,
     identification,
     keyTokenName,
     defaultPatch,
     defaultDelete,
     defaultGet,
-    defaultPost
+    defaultPost,
+    getNB,
+    listOfColumns,
+    limitResult
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
@@ -65,33 +67,19 @@ describe("endpoint : MultiDatastream", () => {
     let myId = "";
     let myError = "";
     let firstID = 0;
-    let success: string[] = [];
-    let params: string[] = [];
+    const temp = listOfColumns(entity);
+    const success = temp.success;
+    const params = temp.params;
     let token = "";
 
     before((done) => {
-        
-
-        createListColumns(entity.table, (err: any, valueSuccess: any, valueParam: any) => {
-            success = valueSuccess;
-            params = valueParam;
-            Object.keys(entity.relations).forEach((elem: string) => {
-                success.push(`{relation} [${elem}] ${elem}@iot.navigationLink`);
-                if (entity.relations[elem].tableName == entity.table) {
-                    params.push(`{relation} ${elem} ${elem}@iot.navigationLink`);
-                } else {
-                    params.push(`{relation} [${elem}] ${elem}@iot.navigationLink`);
-                }
+        chai.request(server)
+            .post("/test/v1.0/login")
+            .send(identification)
+            .end((err: any, res: any) => {
+                token = String(res.body["token"]);
+                done();
             });
-
-            chai.request(server)
-                .post("/test/v1.0/login")
-                .send(identification)
-                .end((err: any, res: any) => {
-                    token = String(res.body["token"]);
-                    done();
-                });
-        });
     });
 
     describe(`{get} ${entity.name}`, () => {
@@ -122,8 +110,7 @@ describe("endpoint : MultiDatastream", () => {
                             res.body.value.length.should.eql(nb);
                             res.body.should.include.keys("@iot.count", "value");
                             res.body.value[0].should.include.keys(testsKeys);
-                            res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                            addToApiDoc({ ...infos, result: res });
+                            addToApiDoc({ ...infos, result: limitResult(res) });
                             firstID = res.body.value[0]["@iot.id"];
                             docs[docs.length - 1].apiErrorExample = JSON.stringify({ "code": 404, "message": "Not Found" }, null, 4);
                             done();
@@ -157,7 +144,7 @@ describe("endpoint : MultiDatastream", () => {
                     res.body["Sensor@iot.navigationLink"].should.contain(`/MultiDatastreams(${id})/Sensor`);
                     res.body["ObservedProperties@iot.navigationLink"].should.contain(`/MultiDatastreams(${id})/ObservedProperties`);
                     res.body["Observations@iot.navigationLink"].should.contain(`/MultiDatastreams(${id})/Observations`);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -202,8 +189,7 @@ describe("endpoint : MultiDatastream", () => {
                     res.body.value[0]["Sensor@iot.navigationLink"].should.contain("/MultiDatastreams(8)/Sensor");
                     res.body.value[0]["ObservedProperties@iot.navigationLink"].should.contain("/MultiDatastreams(8)/ObservedProperties");
                     res.body.value[0]["Observations@iot.navigationLink"].should.contain("/MultiDatastreams(8)/Observations");
-                    res.body.value = [res.body.value[0], res.body.value[1], "..."];
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -232,7 +218,7 @@ describe("endpoint : MultiDatastream", () => {
                     // res.body["Thing"]["Locations"].should.include.keys("FeatureOfInterest");
                     res.body.should.include.keys("Sensor");
                     res.body.should.include.keys("ObservedProperties");
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -380,7 +366,7 @@ describe("endpoint : MultiDatastream", () => {
         it("Return added MultiDatastream", (done) => {
             const datas = {
                 description: "Air quality readings",
-                name: "air_quality_readings",
+                name: `Air quality readings ${getNB(entity.name)}`,
                 Thing: {
                     "@iot.id": 2
                 },
@@ -391,23 +377,23 @@ describe("endpoint : MultiDatastream", () => {
                 unitOfMeasurements: [
                     {
                         symbol: "%",
-                        name: "humidity",
+                        name: `${getNB("humidity")}`,
                         definition: "http://unitsofmeasure.org/ucum.html"
                     },
                     {
-                        name: "Temperature",
+                        name: `${getNB("Temperature")}`,
                         symbol: "°",
                         definition: "http://unitsofmeasure.org/blank.html"
                     }
                 ],
                 ObservedProperties: [
                     {
-                        name: "humidity",
+                        name: `${getNB("humidity")}`,
                         definition: "humidity",
                         description: "valeur en pourcentage du taux d'humidity de l'air"
                     },
                     {
-                        name: "Temperature",
+                        name: `${getNB("Temperature")}`,
                         definition: "Temperature",
                         description: "valeur en degré de la Temperature de l'air"
                     }
@@ -436,7 +422,7 @@ describe("endpoint : MultiDatastream", () => {
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
                     res.body.should.include.keys(testsKeys);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
@@ -459,10 +445,10 @@ describe("endpoint : MultiDatastream", () => {
         it("Return added MultiDatastream with created Thing", (done) => {
             const datas = {
                 description: "Air quality readings",
-                name: "air_quality_readings",
+                name: `Air quality readings ${getNB(entity.name)}`,
                 Thing: {
                     description: "A New SensorWeb thing",
-                    name: "SensorWebThing",
+                    name:`"SensorWebThing ${getNB("Thing")}`,
                     properties: {
                         organization: "Mozilla",
                         owner: "Mozilla"
@@ -470,7 +456,7 @@ describe("endpoint : MultiDatastream", () => {
                 },
                 Sensor: {
                     name: "DHT72",
-                    description: "DHT72 temperature Humidity sensor",
+                    description: `DHT72 ${getNB("soil temperature")}`,
                     encodingType: "application/pdf",
                     metadata: "https://cdn-shop.adafruit.com/datasheets/DHT72.pdf"
                 },
@@ -478,23 +464,23 @@ describe("endpoint : MultiDatastream", () => {
                 unitOfMeasurements: [
                     {
                         symbol: "%",
-                        name: "Soil humidity",
+                        name: `Soil ${getNB("soil humidity")}`,
                         definition: "http://unitsofmeasure.org/ucum.html"
                     },
                     {
-                        name: "Soil Temperature",
+                        name: `Soil ${getNB("soil temperature")}`,
                         symbol: "°",
                         definition: "http://unitsofmeasure.org/blank.html"
                     }
                 ],
                 ObservedProperties: [
                     {
-                        name: "humidity",
+                        name: `${getNB("humidity")}`,
                         definition: "humidity",
                         description: "valeur en pourcentage du taux d'humidity de l'air"
                     },
                     {
-                        name: "Temperature",
+                        name: `${getNB("Temperature")}`,
                         definition: "Temperature",
                         description: "valeur en degré de la Temperature de l'air"
                     }
@@ -522,7 +508,7 @@ describe("endpoint : MultiDatastream", () => {
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
                     res.body.should.include.keys(testsKeys);
-                    addToApiDoc({ ...infos, result: res });
+                    addToApiDoc({ ...infos, result: limitResult(res) });
                     docs[docs.length - 1].apiErrorExample = myError;
 
                     done();
@@ -575,8 +561,8 @@ describe("endpoint : MultiDatastream", () => {
             chai.request(server)
                 .post("/test/v1.0/MultiDatastreams")
                 .send({
+                    name: `Air quality readings ${getNB(entity.name)}`,
                     description: "Air quality readings",
-                    name: "air_quality_readings",
                     Thing: {
                         "@iot.id": 2
                     },
@@ -587,18 +573,18 @@ describe("endpoint : MultiDatastream", () => {
                     unitOfMeasurements: [
                         {
                             symbol: "%",
-                            name: "humidity",
+                            name: `${getNB("humidity")}`,
                             definition: "http://unitsofmeasure.org/ucum.html"
                         }
                     ],
                     ObservedProperties: [
                         {
-                            name: "humidity",
+                            name: `${getNB("humidity")}`,
                             definition: "humidity",
                             description: "valeur en pourcentage du taux d'humidity de l'air"
                         },
                         {
-                            name: "Temperature",
+                            name: `${getNB("Temperature")}`,
                             definition: "Temperature",
                             description: "valeur en degré de la Temperature de l'air"
                         }
@@ -649,7 +635,7 @@ describe("endpoint : MultiDatastream", () => {
                             res.body.should.include.keys(testsKeys);
                             const newItems = res.body;
                             newItems.description.should.not.eql(itemObject.description);
-                            addToApiDoc({ ...infos, result: res });
+                            addToApiDoc({ ...infos, result: limitResult(res) });
                             done();
                         });
                 });
@@ -714,7 +700,7 @@ describe("endpoint : MultiDatastream", () => {
                                 .orderBy("id")
                                 .then((newItems) => {
                                     newItems.length.should.eql(lengthBeforeDelete - 1);
-                                    addToApiDoc({ ...infos, result: res });
+                                    addToApiDoc({ ...infos, result: limitResult(res) });
                                     done();
                                 });
                         });

@@ -23,7 +23,7 @@ export var _debug = process.env.DEBUG?.trim() === "true";
 export const _KEYAPP = fs.readFileSync(__dirname + "/config/.key", "utf8") || "zLwX893Mtt9Rc0TKvlInDXuZTFj9rxDV";
 export const _VOIDTABLE = "spatial_ref_sys";
 export const _DOUBLEQUOTE = '"';
-export const _QUOTEDCOMA = '","';
+export const _QUOTEDCOMA = '",\n"';
 export const _APIVERSION = "v1.0";
 export const _ENV_VERSION = process.env.npm_package_version ? process.env.npm_package_version : fileConfigJson ? fileConfigJson["version"] : "";
 export const _NODE_ENV = process.env.NODE_ENV ? process.env.NODE_ENV : "production";
