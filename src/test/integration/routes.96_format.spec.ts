@@ -26,17 +26,17 @@ const addToApiDoc = (input: IApiInput) => {
 addToApiDoc({
     api: `{infos} /Format Infos.`,
     apiName: "FormatInfos",
-    apiDescription: `Format result JSON as default, DATAARRAY or CSV with comma separator, note that $value return result as text.`,
+    apiDescription: `Format result json as default, dataArray, csv, txt,  graph or graphDatas, note that $value return result as text.`,
     result: ""
 });
 
 describe("Output formats", () => {
-    describe("{get} resultFormat CSV", () => {
-        it("Return result in CSV format.", (done) => {
+    describe("{get} resultFormat csv", () => {
+        it("Return result in csv format.", (done) => {
             const infos = {
-                api: `{get} ResultFormat as CSV`,
+                api: `{get} ResultFormat as csv`,
                 apiName: "FormatCsv",
-                apiDescription: 'Use $resultFormat=csv to get datas as csv format.<br><img src="./assets/csv.jpg" alt="csv result">',
+                apiDescription: 'Use $resultFormat=csv to get datas as csv format.<br><img class="tabLogo" src="./assets/csv.jpg" alt="csv result">',
                 apiExample: { http: "/v1.0/Datastreams(1)/Observations?$top=20&$resultFormat=csv" }
             };
             chai.request(server)
@@ -46,17 +46,17 @@ describe("Output formats", () => {
                     res.status.should.equal(200);
                     res.type.should.equal("text/csv");
                     res.text.startsWith(`"@iot.${"id"}";`);
-                    addToApiDoc({ ...infos, result: limitResult(res) });
+                    addToApiDoc({ ...infos, result: res });
                     done();
                 });
         });
     });
 
-    describe("{get} resultFormat DATAARRAY", () => {
-        it("Return Things in DATAARRAY format.", (done) => {
+    describe("{get} resultFormat dataArray", () => {
+        it("Return Things in dataArray format.", (done) => {
             const infos = {
-                api: `{get} Things Things as DATAARRAY`,
-                apiName: "FormatThingDATAARRAY",
+                api: `{get} Things Things as dataArray`,
+                apiName: "FormatThingdataArray",
                 apiDescription: 'Use $resultFormat=dataArray to get datas as dataArray format.',
                 apiExample: { http: "/v1.0/Things?$resultFormat=dataArray" }
             };
@@ -70,15 +70,16 @@ describe("Output formats", () => {
                     res.body[0].component.length.should.eql(4);
                     res.body[0].component[0].should.eql("id");  
                     res.body[0].dataArray.length.should.eql(24);
-                    addToApiDoc({ ...infos, result: limitResult(res) });
+                    res.body[0].dataArray = [res.body[0].dataArray[0], res.body[0].dataArray[1], " ... "];
+                    addToApiDoc({ ...infos, result: res });
                     done();
                 });
         });
         
-        it("Return Datastream/Observations in DATAARRAY format.", (done) => {
+        it("Return Datastream/Observations in dataArray format.", (done) => {
             const infos = {
                 api: `{get} Datastream Observations as dataArray`,
-                apiName: "FormatDataStreamDATAARRAY",
+                apiName: "FormatDataStreamdataArray",
                 apiDescription: 'Use $resultFormat=dataArray to get datas as dataArray format.',
                 apiExample: { http: "/v1.0/Datastreams(1)/Observations?$resultFormat=dataArray&$select=id,result" }
             };
@@ -92,19 +93,19 @@ describe("Output formats", () => {
                     res.body[0]['dataArray@iot.count'].should.eql(22);
                     res.body[0].dataArray.length.should.eql(22);
                     res.body[0].dataArray[1][1].should.eql(0.1);  
-                    addToApiDoc({ ...infos, result: limitResult(res) });
+                    res.body[0].dataArray = [res.body[0].dataArray[0], res.body[0].dataArray[1], " ... "];
+                    addToApiDoc({ ...infos, result: res});
                     done();
                 });
         });
     });
 
-
-    describe("{get} resultFormat GRAPH", () => {
-        it("Return result in GRAPH format.", (done) => {
+    describe("{get} resultFormat graph", () => {
+        it("Return result in graph format.", (done) => {
             const infos = {
-                api: `{get} ResultFormat as GRAPH`,
+                api: `{get} ResultFormat as graph`,
                 apiName: "FormatGraph",
-                apiDescription: 'Use $resultFormat=GRAPH to get datas into graphical representation.<br><img src="./assets/graph.jpg" alt="graph result">',
+                apiDescription: 'Use $resultFormat=graph to get datas into graphical representation.<br><img class="tabLogo" src="./assets/graph.png" alt="graph result">',
                 apiExample: { http: "/v1.0/Datastreams(1)/Observations?$resultFormat=graph" }
             };
             chai.request(server)
@@ -119,13 +120,14 @@ describe("Output formats", () => {
         });
     });
     
-    describe("{get} resultFormat GRAPHDATAS", () => {
-        it("Return result in GRAPHDATAS format.", (done) => {
+    describe("{get} resultFormat graphDatas", () => {
+        it("Return result in graphDatas format.", (done) => {
             const infos = {
-                api: `{get} ResultFormat as GRAPHDATAS`,
+                api: `{get} ResultFormat as graphDatas`,
                 apiName: "FormatGraphDatas",
-                apiDescription: "Use $resultFormat=GRAPHDATAS to get datas into echarts compatible format.",
-                apiExample: { http: "/v1.0/Datastreams(1)/Observations?$resultFormat=graphDatas" }
+                apiDescription: "Use $resultFormat=graphDatas to get datas into echarts compatible format.",
+                apiExample: { http: "/v1.0/Datastreams(1)/Observations?$resultFormat=graphDatas" },
+                apiReference: "https://echarts.apache.org/en/index.html"
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
@@ -134,8 +136,10 @@ describe("Output formats", () => {
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
                     res.body.should.include.keys(["ids", "values", "dates"]);
-
-                    addToApiDoc({ ...infos, result: limitResult(res) });
+                    res.body.ids = [res.body.ids[0], res.body.ids[1], " ... "];
+                    res.body.values.result = [res.body.values.result[0], res.body.values.result[1], res.body.values.result[2], res.body.values.result[3]," ... "];
+                    res.body.dates = [res.body.dates[0], res.body.dates[1], " ... "];
+                    addToApiDoc({ ...infos, result: res });
                     done();
                 });
         });

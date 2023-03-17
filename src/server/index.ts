@@ -15,7 +15,7 @@ import { protectedRoutes, routerHandle, unProtectedRoutes } from "./routes/";
 import cors from "@koa/cors";
 import { asyncForEach, isTest } from "./helpers";
 import { message } from "./logger";
-import {  userToken } from "./types";
+import {  MODES, userToken } from "./types";
 import serve from "koa-static";
 import path from "path";
 import compress from "koa-compress";
@@ -65,16 +65,20 @@ app.use((ctx, next) => {
 
 app.use(protectedRoutes.routes());
 
-message(false, "HEAD", "env", _NODE_ENV);
-message(false, "HEAD", "version", _ENV_VERSION);
+message(false, MODES.HEAD, "env", _NODE_ENV);
+message(false, MODES.HEAD, "version", _ENV_VERSION);
 
 export const server = isTest()
     ? app.listen(_CONFIGS["test"].port, async () => {
-          message(false, "HEAD", messages.infos.serverListening, _CONFIGS["test"].port);
+          message(false, MODES.HEAD, messages.infos.serverListening, _CONFIGS["test"].port);
       })
     : asyncForEach(
           Object.keys(_CONFIGS),
-          async (key: string) => {            
-              await _CONFIGURATION.addToServer(app, key);
+          async (key: string) => {  
+            try {
+                await _CONFIGURATION.addToServer(app, key);
+            } catch (error) {
+                console.log(error);                
+            }          
           }
       );

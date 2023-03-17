@@ -34,18 +34,18 @@ addToApiDoc({
     api: `{infos} /BuiltInGeospatial Infos`,
     apiName: "InfosBuiltInGeospatial",
     apiDescription: `The OGC SensorThings API supports a set of functions that can be used with the $filter or $orderby query operations. The following table lists the available functions and they follows the OData Canonical function definitions listed in Section 5.1.1.4 of the [OData Version 4.0 Part 2: URL Conventions] and the syntax rules for these functions are defined in [OData Version 4.0 ABNF].`,
-          apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+          apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
     result: ""
 });
    
-describe("{get} BuiltInGeospatial", () => {
+describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
 
     it(`geo.distance(location, geography'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`, (done) => {
         const infos = {
             api: "{get} Location Distance location",
             apiName: "BuiltInGeospatialDistanceLocation",
             apiDescription: "The round function rounds the input numeric parameter to the nearest numeric value with no decimal component. The mid-point between two integers is rounded away from zero, i.e. 0.5 is rounded to 1 and ‑0.5 is rounded to -1.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
             apiExample: {   http: `/v1.0/Locations?$filter=geo.distance(location, geography'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -70,7 +70,7 @@ describe("{get} BuiltInGeospatial", () => {
             api: "{get} FOI Distance Observations",
             apiName: "BuiltInGeospatialDistanceFoi",
             apiDescription: "The round function rounds the input numeric parameter to the nearest numeric value with no decimal component. The mid-point between two integers is rounded away from zero, i.e. 0.5 is rounded to 1 and ‑0.5 is rounded to -1.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
             apiExample: {   http: `/v1.0/Observations?$filter=geo.distance(FeatureOfInterest/feature,geography'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -95,7 +95,7 @@ describe("{get} BuiltInGeospatial", () => {
             api: "{get} Location Length location",
             apiName: "BuiltInGeospatiaLengthLocation",
             apiDescription: "The geo.length function returns the total length of its line string parameter in the coordinate reference system signified by its SRID.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
             apiExample: {   http: `/v1.0/Locations?$filter=geo.length(location,'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -120,7 +120,7 @@ describe("{get} BuiltInGeospatial", () => {
             api: "{get} Location Length Observations",
             apiName: "BuiltInGeospatiaLengthFoi",
             apiDescription: "The geo.length function returns the total length of its line string parameter in the coordinate reference system signified by its SRID.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
             apiExample: {   http: `/v1.0/Observations?$filter=geo.length(FeatureOfInterest/feature,'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -145,7 +145,7 @@ describe("{get} BuiltInGeospatial", () => {
             api: "{get} Location Intersects location",
             apiName: "BuiltInGeospatialIntersectsLocation",
             apiDescription: "The geo.intersects function returns true if the specified point lies within the interior or on the boundary of the specified polygon, otherwise it returns false.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
             apiExample: {   http: "/v1.0/Locations?$filter=geo.intersects(location,'LINESTRING(48.13765198324515 -1.6956051932646596, 48.06467042196109 -1.623116279666956)')",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -170,7 +170,7 @@ describe("{get} BuiltInGeospatial", () => {
             api: "{get} FOI Intersects Observations",
             apiName: "BuiltInGeospatialIntersectsFoi",
             apiDescription: "The geo.intersects function returns true if the specified point lies within the interior or on the boundary of the specified polygon, otherwise it returns false.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
             apiExample: {   http: "/v1.0/Observations?$filter=geo.intersects(FeatureOfInterest/feature, 'LINESTRING(48.11829243294942 -1.717928984533772, 48.06467042196109 -1.623116279666956)')",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -195,7 +195,7 @@ describe("{get} BuiltInGeospatial", () => {
     //         api: "{get} Observations Intersects",
     //         apiName: "BuiltInGeospatialIntersectsDatastream",
     //         apiDescription: "The geo.intersects function returns true if the specified point lies within the interior or on the boundary of the specified polygon, otherwise it returns false.",
-    //         apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+    //         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
     //         apiExample: {   http: "/v1.0/Datastreams?$filter=geo.intersects(observedArea,geography'POLYGON((7.5 51.5, 7.5 53.5, 8.5 53.5, 8.5 51.5, 7.5 51.5))')",
     //                         curl: defaultGet("curl", "KEYHTTP"),
     //                         javascript: defaultGet("javascript", "KEYHTTP"),
@@ -215,6 +215,106 @@ describe("{get} BuiltInGeospatial", () => {
     //             done();
     //         });
     // });
+    
+    it(`geo.equals(location,'POINT(${positions[1][0]} ${positions[1][1]})')`, (done) => {
+        const infos = {
+            api: "{get} Location Equals location",
+            apiName: "BuiltInGeospatialEquarsLocation",
+            apiDescription: "geo.equals( geometry A , geometry B ) Returns true if the given geometries are 'spatially equal'. Use this for a 'better' answer than '='. Note by spatially equal we mean ST_Within(A,B) = true and ST_Within(B,A) = true and also mean ordering of points can be different but represent the same geometry structure.",
+            apiReference: "https://postgis.net/docs/ST_Equals.html",
+            apiExample: {   http: `/v1.0/Locations?$filter=geo.equals(location,'POINT(${positions[1][0]} ${positions[1][1]})')`,
+                            curl: defaultGet("curl", "KEYHTTP"),
+                            javascript: defaultGet("javascript", "KEYHTTP"),
+                            python: defaultGet("python", "KEYHTTP") 
+                        }
+        };
+        chai.request(server)
+            .get(`/test${infos.apiExample.http}`)
+            .end((err: any, res: any) => {
+                should.not.exist(err);
+                res.status.should.equal(200);
+                res.type.should.equal("application/json");
+                res.body.value.length.should.eql(1);
+                res.body["value"][0]["@iot.id"].should.eql(7);
+                addToApiDoc({ ...infos, result: limitResult(res) });
+                done();
+            });
+    }); 
+
+    it(`geo.equals(FeatureOfInterest/feature,'POINT(${positions[1][0]} ${positions[1][1]})')`, (done) => {
+        const infos = {
+            api: "{get} Location Equals Observations",
+            apiName: "BuiltInGeospatialEquarsFoi",
+            apiDescription: "geo.equals( geometry A , geometry B ) Returns true if the given geometries are 'spatially equal'. Use this for a 'better' answer than '='. Note by spatially equal we mean ST_Within(A,B) = true and ST_Within(B,A) = true and also mean ordering of points can be different but represent the same geometry structure.",
+            apiReference: "https://postgis.net/docs/ST_Equals.html",
+            apiExample: {   http: `/v1.0/Observations?$filter=geo.equals(FeatureOfInterest/feature,'POINT(${positions[1][0]} ${positions[1][1]})')`,
+                            curl: defaultGet("curl", "KEYHTTP"),
+                            javascript: defaultGet("javascript", "KEYHTTP"),
+                            python: defaultGet("python", "KEYHTTP") 
+                        }
+        };
+        chai.request(server)
+            .get(`/test${infos.apiExample.http}`)
+            .end((err: any, res: any) => {
+                should.not.exist(err);
+                res.status.should.equal(200);
+                res.type.should.equal("application/json");
+                res.body.value.length.should.eql(4);
+                res.body["value"][0]["@iot.id"].should.eql(3);
+                addToApiDoc({ ...infos, result: limitResult(res) });
+                done();
+            });
+    });  
+
+    it(`geo.disjoint(location, geography'MULTIPOINT(${point.join()})')`, (done) => {
+        const infos = {
+            api: "{get} Location Disjoint location",
+            apiName: "BuiltInGeospatialDisjointLocation",
+            apiDescription: "geo.disjoint( geometry A , geometry B ) Overlaps, Touches, Within all imply geometries are not spatially disjoint. If any of the aforementioned returns true, then the geometries are not spatially disjoint. Disjoint implies false for spatial intersection.",
+            apiReference: "https://postgis.net/docs/ST_Disjoint.html",
+            apiExample: {   http: `/v1.0/Locations?$filter=geo.disjoint(location,'MULTIPOINT(${point.join()})')`,
+                            curl: defaultGet("curl", "KEYHTTP"),
+                            javascript: defaultGet("javascript", "KEYHTTP"),
+                            python: defaultGet("python", "KEYHTTP") 
+                        }
+        };
+        chai.request(server)
+            .get(`/test${infos.apiExample.http}`)
+            .end((err: any, res: any) => {
+                should.not.exist(err);
+                res.status.should.equal(200);
+                res.type.should.equal("application/json");
+                res.body.value.length.should.eql(4);
+                res.body["value"][0]["@iot.id"].should.eql(21);
+                addToApiDoc({ ...infos, result: limitResult(res) });
+                done();
+            });
+    });    
+
+    it(`geo.disjoint(FeatureOfInterest/feature, geography'MULTIPOINT(${point.join()})')`, (done) => {
+        const infos = {
+            api: "{get} Location Disjoint Observations",
+            apiName: "BuiltInGeospatialDisjointFoi",
+            apiDescription: "geo.disjoint( geometry A , geometry B ) Overlaps, Touches, Within all imply geometries are not spatially disjoint. If any of the aforementioned returns true, then the geometries are not spatially disjoint. Disjoint implies false for spatial intersection.",
+            apiReference: "https://postgis.net/docs/ST_Disjoint.html",
+            apiExample: {   http: `/v1.0/Observations?$filter=geo.disjoint(FeatureOfInterest/feature,'MULTIPOINT(${point.join()})')`,
+                            curl: defaultGet("curl", "KEYHTTP"),
+                            javascript: defaultGet("javascript", "KEYHTTP"),
+                            python: defaultGet("python", "KEYHTTP") 
+                        }
+        };
+        chai.request(server)
+            .get(`/test${infos.apiExample.http}`)
+            .end((err: any, res: any) => {
+                should.not.exist(err);
+                res.status.should.equal(200);
+                res.type.should.equal("application/json");
+                res.body.value.length.should.eql(2);
+                res.body["value"][0]["@iot.id"].should.eql(22);
+                addToApiDoc({ ...infos, result: limitResult(res) });
+                done();
+            });
+    });   
 
     it(`geo.contains(location, geography'POINT(${startPoint[0]} ${startPoint[1]})')`, (done) => {
         const infos = {
@@ -294,106 +394,7 @@ describe("{get} BuiltInGeospatial", () => {
     //         });
     // });
 
-
-    it(`geo.disjoint(location, geography'MULTIPOINT(${point.join()})')`, (done) => {
-        const infos = {
-            api: "{get} Location Disjoint location",
-            apiName: "BuiltInGeospatialDisjointLocation",
-            apiDescription: "geo.disjoint( geometry A , geometry B ) Overlaps, Touches, Within all imply geometries are not spatially disjoint. If any of the aforementioned returns true, then the geometries are not spatially disjoint. Disjoint implies false for spatial intersection.",
-            apiReference: "https://postgis.net/docs/ST_Disjoint.html",
-            apiExample: {   http: `/v1.0/Locations?$filter=geo.disjoint(location,'MULTIPOINT(${point.join()})')`,
-                            curl: defaultGet("curl", "KEYHTTP"),
-                            javascript: defaultGet("javascript", "KEYHTTP"),
-                            python: defaultGet("python", "KEYHTTP") 
-                        }
-        };
-        chai.request(server)
-            .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
-                should.not.exist(err);
-                res.status.should.equal(200);
-                res.type.should.equal("application/json");
-                res.body.value.length.should.eql(4);
-                res.body["value"][0]["@iot.id"].should.eql(21);
-                addToApiDoc({ ...infos, result: limitResult(res) });
-                done();
-            });
-    });    
-
-    it(`geo.disjoint(FeatureOfInterest/feature, geography'MULTIPOINT(${point.join()})')`, (done) => {
-        const infos = {
-            api: "{get} Location Disjoint Observations",
-            apiName: "BuiltInGeospatialDisjointFoi",
-            apiDescription: "geo.disjoint( geometry A , geometry B ) Overlaps, Touches, Within all imply geometries are not spatially disjoint. If any of the aforementioned returns true, then the geometries are not spatially disjoint. Disjoint implies false for spatial intersection.",
-            apiReference: "https://postgis.net/docs/ST_Disjoint.html",
-            apiExample: {   http: `/v1.0/Observations?$filter=geo.disjoint(FeatureOfInterest/feature,'MULTIPOINT(${point.join()})')`,
-                            curl: defaultGet("curl", "KEYHTTP"),
-                            javascript: defaultGet("javascript", "KEYHTTP"),
-                            python: defaultGet("python", "KEYHTTP") 
-                        }
-        };
-        chai.request(server)
-            .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
-                should.not.exist(err);
-                res.status.should.equal(200);
-                res.type.should.equal("application/json");
-                res.body.value.length.should.eql(2);
-                res.body["value"][0]["@iot.id"].should.eql(22);
-                addToApiDoc({ ...infos, result: limitResult(res) });
-                done();
-            });
-    });    
-    
-    it(`geo.equals(location,'POINT(${positions[1][0]} ${positions[1][1]})')`, (done) => {
-        const infos = {
-            api: "{get} Location Equals location",
-            apiName: "BuiltInGeospatialEquarsLocation",
-            apiDescription: "geo.equals( geometry A , geometry B ) Returns true if the given geometries are 'spatially equal'. Use this for a 'better' answer than '='. Note by spatially equal we mean ST_Within(A,B) = true and ST_Within(B,A) = true and also mean ordering of points can be different but represent the same geometry structure.",
-            apiReference: "https://postgis.net/docs/ST_Equals.html",
-            apiExample: {   http: `/v1.0/Locations?$filter=geo.equals(location,'POINT(${positions[1][0]} ${positions[1][1]})')`,
-                            curl: defaultGet("curl", "KEYHTTP"),
-                            javascript: defaultGet("javascript", "KEYHTTP"),
-                            python: defaultGet("python", "KEYHTTP") 
-                        }
-        };
-        chai.request(server)
-            .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
-                should.not.exist(err);
-                res.status.should.equal(200);
-                res.type.should.equal("application/json");
-                res.body.value.length.should.eql(1);
-                res.body["value"][0]["@iot.id"].should.eql(7);
-                addToApiDoc({ ...infos, result: limitResult(res) });
-                done();
-            });
-    }); 
-
-    it(`geo.equals(FeatureOfInterest/feature,'POINT(${positions[1][0]} ${positions[1][1]})')`, (done) => {
-        const infos = {
-            api: "{get} Location Equals Observations",
-            apiName: "BuiltInGeospatialEquarsFoi",
-            apiDescription: "geo.equals( geometry A , geometry B ) Returns true if the given geometries are 'spatially equal'. Use this for a 'better' answer than '='. Note by spatially equal we mean ST_Within(A,B) = true and ST_Within(B,A) = true and also mean ordering of points can be different but represent the same geometry structure.",
-            apiReference: "https://postgis.net/docs/ST_Equals.html",
-            apiExample: {   http: `/v1.0/Observations?$filter=geo.equals(FeatureOfInterest/feature,'POINT(${positions[1][0]} ${positions[1][1]})')`,
-                            curl: defaultGet("curl", "KEYHTTP"),
-                            javascript: defaultGet("javascript", "KEYHTTP"),
-                            python: defaultGet("python", "KEYHTTP") 
-                        }
-        };
-        chai.request(server)
-            .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
-                should.not.exist(err);
-                res.status.should.equal(200);
-                res.type.should.equal("application/json");
-                res.body.value.length.should.eql(4);
-                res.body["value"][0]["@iot.id"].should.eql(3);
-                addToApiDoc({ ...infos, result: limitResult(res) });
-                done();
-            });
-    });   
+ 
 
     // it(`geo.overlaps(location, geography'MULTIPOINT(${point.join()})')`, (done) => {
     //     const infos = {

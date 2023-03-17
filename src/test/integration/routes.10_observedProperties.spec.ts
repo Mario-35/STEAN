@@ -23,7 +23,12 @@ import {
     defaultDelete,
     getNB,
     listOfColumns,
-    limitResult
+    limitResult,
+    infos,
+    showHide,
+    apiInfos,
+    nbColorTitle,
+    nbColor
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
@@ -47,11 +52,10 @@ const addToApiDoc = (input: IApiInput) => {
 };
 
 addToApiDoc({
-    api: `{infos} ${entity.name} Infos`,
-    apiName: `Infos${entity.name}`,
-    apiDescription: "An ObservedProperty specifies the phenomenon of an Observation.",
-    apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#30",
-
+    api: `{infos} ${entity.name} infos`,
+    apiName: `Infos${entity.name}`,    
+    apiDescription: infos[entity.name].definition,
+    apiReference: infos[entity.name].reference,
     result: ""
 });
 
@@ -72,13 +76,13 @@ describe("endpoint : ObservedProperties", () => {
             });
     });
 
-    describe(`{get} ${entity.name}`, () => {
-        it("Return all observedProperty", (done) => {
+    describe(`{get} ${entity.name} ${nbColorTitle}[9.2]`, () => {
+        it(`Return all ${entity.name} ${nbColor}[9.2.2]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name} Get all`,
                 apiName: `GetAll${entity.name}`,
-                apiDescription: "Retrieve all observed Properties.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#37",
+                apiDescription: `Retrieve all ${entity.name}.${showHide(`Get${entity.name}`, apiInfos["9.2.2"])}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-collection-entities",
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -107,12 +111,12 @@ describe("endpoint : ObservedProperties", () => {
                 });
         });
 
-        it("Return observedProperty id: 2", (done) => {
+        it(`Return observedProperty id: 2 ${nbColor}[9.2.3]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get one`,
                 apiName: `GetOne${entity.name}`,
                 apiDescription: "Get a specific observed Property.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#38",
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-entity",
                 apiExample: {
                     http: `/v1.0/${entity.name}(2)`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -303,8 +307,8 @@ describe("endpoint : ObservedProperties", () => {
         });
     });
 
-    describe(`{post} ${entity.name} Create,`, () => {
-        it("Return ObservedProperty Thing", (done) => {
+    describe(`{post} ${entity.name} ${nbColorTitle}[10.2]`, () => {
+        it(`Return added ${entity.name} ${nbColor}[10.2.1]`, (done) => {
             const datas = {
                 name: `Area ${getNB(entity.name)}`,
                 description: "The degree or intensity of heat present in the area",
@@ -313,8 +317,8 @@ describe("endpoint : ObservedProperties", () => {
             const infos = {
                 api: `{post} ${entity.name} Post basic`,
                 apiName: `Post${entity.name}`,
-                apiDescription: "Post a new observed Property.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#61",
+                apiDescription: `Post a new ${entity.name}.${showHide(`Post${entity.name}`, apiInfos["10.2"])}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request",
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
@@ -338,7 +342,7 @@ describe("endpoint : ObservedProperties", () => {
                 });
         });
 
-        it("Return Error if the payload is malformed", (done) => {
+        it(`Return Error if the payload is malformed ${nbColor}[10.2.2]`, (done) => {
             chai.request(server)
                 .post(`/test/v1.0/${entity.name}`)
                 .send({})
@@ -354,8 +358,8 @@ describe("endpoint : ObservedProperties", () => {
         });
     });
 
-    describe(`{patch} ${entity.name} Patch`, () => {
-        it("Return updated ObservedProperty", (done) => {
+    describe(`{patch} ${entity.name} ${nbColorTitle}[10.3]`, () => {
+        it(`Return updated ${entity.name} ${nbColor}[10.3.1]`, (done) => {
             dbTest("observedproperty")
                 .select("*")
                 .orderBy("id")
@@ -368,8 +372,8 @@ describe("endpoint : ObservedProperties", () => {
                     const infos = {
                         api: `{patch} ${entity.name} Patch one`,
                         apiName: `Patch${entity.name}`,
-                        apiDescription: "Patch an observed Property.",
-                        apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#65",
+                        apiDescription: `Patch a ${entity.singular}.${showHide(`Patch${entity.name}`, apiInfos["10.3"])}`,
+                        apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_2",
                         apiExample: {
                             http: `/v1.0/${entity.name}(${myId})`,
                             curl: defaultPatch("curl", "KEYHTTP", datas),
@@ -411,8 +415,8 @@ describe("endpoint : ObservedProperties", () => {
         });
     });
 
-    describe(`{delete} ${entity.name} Delete`, () => {
-        it("Return no content with code 204", (done) => {
+    describe(`{delete} ${entity.name} ${nbColorTitle}[10.4]`, () => {
+        it(`Delete ${entity.name} return no content with code 204 ${nbColor}[10.4.1]`, (done) => {
             dbTest("observedproperty")
                 .select("*")
                 .orderBy("id")
@@ -423,8 +427,8 @@ describe("endpoint : ObservedProperties", () => {
                     const infos = {
                         api: `{delete} ${entity.name} Delete one`,
                         apiName: `Delete${entity.name}`,
-                        apiDescription: "Delete an observed Property.",
-                        apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#68",
+                        apiDescription: `Delete a ${entity.singular}.${showHide(`Delete${entity.name}`, apiInfos["10.4"])}`,
+                        apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_3",
                         apiExample: {
                             http: `/v1.0/${entity.name}(${myId})`,
                             curl: defaultDelete("curl", "KEYHTTP"),

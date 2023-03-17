@@ -21,7 +21,12 @@ import {
     defaultPatch,
     defaultDelete,
     listOfColumns,
-    limitResult
+    limitResult,
+    infos,
+    apiInfos,
+    showHide,
+    nbColorTitle,
+    nbColor
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
@@ -42,15 +47,14 @@ const addToApiDoc = (input: IApiInput) => {
 };
 
 addToApiDoc({
-    api: `{infos} ${entity.name} Infos`,
-    apiName: `Infos${entity.name}`,
-    apiDescription: `An Observation results is a value being assigned to a phenomenon.<br>The phenomenon is a property of a feature, the latter being the FeatureOfInterest of the Observation.<br>
-    In the context of the Internet of Things, many Observations’ FeatureOfInterest can be the Location of the Thing. For example, the FeatureOfInterest of a wifi-connect thermostat can be the Location of the thermostat (the living room where the thermostat is located in).<br>In the case of remote sensing, the FeatureOfInterest can be the geographical area or volume that is being sensed`,
-    apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#32",
+    api: `{infos} ${entity.name} infos`,
+    apiName: `Infos${entity.name}`,    
+    apiDescription: infos[entity.name].definition,
+    apiReference: infos[entity.name].reference,
     result: ""
 });
 
-describe("endpoint : Features of Interest", () => {
+    describe("endpoint : Features of Interest", () => {
     const temp = listOfColumns(entity);
     const success = temp.success;
     const params = temp.params;
@@ -67,13 +71,13 @@ describe("endpoint : Features of Interest", () => {
             });
     });
 
-    describe(`{get} ${entity.name}`, () => {
-        it("Return all features of interests", (done) => {
+    describe(`{post} ${entity.name} ${nbColorTitle}[10.2]`, () => {
+        it(`Return added ${entity.name} ${nbColor}[10.2.1]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name} Get all`,
                 apiName: `GetAll${entity.name}`,
-                apiDescription: "Retrieve all Features of interests.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#37",
+                apiDescription: `Retrieve all ${entity.name}.${showHide(`Get${entity.name}`, apiInfos["9.2.2"])}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-collection-entities",
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -102,12 +106,12 @@ describe("endpoint : Features of Interest", () => {
                 });
         });
 
-        it("Return Feature of interest id: 1", (done) => {
+        it(`Return Feature of interest ${nbColor}[9.2.3]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get one`,
                 apiName: `GetOne${entity.name}`,
                 apiDescription: "Get a specific Feature of interest.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#38",
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-entity",
                 apiExample: { http: `/v1.0/${entity.name}(1)` }
             };
             chai.request(server)
@@ -137,7 +141,7 @@ describe("endpoint : Features of Interest", () => {
                 });
         });
 
-        it(`Return all features of interests using $expand query option`, (done) => {
+        it(`Return all features of interests using $expand query option ${nbColor}[9.3.2.1]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get one and expand`,
                 apiName: `GetExpandObservations${entity.name}`,
@@ -159,7 +163,7 @@ describe("endpoint : Features of Interest", () => {
                 });
         });
 
-        it("Return Datastreams Subentity Observations", (done) => {
+        it(`Return Datastreams Subentity Observations ${nbColor}[9.2.6]`, (done) => {
             const name = "Observations";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(1)/${name}`)
@@ -176,7 +180,7 @@ describe("endpoint : Features of Interest", () => {
                 });
         });
 
-        it("Return Datastreams Expand Observations", (done) => {
+        it(`Return Datastreams Expand Observations ${nbColor}[9.3.2.1]`, (done) => {
             const name = "Observations";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(1)?$expand=${name}`)
@@ -194,8 +198,8 @@ describe("endpoint : Features of Interest", () => {
         });
     });
 
-    describe(`{post} ${entity.name} Create`, () => {
-        it("Return added Feature of interest", (done) => {
+    describe(`{patch} ${entity.name} ${nbColorTitle}[10.3]`, () => {
+        it(`Return updated ${entity.name} ${nbColor}[10.3.1]`, (done) => {
             const datas = {
                 "name": "Weather Station YYC.",
                 "description": "This is a weather station located at Au Comptoir Vénitien.",
@@ -208,8 +212,8 @@ describe("endpoint : Features of Interest", () => {
             const infos = {
                 api: `{post} ${entity.name} Post basic`,
                 apiName: `Post${entity.name}`,
-                apiDescription: "Post a new Feature of interest.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#61",
+                apiDescription: `Post a new ${entity.name}.${showHide(`Post${entity.name}`, apiInfos["10.2"])}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request",
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
@@ -233,7 +237,7 @@ describe("endpoint : Features of Interest", () => {
                 });
         });
 
-        it("Return Error if the payload is malformed", (done) => {
+        it(`Return Error if the payload is malformed ${nbColor}[10.2.2]`, (done) => {
             chai.request(server)
                 .post("/test/v1.0/FeaturesOfInterest")
                 .send({})
@@ -266,8 +270,8 @@ describe("endpoint : Features of Interest", () => {
                     const infos = {
                         api: `{patch} ${entity.name} Patch one`,
                         apiName: `Patch${entity.name}`,
-                        apiDescription: "Patch a Feature of interest.",
-                        apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#65",
+                        apiDescription: `Patch a ${entity.singular}.${showHide(`Patch${entity.name}`, apiInfos["10.3"])}`,
+                        apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_2",
                         apiExample: {
                             http: `/v1.0/${entity.name}(${itemObject.id})`,
                             curl: defaultPatch("curl", "KEYHTTP", datas),
@@ -289,7 +293,7 @@ describe("endpoint : Features of Interest", () => {
                             newItems.name.should.not.eql(itemObject.name);
                             addToApiDoc({
                                 api: `{patch} ${entity.name} Patch one`,
-                                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#65",
+                                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_2",
                                 apiName: `Patch${entity.name}`,
                                 apiDescription: "Patch a sensor.",
                                 // apiParam: _PARAMS.slice(0, 4),
@@ -321,8 +325,8 @@ describe("endpoint : Features of Interest", () => {
         });
     });
 
-    describe(`{delete} ${entity.name} Delete`, () => {
-        it("should return no content with code 204", (done) => {
+    describe(`{delete} ${entity.name} ${nbColorTitle}[10.4]`, () => {
+        it(`Delete ${entity.name} return no content with code 204 ${nbColor}[10.4.1]`, (done) => {
             dbTest(entity.table)
                 .select("*")
                 .orderBy("id")
@@ -332,8 +336,8 @@ describe("endpoint : Features of Interest", () => {
                     const infos = {
                         api: `{delete} ${entity.name} Delete one`,
                         apiName: `Delete${entity.name}`,
-                        apiDescription: "Delete a Feature of interest.",
-                        apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#68",
+                        apiDescription: `Delete a ${entity.singular}.${showHide(`Delete${entity.name}`, apiInfos["10.4"])}`,
+                        apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_3",
                         apiExample: {
                             http: `/v1.0/${entity.name}(${thingObject.id})`,
                             curl: defaultDelete("curl", "KEYHTTP"),

@@ -38,5 +38,7 @@
 	"splitNotAllowed": "Split result not allowed for Observations entity use /Datastreams/Observations or /MultiDatastreams/Observations",
 	"unableFindCreate": "Unable to find or create",
     "stream" : "stream error",
-    "fileStream" : "fileStream error"
+    "fileStream" : "fileStream error",
+    "noValue" : "no value found",
+	"observationType": "Wrong value for observationType"
 }

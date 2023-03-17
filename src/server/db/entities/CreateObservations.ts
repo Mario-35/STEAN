@@ -11,7 +11,7 @@ import koa from "koa";
 import { Common } from "./common";
 import { _DBDATAS } from "../constants";
 import { message } from "../../logger";
-import { ICsvColumns, ICsvFile, IReturnResult } from "../../types";
+import { ICsvColumns, ICsvFile, IReturnResult, MODES } from "../../types";
 import { extractMessageError, importCsv, renameProp, verifyId } from "../helpers";
 import { stringToBool } from "../../helpers";
 import { _CONFIGURATION } from "../../configuration";
@@ -33,7 +33,7 @@ export class CreateObservations extends Common {
     }
 
     async add(dataInput: Object): Promise<IReturnResult | undefined> {
-        message(true, "OVERRIDE", messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));    
+        message(true, MODES.OVERRIDE, messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));    
         const returnValue: string[] = [];
         let total = 0;
         if (this.ctx._datas) {
@@ -70,7 +70,7 @@ export class CreateObservations extends Common {
             const testDatastream = await verifyId(Common.dbContext, testDatastreamID, _DBDATAS.Datastreams.table);
 
             if (!testDatastream) {
-                message(true, "INFO", "test Datastream ID", testDatastreamID);
+                message(true, MODES.INFO, "test Datastream ID", testDatastreamID);
                 this.ctx.throw(404, {
                     code: 404, detail: testDatastreamID.length > 0 ? messages.errors.noId + testDatastreamID : messages.errors.noIds + testDatastreamID
                 });
@@ -79,7 +79,7 @@ export class CreateObservations extends Common {
             const testFeatureOfInterest = await verifyId(Common.dbContext, testFeatureOfInterestID, _DBDATAS.FeaturesOfInterest.table);
 
             if (!testFeatureOfInterest) {
-                message(true, "INFO", "test FeatureOfInterest ID", testFeatureOfInterestID);
+                message(true, MODES.INFO, "test FeatureOfInterest ID", testFeatureOfInterestID);
                 this.ctx.throw(404, {
                     code: 404, 
                     detail:
@@ -94,7 +94,7 @@ export class CreateObservations extends Common {
                 res.forEach((element: string) => returnValue.push(this.linkBase.replace("CreateObservations", "Observations") + "(" + element + ")"));
             });
 
-            message(true, "INFO", "importCsv", "OK");
+            message(true, MODES.INFO, "importCsv", "OK");
         } else {
             const dataInsert: [Record<string, unknown>] = [{}];
             const dataStreamId: string = dataInput["Datastream"]["@iot.id"];

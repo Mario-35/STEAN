@@ -11,7 +11,7 @@ import koa from "koa";
 import { Common } from "./common";
 import { _DBDATAS } from "../constants";
 import { message } from "../../logger";
-import { IReturnResult } from "../../types";
+import { IReturnResult, MODES } from "../../types";
 import { _CONFIGURATION } from "../../configuration";
 import { hidePasswordInJson } from "../../helpers";
 import { userRights } from "../../types/user";
@@ -25,7 +25,7 @@ import { messages } from "../../messages/";
      }
 
      async getAll(): Promise<IReturnResult | undefined> {
-        message(true, "CLASS", this.constructor.name, `getAll in ${this.ctx._odata.resultFormat} format`);
+        message(true, MODES.CLASS, this.constructor.name, `getAll in ${this.ctx._odata.resultFormat} format`);
         if (this.ctx._user?.PDCUAS[userRights.SuperAdmin] === true || this.ctx._user?.PDCUAS[userRights.Admin] === true) {
             const temp = await db["admin"]
                 .table("user")
@@ -40,7 +40,7 @@ import { messages } from "../../messages/";
      }
 
      async add(dataInput: Object | undefined): Promise<IReturnResult | undefined> {
-        message(true, "OVERRIDE", this.constructor.name, "add");
+        message(true, MODES.OVERRIDE, this.constructor.name, "add");
 
         if (!dataInput) return;
         return this.createReturnResult({

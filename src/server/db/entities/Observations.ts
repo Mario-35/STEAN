@@ -11,7 +11,7 @@ import koa from "koa";
 import { Common } from "./common";
 import { getDateNow, _DBDATAS } from "../constants";
 import { message } from "../../logger";
-import { IReturnResult } from "../../types";
+import { IReturnResult, MODES } from "../../types";
 import { getBigIntFromString } from "../../helpers";
 import { messages, messagesReplace } from "../../messages";
 
@@ -21,7 +21,7 @@ export class Observations extends Common {
     }
 
     async prepareInputResult(dataInput: Object): Promise<Object> {
-        message(true, "CLASS", this.constructor.name, "prepareInputResult");     
+        message(true, MODES.CLASS, this.constructor.name, "prepareInputResult");     
         
         if ((dataInput["MultiDatastream"] && dataInput["MultiDatastream"] != null) || ( this.ctx._odata.parentEntity && this.ctx._odata.parentEntity.startsWith("MultiDatastream"))) {
             const search: bigint | undefined =
@@ -36,7 +36,7 @@ export class Observations extends Common {
                 );
                 const multiDatastream = tempSql.rows[0];
                 if (dataInput["result"] && typeof dataInput["result"] == "object") {
-                    message(true, "DEBUG", "_resultnumbers : keys", `${Object.keys(dataInput["result"]).length} : ${multiDatastream["keys"].length}`);
+                    message(true, MODES.DEBUG, "_resultnumbers : keys", `${Object.keys(dataInput["result"]).length} : ${multiDatastream["keys"].length}`);
                     if (Object.keys(dataInput["result"]).length != multiDatastream["keys"].length) {
                         this.ctx.throw(400, {
                             code: 400, 
@@ -65,13 +65,13 @@ export class Observations extends Common {
     }
     
     async add(dataInput: Object): Promise<IReturnResult | undefined> {
-        message(true, "HEAD", `class ${this.constructor.name} override add`);
+        message(true, MODES.HEAD, `class ${this.constructor.name} override add`);
         if (dataInput) dataInput = await this.prepareInputResult(dataInput);
         return await super.add(dataInput);
     }
     
     async update(idInput: bigint, dataInput: Object | undefined): Promise<IReturnResult | undefined> {
-        message(true, "HEAD", `class ${this.constructor.name} override update`);
+        message(true, MODES.HEAD, `class ${this.constructor.name} override update`);
         if (dataInput) dataInput = await this.prepareInputResult(dataInput);
         if (dataInput) dataInput["validTime"] = await getDateNow(Common.dbContext);
         return await super.update(idInput, dataInput);

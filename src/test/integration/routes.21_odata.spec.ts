@@ -10,16 +10,12 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult } from "./constant";
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult, apiInfos } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
 import { testsKeys as things_testsKeys } from "./routes.04_things.spec";
 import { testsKeys as datastreams_testsKeys } from "./routes.07_datastreams.spec";
 import { testsKeys as sensors_testsKeys } from "./routes.09_sensors.spec";
-
-const countHowMany = (nb: number, op: string) => {
-    return `select count(id) from (select id FROM (select *, unnest(_resultnumbers) rowz FROM observation) as essai where rowz ${op} ${nb} UNION select "id"  from "observation" where "_resultnumber" ${op} ${nb}) as total`;
-};
 
 chai.use(chaiHttp);
 
@@ -45,12 +41,12 @@ addToApiDoc({
 // http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#25
 describe("Odata", () => {
 
-    it("Retrieve a specific thing and $expand Datastreams.", (done) => {
+    it("Retrieve a specific thing and $expand Datastreams. [9.3.2.1]", (done) => {
         const infos = {
             api: "{get} Things(:id) Expand",
             apiName: "OdataExpand",
-            apiDescription: "Use $expand query option to request inline information for related entities of the requested entity collection.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#47",
+            apiDescription: `Use $expand query option to request inline information for related entities of the requested entity collection.${apiInfos["9.3.2.1"]}`,
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#expand",
             apiExample: {   http: "/v1.0/Things(6)?$expand=Datastreams",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -68,17 +64,18 @@ describe("Odata", () => {
                 res.body.Datastreams.length.should.eql(3);
                 res.body.Datastreams[0].should.include.keys(datastreams_testsKeys);
                 res.body["@iot.id"].should.eql(6);
-                addToApiDoc({ ...infos, result: limitResult(res) });
+                res.body.Datastreams[0] = [res.body.Datastreams[0][0], res.body.Datastreams[0][1], "..."];
+                addToApiDoc({ ...infos, result: res });
                 done();
             });
     });
 
-    it("Retrieve a specific thing and $expand Datastreams and Sensor inside.", (done) => {
+    it("Retrieve a specific thing and $expand Datastreams and Sensor inside. [9.3.2.1]", (done) => {
         const infos = {
             api: "{get} Things(:id) Expand sub Entity",
             apiName: "OdataExpandSub",
             apiDescription: "$expand comma separated list of sub-entity names or sub-entity names separated by forward slash.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#47",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#expand",
             apiExample: { http: "/v1.0/Things(6)?$expand=Datastreams/Sensor",
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -95,24 +92,22 @@ describe("Odata", () => {
                 res.body["@iot.id"].should.eql(6);
                 res.body.should.include.keys("Datastreams");
                 res.body.Datastreams.length.should.eql(3);
-                // res.body.Datastreams[0].should.include.keys(_DBDATAS.Datastreams.testsKeys);
                 res.body.Datastreams[0].should.include.keys("Sensor");
                 res.body.Datastreams[0].Sensor.should.include.keys(sensors_testsKeys);
-
                 res.body.Datastreams[1].should.include.keys("Sensor");
                 res.body.Datastreams[1].Sensor.should.include.keys(sensors_testsKeys);
-
-                addToApiDoc({ ...infos, result: limitResult(res) });
+                res.body.Datastreams[0] = [res.body.Datastreams[0][0], res.body.Datastreams[0][1], "..."];
+                addToApiDoc({ ...infos, result: res });
                 done();
             });
     });
 
-    it("Return void MultiDatastreams list in expand with no datas", (done) => {
+    it("Return void MultiDatastreams list in expand with no datas [9.3.2.1]", (done) => {
         const infos = {
             api: `{get} things(:id) expand with empty result`,
             apiName: `OdataExpandSubEmpty`,
             apiDescription: "Get list of locations and return list if is empty.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#47",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#expand",
             apiExample: {
                 http: `/v1.0/Things(1)?$expand=MultiDatastreams`,
                 curl: defaultGet("curl", "KEYHTTP"),
@@ -136,12 +131,12 @@ describe("Odata", () => {
             });
     });
 
-    it("Return Datastreams with obvervation ekpand with filter result = 17.5", (done) => {
+    it("Return Datastreams with obvervation expand with filter result = 17.5 [9.3.2.1] & [9.3.2.2]", (done) => {
         const infos = {
             api: `{get} things(:id) expand with inner filter`,
             apiName: `OdataExpandWithFilter`,
             apiDescription: "Get datastream and expand obvervations with filter.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#47",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#expand",
             apiExample: {
                 http: `/v1.0/Datastreams(2)?$expand=Observations($filter=result eq 17.5)`,
                 curl: defaultGet("curl", "KEYHTTP"),
@@ -166,12 +161,12 @@ describe("Odata", () => {
             });
     });
 
-    it("Return Datastreams with obvervation complex select", (done) => {
+    it("Return Datastreams with obvervation expand complex select [9.3.2.1] & [9.3.2.2]", (done) => {
         const infos = {
             api: `{get} things(:id) expand with inner select`,
             apiName: `OdataExpandSelect`,
             apiDescription: "Get datastream and expand obvervations with complex select.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#47",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#expand",
             apiExample: {
                 http: `/v1.0/Datastreams?$expand=Observations($select=phenomenonTime,result;$orderby=phenomenonTime desc;$top=10)`,
                 curl: defaultGet("curl", "KEYHTTP"),
@@ -196,12 +191,12 @@ describe("Odata", () => {
             });
     });
 
-    it("Retrieve description property for a specific Thing.", (done) => {
+    it("Retrieve description property for a specific Thing. [9.3.2.2]", (done) => {
         const infos = {
             api: "{get} Things(:id) Select",
             apiName: "OdataSelect",
-            apiDescription: "Retrieve specified properties for a specific Things.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#48",
+            apiDescription: `Retrieve specified properties for a specific Things.${apiInfos["9.3.2.2"]}`,
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#select4",
             apiExample: { http: "/v1.0/Things(1)?$select=description",
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -219,12 +214,12 @@ describe("Odata", () => {
             });
     });
 
-    it("Retrieve name and description properties from all Things.", (done) => {
+    it("Retrieve name and description properties from all Things. [9.3.2.2]", (done) => {
         const infos = {
             api: "{get} Things(:id) Select multi",
             apiName: "OdataSelectMulti",
             apiDescription: "Retrieve name and description for Things.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#48",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#select4",
             apiExample: { http: "/v1.0/Things?$select=name,description" ,
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -249,13 +244,12 @@ describe("Odata", () => {
             });
     });
 
-    it("Retrieve things order by name descending.", (done) => {
+    it("Oata orderBy [9.3.3.1]", (done) => {
         const infos = {
             api: "{get} Things OrderBy",
             apiName: "OdataOrderBy",
-            apiDescription:
-                "Use $orderby query option to sort the response based on properties of requested entity in ascending (asc) or descending (desc) order.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#50",
+            apiDescription: `Use $orderby query option to sort the response based on properties of requested entity in ascending (asc) or descending (desc) order.${apiInfos["9.3.3.1"]}`,
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#orderby",
             apiExample: { http: "/v1.0/Things?$orderby=name desc" ,
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -280,12 +274,12 @@ describe("Odata", () => {
             });
     });
 
-    it("Retrieve Observations limit to 5 results.", (done) => {
+    it("Oata top [9.3.3.2]", (done) => {
         const infos = {
             api: "{get} Observations Top",
             apiName: "OdataTop",
-            apiDescription: "Use $top query option to limit the number of requested entities.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#51",
+            apiDescription: `Use $top query option to limit the number of requested entities.${apiInfos["9.3.3.2"]}`,
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#top",
             apiExample: { http: "/v1.0/Observations?$top=5" ,
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -304,12 +298,12 @@ describe("Odata", () => {
             });
     });
 
-    it("Retrieve all Observations and skip 3.", (done) => {
+    it("Oata skip [9.3.3.3]", (done) => {
         const infos = {
             api: "{get} Observations Skip",
             apiName: "OdataSkip",
-            apiDescription: "Use $skip to specify the number of entities that should be skipped before returning the requested entities.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#52",
+            apiDescription: `Use $skip to specify the number of entities that should be skipped before returning the requested entities.${apiInfos["9.3.3.3"]}`,
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#skip",
             apiExample: { http: "/v1.0/Observations?$skip=3",
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -333,230 +327,34 @@ describe("Odata", () => {
             });
     });
 
-    it("Retrieve Observations with result equal 45.", (done) => {
-        const infos = {
-            api: "{get} Observations eq",
-            apiName: "OdataEq",
-            apiDescription: "Use eq for equal to =",
-            apiReference:"http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#55",
-            apiExample: { http: "/v1.0/Observations?$filter=result eq 45",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
-        };
-        dbTest.raw(countHowMany(45, "=")).then((result) => {
-            // const nb = Number(result.rows[0]["count"]);
+    it("Oata count [9.3.3.4]", (done) => {
+            const infos = {
+                api: "{get} Observations count",
+                apiName: "OdataCountWithSkiTop",
+                apiDescription: `Use count.${apiInfos["9.3.3.4"]}`,
+                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#53",
+                apiExample: { http: "/v1.0/Observations?$skip=3&$top=2&$count=true",
+                curl: defaultGet("curl", "KEYHTTP"),
+                javascript: defaultGet("javascript", "KEYHTTP"),
+                python: defaultGet("python", "KEYHTTP")  }
+            };
+    
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
                 .end((err, res) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
-                    res.body.value.length.should.eql(3);
+                    res.body.value.length.should.eql(2);
                     res.body.should.include.keys("@iot.count", "value");
                     addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
-        });
-    });
-
-    it("Retrieve Observations with result not equal 45.", (done) => {
-        const infos = {
-            api: "{get} Observations ne",
-            apiName: "OdataNe",
-            apiDescription: "Use ne for not equal to <>",
-            apiReference:"http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#55",
-            apiExample: { http: "/v1.0/Observations?$filter=result ne 45" ,
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP") }
-        };
-        dbTest.raw(countHowMany(45, "<>")).then((result) => {
-            chai.request(server)
-                .get(`/test${infos.apiExample.http}`)
-                .end((err, res) => {
-                    should.not.exist(err);
-                    res.status.should.equal(200);
-                    res.type.should.equal("application/json");
-                    res.body.value.length.should.eql(37);
-                    res.body.should.include.keys("@iot.count", "value");
-                    addToApiDoc({ ...infos, result: limitResult(res) });
-                    done();
-                });
-        });
-    });
-
-    it("Retrieve Observations with result smaller than 45.", (done) => {
-        const infos = {
-            api: "{get} Observations lt",
-            apiName: "OdataLt",
-            apiDescription: "Use lt for smaller than <",
-            apiReference:"http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#55",
-            apiExample: { http: "/v1.0/Observations?$filter=result lt 45",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
-        };
-        dbTest.raw(countHowMany(45, ">")).then((result) => {
-            // const nb = Number(result.rows[0]["count"]);
-            chai.request(server)
-                .get(`/test${infos.apiExample.http}`)
-                .end((err, res) => {
-                    should.not.exist(err);
-                    res.status.should.equal(200);
-                    res.type.should.equal("application/json");
-                    res.body.value.length.should.eql(33);
-                    res.body.should.include.keys("@iot.count", "value");
-                    addToApiDoc({ ...infos, result: limitResult(res) });
-                    done();
-                });
-        });
-    });
-
-    it("Retrieve Observations with result greater than 45.", (done) => {
-        const infos = {
-            api: "{get} Observations gt",
-            apiName: "OdataGt",
-            apiDescription: "Use gt for greater than >",
-            apiReference:"http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#55",
-            apiExample: { http: "/v1.0/Observations?$filter=result gt 45",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
-        };
-        dbTest.raw(countHowMany(45, "<")).then((result) => {
-            // const nb = Number(result.rows[0]["count"]);
-            chai.request(server)
-                .get(`/test${infos.apiExample.http}`)
-                .end((err, res) => {
-                    should.not.exist(err);
-                    res.status.should.equal(200);
-                    res.type.should.equal("application/json");
-                    res.body.value.length.should.eql(4);
-                    res.body.should.include.keys("@iot.count", "value");
-                    addToApiDoc({ ...infos, result: limitResult(res) });
-                    done();
-                });
-        });
-    });
-
-    it("Retrieve Observations with result greater than 20 AND smaller than 22.", (done) => {
-        const infos = {
-            api: "{get} Observations gt and lt",
-            apiName: "OdataGtANDLt",
-            apiDescription: "Use and for complex search",
-            apiReference:"http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#55",
-            apiExample: { http: "/v1.0/Observations?$filter=result gt 20 and result lt 22",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
-        };
-
-        dbTest.raw('select count("id") from "observation" where "_resultnumber" > 20 AND "_resultnumber" < 22;').then((result) => {
-            const nb = Number(result.rows[0]["count"]);
-            chai.request(server)
-                .get(`/test${infos.apiExample.http}`)
-                .end((err, res) => {
-                    should.not.exist(err);
-                    res.status.should.equal(200);
-                    res.type.should.equal("application/json");
-                    res.body.value.length.should.eql(nb);
-                    res.body.should.include.keys("@iot.count", "value");
-                    addToApiDoc({ ...infos, result: limitResult(res) });
-                    done();
-                });
-        });
-    });
-
-    it("count total Observations (with skip & top).", (done) => {
-        const infos = {
-            api: "{get} Observations count",
-            apiName: "OdataCountWithSkiTop",
-            apiDescription: "Use count ",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#53",
-            apiExample: { http: "/v1.0/Observations?$skip=3&$top=2&$count=true",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
-        };
-
-        chai.request(server)
-            .get(`/test${infos.apiExample.http}`)
-            .end((err, res) => {
-                should.not.exist(err);
-                res.status.should.equal(200);
-                res.type.should.equal("application/json");
-                res.body.value.length.should.eql(2);
-                res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: limitResult(res) });
-                done();
-            });
-    });
-
-    it("filter name of thing", (done) => {
-        const infos = {
-            api: "{get} Thing filter",
-            apiName: "OdataFilter",
-            apiDescription: "Use simple filter",
-            apiReference:"http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
-            apiExample: { http: "/v1.0/Things?$filter=name eq 'SensorWebThing 9'",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
-        };
-
-        chai.request(server)
-            .get(`/test${infos.apiExample.http}`)
-            .end((err, res) => {
-                should.not.exist(err);
-                res.status.should.equal(200);
-                res.type.should.equal("application/json");
-                res.body.value.length.should.eql(1);
-                res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: limitResult(res) });
-                done();
-            });
-    });
-
-    it("filter Observations whose Datastream’s id is 1.", (done) => {
-        const infos = {
-            api: "{get} Observations filter Datastream id 1",
-            apiName: "OdataFilterRelation",
-            apiDescription: "Use filter with relation",
-            apiReference:"http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
-            apiExample: { http: "/v1.0/Observations?$filter=Datastream/id eq 3",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
-        };
-
-        chai.request(server)
-            .get(`/test${infos.apiExample.http}`)
-            .end((err, res) => {
-                should.not.exist(err);
-                res.status.should.equal(200);
-                res.type.should.equal("application/json");
-                res.body.value.length.should.eql(2);
-                res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: limitResult(res) });
-                done();
-            });
     });
 
     it("filter Datastreams whose unitOfMeasurement property name = 'Degrees Fahrenheit'.", (done) => {
-        const infos = {
-            api: "{get} Thing filter",
-            apiName: "OdataFilterPropertyJson",
-            apiDescription: "Use filter on json property",
-            apiReference:"http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
-            apiExample: { http: "/v1.0/Datastreams?$filter=unitOfMeasurement/name eq 'Degrees Fahrenheit'",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
-        };
-
         chai.request(server)
-            .get(`/test${infos.apiExample.http}`)
+            .get(`/test/v1.0/Datastreams?$filter=unitOfMeasurement/name eq 'Degrees Fahrenheit'`)
             .end((err, res) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
@@ -564,150 +362,79 @@ describe("Odata", () => {
                 res.body.value.length.should.eql(1);
                 res.body.should.include.keys("@iot.count", "value");
                 res.body.value[0]["@iot.id"].should.eql(10);
-                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
 
     it("filter name OR description of thing", (done) => {
-        const infos = {
-            api: "{get} Thing filter or",
-            apiName: "OdataFilterOr",
-            apiDescription: "Use filter with OR",
-            apiReference:"http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
-            apiExample: { http: "/v1.0/Things?$filter=name eq 'SensorWebThing 9' or description eq 'A New SensorWeb thing'",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
-        };
-
         chai.request(server)
-            .get(`/test${infos.apiExample.http}`)
+            .get(`/test/v1.0/Things?$filter=name eq 'SensorWebThing 9' or description eq 'A New SensorWeb thing'`)
             .end((err, res) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
 
     it("filter name AND description of thing", (done) => {
-        const infos = {
-            api: "{get} Thing filter and",
-            apiName: "OdataFilterAnd",
-            apiDescription: "Use filter with AND",
-            apiReference:"http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
-            apiExample: { http: "/v1.0/Things?$filter=name eq 'SensorWebThing 9' and description eq 'A SensorWeb thing Number nine'",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
-        };
-
         chai.request(server)
-            .get(`/test${infos.apiExample.http}`)
+            .get(`/test/v1.0/Things?$filter=name eq 'SensorWebThing 9' and description eq 'A SensorWeb thing Number nine'`)
             .end((err, res) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
 
     it("filter name STARTWITH", (done) => {
-        const infos = {
-            api: "{get} Thing filter startWith",
-            apiName: "OdataFilterStartWith",
-            apiDescription: "Use filter startswith",
-            apiReference:"http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
-            apiExample: { http: "/v1.0/Things?$filter=startswith(description,'A New')",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
-        };
-
         chai.request(server)
-            .get(`/test${infos.apiExample.http}`)
+            .get(`/test/v1.0/Things?$filter=startswith(description,'A New')`)
             .end((err, res) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
 
     it("filter name CONTAINS", (done) => {
-        const infos = {
-            api: "{get} Thing filter contains",
-            apiName: "OdataFilterContains",
-            apiDescription: "Use filter contains",
-            apiReference:"http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
-            apiExample: { http: "/v1.0/Things?$filter=contains(description,'two')",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
-        };
 
         chai.request(server)
-            .get(`/test${infos.apiExample.http}`)
+            .get(`/test/v1.0/Things?$filter=contains(description,'two')`)
             .end((err, res) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
 
     it("filter date greater Than", (done) => {
-        const infos = {
-            api: "{get} Thing filter date greater than",
-            apiName: "OdataFilterDateGt",
-            apiDescription: "Use filter gt with date",
-            apiReference:"http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
-            apiExample: { http: "/v1.0/Observations?$filter=phenomenonTime gt '2021-01-01'" ,
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP") }
-        };
-
         chai.request(server)
-            .get(`/test${infos.apiExample.http}`)
+            .get(`/test/v1.0/Observations?$filter=phenomenonTime gt '2021-01-01'`)
             .end((err, res) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
 
     it("filter date eq", (done) => {
-        const infos = {
-            api: "{get} Thing filter date equal (1 day)",
-            apiName: "OdataFilterDateEq",
-            apiDescription: "Use filter eq with date",
-            apiReference:"http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
-            apiExample: { http: "/v1.0/Observations?$filter=result eq '92' and resultTime eq '2017-02-13'",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
-        };
-
         chai.request(server)
-            .get(`/test${infos.apiExample.http}`)
+            .get(`/test/v1.0/Observations?$filter=result eq '92' and resultTime eq '2017-02-13'`)
             .end((err, res) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
@@ -717,7 +444,6 @@ describe("Odata", () => {
                 res.body.value[0]["result"].should.eql(92);
                 res.body.value[0]["resultTime"].should.contains("2017-02-13");
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
@@ -727,7 +453,7 @@ describe("Odata", () => {
             api: "{get} Thing filter date greater than and less than",
             apiName: "OdataFilterDateGtAndLt",
             apiDescription: "Use filter gt with date",
-            apiReference:"http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+            apiReference:"https://docs.ogc.org/is/18-088/18-088.html#requirement-request-data-filter",
             apiExample: { http: "/v1.0/Observations?$filter=phenomenonTime gt '2021-01-01' and phenomenonTime lt '2021-10-16'",
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),

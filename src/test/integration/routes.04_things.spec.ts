@@ -21,11 +21,15 @@ import {
     keyTokenName,
     defaultPatch,
     defaultDelete,
-    addToFile,
     writeAddToFile,
     getNB,
     listOfColumns,
-    limitResult
+    limitResult,
+    infos,
+    apiInfos,
+    showHide,
+    nbColor,
+    nbColorTitle
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
@@ -51,22 +55,15 @@ const should = chai.should();
 const docs: IApiDoc[] = [];
 const entity: IEntity = _DBDATAS.Things;
 
-
-
-
-
 const addToApiDoc = (input: IApiInput) => {
     docs.push(prepareToApiDoc(input, entity.name));
 };
 
 addToApiDoc({
     api: `{infos} ${entity.name} infos`,
-    apiName: `Infos${entity.name}`,
-    apiDescription: `A Thing is an object of the physical world (physical Things) or the information world (virtual Things) that is capable of being identified and integrated into communication networks<br>
-    Thing is a good starting point to start creating the SensorThings model structure.<br>
-    <br>
-    A Thing has Locations and one or more Datastreams to collect Observations. A minimal Thing can be created without a Location and Datastream and there are options to create a Things with a nested linked Location and Datastream.`,
-    apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#25",
+    apiName: `Infos${entity.name}`,    
+    apiDescription: infos[entity.name].definition,
+    apiReference: infos[entity.name].reference,
     result: ""
 });
 
@@ -88,13 +85,13 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
     });
 
-    describe(`{get} ${entity.name}`, () => {
-        it("Return all Things", (done) => {
+    describe(`{get} ${entity.name} ${nbColorTitle}[9.2]`, () => {
+        it(`Return all ${entity.name} ${nbColor}[9.2.2]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name} Get all`,
                 apiName: `GetAll${entity.name}`,
-                apiDescription: `Retrieve all ${entity.name}.`,
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#37",
+                apiDescription: `Retrieve all ${entity.name}.${showHide(`Get${entity.name}`, apiInfos["9.2.2"])}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-collection-entities",
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -105,7 +102,7 @@ describe("endpoint : Thing [8.2.1]", () => {
             };
 
             chai.request(server)
-                .get(addToFile(addToFile(`/test${infos.apiExample.http}`)))
+                .get(`/test${infos.apiExample.http}`)
                 .end((err, res) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -117,12 +114,12 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return Thing id: 1", (done) => {
+        it(`Return ${entity.name} id: 1 ${nbColor}[9.2.3]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get one`,
                 apiName: `GetOne${entity.name}`,
-                apiDescription: `Get a specific Thing.`,
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#38",
+                apiDescription: `Get a specific Thing.${apiInfos["9.2.3"]}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-entity",
                 apiExample: {
                     http: `/v1.0/${entity.name}(1)`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -131,7 +128,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 }
             };
             chai.request(server)
-                .get(addToFile(`/test${infos.apiExample.http}`))
+                .get(`/test${infos.apiExample.http}`)
                 .end((err: any, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -148,9 +145,9 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return error if Thing does not exist", (done) => {
+        it(`Return error if ${entity.name} not exist ${nbColor}[9.2.4]`, (done) => {
             chai.request(server)
-                .get(addToFile(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`))
+                .get(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .end((err, res) => {
                     should.not.exist(err);
                     res.status.should.equal(404);
@@ -160,12 +157,12 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return property name of Thing id: 1", (done) => {
+        it(`Return property name of Thing id: 1 ${nbColor}[9.2.4]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get only a property`,
                 apiName: `GetName${entity.name}`,
-                apiDescription: "Get the name of a specific Thing.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#39",
+                apiDescription: `Get the name of a specific Thing.${apiInfos["9.2.4"]}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-property-of-entity",
                 apiExample: {
                     http: `/v1.0/${entity.name}(1)/name`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -174,7 +171,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 }
             };
             chai.request(server)
-                .get(addToFile(`/test${infos.apiExample.http}`))
+                .get(`/test${infos.apiExample.http}`)
                 .end((err: any, res: any) => {
                     // there should be no errors
                     should.not.exist(err);
@@ -193,7 +190,7 @@ describe("endpoint : Thing [8.2.1]", () => {
 
         it("Return error if the column does not exist", (done) => {
             chai.request(server)
-                .get(addToFile(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})/nameNot`))
+                .get(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})/nameNot`)
                 .end((err, res) => {
                     should.not.exist(err);
                     res.status.should.equal(404);
@@ -203,12 +200,12 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return value of property name Thing id: 1", (done) => {
+        it(`Return value of property name Thing id: 1 ${nbColor}[9.2.5]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get only the value of a property`,
                 apiName: `GetNameValue${entity.name}`,
-                apiDescription: "Get the value of the property of a specific Thing.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#40",
+                apiDescription: `Get the value of the property of a specific Thing.${apiInfos["9.2.5"]}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-value-of-property",
                 apiExample: {
                     http: `/v1.0/${entity.name}(1)/name/$value`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -217,7 +214,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 }
             };
             chai.request(server)
-                .get(addToFile(`/test${infos.apiExample.http}`))
+                .get(`/test${infos.apiExample.http}`)
                 .end((err: any, res: any) => {
                     // there should be no errors
                     should.not.exist(err);
@@ -231,12 +228,12 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return Thing Select @iot.id", (done) => {
+        it(`Return ${entity.name} Select @iot.id ${nbColor}[9.3.3.2]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get Select with @iot.id`,
                 apiName: `Get${entity.name}SelectIot`,
                 apiDescription: "Get with select with @iot.id.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#48",
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#expand",
                 apiExample: {
                     http: `/v1.0/${entity.name}?$select=name,description,@iot.id`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -245,7 +242,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 }
             };
             chai.request(server)
-                .get(addToFile(`/test${infos.apiExample.http}`))
+                .get(`/test${infos.apiExample.http}`)
                 .end((err: any, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -258,9 +255,9 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return Thing Select id", (done) => {
+        it(`Return ${entity.name} Select id ${nbColor}[9.3.3.2]`, (done) => {
             chai.request(server)
-                .get(addToFile(`/test/v1.0/${entity.name}?$select=name,description,id`,))
+                .get(`/test/v1.0/${entity.name}?$select=name,description,id`,)
                 .end((err: any, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -272,12 +269,12 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return Thing Select with Datastreams navigation link", (done) => {
+        it(`Return ${entity.name} Select with Datastreams navigation link ${nbColor}[9.2.6]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get Select with navigation link`,
                 apiName: `Get${entity.name}SelectNavLink`,
                 apiDescription: "Get select with navigation link",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#48",
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#expand",
                 apiExample: {
                     http: `/v1.0/${entity.name}?$select=name,description,Datastreams`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -286,7 +283,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 }
             };
             chai.request(server)
-                .get(addToFile(`/test${infos.apiExample.http}`))
+                .get(`/test${infos.apiExample.http}`)
                 .end((err: any, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -299,12 +296,12 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return Thing Subentity Locations", (done) => {
+        it(`Return ${entity.name} Subentity Locations ${nbColor}[9.2.6]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get Subentity Locations`,
                 apiName: `Get${entity.name}Subentity`,
-                apiDescription: "Get Subentity Locations of a specific Thing.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#41",
+                apiDescription: `Get Subentity Locations of a specific Thing.${apiInfos["9.2.6"]}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-navigation-property",
                 apiExample: {
                     http: `/v1.0/${entity.name}(6)/Locations`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -313,7 +310,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 }
             };
             chai.request(server)
-                .get(addToFile(`/test${infos.apiExample.http}`))
+                .get(`/test${infos.apiExample.http}`)
                 .end((err: any, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -328,9 +325,9 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return Thing Subentity HistoricalLocations", (done) => {
+        it(`Return ${entity.name} Subentity HistoricalLocations ${nbColor}[9.2.6]`, (done) => {
             chai.request(server)
-                .get(addToFile(`/test/v1.0/${entity.name}(6)/HistoricalLocations`))
+                .get(`/test/v1.0/${entity.name}(6)/HistoricalLocations`)
                 .end((err: any, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -344,9 +341,9 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return Thing Subentity Datastreams", (done) => {
+        it(`Return ${entity.name} Subentity Datastreams ${nbColor}[9.2.6]`, (done) => {
             chai.request(server)
-                .get(addToFile(`/test/v1.0/${entity.name}(6)/Datastreams`))
+                .get(`/test/v1.0/${entity.name}(6)/Datastreams`)
                 .end((err: any, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -362,9 +359,9 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return Thing Subentity MultiDatastreams", (done) => {
+        it(`Return ${entity.name} Subentity MultiDatastreams ${nbColor}[9.2.6]`, (done) => {
             chai.request(server)
-                .get(addToFile(`/test/v1.0/${entity.name}(12)/MultiDatastreams`))
+                .get(`/test/v1.0/${entity.name}(12)/MultiDatastreams`)
                 .end((err: any, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -381,12 +378,12 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return Thing Expand Locations", (done) => {
+        it(`Return ${entity.name} Expand Locations ${nbColor}[9.3.2.1]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get Expand Locations`,
                 apiName: `Get${entity.name}Expand`,
-                apiDescription: "Get Expand Locations of a specific Thing.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#47",
+                apiDescription: `Get Expand Locations of a specific Thing.${apiInfos["9.3.2.1"]}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#expand",
                 apiExample: {
                     http: `/test/v1.0/${entity.name}(6)?$expand=Locations`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -395,7 +392,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 }
             };
             chai.request(server)
-                .get(addToFile(`/test${infos.apiExample.http}`))
+                .get(`/test${infos.apiExample.http}`)
                 .end((err: any, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -409,12 +406,12 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return Thing Expand Locations With select inside", (done) => {
+        it(`Return ${entity.name} Expand Locations With select inside ${nbColor}[9.3.2.1]`, (done) => {
             const infos = {
-                api: `{get} ${entity.name}(:id) Get Expand Locations`,
+                api: `{get} ${entity.name}(:id) Get Expand with Select`,
                 apiName: `Get${entity.name}ExpandSelect`,
-                apiDescription: "Get Expand Locations of a specific Thing with a select inside.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#48",
+                apiDescription: `Get Expand Locations of a specific Thing with a select inside.${apiInfos["9.3.2.1"]}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#expand",
                 apiExample: {
                     http: `/v1.0/${entity.name}(6)?$expand=Locations($select=location)`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -423,7 +420,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 }
             };
             chai.request(server)
-                .get(addToFile(`/test${infos.apiExample.http}`))
+                .get(`/test${infos.apiExample.http}`)
                 .end((err: any, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -435,12 +432,12 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return Thing Expand Locations , HistoricalLocations", (done) => {
+        it(`Return ${entity.name} Expand Locations , HistoricalLocations ${nbColor}[9.3.2.1]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get Expand coma separation`,
                 apiName: `Get${entity.name}ExpandComaHistorical`,
-                apiDescription: "Get Expand Locations and Historical Location of a specific Thing.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#47",
+                apiDescription: `Get Expand Locations and Historical Location of a specific Thing..${apiInfos["9.3.2.1"]}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#expand",
                 apiExample: {
                     http: `/v1.0/${entity.name}(6)?$expand=Locations,HistoricalLocations`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -449,7 +446,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 }
             };
             chai.request(server)
-                .get(addToFile(`/test${infos.apiExample.http}`))
+                .get(`/test${infos.apiExample.http}`)
                 .end((err: any, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -464,12 +461,12 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return Thing Expand Locations / HistoricalLocations", (done) => {
+        it(`Return ${entity.name} Expand Locations / HistoricalLocations ${nbColor}[9.3.2.1]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get Expand  slash separation`,
                 apiName: `Get${entity.name}ExpandSlashHistorical`,
-                apiDescription: "Get Expand Locations and it's Historical Location of a specific Thing.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#47",
+                apiDescription: `Get Expand Locations and it's Historical Location of a specific Thing..${apiInfos["9.3.2.1"]}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#expand",
                 apiExample: {
                     http: `/v1.0/${entity.name}(6)?$expand=Locations/HistoricalLocations`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -478,7 +475,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 }
             };
             chai.request(server)
-                .get(addToFile(`/test${infos.apiExample.http}`))
+                .get(`/test${infos.apiExample.http}`)
                 .end((err: any, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -492,11 +489,11 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return Thing Expand HistoricalLocations", (done) => {
+        it(`Return ${entity.name} Expand HistoricalLocations ${nbColor}[9.3.2.1]`, (done) => {
             const name = "HistoricalLocations";
 
             chai.request(server)
-                .get(addToFile(`/test/v1.0/${entity.name}(6)?$expand=HistoricalLocations`))
+                .get(`/test/v1.0/${entity.name}(6)?$expand=HistoricalLocations`)
                 .end((err: any, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -509,10 +506,10 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return Thing Expand Datastreams", (done) => {
+        it(`Return ${entity.name} Expand Datastreams ${nbColor}[9.3.2.1]`, (done) => {
             const name = "Datastreams";
             chai.request(server)
-                .get(addToFile(`/test/v1.0/${entity.name}(6)?$expand=Datastreams`))
+                .get(`/test/v1.0/${entity.name}(6)?$expand=Datastreams`)
                 .end((err: any, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -528,9 +525,9 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return Thing Select with Expand Datastreams", (done) => {
+        it(`Return ${entity.name} Select with Expand Datastreams ${nbColor}[9.3.2.1]`, (done) => {
             chai.request(server)
-                .get(addToFile(`/test/v1.0/${entity.name}?$select=name,description&$expand=Datastreams`))
+                .get(`/test/v1.0/${entity.name}?$select=name,description&$expand=Datastreams`)
                 .end((err: any, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -540,9 +537,9 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return Thing Expand MultiDatastreams", (done) => {
+        it(`Return ${entity.name} Expand MultiDatastreams ${nbColor}[9.3.2.1]`, (done) => {
             chai.request(server)
-                .get(addToFile(`/test/v1.0/${entity.name}(12)?$expand=MultiDatastreams`))
+                .get(`/test/v1.0/${entity.name}(12)?$expand=MultiDatastreams`)
                 .end((err: any, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -558,12 +555,12 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return Things association link", (done) => {
+        it(`Return ${entity.name} association link ${nbColor}[9.2.7]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get only references`,
                 apiName: `Get${entity.name}RefLinks`,
-                apiDescription: "Get only references of all Things.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#42",
+                apiDescription: `Get only references of all Things.${apiInfos["9.2.7"]}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-associationlink",
                 apiExample: {
                     http: `/v1.0/${entity.name}/$ref`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -572,7 +569,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 }
             };
             chai.request(server)
-                .get(addToFile(`/test/v1.0/${entity.name}/$ref`))
+                .get(`/test/v1.0/${entity.name}/$ref`)
                 .end((err: any, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -582,14 +579,38 @@ describe("endpoint : Thing [8.2.1]", () => {
                     addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
-        });        
+        });   
+
+        it(`Return ${entity.name} nested resource path ${nbColor}[9.2.8]`, (done) => {
+            const infos = {
+                api: `{get} ${entity.name}(:id)/entity(:id) Get nested resource path`,
+                apiName: `Get${entity.name}NestedPath`,
+                apiDescription: `Get nested resources of all Things..${apiInfos["9.2.8"]}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-nested-resource-path",
+                apiExample: {
+                    http: `/v1.0/${entity.name}(2)/Datastreams(5)`,
+                    curl: defaultGet("curl", "KEYHTTP"),
+                    javascript: defaultGet("javascript", "KEYHTTP"),
+                    python: defaultGet("python", "KEYHTTP")
+                }
+            };
+            chai.request(server)
+                .get(infos.apiExample.http)
+                .end((err: any, res: any) => {
+                    should.not.exist(err);
+                    res.status.should.equal(200);
+                    res.type.should.equal("application/json");
+                    res.body["@iot.id"].should.eql(5);
+                    res.body["@iot.selfLink"].should.contain("/Datastreams(5)");
+                    addToApiDoc({ ...infos, result: limitResult(res) });
+                    done();
+                });
+        });
     });
 
-    describe(`{post} ${entity.name} Create. [10.2.1]`, () => {
+    describe(`{post} ${entity.name} ${nbColorTitle}[10.2]`, () => {
         let myError = "";
-
-        // http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#61
-        it("Return added Thing", (done) => {
+        it(`Return added ${entity.name} ${nbColor}[10.2.1]`, (done) => {
             const datas = {
                 "description": "Create a new thing",
                 "name": `name of new ${getNB(entity.name)}`,
@@ -601,8 +622,8 @@ describe("endpoint : Thing [8.2.1]", () => {
             const infos = {
                 api: `{post} ${entity.name} Post basic`,
                 apiName: `Post${entity.name}`,
-                apiDescription: "Post a new Thing.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#61",
+                apiDescription: `Post a new ${entity.name}.${showHide(`Post${entity.name}`, apiInfos["10.2"])}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request",
                 apiPermission: "admin:computer",
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
@@ -627,7 +648,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return Error if the payload is malformed", (done) => {
+        it(`Return Error if the payload is malformed ${nbColor}[10.2.2]`, (done) => {
             chai.request(server)
                 .post("/test/v1.0/things")
                 .send({})
@@ -643,7 +664,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("POST Thing with new Location", (done) => {
+        it(`POST ${entity.name} with new Location ${nbColor}[10.2.1.2]`, (done) => {
             const datas = {
                 "name": `Temperature Monitoring ${getNB(entity.name)}`,
                 "description": `${entity.name} (POST with new Location)`,
@@ -665,8 +686,8 @@ describe("endpoint : Thing [8.2.1]", () => {
             const infos = {
                 api: `{post} ${entity.name} Post with new Location`,
                 apiName: `Post${entity.name}Location`,
-                apiDescription: "A Location entity can be linked to a Thing at its creation time. The Location provided will be a new Location in the system.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#63",
+                apiDescription: `A Location entity can be linked to a Thing at its creation time. The Location provided will be a new Location in the system.${apiInfos["10.2.1.2"]}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#create-related-entities",
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
@@ -718,7 +739,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("POST Thing with existing Location", (done) => {
+        it(`POST ${entity.name} with existing Location ${nbColor}[10.2.1.1]`, (done) => {
             const datas = {
                 "name": `Temperature Monitoring ${getNB(entity.name)}`,
                 "description": "Sensor (POST with existing Location)",
@@ -731,8 +752,8 @@ describe("endpoint : Thing [8.2.1]", () => {
             const infos = {
                 api: `{post} ${entity.name} Post with existing Location`,
                 apiName: "PostThingExistLocation",
-                apiDescription: "Create a Thing with existing location.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#62",
+                apiDescription: `Create a Thing with existing location.${apiInfos["10.2.1.1"]}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#link-existing-entities-when-creating",
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
@@ -777,7 +798,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("POST Thing with existing Location that don't exist", (done) => {
+        it(`POST ${entity.name} with existing Location that don't exist`, (done) => {
             chai.request(server)
                 .post("/test/v1.0/Things")
                 .set("Cookie", `${keyTokenName}=${token}`)
@@ -799,7 +820,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("POST Thing with new Location & Datastream", (done) => {
+        it(`POST ${entity.name} with new Location & Datastream ${nbColor}[10.2.1.2]`, (done) => {
             const datas = {
                 "name": "Temperature Monitoring[4]",
                 "description": "Sensor system monitoring area temperature Hot",
@@ -844,7 +865,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 api: `{post} ${entity.name} Post with Location and Datastream`,
                 apiName: "PostThingLocationDatastream",
                 apiDescription: "Create a Thing with new location & datastream.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#63",
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#create-related-entities",
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
@@ -893,8 +914,8 @@ describe("endpoint : Thing [8.2.1]", () => {
         });
     });
 
-    describe(`{patch} ${entity.name} one thing`, () => {
-        it("Return updated Thing", (done) => {
+    describe(`{patch} ${entity.name} ${nbColorTitle}[10.3]`, () => {
+        it(`Return updated ${entity.name} ${nbColor}[10.3.1]`, (done) => {
             dbTest(entity.table)
                 .select("*")
                 .orderBy("id")
@@ -911,8 +932,8 @@ describe("endpoint : Thing [8.2.1]", () => {
                     const infos = {
                         api: `{patch} ${entity.name} Patch a Thing`,
                         apiName: `Patch${entity.name}`,
-                        apiDescription: "Patch a Thing.",
-                        apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#65",
+                        apiDescription: `Patch a ${entity.singular}.${showHide(`Patch${entity.name}`, apiInfos["10.3"])}`,
+                        apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_2",
                         apiExample: {
                             http: `/v1.0/${entity.name}(${myId})`,
                             curl: defaultPatch("curl", "KEYHTTP", datas),
@@ -938,7 +959,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return Error if the Thing does not exist", (done) => {
+        it(`Return Error if the ${entity.name} not exist`, (done) => {
             chai.request(server)
                 .patch(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .set("Cookie", `${keyTokenName}=${token}`)
@@ -960,7 +981,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return updated Thing with new location", (done) => {
+        it(`Return updated ${entity.name} with new location`, (done) => {
             dbTest(entity.table)
                 .select("*")
                 .orderBy("id")
@@ -978,7 +999,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                         api: `{patch} ${entity.name} Patch with New location`,
                         apiName: `PatchLocation${entity.name}`,
                         apiDescription: "Modify location of a Thing.",
-                        apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#65",
+                        apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_2",
                         apiExample: {
                             http: `/v1.0/${entity.name}(${thingObject.id})`,
                             curl: defaultPatch("curl", "KEYHTTP", datas),
@@ -1022,7 +1043,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return updated Thing with only location (relation only)", (done) => {
+        it(`Return updated ${entity.name} with only location (relation only)`, (done) => {
             dbTest(entity.table)
                 .select("*")
                 .orderBy("id")
@@ -1035,7 +1056,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                         api: `{patch} ${entity.name} Patch with existing Location`,
                         apiName: `PatchExistLocation${entity.name}`,
                         apiDescription: "Patch a Thing and only location change.",
-                        apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#65",
+                        apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_2",
                         apiExample: {
                             http: `/v1.0/${entity.name}(${thingObject.id})`,
                             curl: defaultPatch("curl", "KEYHTTP", datas),
@@ -1080,8 +1101,8 @@ describe("endpoint : Thing [8.2.1]", () => {
         });
     });
 
-    describe(`{delete} ${entity.name} Delete`, () => {
-        it("Return no content with code 204", (done) => {
+    describe(`{delete} ${entity.name} ${nbColorTitle}[10.4]`, () => {
+        it(`Delete ${entity.name} return no content with code 204 ${nbColor}[10.4.1]`, (done) => {
             dbTest(entity.table)
                 .select("*")
                 .orderBy("id")
@@ -1092,8 +1113,8 @@ describe("endpoint : Thing [8.2.1]", () => {
                     const infos = {
                         api: `{delete} ${entity.name} Delete one`,
                         apiName: `Delete${entity.name}`,
-                        apiDescription: "Delete a Thing.",
-                        apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#68",
+                        apiDescription: `Delete a ${entity.singular}.${showHide(`Delete${entity.name}`, apiInfos["10.4"])}`,
+                        apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_3",
                         apiExample: {
                             http: `/v1.0/${entity.name}(${myId})`,
                             curl: defaultDelete("curl", "KEYHTTP"),
@@ -1126,7 +1147,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it("Return Error if the Thing does not exist", (done) => {
+        it(`Return Error if the ${entity.name} not exist`, (done) => {
             chai.request(server)
                 .delete(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .set("Cookie", `${keyTokenName}=${token}`)

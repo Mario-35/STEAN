@@ -8,14 +8,15 @@
 
 import { Knex } from "knex";
 import { message } from "../../logger";
+import { MODES } from "../../types";
 
 export const testConnection = async (instance: Knex<any, unknown[]>): Promise<boolean> => {
-    message(true, "INFO", "testConnection", instance.toString());
+    message(true, MODES.INFO, "testConnection", instance.toString());
 
     await instance.raw("select 1+1 as result").catch((err) => {
-        message(true, "ERROR", "testConnection", err);
+        message(true, MODES.ERROR, "testConnection", err);
         return false;
     });
-    message(true, "INFO", "testConnection", "OK");
+    message(true, MODES.INFO, "testConnection", "OK");
     return true;
 };

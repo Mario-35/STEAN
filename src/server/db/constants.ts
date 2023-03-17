@@ -13,7 +13,7 @@ import { _CONFIGURATION } from "../configuration";
 import { _ENV_VERSION } from "../constants";
 import { getEntityName, returnFormats } from "../helpers";
 import { PgVisitor } from "../odata";
-import { IEntity } from "../types";
+import { ENTITIES, IEntity } from "../types";
 import { RELATIONS } from "../types/entity";
 
 export const isSingular = (input: string): boolean => {
@@ -34,28 +34,13 @@ export const columnList = (input: IEntity) => Object.keys(input.columns).filter(
 const makeIDAlias = (table: string) => `"${table}"."id" AS "@iot.id"`;
 const _DATEFORMAT = 'YYYY-MM-DD"T"HH24:MI:SSZ';
 
-enum ENTITIES {    
-    Things = 'Things' ,
-    FeaturesOfInterest = 'FeaturesOfInterest' ,
-    Locations = 'Locations' ,
-    HistoricalLocations = 'HistoricalLocations' ,
-    locationsHistoricalLocations = 'locationsHistoricalLocations' ,
-    ObservedProperties = 'ObservedProperties' ,
-    Sensors = 'Sensors' ,
-    Datastreams = 'Datastreams' ,
-    MultiDatastreams = 'MultiDatastreams' ,
-    MultiDatastreamObservedProperties = 'MultiDatastreamObservedProperties' ,
-    Observations = 'Observations' ,
-    HistoricalObservations = 'HistoricalObservations' ,
-    ThingsLocations = 'ThingsLocations' ,
-    Decoders = 'Decoders' ,
-    Loras = 'Loras' ,
-    CreateObservations = 'CreateObservations' ,
-    CreateFile = 'CreateFile' ,
-    Logs = 'Logs',
-    Users = 'Users',
-    Configs= 'Configs',
-}
+export const observationTypes = ["http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_CategoryObservation",
+                                "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_CountObservation",
+                                "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+                                "http://www.opengis.net/def/observation-type/ogc-om/2.0/om_complex-observation",
+                                "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Observation",
+                                "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_TruthObservation",
+                                "http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation"];
 
 
 const DBDATAS: { [key in ENTITIES]: IEntity } = {
@@ -68,7 +53,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
                 alias: makeIDAlias("thing"),
-                type : "number"
+                type : "number"                
             },
             name: {
                 create: "text NOT NULL DEFAULT 'no name'::text",
@@ -161,6 +146,10 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 create: "jsonb NOT NULL",
                 type : "json",
                 test: "encodingType"
+            },
+            properties: {
+                create: "jsonb NULL",
+                type : "json"
             }
         },
         admin: false,
@@ -168,6 +157,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             Observations: {
                 type: RELATIONS.hasMany,
                 expand: `"observation"."id" in (select "observation"."id" from "observation" where "observation"."featureofinterest_id" = "featureofinterest"."id")`,
+                // link: `"observation"."id" = (select "observation"."id" from "observation" where "observation"."id" = $NESTED AND "observation"."featureofinterest_id" = $ID)`,
                 link: `"observation"."id" in (select "observation"."id" from "observation" where "observation"."featureofinterest_id" = $ID)`,
 
                 entityName: "Observations",
@@ -523,8 +513,12 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 type : "text"
             },
             observationType: {
-                create: "observationtype NOT NULL DEFAULT 'Measurement'::observationtype",
-                type : "list"
+                create: "text NOT NULL DEFAULT 'http://www.opengis.net/def/ogc-om/OM_Measurement'::text",
+                type : "list",
+                verify: {
+                    list: observationTypes,
+                    default: "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement"
+                }
             },
             unitOfMeasurement: {
                 create: "jsonb NOT NULL",
@@ -653,11 +647,15 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                    type : "json"
             },
             observationType: {
-                create: "observationtype NOT NULL DEFAULT 'om_complex-observation'::observationtype",
-                type : "list"
+                create: "text NOT NULL DEFAULT 'http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation'::text",
+                type : "list",
+                verify: {
+                    list: observationTypes,
+                    default: "http://www.opengis.net/def/observation-type/ogc-om/2.0/om_complex-observation"
+                }
             },
             multiObservationDataTypes: {
-                create: "observationtype[] NULL",
+                create: "text[] NULL",
                 type : "text"
             },
             observedArea: {
@@ -1035,7 +1033,11 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             test: {
                 create: "text NULL",
                 type : "text"
-            }
+            },
+            dataKeys: {
+                create: "text[] NULL",
+                type : "string[]"
+            },
         },
         constraints: {
             decoder_pkey: 'PRIMARY KEY ("id")',
@@ -1293,6 +1295,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         indexes: {}
     }    
 };
+
 
 export const _ENTITIES = Object.values(ENTITIES);
 export const _DBDATAS = Object.freeze(DBDATAS);

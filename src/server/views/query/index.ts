@@ -11,10 +11,11 @@
 import fs from "fs";
 import { _DBDATAS } from "../../db/constants";
 import { message } from "../../logger";
+import { MODES } from "../../types";
 import { IQuery } from "../constant";
 import { commonHtml } from "../helpers";
 
 export const queryHtmlPage = (params: IQuery): string => {
-    message(true, "HEAD", "queryHtmlPage");
+    message(true, MODES.HEAD, "queryHtmlPage");
     return commonHtml(fs.readFileSync(__dirname + "/query.html").toString(), params);
 };

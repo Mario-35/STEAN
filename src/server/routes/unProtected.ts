@@ -13,7 +13,7 @@ import { ConfigCtx, returnFormats } from "../helpers";
 import fs from "fs";
 import { db } from "../db";
 import { message } from "../logger";
-import { IReturnResult } from "../types";
+import { IReturnResult, MODES } from "../types";
 import { _APIVERSION } from "../constants";
 import { queryHtmlPage } from "../views/query";
 import { CreateHtmlView, createIqueryFromContext,  } from "../views/helpers/";
@@ -57,7 +57,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
                 ctx.type = returnFormats.icon.type;
                 ctx.body =  fs.readFileSync(__dirname + "/favicon.ico");
             } catch (e) {
-                if (e instanceof Error) message(false, "ERROR", e.message);
+                if (e instanceof Error) message(false, MODES.ERROR, e.message);
             }
             return;
 
@@ -144,7 +144,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             return;
 
         case "CREATEDB":
-            message(true, "HEAD", "GET createDB");
+            message(true, MODES.HEAD, "GET createDB");
             const returnValue = await createDatabase("test", ctx);
 
             if (returnValue) {
@@ -161,7 +161,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         const odataVisitor = await createOdata(ctx); 
         if (odataVisitor)  ctx._odata = odataVisitor;
         if (ctx._odata) {
-            message(true, "HEAD", `GET ${_APIVERSION}`);
+            message(true, MODES.HEAD, `GET ${_APIVERSION}`);
             const objectAccess = new apiAccess(ctx);
             if (objectAccess) {
                 if (ctx._odata.entity && Number(ctx._odata.id) === 0) {

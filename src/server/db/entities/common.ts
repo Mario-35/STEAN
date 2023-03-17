@@ -11,7 +11,7 @@ import { Knex } from "knex";
 import { isGraph, _DBDATAS } from "../constants";
 import { getEntityName, removeQuotes, returnFormats } from "../../helpers/index";
 import {  message } from "../../logger";
-import { IReturnResult } from "../../types";
+import { IReturnResult, MODES } from "../../types";
 import { createGraph, extractMessageError, knexQueryToSql, parseSql, removeKeyFromUrl, verifyId } from "../helpers";
 import { _debug, _VOIDTABLE } from "../../constants";
 import { _CONFIGS, _CONFIGURATION } from "../../configuration";
@@ -25,7 +25,7 @@ export class Common {
     public linkBase: string;
 
     constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
-        message(true, "CLASS", this.constructor.name, messages.infos.constructor);
+        message(true, MODES.CLASS, this.constructor.name, messages.infos.constructor);
         this.ctx = ctx;
         if (knexInstance) Common.dbContext = knexInstance;
         this.nextLinkBase = removeKeyFromUrl(`${this.ctx._odata.options.rootBase}${this.ctx.href.split(`${ctx._version}/`)[1]}`, ["top", "skip"]);
@@ -40,12 +40,12 @@ export class Common {
     // Log full Query
     logQuery(input: Knex.QueryBuilder | string): void {
         const queryString = typeof input === "string" ? input : knexQueryToSql(input);
-        if (_debug) message(true, "RESULT", "query", `\n${parseSql(queryString)}`);
+        if (_debug) message(true, MODES.RESULT, "query", `\n${parseSql(queryString)}`);
     }
 
     // create a blank ReturnResult
     createReturnResult(args: Record<string, unknown>): IReturnResult {
-        message(true, "CLASS", this.constructor.name, "createReturnResult");
+        message(true, MODES.CLASS, this.constructor.name, "createReturnResult");
         return {
             ...{
                 id: undefined,
@@ -75,7 +75,7 @@ export class Common {
 
     // formatResult for graph and for observation request without Datastreams or MultiDatastreams
     formatResult = async (input: JSON): Promise<JSON | IGraphDatas> => {
-        message(true, "INFO", "formatResult", this.ctx._odata.resultFormat);
+        message(true, MODES.INFO, "formatResult", this.ctx._odata.resultFormat);
         if (isGraph(this.ctx._odata)) {
             const entityName = getEntityName(this.ctx._odata.parentEntity ? this.ctx._odata.parentEntity : this.ctx._odata.entity);            
             let tempTitle  = "No Title"
@@ -88,7 +88,7 @@ export class Common {
     };
 
     async getAll(): Promise<IReturnResult | undefined> {
-        message(true, "CLASS", this.constructor.name, `getAll in ${this.ctx._odata.resultFormat} format`);
+        message(true, MODES.CLASS, this.constructor.name, `getAll in ${this.ctx._odata.resultFormat} format`);
 
         const sql = this.ctx._odata.asGetSql();
 
@@ -114,14 +114,14 @@ export class Common {
                     });
             })
             .catch((err: Error) => this.ctx.throw(400, { code: 400,detail: err.message }));
-    }
+    };
     
     onlyValue(input: string | object): string {        
         return (typeof input === "object") ? JSON.stringify(input) : removeQuotes(input);
     }
 
     async getSingle(idInput: bigint | string): Promise<IReturnResult | undefined> {
-        message(true, "CLASS", this.constructor.name, `getSingle [${idInput}]`);
+        message(true, MODES.CLASS, this.constructor.name, `getSingle [${idInput}]`);
 
         const sql = this.ctx._odata.asGetSql();
 
@@ -140,7 +140,11 @@ export class Common {
                         id: nb,
                         nextLink: this.nextLink(nb),
                         prevLink: this.prevLink(nb),
-                        body: this.ctx._odata.select && this.ctx._odata.onlyValue === true ? this.onlyValue(String(res.rows[0].results[0][this.ctx._odata.select == "id" ? "@iot.id" : this.ctx._odata.select ])) : res.rows[0].results[0]
+                        body: this.ctx._odata.select && this.ctx._odata.onlyValue === true 
+                            ? this.onlyValue(String(res.rows[0].results[0][this.ctx._odata.select == "id" 
+                                ? "@iot.id" 
+                                : this.ctx._odata.select ])) 
+                            : res.rows[0].results[0]
                     });
                 }
             })
@@ -149,7 +153,7 @@ export class Common {
 
     async add(dataInput: Object | undefined): Promise<IReturnResult | undefined> {
         
-        message(true, "CLASS", this.constructor.name, "add");
+        message(true, MODES.CLASS, this.constructor.name, "add");
         
         dataInput = this.formatDataInput(dataInput);
         
@@ -179,7 +183,7 @@ export class Common {
     }
 
     async update(idInput: bigint | string, dataInput: Object | undefined): Promise<IReturnResult | undefined> {
-        message(true, "CLASS", this.constructor.name, "update");
+        message(true, MODES.CLASS, this.constructor.name, "update");
 
         if (!dataInput) this.ctx.throw(400, { code: 400,  detail: messages.errors.noDataSend + "update" });
 
@@ -211,7 +215,7 @@ export class Common {
     }
 
     async delete(idInput: bigint | string): Promise<IReturnResult | undefined> {
-        message(true, "CLASS", this.constructor.name, "delete");
+        message(true, MODES.CLASS, this.constructor.name, "delete");
 
         if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ id: BigInt(idInput), body: `DELETE FROM "${_DBDATAS[this.constructor.name].table}" WHERE id= ${idInput}` });
 

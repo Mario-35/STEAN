@@ -9,7 +9,7 @@
 
 import { Knex } from "knex";
 import { message } from "../../logger";
-import { IEntity } from "../../types";
+import { IEntity, MODES } from "../../types";
 
 export const createTable = async(connectionDb: Knex | Knex.Transaction, tableEntity: IEntity, doAfter: string | undefined): Promise<{ [key: string]: string }> => {
     if(!tableEntity) return {};
@@ -22,7 +22,7 @@ export const createTable = async(connectionDb: Knex | Knex.Transaction, tableEnt
 
     let insertion = "";
     if (!connectionDb) {
-        message(false, "ERROR", "connection Error");
+        message(false, MODES.ERROR, "connection Error");
         return { error: "connection Error" };
     }
 

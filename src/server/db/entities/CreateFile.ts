@@ -11,7 +11,7 @@ import koa from "koa";
 import { Common } from "./common";
 import { _DBDATAS } from "../constants";
 import { message } from "../../logger";
-import { ICsvColumns, ICsvFile, IReturnResult } from "../../types";
+import { ICsvColumns, ICsvFile, IReturnResult, MODES } from "../../types";
 import { createColumnHeaderName} from "../helpers";
 import { _CONFIGURATION } from "../../configuration";
 import copyFrom from "pg-copy-streams";
@@ -40,25 +40,29 @@ export class CreateFile extends Common {
     }
 
     importCsvFileInDatastream = async (ctx: koa.Context, knex: Knex | Knex.Transaction, paramsFile: ICsvFile): Promise<IReturnResult | undefined> => {
-        message(true, "HEAD", "importCsvFileInDatastream");
+        message(true, MODES.HEAD, "importCsvFileInDatastream");
         let returnValue: IReturnResult | undefined = undefined;
+
         const headers = await createColumnHeaderName(paramsFile.filename);
+        message(true, MODES.DEBUG, "importCsvFileInDatastream");
         
         if (headers) {
             const createDataStream = async () => {
                 const nameOfFile = paramsFile.filename.split("/").reverse()[0];
                 const copyCtx =  Object.assign({}, ctx._odata);
                 const tempId= ctx._odata.id.toString();
-                ctx._odata.entity = "Datastreams";
+                ctx._odata.entity = _DBDATAS.Datastreams.name;
+
                 // IMPORTANT TO ADD instead update
                 ctx._odata.id = "";
                 ctx._odata.resultFormat = returnFormats.json;
-                ctx._addToLog = false;                        
-                const objectDatastream = new entities[("Datastreams")](ctx, Common.dbContext);
+                ctx._addToLog = false;      
+
+                const objectDatastream = new entities[_DBDATAS.Datastreams.name](ctx, Common.dbContext);
                 const myDatas = {
-                    "name": `Dastastream import file ${nameOfFile}`,
+                    "name": `${_DBDATAS.Datastreams.name} import file ${nameOfFile}`,
                     "description": "Description in meta ?",
-                    "observationType": "SWE Array Observation",
+                    "observationType": "http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation",
                     "Thing": { "@iot.id": tempId },
                     "unitOfMeasurement": {
                         "name": headers.join(),
@@ -80,7 +84,6 @@ export class CreateFile extends Common {
                 try {
                     const temp = await objectDatastream.add(myDatas);
                     return temp;
-                    
                 } catch (error: any) {
                     ctx._odata.where = `"name" ~* '${nameOfFile}'`;
                     const returnValueError = await objectDatastream.getAll(); 
@@ -100,11 +103,11 @@ export class CreateFile extends Common {
             returnValue = await createDataStream();
             await knex.schema
                 .createTable(paramsFile.tempTable, (table: any) => {
-                    // table.increments("id").unsigned().notNullable().primary();
                     table.text("value");
                 })
                 .catch((err: Error) => ctx.throw(400, { detail: err.message }));
-            message(true, "INFO", "Create Table", paramsFile.tempTable);
+                
+            message(true, MODES.INFO, "Create Table", paramsFile.tempTable);
     
             await new Promise<void>((resolve, reject) => {
                 knex.transaction(async (tx: any) => {
@@ -120,35 +123,32 @@ export class CreateFile extends Common {
                     const stream = client
                         .query( copyFrom.from( `COPY ${paramsFile.tempTable} FROM STDIN WITH (FORMAT csv)`))
                         .on("error", (err: Error) => {
-                            message(true, "ERROR", messages.errors.stream, err);
+                            message(true, MODES.ERROR, messages.errors.stream, err);
                             reject(err);
                         });
                     
                     const fileStream = fs.createReadStream(paramsFile.filename);
                     fileStream.on("error", (err: Error) => {
-                        message(true, "ERROR", messages.errors.fileStream, err);
+                        message(true, MODES.ERROR, messages.errors.fileStream, err);
                         cleanup(false, err);
                     });
     
                     fileStream.on("end", async () => {
-                        message(true, "INFO", "COPY TO ", paramsFile.tempTable);
+                        message(true, MODES.INFO, "COPY TO ", paramsFile.tempTable);
                         if (returnValue && returnValue.body && returnValue.body["@iot.id"]) {
-                            const id: string = returnValue.body["@iot.id"];
-                            await Common.dbContext.raw(`DELETE FROM "${paramsFile.tempTable}" WHERE value = '${headers.join(";")}';`); 
+                            const datastreamId: string = returnValue.body["@iot.id"];
+                            // await Common.dbContext.raw(`DELETE FROM "${paramsFile.tempTable}" WHERE value = '${headers.join(";")}';`); 
                             const sql = `INSERT INTO "${_DBDATAS.Observations.table}" ("datastream_id", "phenomenonTime", "resultTime", "_resulttexts")
-                            SELECT '${id}', '2021-09-17T14:56:36+02:00', '2021-09-17T14:56:36+02:00', string_to_array("value", ';') FROM "${paramsFile.tempTable}"`;
+                            SELECT '${datastreamId}', '2021-09-17T14:56:36+02:00', '2021-09-17T14:56:36+02:00', string_to_array("value", ';') FROM "${paramsFile.tempTable}" WHERE value != '${headers.join(";")}'`;
                             await Common.dbContext.raw(sql); 
                             cleanup(true);
                             return returnValue;
-                            
                         }
                     });
-    
                     fileStream.pipe(stream);
                 }).catch((err: Error) => reject(err));
             });
         } else {
-            
             ctx.throw(400, {
                 code: 400, 
                 detail: messages.errors.noHeaderCsv + paramsFile.filename
@@ -158,8 +158,7 @@ export class CreateFile extends Common {
     };
 
     async add(dataInput: Object): Promise<IReturnResult | undefined> {
-        message(true, "HEAD", messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));
-        
+        message(true, MODES.HEAD, messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));        
         if (this.ctx._datas) {
             const extras = this.ctx._datas;
             const myColumns: ICsvColumns[] = [];
@@ -168,18 +167,16 @@ export class CreateFile extends Common {
                 filename: extras["file"],
                 columns: myColumns,
                 header:  ", HEADER" ,
-                dataStreamId: BigInt("1"),
+                dataStreamId: BigInt("0"), // only for interface
                 duplicates: true
             };
             const temp = await this.importCsvFileInDatastream(this.ctx, Common.dbContext, paramsFile);
             return this.createReturnResult({
                 body: temp?.body
             });
-            
         } else {
             console.log("fini else");
-            
-        return;       
+            return;       
         }
     }
 }

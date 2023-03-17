@@ -12,16 +12,13 @@ import koa from "koa";
  import { _CONFIGS, _CONFIGURATION } from "../../configuration";
  import { asyncForEach } from "../../helpers";
  import { logDebug, message } from "../../logger";
+import { MODES } from "../../types";
  import { _DBDATAS } from "../constants";
  import { datasDemo } from "../createDBDatas/datasDemo";
  import { triggers } from "../createDBDatas/triggers";
- import OM_observation_types  from "../../config/OMObservationTypes.json"
-
-
-
-  
-  export const createSTDatabase = async(configName: string, ctx?: koa.Context): Promise<{ [key: string]: string }> => {
-      message(true, "HEAD", "createDatabase", "createDatabase");
+ 
+ export const createSTDatabase = async(configName: string, ctx?: koa.Context): Promise<{ [key: string]: string }> => {
+      message(true, MODES.HEAD, "createDatabase", "createDatabase");
       const config = _CONFIGS[configName];
       const admin = _CONFIGS["admin"];
       // init result
@@ -71,20 +68,20 @@ import koa from "koa";
                                  })
                                  .catch((err: Error) => {
                                      returnValue[`Admin connection destroy`] = "✖";
-                                     message(false, "ERROR", err.message);
+                                     message(false, MODES.ERROR, err.message);
                                  });
  
                          })
                          .catch((err: Error) => {
                              logDebug(err);
-                             message(false, "ERROR", err.message);
+                             message(false, MODES.ERROR, err.message);
                          });
                  }
              });
          })
          .catch((err: Error) => {
              logDebug(err);
-             message(false, "ERROR", err.message);
+             message(false, MODES.ERROR, err.message);
          });
  
 
@@ -103,11 +100,6 @@ import koa from "koa";
      // create postgis
      returnValue[`Create postgis`] = await connDb
          .raw("CREATE EXTENSION IF NOT EXISTS postgis;")
-         .then(() => "✔")
-         .catch((err: Error) => err.message);
-     // create OM_observation_types
-     returnValue[`Create OM_observation_types`] = await connDb
-         .raw(`CREATE TYPE observationtype AS ENUM ('${Object.keys(OM_observation_types).join("','")}');`)
          .then(() => "✔")
          .catch((err: Error) => err.message);
  

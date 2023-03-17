@@ -11,6 +11,8 @@ import koa from "koa";
 import { message } from "../../logger";
 import { Common } from "./common";
 import { messages, messagesReplace } from "../../messages/";
+import { MODES } from "../../types";
+import { _DBDATAS } from "../constants";
 
 
 export class MultiDatastreams extends Common {
@@ -19,7 +21,7 @@ export class MultiDatastreams extends Common {
     }
 
     formatDataInput(input: Object | undefined): Object | undefined {
-        message(true, "HEAD", `class ${this.constructor.name} override formatDataInput`);
+        message(true, MODES.HEAD, `class ${this.constructor.name} override formatDataInput`);
         if (!input)
             this.ctx.throw(400, { code: 400, detail: messages.errors.noData });
 
@@ -32,6 +34,12 @@ export class MultiDatastreams extends Common {
         }
         if (input && input["multiObservationDataTypes"] && input["multiObservationDataTypes"] != null)
             input["multiObservationDataTypes"] = JSON.stringify(input["multiObservationDataTypes"]).replace("[", "{").replace("]", "}");
+
+        if (input["observationType"]) {
+            if (!_DBDATAS.MultiDatastreams.columns["observationType"].verify?.list.includes(input["observationType"]))
+                this.ctx.throw(400, { code: 400, detail: messages.errors["observationType"]});
+                
+        } else input["observationType"] = _DBDATAS.MultiDatastreams.columns["observationType"].verify?.default;
 
         return input;
     }

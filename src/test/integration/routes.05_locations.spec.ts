@@ -23,7 +23,12 @@ import {
     defaultDelete,
     getNB,
     listOfColumns,
-    limitResult
+    limitResult,
+    infos,
+    apiInfos,
+    showHide,
+    nbColor,
+    nbColorTitle
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
@@ -53,16 +58,17 @@ const addToApiDoc = (input: IApiInput) => {
     docs.push(prepareToApiDoc(input, entity.name));
 };
 
+
+
 addToApiDoc({
-    api: `{infos} ${entity.name} Infos`,
-    apiName: `Infos${entity.name}`,
-    apiDescription: `The Location entity locates the Thing(s) it associated with.<br>A Thing’s Location entity is defined as the last known location of the Thing.<br>
-    A Thing can have multiple Locations if all Locations are different representations of same Location with different encodingType`,
-    apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#26",
+    api: `{infos} ${entity.name} infos`,
+    apiName: `Infos${entity.name}`,    
+    apiDescription: infos[entity.name].definition,
+    apiReference: infos[entity.name].reference,
     result: ""
 });
 
-describe("endpoint : Locations", () => {
+describe("endpoint : Locations [8.2.2]", () => {
     const temp = listOfColumns(entity);
     const success = temp.success;
     const params = temp.params;
@@ -82,13 +88,13 @@ describe("endpoint : Locations", () => {
             });
     });
 
-    describe(`{get} ${entity.name}`, () => {
-        it("Return all Locations", (done) => {
+    describe(`{get} ${entity.name} ${nbColorTitle}[9.2]`, () => {
+        it(`Return all ${entity.name} ${nbColor}[9.2.2]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name} Get all`,
                 apiName: `GetAll${entity.name}`,
-                apiDescription: `Retrieve all ${entity.name}.`,
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#37",
+                apiDescription: `Retrieve all ${entity.name}.${showHide(`Get${entity.name}`, apiInfos["9.2.2"])}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-collection-entities",
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -118,12 +124,12 @@ describe("endpoint : Locations", () => {
                 });
         });
 
-        it("Return Location id: 1", (done) => {
+        it(`Return ${entity.name} id: 1 ${nbColor}[9.2.3]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get one`,
                 apiName: `GetOne${entity.name}`,
-                apiDescription: "Get a specific Location.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#38",
+                apiDescription: `Get a specific Location.${apiInfos["9.2.3"]}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-entity",
                 apiExample: {
                     http: `/v1.0/${entity.name}(1)`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -147,7 +153,7 @@ describe("endpoint : Locations", () => {
                 });
         });
 
-        it("Return Error if the Location does not exist", (done) => {
+        it(`Return error if ${entity.name} not exist ${nbColor}[9.2.4]`, (done) => {
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .end((err, res) => {
@@ -159,7 +165,7 @@ describe("endpoint : Locations", () => {
                 });
         });
 
-        it("Return all Locations of a specific Thing", (done) => {
+        it(`Return all ${entity.name} of a specific Thing ${nbColor}[9.2.6]`, (done) => {
             dbTest("thing_location")
                 .count()
                 .where({ thing_id: 5 })
@@ -168,8 +174,8 @@ describe("endpoint : Locations", () => {
                     const infos = {
                         api: `{get} Things(:id)/${entity.name} Get from specific Thing`,
                         apiName: `GetAllFromThing${entity.name}`,
-                        apiDescription: "Retrieve Locations of a specific Thing.",
-                        apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#41",
+                        apiDescription: `Retrieve Locations of a specific Thing.${apiInfos["9.2.6"]}`,
+                        apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-navigation-property",
                         apiExample: {
                             http: `/v1.0/Things(5)/${entity.name}`,
                             curl: defaultGet("curl", "KEYHTTP"),
@@ -193,7 +199,7 @@ describe("endpoint : Locations", () => {
                 .catch((err: Error) => console.log(err));
         });
 
-        it("Return Location Subentity Things", (done) => {
+        it(`Return ${entity.name} Subentity Things ${nbColor}[9.2.6]`, (done) => {
             const name = "Things";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(1)/Things`)
@@ -212,7 +218,7 @@ describe("endpoint : Locations", () => {
                 });
         });
 
-        it("Return Location Subentity HistoricalLocations", (done) => {
+        it(`Return all ${entity.name} Subentity HistoricalLocations ${nbColor}[9.2.6]`, (done) => {
             const name = "HistoricalLocations";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(6)/HistoricalLocations`)
@@ -229,7 +235,7 @@ describe("endpoint : Locations", () => {
                 });
         });
 
-        it("Return Location Expand Things", (done) => {
+        it(`Return all ${entity.name} Expand Things ${nbColor}[9.3.2.1]`, (done) => {
             const name = "Things";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(1)?$expand=${name}`)
@@ -247,7 +253,7 @@ describe("endpoint : Locations", () => {
                 });
         });
 
-        it("Return Location Expand HistoricalLocations", (done) => {
+        it(`Return all ${entity.name} Expand HistoricalLocations ${nbColor}[9.3.2.1]`, (done) => {
             const name = "HistoricalLocations";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(1)?$expand=${name}`)
@@ -264,9 +270,9 @@ describe("endpoint : Locations", () => {
         });
     });
 
-    describe(`{post} ${entity.name} Create`, () => {
+    describe(`{post} ${entity.name} ${nbColorTitle}[10.2]`, () => {
         let myError = "";
-        it("Return added Location", (done) => {
+        it(`Return added ${entity.name} ${nbColor}[10.2.1]`, (done) => {
             const datas = {
                 name: "My Location",
                 description: "Inrae - Site De Saint-Gilles",
@@ -279,8 +285,8 @@ describe("endpoint : Locations", () => {
             const infos = {
                 api: `{post} ${entity.name} Post basic`,
                 apiName: `Post${entity.name}`,
-                apiDescription: "Post a new Location.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#61",
+                apiDescription: `Post a new Location.${showHide(`Post${entity.name}`, apiInfos["10.2"])}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request",
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
@@ -304,7 +310,7 @@ describe("endpoint : Locations", () => {
                 });
         });
 
-        it("Return Error if the payload is malformed", (done) => {
+        it(`Return Error if the payload is malformed ${nbColor}[10.2.2]`, (done) => {
             chai.request(server)
                 .post("/test/v1.0/locations")
                 .send({})
@@ -319,7 +325,7 @@ describe("endpoint : Locations", () => {
                 });
         });
 
-        it("Return added Location with existing Thing", (done) => {
+        it(`Return added Location with existing Thing ${nbColor}[10.2.1.1]`, (done) => {
             const datas = {
                 "name": `Au Comptoir Vénitien ${getNB(entity.name)}`,
                 "description": "Au Comptoir Vénitien",
@@ -332,8 +338,8 @@ describe("endpoint : Locations", () => {
             const infos = {
                 api: `{post} ${entity.name} Post with existing Thing`,
                 apiName: `PostLocationThing${entity.name}`,
-                apiDescription: "POST a new Location with existing Thing.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#62",
+                apiDescription: `POST a new Location with existing Thing.${apiInfos["10.2.1.1"]}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#link-existing-entities-when-creating",
                 apiExample: {
                     http: `/v1.0/Things(1)/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
@@ -361,7 +367,7 @@ describe("endpoint : Locations", () => {
                 });
         });
 
-        it("Return added Location with existing Thing and FOI default", (done) => {
+        it(`Return added Location with existing Thing and FOI default ${nbColor}[10.2.1.1]`, (done) => {
             const datas = {
                 "name": `Au Comptoir Vénitien ${getNB(entity.name)}`,
                 "description": "Au Comptoir Vénitien",
@@ -384,7 +390,7 @@ describe("endpoint : Locations", () => {
                 api: `{post} ${entity.name} Post with Thing and new FOI`,
                 apiName: `PostLocationThingFoi${entity.name}`,
                 apiDescription: "POST new Location with existing Thing.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#63",
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#create-related-entities",
                 apiExample: {
                     http: `/v1.0/Things(2)/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
@@ -413,8 +419,8 @@ describe("endpoint : Locations", () => {
         });
     });
 
-    describe(`{patch} ${entity.name} Patch`, () => {
-        it("Return updated Location", (done) => {
+    describe(`{patch} ${entity.name} ${nbColorTitle}[10.3]`, () => {
+        it(`Return updated ${entity.name} ${nbColor}[10.3.1]`, (done) => {
             dbTest(entity.table)
                 .select("*")
                 .orderBy("id")
@@ -432,8 +438,8 @@ describe("endpoint : Locations", () => {
                     const infos = {
                         api: `{patch} ${entity.name} Patch one`,
                         apiName: `Patch${entity.name}`,
-                        apiDescription: "Patch a Location.",
-                        apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#65",
+                        apiDescription: `Patch a ${entity.singular}.${showHide(`Patch${entity.name}`, apiInfos["10.3"])}`,
+                        apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_2",
                         apiExample: {
                             http: `/v1.0/${entity.name}(${locationObject.id})`,
                             curl: defaultPatch("curl", "KEYHTTP", datas),
@@ -459,7 +465,7 @@ describe("endpoint : Locations", () => {
                 });
         });
 
-        it("Return Error if the Location does not exist", (done) => {
+        it(`Return Error if the ${entity.name} not exist`, (done) => {
             chai.request(server)
                 .patch(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .send({
@@ -483,8 +489,8 @@ describe("endpoint : Locations", () => {
         });
     });
 
-    describe(`{delete} ${entity.name} Delete`, () => {
-        it("Return no content with code 204", (done) => {
+    describe(`{delete} ${entity.name} ${nbColorTitle}[10.4]`, () => {
+        it(`Delete ${entity.name} return no content with code 204 ${nbColor}[10.4.1]`, (done) => {
             dbTest(entity.table)
                 .select("*")
                 .orderBy("id")
@@ -494,8 +500,8 @@ describe("endpoint : Locations", () => {
                     const infos = {
                         api: `{delete} ${entity.name} Delete one`,
                         apiName: `Delete${entity.name}`,
-                        apiDescription: "Delete a Location.",
-                        apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#68",
+                        apiDescription: `Delete a ${entity.singular}.${showHide(`Delete${entity.name}`, apiInfos["10.4"])}`,
+                        apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_3",
                         apiExample: {
                             http: `/v1.0/${entity.name}(${locationObject.id})`,
                             curl: defaultDelete("curl", "KEYHTTP"),
@@ -520,7 +526,8 @@ describe("endpoint : Locations", () => {
                         });
                 });
         });
-        it("Return Error if the location does not exist", (done) => {
+        
+        it(`Return Error if the ${entity.name} not exist`, (done) => {
             chai.request(server)
                 .delete(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .set("Cookie", `${keyTokenName}=${token}`)

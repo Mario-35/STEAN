@@ -9,7 +9,7 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, IApiInput, prepareToApiDoc, generateApiDoc, identification, keyTokenName, defaultPost, limitResult } from "./constant";
+import { IApiDoc, IApiInput, prepareToApiDoc, generateApiDoc, identification, keyTokenName, defaultPost, limitResult, blank } from "./constant";
 
 import { server } from "../../server/index";
 
@@ -28,12 +28,15 @@ const addToApiDoc = (input: IApiInput) => {
 addToApiDoc({
     api: `{infos} /CreateObservations Infos.`,
     apiName: "InfosCreateObservations",
-    apiDescription: "Create observations",
-    apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#82",
+    apiDescription: `Besides creating Observation entities one by one with multiple HTTP POST requests, there is a need to create multiple Observation entities with a lighter message body in a single HTTP request. In this case, a sensing system can buffer multiple Observations and send them to a SensorThings service in one HTTP request. Here we propose an Action operation CreateObservations.
+    ${blank(1)}The message body aggregates Observations by Datastreams, which means all the Observations linked to one Datastream SHALL be aggregated in one JSON object. The parameters of each JSON object are shown in the following table.
+    ${blank(2)}As an Observation links to one FeatureOfInterest, to establish the link between an Observation and a FeatureOfInterest, users should include the FeatureOfInterest ids in the dataArray. If no FeatureOfInterest id presented, the FeatureOfInterest will be created based on the Location entities of the linked Thing entity by default.
+    <table> <thead> <tr> <th style="width: 10%">Name</th> <th style="width: 60%">Definition</th> <th style="width: 15%">Data type</th> <th style="width: 15%">Multiplicity and use</th> </tr> </thead> <tbody> <tr> <td>Datastream</td> <td><p>The unique identifier of the Datasteam linking to the group of Observation entities in the dataArray.</p></td> <td><p>The unique identifier of a Datastream</p></td> <td>One (mandatory)</td> </tr> <tr> <td>components</td> <td><p>An ordered array of Observation property names whose matched values are included in the dataArray. At least the phenomenonTime and result properties SHALL be included. To establish the link between an Observation and a FeatureOfInterest, the component name is "FeatureOfInterest/id" and the FeatureOfInterest ids should be included in the dataArray array. If no FeatureOfInterest id is presented, the FeatureOfInterest will be created based on the Location entities of the linked Thing entity by default.</p></td> <td><p>An ordered array of Observation property names</p></td> <td>One (mandatory)</td> </tr> <tr> <td>dataArray</td> <td><p>A JSON Array containing Observations. Each Observation is represented by the ordered property values. The ordered property values match with the ordered property names in components.</p></td> <td>JSON Array</td> <td>One (mandatory)</td> </tr> </tbody> </table>`,
+    apiReference: "https://docs.ogc.org/is/18-088/18-088.html#create-observation-dataarray",
     result: ""
 });
 
-describe("endpoint : Create Observations", () => {
+describe("endpoint : Create Observations [13.2]", () => {
     let token = "";
 
     before((done) => {
@@ -60,8 +63,8 @@ describe("endpoint : Create Observations", () => {
             ]
         };
         const infos = {
-            api: `{post} CreateObservations CreateObservations FOI.`,
-            apiName: "PostObservationsCreateObservationsFoiCreateObservations",
+            api: `{post} CreateObservations Add.`,
+            apiName: "PostCreateObservations",
             apiDescription: "Create Observations with CreateObservations",
             apiExample: {
                 http: "/v1.0/CreateObservations",

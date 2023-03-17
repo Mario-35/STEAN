@@ -9,7 +9,7 @@
 import fs from "fs";
 import copyFrom from "pg-copy-streams";
 import { message } from "../../logger";
-import { ICsvColumns, ICsvFile } from "../../types";
+import { ICsvColumns, ICsvFile, MODES } from "../../types";
 import { _DBDATAS } from "../constants";
 import readline from "readline";
 import { Knex } from "knex";
@@ -52,7 +52,7 @@ const dateSqlRequest = async (paramsFile: ICsvFile): Promise<ICsvImport | undefi
         const splitColumns = line.split(";");
         if (regexDateHour.test(splitColumns[0]) == true) {
             const nbCol = (line.match(/;/g) || []).length;
-            message(true, "RESULT", "dateSqlRequest", "Date Hour");
+            message(true, MODES.RESULT, "dateSqlRequest", "Date Hour");
             returnValue.columns = ["datehour"];
             for (let i = 0; i < nbCol; i++) returnValue.columns.push(`value${i + 1}`);
 
@@ -60,7 +60,7 @@ const dateSqlRequest = async (paramsFile: ICsvFile): Promise<ICsvImport | undefi
             returnValue.dateSql = `TO_TIMESTAMP(REPLACE("${paramsFile.tempTable}".datehour, '24:00:00', '23:59:59'), 'DD/MM/YYYY HH24:MI:SS')`;
             return returnValue;
         } else if (regexDate.test(splitColumns[0]) == true && regexHour.test(splitColumns[1]) == true) {
-            message(true, "RESULT", "dateSqlRequest", "date ; hour");
+            message(true, MODES.RESULT, "dateSqlRequest", "date ; hour");
             const nbCol = (line.match(/;/g) || []).length;
 
             returnValue.columns = ["date", "hour"];
@@ -96,7 +96,7 @@ export const createColumnHeaderName = async (filename: string): Promise<string[]
     }
 };
 export const importCsv = async (ctx: koa.Context, knex: Knex | Knex.Transaction, paramsFile: ICsvFile): Promise<string[]> => {
-    message(true, "HEAD", "importCsv");
+    message(true, MODES.HEAD, "importCsv");
     const returnValue: string[] = [];
 
     const sqlRequest = await dateSqlRequest(paramsFile);
@@ -109,7 +109,7 @@ export const importCsv = async (ctx: koa.Context, knex: Knex | Knex.Transaction,
             })
             .catch((err: Error) => ctx.throw(400, { detail: err.message }));
 
-        message(true, "INFO", "Create Table", paramsFile.tempTable);
+        message(true, MODES.INFO, "Create Table", paramsFile.tempTable);
 
         await new Promise<void>((resolve, reject) => {
             knex.transaction(async (tx: any) => {
@@ -128,19 +128,19 @@ export const importCsv = async (ctx: koa.Context, knex: Knex | Knex.Transaction,
                         )
                     )
                     .on("error", (err: Error) => {
-                        message(true, "ERROR", "stream error", err);
+                        message(true, MODES.ERROR, "stream error", err);
                         reject(err);
                     });
 
                 const fileStream = fs.createReadStream(paramsFile.filename);
 
                 fileStream.on("error", (err: Error) => {
-                    message(true, "ERROR", "fileStream error", err);
+                    message(true, MODES.ERROR, "fileStream error", err);
                     cleanup(false, err);
                 });
 
                 fileStream.on("end", async () => {
-                    message(true, "INFO", "COPY TO ", paramsFile.tempTable);
+                    message(true, MODES.INFO, "COPY TO ", paramsFile.tempTable);
                     const scriptSql: string[] = [];
                     const scriptSqlResult: string[] = [];
 
@@ -166,19 +166,19 @@ export const importCsv = async (ctx: koa.Context, knex: Knex | Knex.Transaction,
                     scriptSql.push(scriptSqlResult.join(""));
 
                     const mySql = scriptSql.join("");
-                    if (_debug) message(true, "RESULT", "query", mySql);
+                    if (_debug) message(true, MODES.RESULT, "query", mySql);
                     const res = await client.query(mySql).catch((err: Error) => {
                         cleanup(false, err);
                     });
 
-                    message(true, "INFO", "SQL Executing", "Ok");
+                    message(true, MODES.INFO, "SQL Executing", "Ok");
                     if (res && res.rows)
                         res.rows
                             .map((elem: { [key: string]: string }) => elem["id"])
                             .forEach((element: string) => {
                                 returnValue.push(element);
                             });
-                    else message(true, "ERROR", "Query", "no result");
+                    else message(true, MODES.ERROR, "Query", "no result");
 
                     cleanup(true);
                     resolve();

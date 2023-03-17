@@ -28,18 +28,18 @@ addToApiDoc({
     api: `{infos} /BuiltInDate Infos`,
     apiName: "InfosBuiltInDate",
     apiDescription: `The OGC SensorThings API supports a set of functions that can be used with the $filter or $orderby query operations. The following table lists the available functions and they follows the OData Canonical function definitions listed in Section 5.1.1.4 of the [OData Version 4.0 Part 2: URL Conventions] and the syntax rules for these functions are defined in [OData Version 4.0 ABNF].`,
-          apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+          apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
     result: ""
 });
    
-describe("Odata BuiltInDate", () => {
+describe("Odata BuiltInDates [9.3.3.5.2]", () => {
 
     it("year(resultTime) eq 2000", (done) => {
         const infos = {
             api: "{get} Observations Year",
             apiName: "BuiltInDateYear",
             apiDescription: "The year function returns the year component of the Date or DateTimeOffset parameter value, evaluated in the time zone of the DateTimeOffset parameter value.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
             apiExample: {   http: "/v1.0/Observations?$filter=year(resultTime) eq 2000",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -64,7 +64,7 @@ describe("Odata BuiltInDate", () => {
             api: "{get} Observations Month",
             apiName: "BuiltInDateMonth",
             apiDescription: "The month function returns the month component of the Date or DateTimeOffset parameter value, evaluated in the time zone of the DateTimeOffset parameter value.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
             apiExample: {   http: "/v1.0/Observations?$filter=month(resultTime) eq 12",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -89,7 +89,7 @@ describe("Odata BuiltInDate", () => {
             api: "{get} Observations Day",
             apiName: "BuiltInDateDay",
             apiDescription: "The day function returns the day component Date or DateTimeOffset parameter value, evaluated in the time zone of the DateTimeOffset parameter value.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
             apiExample: {   http: "/v1.0/Observations?$filter=day(resultTime) eq 11",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -114,7 +114,7 @@ describe("Odata BuiltInDate", () => {
             api: "{get} Observations Hour",
             apiName: "BuiltInDateHour",
             apiDescription: "The hour function returns the hour component of the DateTimeOffset or TimeOfDay parameter value, evaluated in the time zone of the DateTimeOffset parameter value.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
             apiExample: {   http: "/v1.0/Observations?$filter=hour(resultTime) eq 12",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -139,7 +139,7 @@ describe("Odata BuiltInDate", () => {
             api: "{get} Observations minute",
             apiName: "BuiltInDateMinute",
             apiDescription: "The minute function returns the minute component of the DateTimeOffset or TimeOfDay parameter value, evaluated in the time zone of the DateTimeOffset parameter value.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
             apiExample: {   http: "/v1.0/Observations?$filter=minute(resultTime) eq 50",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -164,7 +164,7 @@ describe("Odata BuiltInDate", () => {
             api: "{get} Observations second",
             apiName: "BuiltInDateSecond",
             apiDescription: "The second function returns the second component (without the fractional part) of the DateTimeOffset or TimeOfDay parameter value.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
             apiExample: {   http: "/v1.0/Observations?$filter=second(resultTime) ge 40",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -189,7 +189,7 @@ describe("Odata BuiltInDate", () => {
             api: "{get} Observations date",
             apiName: "BuiltInDateDate",
             apiDescription: "The date function returns the date part of the DateTimeOffset parameter value, evaluated in the time zone of the DateTimeOffset parameter value.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
             apiExample: {   http: "/v1.0/Observations?$filter=date(resultTime) eq date(validTime)",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -214,7 +214,7 @@ describe("Odata BuiltInDate", () => {
             api: "{get} Observations time",
             apiName: "BuiltInDateTime",
             apiDescription: "The time function returns the time part of the DateTimeOffset parameter value, evaluated in the time zone of the DateTimeOffset parameter value.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
             apiExample: {   http: "/v1.0/Observations?$filter=time(resultTime) ne time(phenomenonTime)",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -234,12 +234,37 @@ describe("Odata BuiltInDate", () => {
             });
     });
 
+    // it("totaloffsetminutes(resultTime) eq 330", (done) => {
+    //     const infos = {
+    //         api: "{get} Observations Now",
+    //         apiName: "BuiltInDateTotaloffsetminutes",
+    //         apiDescription: "The totaloffsetminutes function returns the signed number of minutes in the time zone offset part of the DateTimeOffset parameter value, evaluated in the time zone of the DateTimeOffset parameter value.",
+    //         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
+    //         apiExample: {   http: "/v1.0/Observations?$filter=totaloffsetminutes(resultTime) eq 330",
+    //                         curl: defaultGet("curl", "KEYHTTP"),
+    //                         javascript: defaultGet("javascript", "KEYHTTP"),
+    //                         python: defaultGet("python", "KEYHTTP") 
+    //                     }
+    //     };
+    //     chai.request(server)
+    //         .get(`/test${infos.apiExample.http}`)
+    //         .end((err: any, res: any) => {
+    //             should.not.exist(err);
+    //             res.status.should.equal(200);
+    //             res.type.should.equal("application/json");
+    //             res.body.value.length.should.eql(52);
+    //             res.body["value"][0]["@iot.id"].should.eql(1);
+    //             addToApiDoc({ ...infos, result: limitResult(res) });
+    //             done();
+    //         });
+    // });      
+
     it("resultTime le now()", (done) => {
         const infos = {
             api: "{get} Observations Now()",
             apiName: "BuiltInDateNow",
             apiDescription: "The now function returns the current point in time (date and time with time zone) as a DateTimeOffset value.",
-            apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
             apiExample: {   http: "/v1.0/Observations?$filter=resultTime le now()",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
@@ -264,7 +289,7 @@ describe("Odata BuiltInDate", () => {
     //         api: "{get} Observations fractionalseconds",
     //         apiName: "BuiltInDateFractionalseconds",
     //         apiDescription: "The fractionalseconds function returns the fractional seconds component of the DateTimeOffset or TimeOfDay parameter value as a non-negative decimal value less than 1.",
-    //         apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+    //         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
     //         apiExample: {   http: "/v1.0/Observations?$filter=fractionalseconds(resultTime) ne 0",
     //                         curl: defaultGet("curl", "KEYHTTP"),
     //                         javascript: defaultGet("javascript", "KEYHTTP"),
@@ -290,7 +315,7 @@ describe("Odata BuiltInDate", () => {
     //         api: "{get} Observations mindatetime",
     //         apiName: "BuiltInDateMindatetime",
     //         apiDescription: "The mindatetime function returns the earliest possible point in time as a DateTimeOffset value.",
-    //         apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
+    //         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
     //         apiExample: {   http: "/v1.0/Observations?$filter=resultTime gt mindatetime()",
     //                         curl: defaultGet("curl", "KEYHTTP"),
     //                         javascript: defaultGet("javascript", "KEYHTTP"),
@@ -309,33 +334,7 @@ describe("Odata BuiltInDate", () => {
     //             addToApiDoc({ ...infos, result: limitResult(res) });
     //             done();
     //         });
-    // });
-
-    // it("totaloffsetminutes(resultTime) eq 330", (done) => {
-    //     const infos = {
-    //         api: "{get} Observations Now",
-    //         apiName: "BuiltInDateTotaloffsetminutes",
-    //         apiDescription: "The totaloffsetminutes function returns the signed number of minutes in the time zone offset part of the DateTimeOffset parameter value, evaluated in the time zone of the DateTimeOffset parameter value.",
-    //         apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#56",
-    //         apiExample: {   http: "/v1.0/Observations?$filter=totaloffsetminutes(resultTime) eq 330",
-    //                         curl: defaultGet("curl", "KEYHTTP"),
-    //                         javascript: defaultGet("javascript", "KEYHTTP"),
-    //                         python: defaultGet("python", "KEYHTTP") 
-    //                     }
-    //     };
-    //     chai.request(server)
-    //         .get(`/test${infos.apiExample.http}`)
-    //         .end((err: any, res: any) => {
-    //             should.not.exist(err);
-    //             res.status.should.equal(200);
-    //             res.type.should.equal("application/json");
-    //             res.body.value.length.should.eql(52);
-    //             res.body["value"][0]["@iot.id"].should.eql(1);
-    //             pipo
-    //             addToApiDoc({ ...infos, result: limitResult(res) });
-    //             done();
-    //         });
-    // });    
+    // });  
 
     it("Save and write apiDoc", (done) => {
         generateApiDoc(docs, "apiDocBuiltInDate.js");

@@ -12,12 +12,13 @@ import { createTable } from ".";
 import { _CONFIGS, _CONFIGURATION } from "../../configuration";
 import { asyncForEach, encrypt } from "../../helpers";
 import { message } from "../../logger";
+import { MODES } from "../../types";
 import { _DBADMIN, _DBDATAS } from "../constants";
 import { IUser } from "../interfaces";
 
  
  export const createAdminDataBase = async(configName: string, ctx?: koa.Context): Promise<{ [key: string]: string }> => {
-    message(false, "HEAD", "createAdminDataBase", "createDatabase");
+    message(false, MODES.HEAD, "createAdminDataBase", "createDatabase");
 
     // init result
     const config = _CONFIGS[configName];
@@ -39,7 +40,7 @@ import { IUser } from "../interfaces";
                     .raw(`select count(*) FROM pg_user WHERE usename = '${config.pg_user}';`)
                     .then(async (res) => {
                         if (res.rowCount < 1) {
-                            message(false, "INFO", "Create User", config.pg_user);
+                            message(false, MODES.INFO, "Create User", config.pg_user);
                             return adminConnection
                                 .raw(`CREATE ROLE ${config.pg_user} WITH PASSWORD '${config.pg_password}' SUPERUSER;`)
                                 .then(() => {
@@ -48,7 +49,7 @@ import { IUser } from "../interfaces";
                                 })
                                 .catch((err: Error) => err.message);
                         } else {
-                            message(false, "INFO", "Update User", config.pg_user);
+                            message(false, MODES.INFO, "Update User", config.pg_user);
                             return await adminConnection
                                 .raw(`ALTER ROLE ${config.pg_user} WITH PASSWORD '${config.pg_password}' SUPERUSER;`)
                                 .then(() => {

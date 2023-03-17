@@ -13,13 +13,9 @@ import { _DBDATAS } from "../../../db/constants";
 import { getBigIntFromString, getEntityName } from "../../../helpers";
 import { queryAsJson } from "../../../helpers/returnFormats";
 import { logDebug, message } from "../../../logger";
-import { IEntity } from "../../../types";
+import { IEntity, MODES } from "../../../types";
 import { OperationType } from "../../../types/";
 import { PgVisitor } from "../PgVisitor";
-
-
-
-// const createPostQuery(datas: Object, knexInstance: Knex | Knex.Transaction, main.id?: bigint | string): string {
 
 export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transaction, main: PgVisitor): string {
     let sqlResult = "";
@@ -126,7 +122,7 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
      * @returns result
      */
     const start = (datas: Object, entity?: IEntity, parentEntity?: IEntity): Object | undefined => {
-        message(true, "HEAD", `start level ${level++}`);
+        message(true, MODES.HEAD, `start level ${level++}`);
         
         const returnValue = {};
         entity = entity ? entity : postEntity;
@@ -209,7 +205,7 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
              * @param subParentEntity {IEntity} entity parent
              */
         const addAssociation = (subEntity: IEntity, subParentEntity: IEntity) => {
-            message(true, "DEBUG", `addAssociation in ${subEntity.name} for parent`, subParentEntity.name);
+            message(true, MODES.DEBUG, `addAssociation in ${subEntity.name} for parent`, subParentEntity.name);
 
             const relationName = getRelationNameFromEntity(subEntity, subParentEntity);
             const parentRelationName = getRelationNameFromEntity(subParentEntity, subEntity);
@@ -217,10 +213,10 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
             if (parentRelationName && relationName) {
                 const relation = subEntity.relations[relationName];
                 const parentRelation = subParentEntity.relations[parentRelationName];
-                message(true, "DEBUG", `Found a parent relation in ${subEntity.name}`, subParentEntity.name);
+                message(true, MODES.DEBUG, `Found a parent relation in ${subEntity.name}`, subParentEntity.name);
                 
                 if (relation.tableName == parentRelation.tableName && relation.tableName == subEntity.table) {
-                    message(true, "INFO", "Found a relation to do in sub query", subParentEntity.name);
+                    message(true, MODES.INFO, "Found a relation to do in sub query", subParentEntity.name);
                     const tableName = names[subEntity.table];
                     const parentTableName = names[subParentEntity.table];
                     
@@ -236,7 +232,7 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
                         if (relation.tableName == subParentEntity.table) {
                             const tableName = names[subEntity.table];
                             const parentTableName = names[subParentEntity.table];
-                            message(true, "INFO", `Add parent relation ${tableName} in`, parentTableName);                            
+                            message(true, MODES.INFO, `Add parent relation ${tableName} in`, parentTableName);                            
                             addToQueryMaker(
                                 OperationType.Relation,
                                 parentTableName,
@@ -248,7 +244,7 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
                             } else if (relation.tableName != subParentEntity.table && relation.tableName != subEntity.table) {
                                 const tableName = names[subEntity.table];
                                 const parentTableName = names[subParentEntity.table];
-                                message(true, "INFO", `Add Table association ${tableName} in`, parentTableName);
+                                message(true, MODES.INFO, `Add Table association ${tableName} in`, parentTableName);
                                 addToQueryMaker(
                                     OperationType.Association,
                                     relation.tableName,
@@ -264,7 +260,7 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
                 } else {
                     const tableName = names[subEntity.table];
                     const parentTableName = names[subParentEntity.table];
-                    message(true, "INFO", `Add Relation ${tableName} in`, parentTableName);
+                    message(true, MODES.INFO, `Add Relation ${tableName} in`, parentTableName);
                     addToQueryMaker(
                         OperationType.Table,
                         parentTableName,
@@ -306,16 +302,16 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     Object.entries(datas[key]).forEach(([_key, value]) => {
                         if (entity && parentEntity && Object.keys(entity.relations).includes(key)) {
-                            message(true, "INFO", `Found a relation for ${entity.name}`, key);
+                            message(true, MODES.INFO, `Found a relation for ${entity.name}`, key);
                             subBlock(key, value as Object);
                         } else {
-                            message(true, "INFO", `data ${key}`, datas[key]);
+                            message(true, MODES.INFO, `data ${key}`, datas[key]);
                             returnValue[key] = datas[key];
                         }
                     });
                 } else if (typeof datas[key] === "object") {
                     if (Object.keys(entity.relations).includes(key)) {
-                        message(true, "DEBUG", `Found a object relation for ${entity.name}`, key);
+                        message(true, MODES.DEBUG, `Found a object relation for ${entity.name}`, key);
                         subBlock(key, datas[key]);
                     }
                 } else returnValue[key] = datas[key];
@@ -327,7 +323,7 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
 
     if (main.parentEntity) {
         const entityName = getEntityName(main.parentEntity);
-        message(true, "DEBUG", "Found entity : ", entityName);
+        message(true, MODES.DEBUG, "Found entity : ", entityName);
         const callEntity = entityName ? _DBDATAS[entityName] : undefined;
         const id: bigint | undefined =
         typeof main.parentId== "string" ? getBigIntFromString(main.parentId) : main.parentId;

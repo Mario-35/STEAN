@@ -1,6 +1,6 @@
 import { isGraph, isObservation, _DBDATAS, _ENTITIES } from "../../db/constants";
 import {  getEntityName, removeQuotes, returnFormats } from "../../helpers";
-import { IreturnFormat, TimeSeriesType } from "../../types";
+import { IreturnFormat, MODES, TimeSeriesType } from "../../types";
 import { Token } from "../parser/lexer";
 import { Literal } from "../parser/literal";
 import { SQLLiteral } from "../parser/sqlLiteral";
@@ -74,7 +74,7 @@ export class PgVisitor {
     }
     
     init(ctx: koa.Context, node: Token) {
-        message(true, "HEAD", "INIT PgVisitor");
+        message(true, MODES.HEAD, "INIT PgVisitor");
         this.limit = +_CONFIGS[ctx._configName].nb_page || 200;
         const temp = this.VisitRessources(node);
         logDebug(temp);
@@ -83,11 +83,10 @@ export class PgVisitor {
     }
 
     verifyRessources = (ctx: koa.Context): void => {
-        message(true, "HEAD", "verifyRessources");
+        message(true, MODES.HEAD, "verifyRessources");
         // TODO REMOVE AFTER ALL 
         
         if (this.entity.toUpperCase() === "LORA") this.setEntity("Loras");
-       
         if (this.parentEntity) {
             if (!_DBDATAS[this.parentEntity].relations[this.entity])  ctx.throw(40, { detail: messages.errors.invalidPath + this.entity.trim() }); 
         } else if (!_DBDATAS[this.entity])  ctx.throw(404, { detail: messages.errors.invalidPath + this.entity.trim() }); 
@@ -149,18 +148,33 @@ export class PgVisitor {
     }
 
     protected VisitRessourcesPropertyPath(node: Token, context: any) {
+        let tempNode = node;        
         if (node.type == "PropertyPath") {
-            if (_DBDATAS[this.entity].relations[node.raw]) {
-                this.where = _DBDATAS[this.entity].relations[node.raw].link.split("$ID").join(<string>this.id);
-                this.parentEntity = this.entity;
-                this.entity  = node.raw;
+            if (_DBDATAS[this.entity].relations[node.value.path.raw]) {
                 this.parentId = this.id;
                 this.id = BigInt(0);
-            } else if (_DBDATAS[this.entity].columns[node.raw]) {
-                    this.select = node.raw; 
+                if (node.value.navigation && node.value.navigation.type == 'CollectionNavigation') {
+                    tempNode = node.value.navigation;
+                        if (tempNode.value.path.type === 'CollectionNavigationPath') {
+                            tempNode = tempNode.value.path;
+                            if (tempNode.value.predicate.type === 'SimpleKey') {
+                                tempNode = tempNode.value.predicate.value;
+                                if (tempNode.value.type === 'KeyPropertyValue') this.id = tempNode.value.raw;
+                            }                        
+                        }                    
+                    }
+                // const inOrEqual = BigInt(this.id) > 0 ? "=" : "in";
+                const tmpLink = _DBDATAS[this.entity].relations[node.value.path.raw].link.split("$ID").join(<string>this.parentId);
+                const tmpLinkSplit = tmpLink.split("in (");
+                if (BigInt(this.id) > 0) {
+                    this.where = `${tmpLinkSplit[0]} = (SELECT id FROM (${tmpLinkSplit[1]} as l WHERE id = ${this.id})`;
+                } else  this.where = tmpLink;
+                this.parentEntity = this.entity;
+                this.entity  = node.value.path.raw;
+            } else if (_DBDATAS[this.entity].columns[node.value.path.raw]) {
+                    this.select = node.value.path.raw; 
                     this.showRelations = false;
-                    // SPACE IS VERY IMPORTANT TO PROVOQUE ERROR
-            } else this.entity = node.raw;
+            } else this.entity = node.value.path.raw;
         }    
     }
 
@@ -199,15 +213,15 @@ export class PgVisitor {
 // ***********************************************************************************************************************************************************************
 
     start(ctx: koa.Context, node: Token) {
-        message(true, "HEAD", "Start PgVisitor");
+        message(true, MODES.HEAD, "Start PgVisitor");
         const temp = this.Visit(node);
         logDebug(temp);this.verifyQuery(ctx);
         return temp;
     }
 
     verifyQuery = (ctx: koa.Context): void => {
-        message(true, "HEAD", "verifyQuery");
-        if (this.entity === "Logs" && ctx._configName !== "admin") this.where += `${this.where.trim() == "" ? "" : " AND "} database = '${_CONFIGS[ctx._configName].alias.join("' OR database ='")}'`;
+        message(true, MODES.HEAD, "verifyQuery");
+        if (this.entity === "Logs" && ctx._configName !== "admin") this.where += `${this.where.trim() == "" ? "" : " AND "} (database = '${_CONFIGS[ctx._configName].alias.join("' OR database ='")}')`;
         // if (this.entity === "Logs" && ctx._configName !== "admin") this.where += `${this.where.trim() == "" ? "" : " AND "}database = '${_CONFIGS[ctx._configName].pg_database}'`;
 
         if (this.select.length > 0) {

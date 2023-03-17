@@ -12,7 +12,7 @@ import * as entities from "../entities/index";
 import { Common } from "../entities/common";
 import koa from "koa";
 import { message } from "../../logger";
-import { IReturnResult } from "../../types";
+import { IReturnResult, MODES } from "../../types";
 import {  recordToKeyValue } from "../helpers";
 import { getEntityName } from "../../helpers";
 import { db } from "..";
@@ -27,38 +27,38 @@ export class apiAccess implements DataAccessInterface {
         const entityName = getEntityName(this.ctx._odata.entity);
         if (entityName && entityName in entities) {
             this.myEntity = new entities[(this.ctx, entityName)](ctx, db[this.ctx._configName]);
-            if (this.myEntity === undefined) message(true, "ERROR", `${messages.errors.entity} : ${entityName}`);
-            else message(true, "CLASS", "constructor apiAccess", "Ok");
-        } else message(true, "ERROR", `${messages.errors.entity} : ${entityName}`);
+            if (this.myEntity === undefined) message(true, MODES.ERROR, `${messages.errors.entity} : ${entityName}`);
+            else message(true, MODES.CLASS, "constructor apiAccess", "Ok");
+        } else message(true, MODES.ERROR, `${messages.errors.entity} : ${entityName}`);
     }
 
     formatDataInput(input: Object | undefined): Object | undefined {
-        message(true, "CLASS", this.constructor.name, "formatDataInput");
+        message(true, MODES.CLASS, this.constructor.name, "formatDataInput");
         return this.myEntity ? this.myEntity.formatDataInput(input) : input;
     }
 
     async getAll(): Promise<IReturnResult | undefined> {
-        message(true, "CLASS", this.constructor.name, "getAll");
+        message(true, MODES.CLASS, this.constructor.name, "getAll");
         if (this.myEntity) return await this.myEntity.getAll();
     }
 
     async getSingle(idInput: bigint | string, propertyName?: string, onlyValue?: boolean): Promise<IReturnResult | undefined> {
-        message(true, "CLASS", this.constructor.name, "getSingle");
+        message(true, MODES.CLASS, this.constructor.name, "getSingle");
         if (this.myEntity) return await this.myEntity.getSingle(idInput);
     }
 
     async add(): Promise<IReturnResult | undefined> {
-        message(true, "CLASS", this.constructor.name, "add");
+        message(true, MODES.CLASS, this.constructor.name, "add");
         if (this.myEntity) return await this.myEntity.add(recordToKeyValue(this.ctx.request.body));
     }
 
     async update(idInput: bigint | string): Promise<IReturnResult | undefined> {
-        message(true, "CLASS", this.constructor.name, "update");
+        message(true, MODES.CLASS, this.constructor.name, "update");
         if (this.myEntity) return await this.myEntity.update(idInput, recordToKeyValue(this.ctx.request.body));
     }
 
     async delete(idInput: bigint | string): Promise<IReturnResult | undefined> {
-        message(true, "CLASS", this.constructor.name, "delete");
+        message(true, MODES.CLASS, this.constructor.name, "delete");
         if (this.myEntity) return await this.myEntity.delete(idInput);
     }
 }

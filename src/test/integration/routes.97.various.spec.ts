@@ -22,7 +22,7 @@ describe("Create ApiDoc", () => {
                     src: path.resolve(__dirname, "../../test"),
                     dest: path.resolve(__dirname, "../../apidoc"),
                     template: path.resolve(__dirname, "../../template"),
-                    silent: true
+                    silent: false
                 });
                 doc.should.not.eql("boolean");
             } catch (error) {

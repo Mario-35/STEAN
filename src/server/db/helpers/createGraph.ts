@@ -7,6 +7,7 @@
  */
 
 import { logDebug, message } from "../../logger";
+import { MODES } from "../../types";
 
 // Create object compatible with Apache Echarts
 // https://echarts.apache.org/examples/en/index.html
@@ -19,7 +20,7 @@ export interface IGraphDatas {
 }
 
 export const createGraph = (input: JSON, mainTitle: string): IGraphDatas | undefined => {
-    message(true, "CLASS", "createGraph");
+    message(true, MODES.CLASS, "createGraph");
     if (input)
         try {
             const multi = typeof input[0]["result"] === "object" && input[0]["result"] != null;

@@ -23,7 +23,12 @@ import {
     defaultPost,
     getNB,
     listOfColumns,
-    limitResult
+    limitResult,
+    infos,
+    apiInfos,
+    showHide,
+    nbColorTitle,
+    nbColor
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
@@ -56,10 +61,10 @@ const addToApiDoc = (input: IApiInput) => {
 };
 
 addToApiDoc({
-    api: `{infos} ${entity.name} Infos`,
-    apiName: `Infos${entity.name}`,
-    apiDescription: `MultiDatastream entity is an extension to handle complex observations when the result is an array.<br><img src="./assets/multi.jpg" alt="${entity.name}"></br>`,
-    apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#77",
+    api: `{infos} ${entity.name} infos`,
+    apiName: `Infos${entity.name}`,    
+    apiDescription: infos[entity.name].definition,
+    apiReference: infos[entity.name].reference,
     result: ""
 });
 
@@ -82,13 +87,13 @@ describe("endpoint : MultiDatastream", () => {
             });
     });
 
-    describe(`{get} ${entity.name}`, () => {
-        it("Return all MultiDatastreams", (done) => {
+    describe(`{get} ${entity.name} ${nbColorTitle}[9.2]`, () => {
+        it(`Return all ${entity.name} ${nbColor}[9.2.2]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name} Get all`,
                 apiName: `GetAll${entity.name}`,
-                apiDescription: "Retrieve all Multi Datastreams.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#37",
+                                apiDescription: `Retrieve all ${entity.name}.${showHide(`Get${entity.name}`, apiInfos["9.2.2"])}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-collection-entities",
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -118,13 +123,13 @@ describe("endpoint : MultiDatastream", () => {
                 });
         });
 
-        it(`Return MultiDatastream id: ${firstID}`, (done) => {
+        it(`Return ${entity.name} id: ${firstID} ${nbColor}[9.2.3]`, (done) => {
             const id: number = firstID;
             const infos = {
                 api: `{get} ${entity.name}(:id) Get one`,
                 apiName: `GetOne${entity.name}`,
                 apiDescription: "Get a specific Multi Datastreams.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#38",
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-entity",
                 apiExample: {
                     http: `/v1.0/${entity.name}(${id})`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -149,7 +154,7 @@ describe("endpoint : MultiDatastream", () => {
                 });
         });
 
-        it("Return error if MultiDatastream does not exist", (done) => {
+        it(`Return error if ${entity.name} does not exist`, (done) => {
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .end((err, res) => {
@@ -161,7 +166,7 @@ describe("endpoint : MultiDatastream", () => {
                 });
         });
 
-        it("Return MultiDatastreams of a specific Thing.", (done) => {
+        it(`Return ${entity.name} of a specific Thing.`, (done) => {
             const id = 15;
             const infos = {
                 api: `{get} Things(${id})/${entity.name}(:id) Get from specific Thing`,
@@ -194,12 +199,12 @@ describe("endpoint : MultiDatastream", () => {
                 });
         });
 
-        it("Return all informations for a MultiDatastream.", (done) => {
+        it(`Return all informations for a ${entity.name}.`, (done) => {
             const id = 1;
             const infos = {
                 api: `{get} all ${entity.name} informations`,
                 apiName: `GetAllFromInfos${entity.name}`,
-                apiDescription: "Get all informations of a Multi Datastreams(s).",
+                apiDescription: `Get all informations of a ${entity.name}.`,
                 apiExample: {
                     http: `/v1.0/${entity.name}(${id})?$expand=Thing/Locations/FeatureOfInterest,Sensor,ObservedProperties`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -223,7 +228,7 @@ describe("endpoint : MultiDatastream", () => {
                 });
         });
 
-        it("Return MultiDatastreams Subentity Thing", (done) => {
+        it(`Return ${entity.name} Subentity Thing ${nbColor}[9.2.6]`, (done) => {
             const name = "Thing";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(10)/${name}`)
@@ -242,7 +247,7 @@ describe("endpoint : MultiDatastream", () => {
                 });
         });
 
-        it("Return MultiDatastreams Subentity Sensor", (done) => {
+        it(`Return ${entity.name} Subentity Sensor ${nbColor}[9.2.6]`, (done) => {
             const name = "Sensor";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(10)/${name}`)
@@ -259,7 +264,7 @@ describe("endpoint : MultiDatastream", () => {
                 });
         });
 
-        it("Return MultiDatastreams Subentity ObservedProperties", (done) => {
+        it(`Return ${entity.name} Subentity ObservedProperties ${nbColor}[9.2.6]`, (done) => {
             const name = "ObservedProperties";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(10)/${name}`)
@@ -276,7 +281,7 @@ describe("endpoint : MultiDatastream", () => {
                 });
         });
 
-        it("Return MultiDatastreams Subentity Observations", (done) => {
+        it(`Return ${entity.name} Subentity Observations ${nbColor}[9.2.6]`, (done) => {
             const name = "Observations";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(10)/${name}`)
@@ -294,7 +299,7 @@ describe("endpoint : MultiDatastream", () => {
                 });
         });
 
-        it("Return MultiDatastreams Expand Things", (done) => {
+        it(`Return ${entity.name} Expand Things ${nbColor}[9.3.2.1]`, (done) => {
             const name = "Thing";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(2)?$expand=${name}`)
@@ -312,7 +317,7 @@ describe("endpoint : MultiDatastream", () => {
                 });
         });
 
-        it("Return MultiDatastreams Expand Sensor", (done) => {
+        it(`Return ${entity.name} Expand Sensor ${nbColor}[9.3.2.1]`, (done) => {
             const name = "Sensor";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(2)?$expand=${name}`)
@@ -328,7 +333,7 @@ describe("endpoint : MultiDatastream", () => {
                 });
         });
 
-        it("Return MultiDatastreams Expand Observations", (done) => {
+        it(`Return ${entity.name} Expand Observations ${nbColor}[9.3.2.1]`, (done) => {
             const name = "Observations";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(2)?$expand=${name}`)
@@ -345,7 +350,7 @@ describe("endpoint : MultiDatastream", () => {
                 });
         });
 
-        it("Return MultiDatastreams Expand ObservedProperties", (done) => {
+        it(`Return ${entity.name} Expand ObservedProperties ${nbColor}[9.3.2.1]`, (done) => {
             const name = "ObservedProperties";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(1)?$expand=${name}`)
@@ -362,8 +367,8 @@ describe("endpoint : MultiDatastream", () => {
         });
     });
 
-    describe(`{post} ${entity.name} Create`, () => {
-        it("Return added MultiDatastream", (done) => {
+    describe(`{post} ${entity.name} ${nbColorTitle}[10.2]`, () => {
+        it(`Return added ${entity.name} ${nbColor}[10.2.1]`, (done) => {
             const datas = {
                 description: "Air quality readings",
                 name: `Air quality readings ${getNB(entity.name)}`,
@@ -402,8 +407,8 @@ describe("endpoint : MultiDatastream", () => {
             const infos = {
                 api: `{post} ${entity.name} Post with existing Thing And Sensor`,
                 apiName: `PostExistingThing${entity.name}`,
-                apiDescription: "Post a new Multi Datastreams.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#62",
+                apiDescription: `Post a new ${entity.name}.${showHide(`Post${entity.name}`, apiInfos["10.2"])}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#link-existing-entities-when-creating",
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
@@ -427,7 +432,7 @@ describe("endpoint : MultiDatastream", () => {
                 });
         });
 
-        it("Return Error if the payload is malformed", (done) => {
+        it(`Return Error if the payload is malformed ${nbColor}[10.2.2]`, (done) => {
             chai.request(server)
                 .post("/test/v1.0/MultiDatastreams")
                 .send({})
@@ -442,7 +447,7 @@ describe("endpoint : MultiDatastream", () => {
                 });
         });
 
-        it("Return added MultiDatastream with created Thing", (done) => {
+        it(`Return added ${entity.name} with created Thing`, (done) => {
             const datas = {
                 description: "Air quality readings",
                 name: `Air quality readings ${getNB(entity.name)}`,
@@ -490,7 +495,7 @@ describe("endpoint : MultiDatastream", () => {
                 api: `{post} ${entity.name} Post With Thing and Sensor`,
                 apiName: `PostThingSensor${entity.name}`,
                 apiDescription: "Post a new Multi Datastream With New Thing and Sensor.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#63",
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#create-related-entities",
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
@@ -600,8 +605,8 @@ describe("endpoint : MultiDatastream", () => {
         });
     });
 
-    describe(`{patch} ${entity.name} Patch`, () => {
-        it("Return updated MultiDatastream", (done) => {
+    describe(`{patch} ${entity.name} ${nbColorTitle}[10.3]`, () => {
+        it(`Return updated ${entity.name} ${nbColor}[10.3.1]`, (done) => {
             dbTest(_DBDATAS.MultiDatastreams.table)
                 .select("*")
                 .orderBy("id")
@@ -614,8 +619,8 @@ describe("endpoint : MultiDatastream", () => {
                     const infos = {
                         api: `{patch} ${entity.name} Patch one`,
                         apiName: `Patch${entity.name}`,
-                        apiDescription: "Patch a Multi Datastream.",
-                        apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#65",
+                        apiDescription: `Patch a ${entity.singular}.${showHide(`Patch${entity.name}`, apiInfos["10.3"])}`,
+                        apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_2",
                         apiExample: {
                             http: `/v1.0/${entity.name}(${myId})`,
                             curl: defaultPatch("curl", "KEYHTTP", datas),
@@ -641,7 +646,7 @@ describe("endpoint : MultiDatastream", () => {
                 });
         });
 
-        it("Return Error if the MultiDatastream does not exist", (done) => {
+        it(`Return Error if the ${entity.name} not exist`, (done) => {
             chai.request(server)
                 .patch(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .send({
@@ -668,8 +673,8 @@ describe("endpoint : MultiDatastream", () => {
         });
     });
 
-    describe(`{delete} ${entity.name} Delete`, () => {
-        it("should return no content with code 204", (done) => {
+    describe(`{delete} ${entity.name} ${nbColorTitle}[10.4]`, () => {
+        it(`Delete ${entity.name} return no content with code 204 ${nbColor}[10.4.1]`, (done) => {
             dbTest(_DBDATAS.MultiDatastreams.table)
                 .select("*")
                 .orderBy("id")
@@ -680,8 +685,8 @@ describe("endpoint : MultiDatastream", () => {
                     const infos = {
                         api: `{delete} ${entity.name} Delete one`,
                         apiName: `Delete${entity.name}`,
-                        apiDescription: "Delete a Multi Datastream.",
-                        apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#68",
+                        apiDescription: `Delete a ${entity.singular}.${showHide(`Delete${entity.name}`, apiInfos["10.4"])}`,
+                        apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_3",
                         apiExample: {
                             http: `/v1.0/${entity.name}(${myId})`,
                             curl: defaultDelete("curl", "KEYHTTP"),
@@ -706,7 +711,8 @@ describe("endpoint : MultiDatastream", () => {
                         });
                 });
         });
-        it("Return Error if the MultiDatastream does not exist", (done) => {
+
+        it(`Return Error if the ${entity.name} not exist`, (done) => {
             chai.request(server)
                 .delete(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .set("Cookie", `${keyTokenName}=${token}`)

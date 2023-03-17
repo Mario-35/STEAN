@@ -10,7 +10,7 @@
 
  import chai from "chai";
  import chaiHttp from "chai-http";
- import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, identification, keyTokenName, defaultPost, getNB, limitResult } from "./constant";
+ import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, identification, keyTokenName, defaultPost, getNB, limitResult, apiInfos, showHide, nbColor, nbColorTitle } from "./constant";
  import { server } from "../../server/index";
  import { _DBDATAS } from "../../server/db/constants";
  import { IEntity } from "../../server/types";
@@ -73,13 +73,13 @@
              });
      });
  
-     describe(`{get} ${entity.name}.`, () => {
-         it("should return all Lora sensor", (done) => {
+     describe(`{get} ${entity.name} ${nbColorTitle}[9.2]`, () => {
+        it(`Return all ${entity.name} ${nbColor}[9.2.2]`, (done) => {
              const infos = {
                  api: `{get} ${entity.name} Get all`,
                  apiName: `GetAll${entity.name}`,
-                 apiDescription: `Retrieve all things identified with lora deveui in properties.`,
-                 apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#37",
+                apiDescription: `Retrieve all ${entity.name}.${showHide(`Get${entity.name}`, apiInfos["9.2.2"])}`,
+                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-collection-entities",
                  apiExample: { http: `/v1.0/${entity.name}` },
                  apiSuccess: ["{number} id @iot.id", "{relation} selfLink @iot.selfLink", ...success]
              };
@@ -99,12 +99,12 @@
                          });
          });
  
-         it("should respond with a single Lora", (done) => {
+         it("should respond with a single Lora [9.2.3]", (done) => {
              const infos = {
                  api: `{get} ${entity.name}(:id) Get one`,
                  apiName: `GetOne${entity.name}`,
                  apiDescription: "Get a specific Lora.",
-                 apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#38",
+                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-entity",
                  apiExample: { http: `/v1.0/${entity.name}(${firstLoraDEVEUI})` }
              };
              chai.request(server)
@@ -134,7 +134,7 @@
          });
      });
  
-     describe(`{post} ${entity.name} Add lora observation.`, () => {
+     describe(`{post} ${entity.name} ${nbColorTitle}[10.2]`, () => {
          it("should return the Lora Affected multi that was added", (done) => {
              const datas = {
                  "MultiDatastream": {
@@ -150,8 +150,7 @@
              const infos = {
                  api: `{post} ${entity.name} Post basic`,
                  apiName: `Post${entity.name}`,
-                 apiDescription: `Post a new Observation in a Lora Thing.`,
-                 apiExample: {
+                 apiDescription: `Post a new ${entity.name}.${showHide(`Post${entity.name}`, apiInfos["10.2"])}`,                 apiExample: {
                      http: `/v1.0/${entity.name}`,
                      curl: defaultPost("curl", "KEYHTTP", datas),
                      javascript: defaultPost("javascript", "KEYHTTP", datas),
@@ -249,7 +248,7 @@
         });
 
 
-         it("Return Error if the payload is malformed", (done) => {
+         it(`Return Error if the payload is malformed ${nbColor}[10.2.2]`, (done) => {
              chai.request(server)
                  .post(`/test/v1.0/${entity.name}`)
                  .send({})

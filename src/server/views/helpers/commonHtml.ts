@@ -15,12 +15,13 @@ import { cleanUrl } from "../../helpers";
 import { cssFile, listCssFiles } from "../css";
 import { jsFile, listJsFiles } from "../js";
 import { IQuery } from "../constant";
+import { MODES } from "../../types";
 
 const fileWithOutMin = (input: string): string => input.replace(".min",'');
 
 export const commonHtml = (input: string, params: IQuery, ): string => {
-    message(true, "HEAD", "commonHtml");
-    message(true, "INFO", "params", params);
+    message(true, MODES.HEAD, "commonHtml");
+    message(true, MODES.INFO, "params", params);
     const result: string[] = input.replace(/\r\n/g,'\n').split('\n').map((e:string) => e.trim());   
     params._DATAS = (params.admin === true ? _DBADMIN :  (params.user.admin === true || params.user.superAdmin === true) ? _DBDATAS : Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === false)))
     ;

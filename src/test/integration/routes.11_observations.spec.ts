@@ -22,7 +22,12 @@ import {
     defaultPost,
     defaultGet,
     listOfColumns,
-    limitResult
+    limitResult,
+    infos,
+    apiInfos,
+    showHide,
+    nbColorTitle,
+    nbColor
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
@@ -57,14 +62,12 @@ const addToApiDoc = (input: IApiInput) => {
 };
 
 addToApiDoc({
-    api: `{infos} ${entity.name} Infos`,
-    apiName: `Infos${entity.name}`,
-    apiDescription: `An Observation is the act of measuring or otherwise determining the value of a property.<br>
-    An Observation in SensorThings represents a single Sensor reading of an ObservedProperty.<br>A physical device, a Sensor, sends Observations to a specified Datastream.<br>An Observation requires a FeatureOfInterest entity, if none is provided in the request, the Location of the Thing associated with the Datastream, will be assigned to the new Observation as the FeatureOfInterest`,
-    apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#31",
+    api: `{infos} ${entity.name} infos`,
+    apiName: `Infos${entity.name}`,    
+    apiDescription: infos[entity.name].definition,
+    apiReference: infos[entity.name].reference,
     result: ""
 });
-
 let firstID = 0;
 
 describe("endpoint : Observations", () => {
@@ -84,13 +87,13 @@ describe("endpoint : Observations", () => {
             });
     });
 
-    describe(`{get} ${entity.name}`, () => {
-        it("Return all Observations", (done) => {
+    describe(`{get} ${entity.name} ${nbColorTitle}[9.2]`, () => {
+        it(`Return all ${entity.name} ${nbColor}[9.2.2]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name} Get all`,
                 apiName: `GetAll${entity.name}`,
-                apiDescription: `Retrieve all ${entity.name}.`,
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#37",
+                apiDescription: `Retrieve all ${entity.name}.${showHide(`Get${entity.name}`, apiInfos["9.2.2"])}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-collection-entities",
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -120,12 +123,12 @@ describe("endpoint : Observations", () => {
                 });
         });
 
-        it(`Return Observation id: ${firstID}`, (done) => {
+        it(`Return Observation id: ${firstID} ${nbColor}[9.2.3]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get one`,
                 apiName: `GetOne${entity.name}`,
                 apiDescription: "Get a specific Observations.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#38",
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-entity",
                 apiExample: {
                     http: `/v1.0/${entity.name}(${firstID})`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -288,6 +291,7 @@ describe("endpoint : Observations", () => {
                     done();
                 });
         });
+
         it("Return errors with spliResult on Observation entity Only", (done) => {
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}?$splitResult=ALL`)
@@ -298,6 +302,7 @@ describe("endpoint : Observations", () => {
                     done();
                 });
         });
+
         let temp = 0;
         it("Return Observations with multiple result and split results", (done) => {
             const infos = {
@@ -353,11 +358,41 @@ describe("endpoint : Observations", () => {
                     done();
                 });
         });
+
+
+        // it("Return Observations with time intevval", (done) => {
+        //     const infos = {
+        //         api: `{get} Get with interval`,
+        //         apiName: `GetSelectObservationsInterval`,
+        //         apiDescription: "Retrieve observations with 1 hour interval.",
+        //         apiExample: {
+        //             http: `/v1.0/Datastreams(1)/${entity.name}?$interval='1 hour'`,
+        //             curl: defaultGet("curl", "KEYHTTP"),
+        //             javascript: defaultGet("javascript", "KEYHTTP"),
+        //             python: defaultGet("python", "KEYHTTP")
+        //         }
+        //     };
+        //     chai.request(server)
+        //         .get(`/test${infos.apiExample.http}`)
+        //         .end((err: any, res: any) => {
+        //             console.log(res.body);
+                    
+        //             should.not.exist(err);
+        //             res.status.should.equal(200);
+        //             res.type.should.equal("application/json");
+        //             Object.keys(res.body).length.should.eql(2);
+        //             Object.keys(res.body).length.should.eql(2);
+        //             res.body.value[0].should.include.keys("result");
+        //             res.body.value[0]["result"].should.eql(temp);
+        //             addToApiDoc({ ...infos, result: limitResult(res) });
+        //             done();
+        //         });
+        // });        
     });
 
-    describe(`{post} ${entity.name} Create`, () => {
+    describe(`{post} ${entity.name} ${nbColorTitle}[10.2]`, () => {
         let myError = "";
-        it("Return added Observation", (done) => {
+        it(`Return added ${entity.name} ${nbColor}[10.2.1]`, (done) => {
             const datas = {
                 "phenomenonTime": "2017-02-07T18:02:00.000Z",
                 "resultTime": "2017-02-07T18:02:05.000Z",
@@ -367,8 +402,8 @@ describe("endpoint : Observations", () => {
             const infos = {
                 api: `{post} ${entity.name} Post with existing FOI`,
                 apiName: `Post${entity.name}`,
-                apiDescription: "Post a new Observation.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#62",
+                apiDescription: `Post a new ${entity.name}.${showHide(`Post${entity.name}`, apiInfos["10.2"])}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#link-existing-entities-when-creating",
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
@@ -392,7 +427,7 @@ describe("endpoint : Observations", () => {
                 });
         });
 
-        it("Return Error if the payload is malformed", (done) => {
+        it(`Return Error if the payload is malformed ${nbColor}[10.2.2]`, (done) => {
             chai.request(server)
                 .post(`/test/v1.0/${entity.name}`)
                 .send({})
@@ -427,7 +462,7 @@ describe("endpoint : Observations", () => {
                 api: `{post} ${entity.name} Post with FOI`,
                 apiName: `PostNewFoi${entity.name}`,
                 apiDescription: "Post a new Observation.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#63",
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#create-related-entities",
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
@@ -460,7 +495,7 @@ describe("endpoint : Observations", () => {
                 api: `{post} ${entity.name} Post from Datastream`,
                 apiName: `PostDatastreams${entity.name}`,
                 apiDescription: "POST Observation with existing Datastream.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#62",
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#link-existing-entities-when-creating",
                 apiExample: {
                     http: `/v1.0/Datastreams(10)/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
@@ -502,7 +537,7 @@ describe("endpoint : Observations", () => {
                 api: `{post} ${entity.name} Post from Datastream and FOI`,
                 apiName: `PostObservationsDatastreamsFOI${entity.name}`,
                 apiDescription: "POST Observation with existing Datastream.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#62",
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#link-existing-entities-when-creating",
                 apiExample: {
                     http: `/v1.0/Datastreams(10)/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
@@ -555,7 +590,7 @@ describe("endpoint : Observations", () => {
                 api: `{post} ${entity.name} Post from MultiDatastream`,
                 apiName: `PostFromMultiDatastreams${entity.name}`,
                 apiDescription: "POST Observation with existing MultiDatastream.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#62",
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#link-existing-entities-when-creating",
                 apiExample: {
                     http: `/v1.0/MultiDatastreams(10)/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
@@ -602,7 +637,7 @@ describe("endpoint : Observations", () => {
                 api: `{post} ${entity.name} Post from MultiDatastream`,
                 apiName: `PostObservationsMultiDatastreams${entity.name}`,
                 apiDescription: "POST Observation with existing MultiDatastream.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#62",
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#link-existing-entities-when-creating",
                 apiExample: {
                     http: `/v1.0/MultiDatastreams(10)/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
@@ -625,8 +660,8 @@ describe("endpoint : Observations", () => {
         });
     });
 
-    describe(`{patch} ${entity.name} Patch`, () => {
-        it("Return updated Observation", (done) => {
+    describe(`{patch} ${entity.name} ${nbColorTitle}[10.3]`, () => {
+        it(`Return updated ${entity.name} ${nbColor}[10.3.1]`, (done) => {
             dbTest("observation")
                 .select("*")
                 .orderBy("id")
@@ -640,8 +675,8 @@ describe("endpoint : Observations", () => {
                     const infos = {
                         api: `{patch} ${entity.name} Patch one`,
                         apiName: `Patch${entity.name}`,
-                        apiDescription: "Patch an Observation.",
-                        apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#65",
+                        apiDescription: `Patch a ${entity.singular}.${showHide(`Patch${entity.name}`, apiInfos["10.3"])}`,
+                        apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_2",
                         apiExample: {
                             http: `/v1.0/${entity.name}(${myId})`,
                             curl: defaultPatch("curl", "KEYHTTP", datas),
@@ -702,7 +737,7 @@ describe("endpoint : Observations", () => {
                         api: `{patch} ${entity.name} Patch with Datastream`,
                         apiName: `PatchDatastream${entity.name}`,
                         apiDescription: "Patch an Observation with Datastream.",
-                        apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#65",
+                        apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_2",
                         apiExample: {
                             http: `/v1.0/${entity.name}(${itemObject.id})`,
                             curl: defaultPatch("curl", "KEYHTTP", datas),
@@ -729,9 +764,8 @@ describe("endpoint : Observations", () => {
         });
     });
 
-    describe(`{delete} ${entity.name} Delete`, () => {
-        
-        it("should return no content with code 204", (done) => {
+    describe(`{delete} ${entity.name} ${nbColorTitle}[10.4]`, () => {
+        it(`Delete ${entity.name} return no content with code 204 ${nbColor}[10.4.1]`, (done) => {
             dbTest("observation")
             .select("*")
             .orderBy("id")
@@ -741,8 +775,8 @@ describe("endpoint : Observations", () => {
                 const infos = {
                         api: `{delete} ${entity.name} Delete one`,
                         apiName: `Delete${entity.name}`,
-                        apiDescription: "Delete an Observations.",
-                        apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#68",
+                        apiDescription: `Delete a ${entity.singular}.${showHide(`Delete${entity.name}`, apiInfos["10.4"])}`,
+                        apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_3",
                         apiExample: {
                             http: `/v1.0/${entity.name}(${thingObject.id})`,
                             curl: defaultDelete("curl", "KEYHTTP"),

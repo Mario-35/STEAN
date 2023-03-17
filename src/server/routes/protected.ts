@@ -14,7 +14,7 @@ import fs from "fs";
 import koa from "koa";
 import { checkPassword, emailIsValid, testRoutes } from "./helpers";
 import { message } from "../logger";
-import { IReturnResult } from "../types";
+import { IReturnResult, MODES } from "../types";
 import { DefaultState, Context } from "koa";
 import { CreateHtmlView } from "../views/helpers/CreateHtmlView";
 import { loginUser, userRights } from "../types/user";
@@ -111,7 +111,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
             const odataVisitor = await createOdata(ctx);         
             if (odataVisitor)  ctx._odata = odataVisitor;
             if (ctx._odata) {
-                message(true, "HEAD", "POST JSON");
+                message(true, MODES.HEAD, "POST JSON");
                 const objectAccess = new apiAccess(ctx);
                 const returnValue: IReturnResult | undefined | void = await objectAccess.add();
                 if (returnValue) {
@@ -123,7 +123,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
         } else if (ctx.request.type.startsWith("multipart/form-data")) {
             // If upload datas            
             const getDatas = async (): Promise<{[key: string]: string}> => {
-                message(true, "HEAD", "getDatas ...");
+                message(true, MODES.HEAD, "getDatas ...");
                 return new Promise(async (resolve, reject) => {
                     await upload(ctx)
                         .then((data) => {
@@ -139,7 +139,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
             const odataVisitor = await createOdata(ctx); 
             if (odataVisitor)  ctx._odata = odataVisitor;
             if (ctx._odata) {
-                message(true, "HEAD", "POST FORM");
+                message(true, MODES.HEAD, "POST FORM");
                 const objectAccess = new apiAccess(ctx);
                 const returnValue: IReturnResult | undefined | void = await objectAccess.add();                        
                 if (ctx._datas) fs.unlinkSync(ctx._datas.file);
@@ -175,7 +175,7 @@ protectedRoutes.patch("/(.*)", async (ctx) => {
         const odataVisitor = await createOdata(ctx); 
         if (odataVisitor)  ctx._odata = odataVisitor;
         if (ctx._odata) {
-            message(true, "HEAD", "PATCH");
+            message(true, MODES.HEAD, "PATCH");
             const objectAccess = new apiAccess(ctx);
             if (ctx._odata.id) {
                 const returnValue: IReturnResult | undefined | void = await objectAccess.update(ctx._odata.id);
@@ -201,7 +201,7 @@ protectedRoutes.delete("/(.*)", async (ctx) => {
         const odataVisitor = await createOdata(ctx); 
         if (odataVisitor)  ctx._odata = odataVisitor;
         if (ctx._odata) {
-            message(true, "HEAD", "DELETE");
+            message(true, MODES.HEAD, "DELETE");
             const objectAccess = new apiAccess(ctx);
             if (ctx._odata.id) {
                 const returnValue: IReturnResult | undefined | void = await objectAccess.delete(ctx._odata.id);

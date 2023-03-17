@@ -8,11 +8,12 @@
 
 import util from "util";
 import { _debug } from "../constants";
+import { MODES } from "../types";
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const message = (
     testDebug: boolean,
-    mode: "HEAD" | "DEBUG" | "RESULT" | "INFO" | "ERROR" | "ENV" | "CLASS" | "OVERRIDE",
+    mode: MODES,
     cle: string,
     info?: any
 ): void => {
@@ -25,44 +26,43 @@ export const message = (
 
     if (info && typeof info === "object") info = util.inspect(info, { showHidden: false, depth: null, colors: true });
     switch (mode) {
-        case "HEAD": {
+        case MODES.HEAD: {
             if (info) console.log(`\x1b[32m ==== \x1b[36m ${cle} \x1b[37m ${info} \x1b[32m ====\x1b[0m`);
             else console.log(`\x1b[32m ==== \x1b[33m ${cle} \x1b[32m ====\x1b[0m`);
             break;
         }
-        case "DEBUG": {
+        case MODES.DEBUG: {
             console.log(`\x1b[32m ${cle} \x1b[37m : \x1b[36m ${info}\x1b[0m`);
             break;
         }
-        case "RESULT": {
+        case MODES.RESULT: {
             console.log(`\x1b[32m     >>\x1b[30m ${cle} \x1b[39m : \x1b[36m ${info}\x1b[0m`);
             break;
         }
-        case "INFO": {
+        case MODES.INFO: {
             console.log(`\x1b[36m ${cle} \x1b[34m : \x1b[37m ${info}\x1b[0m`);
             break;
         }
-        case "ERROR": {
+        case MODES.ERROR: {
             console.log(`\x1b[31m ${cle} \x1b[34m : \x1b[33m ${info}\x1b[0m`);
             break;
         }
-        case "ENV": {
+        case MODES.ENV: {
             console.log(`\x1b[36m ${cle} \x1b[34m : \x1b[33m ${info}\x1b[0m`);
             break;
         }
-        case "CLASS": {
+        case MODES.CLASS: {
             if (info) console.log(`\x1b[31m ==== \x1b[36m ${cle} \x1b[33m ${info} \x1b[31m ====\x1b[0m`);
             else console.log(`\x1b[31m ==== \x1b[36m ${cle} \x1b[31m ====\x1b[0m`);
             break;
         }
-        case "OVERRIDE": {
+        case MODES.OVERRIDE: {
             if (info) console.log(`\x1b[31m ==== \x1b[32m ${cle} [OVERRIDE]\x1b[33m ${info} \x1b[31m ====\x1b[0m`);
             else console.log(`\x1b[31m ==== \x1b[36m ${cle} \x1b[31m ====\x1b[0m`);
             break;
         }
         default: {
             console.log("\x1b[31m" + cle + info);
-
             break;
         }
     }

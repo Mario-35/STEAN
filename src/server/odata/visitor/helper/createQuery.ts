@@ -12,11 +12,12 @@ import { TimeSeries } from "../../../db/helpers";
 import { getEntityName } from "../../../helpers";
 import { queryAsJson } from "../../../helpers/returnFormats";
 import { message } from "../../../logger";
+import { MODES } from "../../../types";
 import { PGQuery, PgVisitor } from "../PgVisitor";
 
 
 export function createQuerySelectString(main: PgVisitor, element: PgVisitor): string { 
-    message(true, "HEAD", "createQuerySelectString");  
+    message(true, MODES.HEAD, "createQuerySelectString");  
     const tempPgQuery = createQuerySelectPGQuery(main, element);
     if (!tempPgQuery) return "ERROR";
     const sql = createSql(tempPgQuery);
@@ -29,7 +30,7 @@ export function createQuerySelectString(main: PgVisitor, element: PgVisitor): st
 }
 
 export function createQuerySelectPGQuery(main: PgVisitor, element: PgVisitor): PGQuery | undefined { 
-    message(true, "HEAD", "createQuerySelectPGQuery");  
+    message(true, MODES.HEAD, "createQuerySelectPGQuery");  
     // get the name of the entity
     const realEntity = element.relation ? element.relation : element.getEntity() ;
     if(realEntity) {

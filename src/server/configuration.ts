@@ -19,6 +19,7 @@ import { createDatabase } from "./db/helpers";
 import pg from "pg"
 import update  from "./config/update.json"
 import { messages, messagesReplace } from "./messages";
+import { MODES } from "./types";
 
 
 /**
@@ -70,7 +71,7 @@ class configuration {
 
 
     constructor(file: fs.PathOrFileDescriptor) {
-        message(true, "CLASS", this.constructor.name, messages.infos.constructor);   
+        message(true, MODES.CLASS, this.constructor.name, messages.infos.constructor);   
         configuration.filePath = file;    
         const fileTemp = fs.readFileSync(file, "utf8");    
         configuration.jsonConfiguration = JSON.parse(fileTemp);
@@ -183,17 +184,17 @@ class configuration {
             .then(async (res: boolean) => {                   
                   const port = _CONFIGS[key].port;
                   if (port  > 0) {
-                      if (configuration.ports.includes(port)) message(false, "RESULT", `\x1b[35m[${key}]\x1b[32m ${messages.infos.addPort}`, port);
+                      if (configuration.ports.includes(port)) message(false, MODES.RESULT, `\x1b[35m[${key}]\x1b[32m ${messages.infos.addPort}`, port);
                       else app.listen(port, () => {
                         configuration.ports.push(port);
-                              message(false, "RESULT", `\x1b[33m[${key}]\x1b[32m ${messages.infos.ListenPort}`, port);
+                              message(false, MODES.RESULT, `\x1b[33m[${key}]\x1b[32m ${messages.infos.ListenPort}`, port);
                           });
                   }
                   return res;
                   
               })
               .catch((error: any) => {
-                  message(false, "ERROR", messages.errors.unableFindCreate, _CONFIGS[key].pg_database);
+                  message(false, MODES.ERROR, messages.errors.unableFindCreate, _CONFIGS[key].pg_database);
                   console.log(error);
                   process.exit(111);
               });
@@ -202,7 +203,7 @@ class configuration {
 
     async isDbExist(connectName: string, create: boolean): Promise<boolean> {
         const connection: IDbConnection = this.createConnection(connectName);
-        message(false, "HEAD", messages.infos.connectName, connectName);
+        message(false, MODES.HEAD, messages.infos.connectName, connectName);
     
         await this.pgwait(connection);
     
@@ -217,11 +218,11 @@ class configuration {
          return await tempConnection
              .raw("select 1+1 as result")
              .then(async () => {
-                 message(false, "RESULT", messages.infos.dbOnline, _CONFIGS[connectName].pg_database);
+                 message(false, MODES.RESULT, messages.infos.dbOnline, _CONFIGS[connectName].pg_database);
                  if(update) {
                     const list = update["database"];
                     await asyncForEach(list, async (operation: string) => {
-                        message(false, "INFO", connectName, await tempConnection.raw(operation).then(() => "✔").catch((err: Error) => err.message));
+                        message(false, MODES.INFO, connectName, await tempConnection.raw(operation).then(() => "✔").catch((err: Error) => err.message));
                     }); 
                  } 
                  tempConnection.destroy();
@@ -230,14 +231,14 @@ class configuration {
              .catch(async (err: any) => {
                  let returnResult = false;
                  if (err.code == "3D000" && create == true) {
-                     message(false, "DEBUG", messagesReplace(messages.infos.tryCreate, [messages.infos.db]), _CONFIGS[connectName].pg_database);
+                     message(false, MODES.DEBUG, messagesReplace(messages.infos.tryCreate, [messages.infos.db]), _CONFIGS[connectName].pg_database);
                      returnResult = await createDatabase(connectName)
                          .then(async () => {
-                             message(false, "INFO", messagesReplace(messages.infos.create, [messages.infos.db]), "OK");
+                             message(false, MODES.INFO, messagesReplace(messages.infos.create, [messages.infos.db]), "OK");
                              return true;
                          })
                          .catch((err: Error) => {
-                             message(false, "ERROR", messagesReplace(messages.infos.create, [messages.infos.db]), err.message);
+                             message(false, MODES.ERROR, messagesReplace(messages.infos.create, [messages.infos.db]), err.message);
                              return false;
                          });
                  }
@@ -255,7 +256,7 @@ class configuration {
         }
         
         const printStatusMsg = (status: string): void => {
-            message(false, "RESULT", messagesReplace(messages.infos.dbPg, [status]), timeStamp());
+            message(false, MODES.RESULT, messagesReplace(messages.infos.dbPg, [status]), timeStamp());
         }
     
         const connect = async (): Promise<boolean> => {

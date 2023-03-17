@@ -23,7 +23,12 @@ import {
     defaultGet,
     getNB,
     listOfColumns,
-    limitResult
+    limitResult,
+    infos,
+    apiInfos,
+    showHide,
+    nbColor,
+    nbColorTitle
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
@@ -46,11 +51,10 @@ const addToApiDoc = (input: IApiInput) => {
 };
 
 addToApiDoc({
-    api: `{infos} ${entity.name} Infos`,
-    apiName: `Infos${entity.name}`,
-    apiDescription:
-        "A Sensor in SensorThings API is an instrument that observes a property or phenomenon with the goal of producing an estimate of the value of the property.",
-    apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#29",
+    api: `{infos} ${entity.name} infos`,
+    apiName: `Infos${entity.name}`,    
+    apiDescription: infos[entity.name].definition,
+    apiReference: infos[entity.name].reference,
     result: ""
 });
 
@@ -84,13 +88,13 @@ describe("endpoint : Sensors", () => {
             });
     });
 
-    describe(`{get} ${entity.name}`, () => {
-        it("Return all sensors", (done) => {
+    describe(`{get} ${entity.name} ${nbColorTitle}[9.2]`, () => {
+        it(`Return all ${entity.name} ${nbColor}[9.2.2]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name} Get all`,
                 apiName: `GetAll${entity.name}`,
-                apiDescription: `Retrieve all ${entity.name}.`,
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#37",
+                                apiDescription: `Retrieve all ${entity.name}.${showHide(`Get${entity.name}`, apiInfos["9.2.2"])}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-collection-entities",
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -119,12 +123,12 @@ describe("endpoint : Sensors", () => {
                 });
         });
 
-        it("Return Sensor id: 1", (done) => {
+        it(`Return Sensor id: 1 ${nbColor}[9.2.3]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get one`,
                 apiName: `GetOne${entity.name}`,
                 apiDescription: "Get a specific Sensor.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#38",
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-entity",
                 apiExample: {
                     http: `/v1.0/${entity.name}(1)`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -159,7 +163,7 @@ describe("endpoint : Sensors", () => {
                 });
         });
 
-        it("Return Sensor using $expand query option", (done) => {
+        it(`Return Sensor using $expand query option ${nbColor}[9.3.2.1]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get Expands`,
                 apiName: `GetExpandDatastreams${entity.name}`,
@@ -211,7 +215,7 @@ describe("endpoint : Sensors", () => {
                 });
         });
 
-        it("Return Sensor Subentity Datastreams", (done) => {
+        it(`Return Sensor Subentity Datastreams ${nbColor}[9.2.6]`, (done) => {
             const name = "Datastreams";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(1)/Datastreams`)
@@ -230,7 +234,7 @@ describe("endpoint : Sensors", () => {
                 });
         });
 
-        it("Return Sensor Subentity MultiDatastreams", (done) => {
+        it(`Return Sensor Subentity MultiDatastreams ${nbColor}[9.2.6]`, (done) => {
             const name = "MultiDatastreams";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(1)/MultiDatastreams`)
@@ -248,7 +252,7 @@ describe("endpoint : Sensors", () => {
                 });
         });
 
-        it("Return Sensor Expand Datastreams", (done) => {
+        it(`Return Sensor Expand Datastreams ${nbColor}[9.3.2.1]`, (done) => {
             const name = "Datastreams";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(1)?$expand=${name}`)
@@ -266,7 +270,7 @@ describe("endpoint : Sensors", () => {
                 });
         });
 
-        it("Return Sensor Expand MultiDatastreams", (done) => {
+        it(`Return Sensor Expand MultiDatastreams ${nbColor}[9.3.2.1]`, (done) => {
             const name = "MultiDatastreams";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(3)?$expand=${name}`)
@@ -285,8 +289,8 @@ describe("endpoint : Sensors", () => {
         });
     });
 
-    describe(`{post} ${entity.name} Create`, () => {
-        it("Return added Sensor", (done) => {
+    describe(`{post} ${entity.name} ${nbColorTitle}[10.2]`, () => {
+        it(`Return added ${entity.name} ${nbColor}[10.2.1]`, (done) => {
             const datas = {
                 description: "PM 2.5 sensor",
                 name: `PM25 ${getNB(entity.name)}`,
@@ -296,8 +300,8 @@ describe("endpoint : Sensors", () => {
             const infos = {
                 api: `{post} ${entity.name} Post basic`,
                 apiName: `Post${entity.name}`,
-                apiDescription: "Post a new Sensor.",
-                apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#61",
+                apiDescription: `Post a new ${entity.name}.${showHide(`Post${entity.name}`, apiInfos["10.2"])}`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request",
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
@@ -321,7 +325,7 @@ describe("endpoint : Sensors", () => {
                 });
         });
 
-        it("Return Error if the payload is malformed", (done) => {
+        it(`Return Error if the payload is malformed ${nbColor}[10.2.2]`, (done) => {
             chai.request(server)
                 .post("/test/v1.0/Sensors")
                 .send({})
@@ -336,8 +340,8 @@ describe("endpoint : Sensors", () => {
         });
     });
 
-    describe(`{patch} ${entity.name} Patch`, () => {
-        it("Return updated Sensor", (done) => {
+    describe(`{patch} ${entity.name} ${nbColorTitle}[10.3]`, () => {
+        it(`Return updated ${entity.name} ${nbColor}[10.3.1]`, (done) => {
             dbTest("sensor")
                 .select("*")
                 .orderBy("id")
@@ -351,7 +355,7 @@ describe("endpoint : Sensors", () => {
                         api: `{patch} ${entity.name} Patch one`,
                         apiName: `Patch${entity.name}`,
                         apiDescription: "Patch a Sensor.",
-                        apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#65",
+                        apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_2",
                         apiExample: {
                             http: `/v1.0/${entity.name}(${myId})`,
                             curl: defaultPatch("curl", "KEYHTTP", datas),
@@ -401,8 +405,8 @@ describe("endpoint : Sensors", () => {
         });
     });
 
-    describe(`{delete} ${entity.name} Delete`, () => {
-        it("Return no content with code 204", (done) => {
+    describe(`{delete} ${entity.name} ${nbColorTitle}[10.4]`, () => {
+        it(`Delete ${entity.name} return no content with code 204 ${nbColor}[10.4.1]`, (done) => {
             dbTest("sensor")
                 .select("*")
                 .orderBy("id")
@@ -413,8 +417,8 @@ describe("endpoint : Sensors", () => {
                     const infos = {
                         api: `{delete} ${entity.name} Delete one`,
                         apiName: `Delete${entity.name}`,
-                        apiDescription: "Delete a Sensor.",
-                        apiReference: "http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#68",
+                        apiDescription: `Delete a ${entity.singular}.${showHide(`Delete${entity.name}`, apiInfos["10.4"])}`,
+                        apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_3",
                         apiExample: {
                             http: `/v1.0/${entity.name}(${myId})`,
                             curl: defaultDelete("curl", "KEYHTTP"),

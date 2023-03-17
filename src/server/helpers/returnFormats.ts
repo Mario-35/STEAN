@@ -10,7 +10,7 @@
 import { Parser } from "json2csv";
 import koa from "koa";
 import { message } from "../logger";
-import { FORMATS, IreturnFormat } from "../types";
+import { FORMATS, IreturnFormat, MODES } from "../types";
 import { cssFile } from "../views/css";
 import { jsFile } from "../views/js";
 import util from "util";
@@ -103,7 +103,7 @@ const _returnFormats: { [key in FORMATS]: IreturnFormat } = {
           return parser.parse(input[0].dataArray);
         } catch (e) {
           if (e instanceof Error) {
-                    message(false, "ERROR", e.message);
+                    message(false, MODES.ERROR, e.message);
                     return e.message;
                 }
               }
@@ -124,7 +124,7 @@ WITH one AS (
             WHERE "observation"."id" IN (
                 SELECT "observation"."id" 
                 FROM "observation" 
-                WHERE "observation"."datastream_id" = 15 
+                WHERE "observation"."datastream_id" = ${arr["id"]} 
                 ORDER BY "observation"."resultTime" ASC)
             ORDER BY "observation"."phenomenonTime",  "observation"."id") 
         AS p) 
@@ -136,7 +136,7 @@ two AS (
 )
 SELECT
     CASE
-        WHEN (SELECT "observationType" FROM "datastream" WHERE id = ${arr["id"]}) = 'SWE Array Observation' 
+        WHEN (SELECT "observationType" FROM "datastream" WHERE id = ${arr["id"]}) = 'http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation' 
         THEN (SELECT * FROM one)
         ELSE (SELECT * FROM two)
     END 
