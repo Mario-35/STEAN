@@ -51,7 +51,7 @@
     const result = cleanList.map((e, i) => i == 0 ? `${value === "X" ? `${_NONE} ${_SELECTED}` : `${_ALL} ${_SELECTED}`}` : `${value === "X" ? "" : value} ${e[1] === _SPACE ? e.split(_SPACE)[1] : e}`.trim());
     obj.innerHTML = result.map(e => `<option>${e}</option>`).join('');
     obj.value = result[0];
-    if (value === "X") deleteOption(key); else queryOptions.value =  createOptionsLine();
+    if (value === "X") deleteOption(key); else queryOptions.value = createOptionsLine();
   };
 
     /**

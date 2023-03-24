@@ -49,7 +49,7 @@ export class CreateFile extends Common {
         if (headers) {
             const createDataStream = async () => {
                 const nameOfFile = paramsFile.filename.split("/").reverse()[0];
-                const copyCtx =  Object.assign({}, ctx._odata);
+                const copyCtx = Object.assign({}, ctx._odata);
                 const tempId= ctx._odata.id.toString();
                 ctx._odata.entity = _DBDATAS.Datastreams.name;
 

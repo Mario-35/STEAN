@@ -190,7 +190,7 @@
                  apiName: `Post${entity.name}Multi`,
                  apiDescription: `Post a new Observation in a Lora Thing.`,
                  apiExample: {
-                     http: `/v1.0/${entity.name}`,
+                     http: `/v1.0/${entity.name}?$debug=true`,
                      curl: defaultPost("curl", "KEYHTTP", datas),
                      javascript: defaultPost("javascript", "KEYHTTP", datas),
                      python: defaultPost("python", "KEYHTTP", datas)
@@ -202,6 +202,8 @@
                  .send(infos.apiParamExample)
                  .set("Cookie", `${keyTokenName}=${token}`)
                  .end((err: any, res: any) => {
+                    console.log(res.body);
+                    
                      should.not.exist(err);
                      res.status.should.equal(201);
                      res.type.should.equal("application/json");

@@ -40,7 +40,7 @@ const generateFields = (input: PgVisitor): string[] => {
   let fields:string[] = [];
   if (isGraph(input)) {    
     const table = _DBDATAS[input.parentEntity ? input.parentEntity: input.getEntity()].table;
-    fields =  [`(select ${table}."description" from ${table} where ${table}."id" = ${input.parentId ? input.parentId: input.id}) AS title, `];
+    fields = [`(select ${table}."description" from ${table} where ${table}."id" = ${input.parentId ? input.parentId: input.id}) AS title, `];
   } 
   return fields;
 };

@@ -163,7 +163,7 @@
             },
             body: jsonDatas.innerText,
           });
-          const value =  await response.json();
+          const value = await response.json();
           if (response.status == 401) {
             // window.location.replace(value);
             window.location.href = "/login";

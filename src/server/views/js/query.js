@@ -185,12 +185,12 @@ async function editDataClicked(id, _PARAMS) {
     if ((deleteFalse && value.toUpperCase() === deleteFalse) || !value || value === "" || value === "<empty string>") 
       delete listOptions[key];
     else listOptions[key] = value; 
-    queryOptions.value =  createOptionsLine();
+    queryOptions.value = createOptionsLine();
   };
 
   var deleteOption = function(key){
     delete listOptions[key];
-    queryOptions.value =  createOptionsLine();
+    queryOptions.value = createOptionsLine();
   };
 
   function clear() {

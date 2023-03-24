@@ -9,7 +9,7 @@
 import koa from "koa";
 import { Knex } from "knex";
 import { isGraph, _DBDATAS } from "../constants";
-import { getEntityName, notNull, removeQuotes, returnFormats } from "../../helpers/index";
+import { getEntityName, isNull, removeQuotes, returnFormats } from "../../helpers/index";
 import {  message } from "../../logger";
 import { IReturnResult, MODES } from "../../types";
 import { createGraph, extractMessageError, knexQueryToSql, removeKeyFromUrl, verifyId } from "../helpers";
@@ -80,8 +80,12 @@ export class Common {
             const entityName = getEntityName(this.ctx._odata.parentEntity ? this.ctx._odata.parentEntity : this.ctx._odata.entity);            
             let tempTitle  = "No Title"
             if (entityName && _DBDATAS[entityName].columns["name"])
-            await Common.dbContext(_DBDATAS[entityName].table).select("name").where({id: this.ctx._odata.parentEntity ? this.ctx._odata.parentId: this.ctx._odata.id}).limit(1).then((res: any) => tempTitle = res[0].name);
-            const temp =  createGraph(input, tempTitle);
+            await Common.dbContext(_DBDATAS[entityName].table)
+                        .select("name")
+                        .where({id: this.ctx._odata.parentEntity ? this.ctx._odata.parentId: this.ctx._odata.id})
+                        .limit(1)
+                        .then((res: any) => tempTitle = res[0].name);
+            const temp = createGraph(input, tempTitle);
             return temp ?  temp : JSON.parse('');
         }
         return input;
@@ -92,7 +96,7 @@ export class Common {
 
         const sql = this.ctx._odata.asGetSql();
 
-        if (!sql || sql === "") return;
+        if (isNull(sql)) return;
 
         this.logQuery(sql);
         if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ body: sql });
@@ -124,7 +128,7 @@ export class Common {
 
         const sql = this.ctx._odata.asGetSql();
 
-        if (!notNull(sql)) return;
+        if (isNull(sql)) return;
         
         this.logQuery(sql);
         

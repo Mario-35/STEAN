@@ -533,13 +533,13 @@ export const listOfColumns = (inputEntity: IEntity) => {
     const params:string[] = [];
     const infosEntity = infos[inputEntity.name];
     Object.keys(infosEntity.columns).forEach((elem: string) => {
-        const optional =  (inputEntity.columns[elem] && inputEntity.columns[elem].create.includes("NOT NULL")) ? elem : `[${elem}]`;
+        const optional = (inputEntity.columns[elem] && inputEntity.columns[elem].create.includes("NOT NULL")) ? elem : `[${elem}]`;
         success.push(`{${inputEntity.columns[elem] && inputEntity.columns[elem].type ? inputEntity.columns[elem].type : "none"}} ${elem} ${infosEntity["columns"][elem] || elem}`);
         if (!inputEntity.columns[elem].create.includes("GENERATED"))
             params.push(`{${inputEntity.columns[elem].type}} ${optional} ${infosEntity["type"] && infosEntity["type"][elem] ? infosEntity["type"][elem] : ""}`);
     });
     Object.keys(inputEntity.relations).forEach((elem: string) => {
-        const optional =  (inputEntity.columns[elem] && inputEntity.columns[elem].create.includes("NOT NULL")) ? elem : `[${elem}]`;
+        const optional = (inputEntity.columns[elem] && inputEntity.columns[elem].create.includes("NOT NULL")) ? elem : `[${elem}]`;
         success.push(`{relation} ${elem} ${infosEntity["relations"][elem] || ""}`);
         params.push(`{relation} ${optional} ${infosEntity["type"] && infosEntity["type"][elem] ? infosEntity["type"][elem] : ""}`);
     });

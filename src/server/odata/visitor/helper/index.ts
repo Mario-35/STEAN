@@ -23,6 +23,6 @@ export const createSql = (input: PgQuery): string => `SELECT ${input.select}\n F
 
 export { createGetSql } from "./createGetSql";
 export { createPostSql } from "./createPostSql";
-export { createQuerySelectString, createQuerySelectPgQuery } from "./createQuery";
+export { createQueryString, createQueryPgQuery } from "./createQuery";
 export { getColumnsList } from "./getColumnsList";
 export { oDatatoDate } from "./oDatatoDate";

@@ -96,7 +96,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
             Datastreams: {
                 type: RELATIONS.hasMany,
                 expand: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."thing_id" = "thing"."id")`,
-                link: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."thing_id" =  $ID)`,
+                link: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."thing_id" = $ID)`,
                 entityName: "Datastreams",
                 tableName: "datastream",
                 relationKey: "thing_id",

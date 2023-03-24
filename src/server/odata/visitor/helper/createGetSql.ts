@@ -6,7 +6,7 @@
  *
  */
 
-import { createQuerySelectString } from ".";
+import { createQueryString } from ".";
 import { _DBDATAS } from "../../../db/constants";
 import { PgVisitor } from "../PgVisitor";
 
@@ -20,7 +20,7 @@ import { PgVisitor } from "../PgVisitor";
                 visitor.entity =names[0];
                 visitor.select = "*";
                 visitor.where = "1 = 1";
-                visitor.orderby =  "";
+                visitor.orderby = "";
                 visitor.navigationProperty = names[1];
                 includesItem.includes.push(visitor);
             }
@@ -28,6 +28,6 @@ import { PgVisitor } from "../PgVisitor";
     });  
         
     main.includes.forEach((item) => item.asGetSql());
-    main.sql = createQuerySelectString(main, main);
+    main.sql = createQueryString(main, main);
     return main.onlyValue ? main.sql :  main.resultFormat.generateSql(main);
 }

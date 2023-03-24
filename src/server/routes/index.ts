@@ -20,7 +20,7 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
         setDebug(ctx.request.url.includes("$debug=true"));
         ctx._addToLog = false;
         setConfigToCtx(ctx);
-        const tempUser =  decodeToken(ctx); 
+        const tempUser = decodeToken(ctx); 
         ctx._user = tempUser ? tempUser :  {
             id: 0,
             username: "",

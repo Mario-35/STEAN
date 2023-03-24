@@ -28,7 +28,7 @@ export const createOdata = async (ctx: koa.Context):Promise<PgVisitor | undefine
     };    
 
     if (urlSrc.includes("/Loras(")) {
-        const idLora =  urlSrc.split("/Loras(").join("").split(")")[0];      
+        const idLora = urlSrc.split("/Loras(").join("").split(")")[0];      
         if(isNaN(+idLora)) {
             options.loraId = idLora;
             urlSrc = urlSrc.replace(idLora, "0");

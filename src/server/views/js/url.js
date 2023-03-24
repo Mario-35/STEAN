@@ -12,7 +12,7 @@
       // return true if some works are done (for init to not delete value)
       let decode = false;
 
-      const  myOptions =   (input.includes('?')) ? input.split('?')[1] : input;
+      const  myOptions =  (input.includes('?')) ? input.split('?')[1] : input;
       // process options
       myOptions.split('&').forEach((element) => {
         const temp = element.split('=');
@@ -100,7 +100,7 @@
                   nb.value = temp[1].replace(')', '');
                 } else entity.value = getEntityName(element);          
               } else if (index === 1) {
-                if (element.includes('?')) queryOptions.value =  element;
+                if (element.includes('?')) queryOptions.value = element;
                 else if (_PARAMS._DATAS[getEntityName(element)]) populateSelect(subentity, Object.keys(_PARAMS._DATAS[entity.value].relations), element, true);
               }
             });    

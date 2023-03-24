@@ -15,7 +15,7 @@ import { _CONFIGURATION } from "../../configuration";
 export class Logs extends Common {
     constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {         
         super(ctx, knexInstance);
-        Common.dbContext =  _CONFIGURATION.getConnection("admin");    
+        Common.dbContext = _CONFIGURATION.getConnection("admin");    
     }
 }
  

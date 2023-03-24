@@ -22,7 +22,7 @@ export const getConfigName = (ctx: koa.Context): string | undefined => {
         const databaseName = isTest() ? ["test"] : Object.keys(_CONFIGS).filter((word) => (word != "test" && _CONFIGS[word].port) == port);
         if (databaseName && databaseName.length === 1) return databaseName[0];
     }
-    const name =  ctx.originalUrl.split(ctx._version)[0].split("/").filter((e: string) => e != "")[0]; 
+    const name = ctx.originalUrl.split(ctx._version)[0].split("/").filter((e: string) => e != "")[0]; 
            
     if (name) {
         const databaseName = isTest() ? "test" : Object.keys(_CONFIGS).includes(name) ? name: undefined;

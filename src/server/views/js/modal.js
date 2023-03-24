@@ -90,7 +90,7 @@ class Component {
             this.title = options.title;
         }
 
-        this.useInnerHTML =  (options.useInnerHTML === true);
+        this.useInnerHTML = (options.useInnerHTML === true);
 
         if (isString(options.content)){
             this.content = options.content;
@@ -462,7 +462,7 @@ class ExecuteCode extends Component {
             return;
         }
         const F = new Function("input", String(this.code));
-        const temp =  F(value);
+        const temp = F(value);
         this.close();
     updateWinJsonResult(temp, "testaose");          
 
@@ -516,7 +516,7 @@ class ViewJson extends Component {
     constructor(options) {
         super(options);
         console.log(options);
-        this.buttonOk =  'Ok';
+        this.buttonOk = 'Ok';
         this.content = JSON.stringify(options.content);
         this.injectTemplate();
         this.render();

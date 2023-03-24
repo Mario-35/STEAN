@@ -330,7 +330,7 @@ export namespace Lexer {
         if (value[index] === 0x21 || value[index] === 0x2b) return index + 1;
         else return Lexer.OPEN(value, index) || Lexer.CLOSE(value, index) || Lexer.STAR(value, index) || Lexer.COMMA(value, index) || Lexer.SEMI(value, index);
     }
-    // sub-delims     =       "$" / "&" / "'" /                                     "=" / other-delims
+    // sub-delims     =      "$" / "&" / "'" /                                     "=" / other-delims
     export function subDelims(value: Utils.SourceArray, index: number): number | undefined {
         if (value[index] === 0x24 || value[index] === 0x26) return index + 1;
         else return Lexer.SQUAT(value, index) || Lexer.EQ(value, index) || Lexer.otherDelims(value, index);

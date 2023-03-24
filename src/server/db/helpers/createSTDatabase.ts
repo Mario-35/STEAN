@@ -23,7 +23,7 @@ import { MODES } from "../../types";
       const admin = _CONFIGS["admin"];
       // init result
      const  returnValue: { [key: string]: string } = { "Start create Database": config.pg_database };
-     const adminCon =  knex({
+     const adminCon = knex({
         client: "pg",
         connection: _CONFIGURATION.createKnexConnection("admin", "postgres"),
         pool: { min: 0, max: 7 },
@@ -85,7 +85,7 @@ import { MODES } from "../../types";
          });
  
 
-      const connDb =  knex({
+      const connDb = knex({
         client: "pg",
         connection: {
             host: admin.pg_host,
@@ -107,30 +107,30 @@ import { MODES } from "../../types";
          .raw("CREATE EXTENSION IF NOT EXISTS tablefunc;")
          .then(() => "✔")
          .catch((err: Error) => err.message);
- 
-     // create tables
-     // const _DATAS = config.createUser && config.createUser == true ? _DBADMIN : _DBDATAS;
+         
      await asyncForEach(Object.keys(_DBDATAS), async (keyName: string) => {
          await createTable(connDb, _DBDATAS[keyName], undefined);
      });
- 
-     returnValue["Create functions & trigger"] = await connDb
-         .raw(triggers)
-         .then(() => "✔")
-         .catch((e: any) => e);
-     if  (configName.toUpperCase() === "TEST" ||  (ctx && ctx.request.body.seed && ctx.request.body.seed === true)){
 
-        await asyncForEach(datasDemo(), async (sql: string) => {
-            returnValue["Feed datas"] = await connDb
-            .raw(sql.split("\n").join(""))
-            .then(() => "✔")
-            .catch((error: any) => {
-                console.log(error);
-                return error;
-            });
-            // await connDb.raw('COMMIT');
+     await asyncForEach(triggers, async (sql: string) => {
+        returnValue["Create functions & trigger"] = await connDb
+        .raw(sql.split("\n").join(""))
+        .then(() => "✔")
+        .catch((error: any) => {
+            console.log(error);
+            return error;
         });
-     }
+    });
+ 
+    await asyncForEach(datasDemo(), async (sql: string) => {
+        returnValue["Feed datas"] = await connDb
+        .raw(sql.split("\n").join(""))
+        .then(() => "✔")
+        .catch((error: any) => {
+            console.log(error);
+            return error;
+        });
+    });
  
      await connDb.raw(`select count(*) FROM pg_user WHERE usename = '${config.pg_user}';`).then(() => {
          returnValue["Create DB"] = "✔";

@@ -27,4 +27,4 @@ export { setConfigToCtx } from "./setConfigToCtx";
 export { showConfigCtx, ConfigCtx } from "./showConfigCtx";
 export { returnFormats } from "./returnFormats";
 export { upload } from "./upload";
-export { notNull } from "./notNull";
+export { notNull, isNull } from "./notNull";

@@ -15,22 +15,22 @@ import { MODES, PgQuery } from "../../../types";
 import { PgVisitor } from "../PgVisitor";
 
 
-export function createQuerySelectString(main: PgVisitor, element: PgVisitor): string { 
-    message(true, MODES.HEAD, "createQuerySelectString");  
-    const tempPgQuery = createQuerySelectPgQuery(main, element);
+export function createQueryString(main: PgVisitor, element: PgVisitor): string { 
+    message(true, MODES.HEAD, "createQueryString");  
+    const tempPgQuery = createQueryPgQuery(main, element);
     if (!tempPgQuery) return "ERROR";
     const sql = createSql(tempPgQuery);
     return sql;
 }
 
-export function createQuerySelectPgQuery(main: PgVisitor, element: PgVisitor): PgQuery | undefined { 
-    message(true, MODES.HEAD, "createQuerySelectPgQuery");  
+export function createQueryPgQuery(main: PgVisitor, element: PgVisitor): PgQuery | undefined { 
+    message(true, MODES.HEAD, "createQueryPgQuery");  
     // get the name of the entity
     const realEntity = element.relation ? element.relation : element.getEntity() ;
     if (realEntity) {
         // create select column
         if (element.select.trim() == "") element.select = "*";
-        const select: string[] | undefined =  getColumnsList(realEntity, main, element); 
+        const select: string[] | undefined = getColumnsList(realEntity, main, element); 
         if (select) {
             const realEntityName = getEntityName(realEntity);
             if (realEntityName) {
@@ -42,7 +42,7 @@ export function createQuerySelectPgQuery(main: PgVisitor, element: PgVisitor): P
                         item.setEntity(name);
                         item.where += `${item.where.trim() == "" ? '' : " AND "}${_DBDATAS[realEntityName].relations[name].expand}`;                                                            
                         relations[index] = `(${queryAsJson({ 
-                            query: createQuerySelectString(main,item), 
+                            query: createQueryString(main,item), 
                             singular : isSingular(name), 
                             count: false })}) AS "${name}"`;
                         main.addToArrayNames(name);

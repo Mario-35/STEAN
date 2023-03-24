@@ -228,7 +228,6 @@ export class PgVisitor {
     verifyQuery = (ctx: koa.Context): void => {
         message(true, MODES.HEAD, "verifyQuery");
         if (this.entity === "Logs" && ctx._configName !== "admin") this.where += `${this.where.trim() == "" ? "" : " AND "} (database = '${_CONFIGS[ctx._configName].alias.join("' OR database ='")}')`;
-        // if (this.entity === "Logs" && ctx._configName !== "admin") this.where += `${this.where.trim() == "" ? "" : " AND "}database = '${_CONFIGS[ctx._configName].pg_database}'`;
 
         if (this.select.length > 0) {
             const cols = [...Object.keys(_DBDATAS[this.entity].columns), ...Object.keys(_DBDATAS[this.entity].relations)]
@@ -576,14 +575,14 @@ export class PgVisitor {
             const temp = column.split("/");
             if (_DBDATAS[this.entity].relations.hasOwnProperty(temp[0])) {
                 const rel = _DBDATAS[this.entity].relations[temp[0]];
-                column =  `(SELECT "${temp[1]}" FROM "${rel.tableName}" WHERE ${rel.expand} AND length("${temp[1]}"::text) > 2)`
+                column = `(SELECT "${temp[1]}" FROM "${rel.tableName}" WHERE ${rel.expand} AND length("${temp[1]}"::text) > 2)`
                 test = _DBDATAS[rel.entityName].columns[temp[1]].test;
                 if (test) test = `(SELECT "${test}" FROM "${rel.tableName}" WHERE ${rel.expand})`;
             }
         } else if (!_DBDATAS[this.entity].columns.hasOwnProperty(column)) {
             if (_DBDATAS[this.entity].relations.hasOwnProperty(column)) {
                 const rel = _DBDATAS[this.entity].relations[column];
-                column =  `(SELECT "${rel.entityColumn}" FROM "${rel.tableName}" WHERE ${rel.expand} AND length("${rel.entityColumn}"::text) > 2)`
+                column = `(SELECT "${rel.entityColumn}" FROM "${rel.tableName}" WHERE ${rel.expand} AND length("${rel.entityColumn}"::text) > 2)`
                 test = _DBDATAS[rel.entityName].columns[rel.entityColumn].test;                
             } else throw new Error(`Invalid column ${column}`); 
         } else {

@@ -23,14 +23,14 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
                                             ? `timestamp_ceil("resultTime", interval '${main.interval}') AS srcdate`
                                             : `"resultTime" as date`] 
                                     : csvOrArray ? ["id"] : [];
-    const isSelect =  (element.select != "*") ? true : undefined;
+    const isSelect = (element.select != "*") ? true : undefined;
     // create columns list
-    let cols =  isSelect 
+    let cols = isSelect 
                     ? element.select.split(",").filter((word: string) => word.trim() != "") 
                     : columnList(tempEntity);
 
     if (element.splitResult) cols = cols.filter(e => e != "result");
-    const selfLink =  `CONCAT('${main.options.rootBase}${tempEntity.name}(', "${tempEntity.table}"."id", ')') AS "@iot.selfLink"`; 
+    const selfLink = `CONCAT('${main.options.rootBase}${tempEntity.name}(', "${tempEntity.table}"."id", ')') AS "@iot.selfLink"`; 
     if (!isGraph(main)) { 
         // only ref
         if (main.interval) main.addToBlanks(`CONCAT('${main.options.rootBase}${tempEntity.name}(', coalesce("@iot.id", '0')::text, ')') AS "@iot.selfLink"`); 

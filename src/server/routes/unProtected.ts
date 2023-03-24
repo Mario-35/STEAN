@@ -55,7 +55,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
                 const cacheControl = `public, max-age=${8640}`;
                 ctx.set("Cache-Control", cacheControl);
                 ctx.type = returnFormats.icon.type;
-                ctx.body =  fs.readFileSync(__dirname + "/favicon.ico");
+                ctx.body = fs.readFileSync(__dirname + "/favicon.ico");
             } catch (e) {
                 if (e instanceof Error) message(false, MODES.ERROR, e.message);
             }
