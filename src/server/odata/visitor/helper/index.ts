@@ -8,7 +8,7 @@
 
 import { _DBDATAS } from "../../../db/constants";
 import { cleanStringComma } from "../../../helpers";
-import { PGQuery } from "../PgVisitor";
+import { PgQuery } from "../../../types";
 
 // const  queryAsStep = (query: string, interval: string | undefined): string => {
 //     return interval 
@@ -16,13 +16,13 @@ import { PGQuery } from "../PgVisitor";
 //         : query;
 // };
 
-export const createSql = (input: PGQuery): string => `SELECT ${input.select}\n FROM "${input.from}"\n ${input.where ? `WHERE ${input.where}\n` : ''}${input.groupBy ? `GROUP BY ${cleanStringComma(input.groupBy)}\n` : ''}${input.orderby ? `ORDER BY ${cleanStringComma(input.orderby)}\n` : ''}${input.skip && input.skip > 0 ? `OFFSET ${input.skip}\n` : ''} ${input.limit && input.limit > 0 ? `LIMIT ${input.limit}\n` : ''}`;
+export const createSql = (input: PgQuery): string => `SELECT ${input.select}\n FROM "${input.from}"\n ${input.where ? `WHERE ${input.where}\n` : ''}${input.groupBy ? `GROUP BY ${cleanStringComma(input.groupBy)}\n` : ''}${input.orderby ? `ORDER BY ${cleanStringComma(input.orderby)}\n` : ''}${input.skip && input.skip > 0 ? `OFFSET ${input.skip}\n` : ''} ${input.limit && input.limit > 0 ? `LIMIT ${input.limit}\n` : ''}`;
 
 
 
 
 export { createGetSql } from "./createGetSql";
 export { createPostSql } from "./createPostSql";
-export { createQuerySelectString, createQuerySelectPGQuery } from "./createQuery";
+export { createQuerySelectString, createQuerySelectPgQuery } from "./createQuery";
 export { getColumnsList } from "./getColumnsList";
 export { oDatatoDate } from "./oDatatoDate";

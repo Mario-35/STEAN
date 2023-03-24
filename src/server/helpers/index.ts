@@ -14,17 +14,6 @@ export const boolToString = (input: boolean | undefined): string => (input && in
 export const stringToBool = (input: string | undefined): boolean => (input && input.toString().toLowerCase() == "true" ? true : false);
 export const isTest = () => process.env.NODE_ENV?.trim() === "test" || false;
 export const getUserId = (ctx: koa.Context): number =>  ctx.state.user && ctx.state.user.id ? ctx.state.user.id : -1;
-export const isNotNull = (input: any): boolean => {
-    switch (typeof input) {
-        case "string":
-            if(input && input != "" && input != null) return true;
-        case "object":
-            if(input && Object.keys(input).length > 0) return true;    
-        default:
-            return false;
-    }
-    
-}
 
 export { asyncForEach } from "./asyncForEach";
 export { cleanUrl } from "./cleanUrl";
@@ -38,3 +27,4 @@ export { setConfigToCtx } from "./setConfigToCtx";
 export { showConfigCtx, ConfigCtx } from "./showConfigCtx";
 export { returnFormats } from "./returnFormats";
 export { upload } from "./upload";
+export { notNull } from "./notNull";

@@ -12,21 +12,11 @@ import { Knex } from "knex";
 import { _CONFIGS, _CONFIGURATION } from "../../configuration";
 import { messages } from "../../messages/";
 
-
-export interface PGQuery {
-    from: string;
-    select: string;
-    where?: string;
-    orderby?: string;
-    groupBy?: string;
-    skip?: number;
-    limit?: number;
-}
-
 export class PgVisitor {
     public options: SqlOptions;
+    // main entity
     public entity: string = "";
-
+    // parent entity
     parentEntity: string | undefined = undefined;
     extras: undefined;
     relation: string | undefined = undefined;
@@ -34,7 +24,7 @@ export class PgVisitor {
     id: bigint | string = BigInt(0);
     parentId: bigint | string = BigInt(0);
     select: string = "";
-    ArrayNames: { [key: string]: string } = {} ;
+    arrayNames: { [key: string]: string } = {} ;
     where: string = "";
     orderby: string = "";
     blanks: string[] | undefined = undefined;
@@ -47,7 +37,7 @@ export class PgVisitor {
     count: boolean = false;
     onlyRef: boolean = false;
     onlyValue: boolean = false;
-    InlineCount: boolean;
+    inlineCount: boolean;
     navigationProperty: string;
     resultFormat: IreturnFormat = returnFormats.json;
     includes: PgVisitor[] = [];
@@ -76,7 +66,7 @@ export class PgVisitor {
 
 
     addToArrayNames(key:string, value?:string) {       
-         this.ArrayNames[key] = value ? value : `"${key}"`;
+         this.arrayNames[key] = value ? value : `"${key}"`;
     }
 
     addToBlanks(input: string) {
@@ -376,7 +366,7 @@ export class PgVisitor {
     }
 
     protected VisitInlineCount(node: Token, context: any) {
-        this.InlineCount = Literal.convert(node.value.value, node.value.raw);
+        this.inlineCount = Literal.convert(node.value.value, node.value.raw);
     }
 
     protected VisitFilter(node: Token, context: any) {

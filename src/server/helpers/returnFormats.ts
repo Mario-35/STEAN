@@ -25,13 +25,13 @@ export const queryAsJson = (input: {
     fields?: string[]
   }): string => `SELECT ${input.count == true ? "\tcount(t),\n\t" : ""}${input.fields ? input.fields.join(",\n\t") : ""}coalesce(${input.singular === true ? "ROW_TO_JSON" : "json_agg"}(t), '${input.singular === true ? "{}" : "[]"}') AS results\n\tFROM (\n\t${input.query}) as t`;;
   
-const  queryAsDataArray = (input: PgVisitor): string => queryAsJson({query: `SELECT (ARRAY['${Object.keys(input.ArrayNames).map((e:string) => removeQuotes(e)).join("','")}']) as "component", count(*) as "dataArray@iot.count", jsonb_agg(allkeys) as "dataArray" FROM (SELECT  json_build_array(${Object.values(input.ArrayNames).join()}) as allkeys FROM (${input.sql}) as p) as l`, singular: false, count: false});
+const  queryAsDataArray = (input: PgVisitor): string => queryAsJson({query: `SELECT (ARRAY['${Object.keys(input.arrayNames).map((e:string) => removeQuotes(e)).join("','")}']) as "component", count(*) as "dataArray@iot.count", jsonb_agg(allkeys) as "dataArray" FROM (SELECT  json_build_array(${Object.values(input.arrayNames).join()}) as allkeys FROM (${input.sql}) as p) as l`, singular: false, count: false});
 
 const  queryInterval = (input: PgVisitor): string => {
   input.sql = input.interval 
-      ? `\nWITH src as (\n${input.sql}), \n\trange_values AS (SELECT \n\t\tmin(srcdate) as minval, \n\t\tmax(srcdate) as maxval \n\tFROM src), \n\ttime_range AS (SELECT \n\t\tgenerate_series(minval::timestamp, maxval::timestamp , '${input.interval || "1 day"}'::interval)::TIMESTAMP WITHOUT TIME ZONE as step \n\tFROM range_values) \n\tSELECT ${input.blanks ? input.blanks.join(", \n\t") : ''} FROM src \n\t\tRIGHT JOIN time_range on srcdate = step`
+      ? `WITH src as (\n\t${input.sql}), \n\trange_values AS (SELECT \n\t\tmin(srcdate) as minval, \n\t\tmax(srcdate) as maxval \n\tFROM src), \n\ttime_range AS (SELECT \n\t\tgenerate_series(minval::timestamp, maxval::timestamp , '${input.interval || "1 day"}'::interval)::TIMESTAMP WITHOUT TIME ZONE as step \n\tFROM range_values) \n\tSELECT ${input.blanks ? input.blanks.join(", \n\t") : ''} FROM src \n\t\tRIGHT JOIN time_range on srcdate = step`
       : input.sql;
-  return queryAsJson({query: input.sql, singular: false, count: false});
+  return queryAsJson({query: input.sql, singular: false, count: true});
 };
 
 const defaultFunction = (input: string | Object, ctx?: koa.Context) => input;

@@ -11,20 +11,20 @@ import { isObservation, isSingular, _DBDATAS } from "../../../db/constants";
 import { getEntityName } from "../../../helpers";
 import { queryAsJson } from "../../../helpers/returnFormats";
 import { message } from "../../../logger";
-import { MODES } from "../../../types";
-import { PGQuery, PgVisitor } from "../PgVisitor";
+import { MODES, PgQuery } from "../../../types";
+import { PgVisitor } from "../PgVisitor";
 
 
 export function createQuerySelectString(main: PgVisitor, element: PgVisitor): string { 
     message(true, MODES.HEAD, "createQuerySelectString");  
-    const tempPgQuery = createQuerySelectPGQuery(main, element);
+    const tempPgQuery = createQuerySelectPgQuery(main, element);
     if (!tempPgQuery) return "ERROR";
     const sql = createSql(tempPgQuery);
     return sql;
 }
 
-export function createQuerySelectPGQuery(main: PgVisitor, element: PgVisitor): PGQuery | undefined { 
-    message(true, MODES.HEAD, "createQuerySelectPGQuery");  
+export function createQuerySelectPgQuery(main: PgVisitor, element: PgVisitor): PgQuery | undefined { 
+    message(true, MODES.HEAD, "createQuerySelectPgQuery");  
     // get the name of the entity
     const realEntity = element.relation ? element.relation : element.getEntity() ;
     if (realEntity) {

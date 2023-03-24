@@ -7,7 +7,7 @@
  */
 
 import { Knex } from "knex";
-import { createQuerySelectPGQuery } from ".";
+import { createQuerySelectPgQuery } from ".";
 import { _VOIDTABLE } from "../../../constants";
 import { _DBDATAS } from "../../../db/constants";
 import { getBigIntFromString, getEntityName } from "../../../helpers";
@@ -353,7 +353,7 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
 
 
             }
-    const temp = createQuerySelectPGQuery(main, main); 
+    const temp = createQuerySelectPgQuery(main, main); 
     sqlResult += queryAsJson({
         query: `SELECT ${temp && temp.select ? temp.select : "*"} FROM ${names[postEntity.table]} ${temp && temp.groupBy ? `GROUP BY ${temp.groupBy}` : ''}`, 
         singular: false, 

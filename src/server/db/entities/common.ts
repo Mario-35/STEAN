@@ -9,10 +9,10 @@
 import koa from "koa";
 import { Knex } from "knex";
 import { isGraph, _DBDATAS } from "../constants";
-import { getEntityName, removeQuotes, returnFormats } from "../../helpers/index";
+import { getEntityName, notNull, removeQuotes, returnFormats } from "../../helpers/index";
 import {  message } from "../../logger";
 import { IReturnResult, MODES } from "../../types";
-import { createGraph, extractMessageError, knexQueryToSql, parseSql, removeKeyFromUrl, verifyId } from "../helpers";
+import { createGraph, extractMessageError, knexQueryToSql, removeKeyFromUrl, verifyId } from "../helpers";
 import { _debug, _VOIDTABLE } from "../../constants";
 import { _CONFIGS, _CONFIGURATION } from "../../configuration";
 import { IGraphDatas } from "../helpers/createGraph";
@@ -40,7 +40,7 @@ export class Common {
     // Log full Query
     logQuery(input: Knex.QueryBuilder | string): void {
         const queryString = typeof input === "string" ? input : knexQueryToSql(input);
-        if (_debug) message(true, MODES.RESULT, "query", `\n${parseSql(queryString)}`);
+        if (_debug) message(true, MODES.RESULT, "query", `\n${queryString}`);
     }
 
     // create a blank ReturnResult
@@ -124,7 +124,7 @@ export class Common {
 
         const sql = this.ctx._odata.asGetSql();
 
-        if (!sql || sql === "") return;
+        if (!notNull(sql)) return;
         
         this.logQuery(sql);
         

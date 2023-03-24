@@ -9,7 +9,7 @@
 import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
-import { getBigIntFromString, isNotNull, removeQuotes } from "../../helpers/index";
+import { getBigIntFromString, notNull, removeQuotes } from "../../helpers/index";
 import {  _DBDATAS } from "../constants";
 import { _DOUBLEQUOTE, _QUOTEDCOMA, _VOIDTABLE } from "../../constants";
 import { logDebug, message } from "../../logger";
@@ -94,8 +94,8 @@ export class Loras extends Common {
             if (dataInput["timestamp"]) return String(dataInput["timestamp"]);
         }
 
-        if (isNotNull(dataInput["MultiDatastream"])) {
-           if (!isNotNull(dataInput["deveui"])) {
+        if (notNull(dataInput["MultiDatastream"])) {
+           if (!notNull(dataInput["deveui"])) {
                if (silent) 
                     return this.createReturnResult({ body: messages.errors.deveuiMessage });
                     else this.ctx.throw(400, { code: 400,  detail: messages.errors.deveuiMessage });
@@ -103,8 +103,8 @@ export class Loras extends Common {
            return await super.add(dataInput);
         }
 
-        if (isNotNull(dataInput["Datastream"])) {
-            if (!isNotNull(dataInput["deveui"])) {
+        if (notNull(dataInput["Datastream"])) {
+            if (!notNull(dataInput["deveui"])) {
                if (silent) 
                     return this.createReturnResult({ body: messages.errors.deveuiMessage });
                     else this.ctx.throw(400, { code: 400,  detail: messages.errors.deveuiMessage });
@@ -112,13 +112,13 @@ export class Loras extends Common {
            return await super.add(dataInput);
         }
         
-        if (!isNotNull(dataInput["deveui"])) {
+        if (!notNull(dataInput["deveui"])) {
             if (silent) 
                 return this.createReturnResult({ body: messages.errors.deveuiMessage });
                 else this.ctx.throw(400, { code: 400,  detail: messages.errors.deveuiMessage });
         }
         
-        if (isNotNull(dataInput["payload_deciphered"])) {
+        if (notNull(dataInput["payload_deciphered"])) {
             dataInput["decodedPayload"] = await decodeLoraPayload(Common.dbContext, dataInput["deveui"], dataInput["payload_deciphered"]);
                      
             if (dataInput["decodedPayload"].error && !dataInput["data"]) {
@@ -152,11 +152,11 @@ export class Loras extends Common {
 
         dataInput["formatedDatas"] = {};
         // convert all keys in lowercase
-        if (isNotNull(dataInput["data"])) Object.keys(dataInput["data"]).forEach((key) => {
+        if (notNull(dataInput["data"])) Object.keys(dataInput["data"]).forEach((key) => {
             dataInput["formatedDatas"][key.toLowerCase()] = dataInput["data"][key];
         });
 
-        if (!isNotNull(dataInput["formatedDatas"])) {
+        if (!notNull(dataInput["formatedDatas"])) {
             if (silent) 
                  return this.createReturnResult({ body: messages.errors.dataMessage });
                  else this.ctx.throw(400, { code: 400,  detail: messages.errors.dataMessage });
