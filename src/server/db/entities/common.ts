@@ -60,14 +60,14 @@ export class Common {
 
     // create the nextLink
     nextLink = (resLength: number): string | undefined => {
-        if (this.ctx._odata.timeSeries) return;       
+        if (this.ctx._odata.limit < 1) return;       
         const max: number = this.ctx._odata.limit > 0 ? +this.ctx._odata.limit :  +_CONFIGS[this.ctx._configName].nb_page;
         if (resLength >= max) return `${encodeURI(this.nextLinkBase)}${this.nextLinkBase.includes("?") ? "&" : "?"}$top=${this.ctx._odata.limit}&$skip=${this.ctx._odata.skip + this.ctx._odata.limit}`;
     };
     
     // create the prevLink
     prevLink = (resLength: number): string | undefined => {
-        if (this.ctx._odata.timeSeries) return;
+        if (this.ctx._odata.limit < 1) return;
         const prev = this.ctx._odata.skip - this.ctx._odata.limit;
         if ((_CONFIGS[this.ctx._configName].nb_page && resLength >= +_CONFIGS[this.ctx._configName].nb_page  || this.ctx._odata.limit) && prev >= 0)
             return `${encodeURI(this.nextLinkBase)}${this.nextLinkBase.includes("?") ? "&" : "?"}$top=${this.ctx._odata.limit}&$skip=${prev}`;
@@ -79,7 +79,7 @@ export class Common {
         if (isGraph(this.ctx._odata)) {
             const entityName = getEntityName(this.ctx._odata.parentEntity ? this.ctx._odata.parentEntity : this.ctx._odata.entity);            
             let tempTitle  = "No Title"
-            if(entityName && _DBDATAS[entityName].columns["name"])
+            if (entityName && _DBDATAS[entityName].columns["name"])
             await Common.dbContext(_DBDATAS[entityName].table).select("name").where({id: this.ctx._odata.parentEntity ? this.ctx._odata.parentId: this.ctx._odata.id}).limit(1).then((res: any) => tempTitle = res[0].name);
             const temp =  createGraph(input, tempTitle);
             return temp ?  temp : JSON.parse('');
@@ -92,10 +92,9 @@ export class Common {
 
         const sql = this.ctx._odata.asGetSql();
 
-        if(!sql) return;
+        if (!sql || sql === "") return;
 
         this.logQuery(sql);
-        
         if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ body: sql });
 
         return await Common.dbContext
@@ -125,26 +124,25 @@ export class Common {
 
         const sql = this.ctx._odata.asGetSql();
 
-        if(!sql) return;
-
+        if (!sql || sql === "") return;
+        
         this.logQuery(sql);
-
+        
         if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ body: sql });
-
+        
         return await Common.dbContext
-            .raw(sql)
-            .then((res: any) => {
+        .raw(sql)
+        .then((res: any) => {
+                if (this.ctx._odata.select && this.ctx._odata.onlyValue) 
+                    return this.createReturnResult({ body: String(res.rows[0][this.ctx._odata.select == "id" ? "@iot.id" : this.ctx._odata.select ]) });
+                
                 const nb = Number(res.rows[0].count);
                 if (nb > 0 && res.rows[0].results[0]) {
                     return this.createReturnResult({
                         id: nb,
                         nextLink: this.nextLink(nb),
                         prevLink: this.prevLink(nb),
-                        body: this.ctx._odata.select && this.ctx._odata.onlyValue === true 
-                            ? this.onlyValue(String(res.rows[0].results[0][this.ctx._odata.select == "id" 
-                                ? "@iot.id" 
-                                : this.ctx._odata.select ])) 
-                            : res.rows[0].results[0]
+                        body: res.rows[0].results[0]
                     });
                 }
             })

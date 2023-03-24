@@ -125,7 +125,7 @@ export const prepareToApiDoc = (input: IApiInput, Entity: string): IApiDoc => {
         apiName: input.apiName,
         apiPermission: input.apiPermission,
         apiGroup: Entity,
-        apiDescription: `${input.apiDescription} ${input.apiReference ? ` <a href="${input.apiReference}" target="_blank">[OGC reference]</a>` : ""}`,
+        apiDescription: `${input.apiDescription} ${input.apiReference ? ` <a href="${input.apiReference}" target="_blank">[${input.apiReference.includes("docs.ogc.org") ? "OGC " : ""}reference]</a>` : ""}`,
         apiExample: input.apiExample,
         apiError: input.apiError,
         apiParam: input.apiParam,

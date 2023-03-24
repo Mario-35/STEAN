@@ -1,6 +1,6 @@
 import { isGraph, isObservation, _DBDATAS, _ENTITIES } from "../../db/constants";
 import {  getEntityName, removeQuotes, returnFormats } from "../../helpers";
-import { IreturnFormat, MODES, TimeSeriesType } from "../../types";
+import { IreturnFormat, MODES } from "../../types";
 import { Token } from "../parser/lexer";
 import { Literal } from "../parser/literal";
 import { SQLLiteral } from "../parser/sqlLiteral";
@@ -26,9 +26,9 @@ export interface PGQuery {
 export class PgVisitor {
     public options: SqlOptions;
     public entity: string = "";
+
     parentEntity: string | undefined = undefined;
     extras: undefined;
-    timeSeries?: TimeSeriesType;
     relation: string | undefined = undefined;
     idLog: bigint | string = BigInt(0);
     id: bigint | string = BigInt(0);
@@ -37,6 +37,7 @@ export class PgVisitor {
     ArrayNames: { [key: string]: string } = {} ;
     where: string = "";
     orderby: string = "";
+    blanks: string[] | undefined = undefined;
     groupBy: string[] = [];
     expand: string[] = [];
     splitResult: string[] | undefined;
@@ -54,7 +55,7 @@ export class PgVisitor {
     ast: Token;
     showRelations: boolean = true;
     results: { [key: string]: string } = {}
-
+    sql: string = "";
     constructor(options = <SqlOptions>{}, blank?: boolean) {
         this.options = options;
         this.onlyRef = options.onlyRef;
@@ -68,9 +69,24 @@ export class PgVisitor {
 // ***********************************************************************************************************************************************************************
     public setEntity(input: string) { this.entity = input; }
     public getEntity()  { return this.entity; } 
-    
+    public noLimit() {
+        this.limit = 0;
+        this.skip = 0;
+    }
+
+
     addToArrayNames(key:string, value?:string) {       
          this.ArrayNames[key] = value ? value : `"${key}"`;
+    }
+
+    addToBlanks(input: string) {
+        if (input.endsWith("Time")) input = `step AS "${input}"`
+        else if (input === "id") input = `coalesce("@iot.id", 0) AS "@iot.id"`;
+        else if (input.startsWith("CONCAT")) input = `${input}`
+        else if (input[0] !== "'") input = `"${input}"`
+        if (this.blanks)
+            this.blanks.push(input);   
+            else this.blanks = [input];            
     }
     
     init(ctx: koa.Context, node: Token) {
@@ -240,20 +256,16 @@ export class PgVisitor {
         expands.forEach((elem:string) => {
             const elems = elem.split("/");
             elems.unshift(this.entity);     
-            if(elems[0]) {            
+            if (elems[0]) {            
                 if (!Object.keys(_DBDATAS[elems[0]].relations).includes(elems[1]) )  ctx.throw(400, { detail:`Invalid expand path ${elems[1]} for ${elems[0]}` });  
             }  else  ctx.throw(400, { detail: messages.errors.invalidEntity + elems[0] });  
         });    
         
-        if(isObservation(this.entity) === true && this.splitResult !== undefined && Number(this.parentId) == 0) {
+        if (isObservation(this.entity) === true && this.splitResult !== undefined && Number(this.parentId) == 0) {
             ctx.throw(400, { detail: messages.errors.splitNotAllowed }); 
         }
 
-        if(this.entity === _DBDATAS.MultiDatastreams.name && this.timeSeries !== undefined) {
-            if (!this.splitResult || this.splitResult.length !== 1 ||  this.splitResult[0].toUpperCase() === 'ALL')  ctx.throw(400, { detail: messages.errors.splitKey }); 
-        }
-        
-        if(this.resultFormat === returnFormats.dataArray && BigInt(this.id) > 0 && !this.parentEntity ) {
+        if (this.resultFormat === returnFormats.dataArray && BigInt(this.id) > 0 && !this.parentEntity ) {
             ctx.throw(400, { detail: messages.errors.dataArrayNotAllowed }); 
 
         }
@@ -322,6 +334,7 @@ export class PgVisitor {
         this.Visit(node.value.path, context);
         if (node.value.options) node.value.options.forEach((item: Token) => this.Visit(item, context));
         this.interval = node.value;
+        if (this.interval) this.noLimit();
     }
 
     protected VisitresultFormat(node: Token, context: any) {
@@ -344,15 +357,8 @@ export class PgVisitor {
     protected VisitResultFormat(node: Token, context: any) {      
         if (node.value.format) this.resultFormat = returnFormats[node.value.format];
         //ATTTENTION
-        if ([returnFormats.dataArray, returnFormats.graph, returnFormats.graphDatas, returnFormats.csv].includes(this.resultFormat)) this.limit = 0;
+        if ([returnFormats.dataArray, returnFormats.graph, returnFormats.graphDatas, returnFormats.csv].includes(this.resultFormat)) this.noLimit();
         if (isGraph(this)) this.showRelations = false;
-    }
-
-    protected VisitTimeSeries(node: Token, context: any) {      
-        if (node.value.serie) {
-            this.timeSeries = node.value.serie;
-            this.showRelations = false;
-        }
     }
 
     protected VisitExpandItem(node: Token, context: any) {   
@@ -578,7 +584,7 @@ export class PgVisitor {
         let test:string | undefined = undefined;
         if (column.includes("/")) {
             const temp = column.split("/");
-            if(_DBDATAS[this.entity].relations.hasOwnProperty(temp[0])) {
+            if (_DBDATAS[this.entity].relations.hasOwnProperty(temp[0])) {
                 const rel = _DBDATAS[this.entity].relations[temp[0]];
                 column =  `(SELECT "${temp[1]}" FROM "${rel.tableName}" WHERE ${rel.expand} AND length("${temp[1]}"::text) > 2)`
                 test = _DBDATAS[rel.entityName].columns[temp[1]].test;

@@ -129,7 +129,6 @@ export enum TokenType {
     Log = "Log",
     Format = "Format",
     resultFormat = "ResultFormat",
-    timeSeries = "TimeSeries",
     entity = "Entity",
     splitResult = "SplitResult",
     interval = "Interval",

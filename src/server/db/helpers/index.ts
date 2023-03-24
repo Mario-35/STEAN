@@ -19,5 +19,3 @@ export { renameProp } from "./renameProp";
 export { testConnection } from "./testConnection";
 export { verifyId } from "./verifyId";
 export { parseSql } from "./parseSql";
-// Class
-export { TimeSeries } from "./timeSeries";

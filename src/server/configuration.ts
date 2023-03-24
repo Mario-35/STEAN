@@ -219,7 +219,7 @@ class configuration {
              .raw("select 1+1 as result")
              .then(async () => {
                  message(false, MODES.RESULT, messages.infos.dbOnline, _CONFIGS[connectName].pg_database);
-                 if(update) {
+                 if (update) {
                     const list = update["database"];
                     await asyncForEach(list, async (operation: string) => {
                         message(false, MODES.INFO, connectName, await tempConnection.raw(operation).then(() => "✔").catch((err: Error) => err.message));

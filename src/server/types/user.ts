@@ -30,16 +30,7 @@ import { db } from "../db";
      superAdmin: boolean; // boolean
      token?: string; // integer
  }
- 
- export enum userRights {
-     Post = 0,
-     Delete = 1,
-     Create = 2,
-     UserCreate = 3,
-     Admin = 4,
-     SuperAdmin = 5
- }
- 
+  
  export interface userToken {
      id: number;
      username: string;

@@ -11,10 +11,9 @@ import koa from "koa";
 import { Common } from "./common";
 import { _DBDATAS } from "../constants";
 import { message } from "../../logger";
-import { IReturnResult, MODES } from "../../types";
+import { IReturnResult, MODES, USERRIGHTS } from "../../types";
 import { _CONFIGURATION } from "../../configuration";
 import { hidePasswordInJson } from "../../helpers";
-import { userRights } from "../../types/user";
 import { db } from "..";
 import { messages } from "../../messages/";
 
@@ -26,7 +25,7 @@ import { messages } from "../../messages/";
 
      async getAll(): Promise<IReturnResult | undefined> {
         message(true, MODES.CLASS, this.constructor.name, `getAll in ${this.ctx._odata.resultFormat} format`);
-        if (this.ctx._user?.PDCUAS[userRights.SuperAdmin] === true || this.ctx._user?.PDCUAS[userRights.Admin] === true) {
+        if (this.ctx._user?.PDCUAS[USERRIGHTS.SuperAdmin] === true || this.ctx._user?.PDCUAS[USERRIGHTS.Admin] === true) {
             const temp = await db["admin"]
                 .table("user")
                 .select(Object.keys(_DBDATAS.Users.columns))

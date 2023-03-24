@@ -58,8 +58,7 @@ namespace Query {
             Query.skiptoken(value, index) ||
             Query.top(value, index) ||
             Query.log(value, index) ||
-            Query.debug(value, index) ||
-            Query.timeSeries(value, index)
+            Query.debug(value, index)
         );
     }
 
@@ -125,25 +124,6 @@ namespace Query {
         if (index === eq) return;
 
         return Lexer.tokenize(value, start, index, Utils.stringify(value, eq, index), Lexer.TokenType.interval);
-    }
-
-    export function timeSeries(value: Utils.SourceArray, index: number): Lexer.Token | undefined {
-        const start = index;
-        const add = addToIndex(value, start, "timeSeries");
-        if (add) index += add; else return;
-
-        const eq = Lexer.EQ(value, index);
-        if (!eq) return;
-        index = eq;
-
-        let serie;
-        ["year", "fullyear", "month", "fullmonth", "week", "fullweek", "day", "fullday", "hour"].forEach((key: string) => {
-            if (Utils.equals(value, index, key)) {
-                serie = key.toUpperCase();
-                index += key.length ;
-            }
-        });
-        if (serie) return Lexer.tokenize(value, start, index, { serie }, Lexer.TokenType.timeSeries);
     }
 
     export function resultFormat(value: Utils.SourceArray, index: number): Lexer.Token | undefined {

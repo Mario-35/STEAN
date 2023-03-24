@@ -8,7 +8,6 @@
 
 import { createSql, getColumnsList } from ".";
 import { isObservation, isSingular, _DBDATAS } from "../../../db/constants";
-import { TimeSeries } from "../../../db/helpers";
 import { getEntityName } from "../../../helpers";
 import { queryAsJson } from "../../../helpers/returnFormats";
 import { message } from "../../../logger";
@@ -21,11 +20,6 @@ export function createQuerySelectString(main: PgVisitor, element: PgVisitor): st
     const tempPgQuery = createQuerySelectPGQuery(main, element);
     if (!tempPgQuery) return "ERROR";
     const sql = createSql(tempPgQuery);
-    if (main.timeSeries) {
-        const series = new TimeSeries(sql);
-        const tmpSql = series.createSql(main);
-        return tmpSql ? tmpSql : "Error timeseries SQL";
-    }
     return sql;
 }
 
@@ -33,12 +27,11 @@ export function createQuerySelectPGQuery(main: PgVisitor, element: PgVisitor): P
     message(true, MODES.HEAD, "createQuerySelectPGQuery");  
     // get the name of the entity
     const realEntity = element.relation ? element.relation : element.getEntity() ;
-    if(realEntity) {
+    if (realEntity) {
         // create select column
         if (element.select.trim() == "") element.select = "*";
-        
-        const select: string[] | undefined =  getColumnsList(realEntity, main, element);  
-        if(select) {
+        const select: string[] | undefined =  getColumnsList(realEntity, main, element); 
+        if (select) {
             const realEntityName = getEntityName(realEntity);
             if (realEntityName) {
             const relations: string[] = Object.keys(_DBDATAS[realEntityName].relations);                      
@@ -48,20 +41,23 @@ export function createQuerySelectPGQuery(main: PgVisitor, element: PgVisitor): P
                     if (index >= 0) {
                         item.setEntity(name);
                         item.where += `${item.where.trim() == "" ? '' : " AND "}${_DBDATAS[realEntityName].relations[name].expand}`;                                                            
-                        relations[index] = `(${queryAsJson(createQuerySelectString(main,item), isSingular(name), false)}) AS "${name}"`;
+                        relations[index] = `(${queryAsJson({ 
+                            query: createQuerySelectString(main,item), 
+                            singular : isSingular(name), 
+                            count: false })}) AS "${name}"`;
                         main.addToArrayNames(name);
                     }
                 });
                 relations.forEach((rel: string) => {
                     if (rel[0] == "(") select.push(rel);
-                    else if (element.showRelations == true && main.onlyRef == false && !main.timeSeries ) {
+                    else if (element.showRelations == true && main.onlyRef == false) {
                         const temTable = getEntityName(rel);
                         if (temTable) {
                             select.push(`CONCAT('${main.options.rootBase}${_DBDATAS[realEntityName].name}(', "${_DBDATAS[realEntityName].table}"."id", ')/${rel}') AS "${rel}@iot.navigationLink"`);
+                            main.addToBlanks(`'${main.options.rootBase}${_DBDATAS[realEntityName].name}(0)/${rel}' AS "${rel}@iot.navigationLink"`);
                         }
                     }
                 });
-
                 return { 
                     select: select.join(",\n\t"), 
                     from: _DBDATAS[realEntityName].table , 

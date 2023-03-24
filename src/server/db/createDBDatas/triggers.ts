@@ -33,4 +33,14 @@ CREATE OR REPLACE FUNCTION func_trigger_after_update_observation()
     $$ LANGUAGE 'plpgsql';
 
   CREATE TRIGGER trigger_after_update_observation__resultnumbers AFTER update ON observation FOR EACH ROW EXECUTE PROCEDURE func_trigger_after_update_observation();
+
+  CREATE OR REPLACE FUNCTION timestamp_ceil(_tstz timestamptz, _int_seconds int)
+    RETURNS timestamptz AS
+    $func$   
+      SELECT to_timestamp(ceil(extract(epoch FROM $1) / $2) * $2)
+    $func$  LANGUAGE sql STABLE;
+
+  CREATE OR REPLACE FUNCTION timestamp_ceil(_tstz timestamptz, _interval interval)
+    RETURNS timestamptz LANGUAGE sql STABLE AS
+  'SELECT timestamp_ceil($1, extract(epoch FROM $2)::int)';
 `;

@@ -14,10 +14,10 @@ import fs from "fs";
 import koa from "koa";
 import { checkPassword, emailIsValid, testRoutes } from "./helpers";
 import { message } from "../logger";
-import { IReturnResult, MODES } from "../types";
+import { IReturnResult, MODES, USERRIGHTS } from "../types";
 import { DefaultState, Context } from "koa";
 import { CreateHtmlView } from "../views/helpers/CreateHtmlView";
-import { loginUser, userRights } from "../types/user";
+import { loginUser } from "../types/user";
 import { createIqueryFromContext } from "../views/helpers/";
 import { queryHtmlPage } from "../views/query";
 import { createOdata } from "../odata";
@@ -171,7 +171,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
 
 protectedRoutes.patch("/(.*)", async (ctx) => {
     ctx._addToLog = true;
-    if (ctx._user.PDCUAS[userRights.Post] === true && Object.keys(ctx.request.body).length > 0) {
+    if (ctx._user.PDCUAS[USERRIGHTS.Post] === true && Object.keys(ctx.request.body).length > 0) {
         const odataVisitor = await createOdata(ctx); 
         if (odataVisitor)  ctx._odata = odataVisitor;
         if (ctx._odata) {
@@ -197,7 +197,7 @@ protectedRoutes.patch("/(.*)", async (ctx) => {
 
 protectedRoutes.delete("/(.*)", async (ctx) => {
     ctx._addToLog = true;
-    if (ctx._user.PDCUAS[userRights.Delete] === true) {
+    if (ctx._user.PDCUAS[USERRIGHTS.Delete] === true) {
         const odataVisitor = await createOdata(ctx); 
         if (odataVisitor)  ctx._odata = odataVisitor;
         if (ctx._odata) {

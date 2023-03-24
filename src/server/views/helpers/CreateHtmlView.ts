@@ -4,7 +4,7 @@ import { _DBDATAS } from "../../db/constants";
 import { IUser } from "../../db/interfaces";
 import { showConfigCtx } from "../../helpers";
 import { userHeader } from "../constant";
-import { cssFile } from "../css";
+import { addCssFile } from "../css";
 
 export class CreateHtmlView {
     private ctx: koa.Context;
@@ -17,9 +17,9 @@ export class CreateHtmlView {
     private css = (name: string): string => {
         switch (name.toLowerCase()) {
             case "user":
-                return cssFile("userForm.css");
+                return addCssFile("userForm.css");
             default:
-                return                 cssFile("query.css");
+                return                 addCssFile("query.css");
 
         }
     };

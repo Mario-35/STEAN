@@ -12,8 +12,8 @@ import { _DBDATAS, _DBADMIN } from "../../db/constants";
 import { message } from "../../logger";
 import util from "util";
 import { cleanUrl } from "../../helpers";
-import { cssFile, listCssFiles } from "../css";
-import { jsFile, listJsFiles } from "../js";
+import { addCssFile, listaddCssFiles } from "../css";
+import { addJsFile, listaddJsFiles } from "../js";
 import { IQuery } from "../constant";
 import { MODES } from "../../types";
 
@@ -63,14 +63,14 @@ export const commonHtml = (input: string, params: IQuery, ): string => {
     }
 
 
-    listCssFiles().forEach((item: string) => {   
+    listaddCssFiles().forEach((item: string) => {   
         const itemSearch = `<link rel="stylesheet" href="${fileWithOutMin(item)}">`;
-        replaceInResult(itemSearch, `<style>${cssFile(item)}</style>`);
+        replaceInResult(itemSearch, `<style>${addCssFile(item)}</style>`);
     });
     
-    listJsFiles().forEach((item: string) => {   
+    listaddJsFiles().forEach((item: string) => {   
         const itemSearch = `<script src="${fileWithOutMin(item)}"></script>`;
-        replaceInResult(itemSearch, `<script>${jsFile(item)}</script>`);
+        replaceInResult(itemSearch, `<script>${addJsFile(item)}</script>`);
         
     });
 

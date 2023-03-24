@@ -6,6 +6,8 @@
  *
  */
 
+import { RELATIONS } from ".";
+
 
 
 interface IEntityColumn {
@@ -23,11 +25,7 @@ interface IEntityColumn {
     };
 }
 
-export enum RELATIONS {
-    belongsTo,
-    belongsToMany,
-    hasMany
-}
+
 
 interface IEntityRelation {
     type: RELATIONS; // relation Type

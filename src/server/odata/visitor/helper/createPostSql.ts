@@ -14,14 +14,14 @@ import { getBigIntFromString, getEntityName } from "../../../helpers";
 import { queryAsJson } from "../../../helpers/returnFormats";
 import { logDebug, message } from "../../../logger";
 import { IEntity, MODES } from "../../../types";
-import { OperationType } from "../../../types/";
+import { OPERATIONTYPE } from "../../../types/";
 import { PgVisitor } from "../PgVisitor";
 
 export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transaction, main: PgVisitor): string {
     let sqlResult = "";
     const queryMaker: {
         [key: string]: {
-            type: OperationType;
+            type: OPERATIONTYPE;
             table: string;
             datas: Object;
             keyId: string;
@@ -89,7 +89,7 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
                     const query = knexInstance(queryMaker[element].table);
                     returnValue.push(`, ${element} AS (`);
                     if (main.id) {
-                        if (queryMaker[element].type == OperationType.Association)
+                        if (queryMaker[element].type == OPERATIONTYPE.Association)
                         returnValue.push(
                             query
                             .insert(queryMaker[element].datas)
@@ -156,7 +156,7 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
          * @param key key of the value
          */
         const addToQueryMaker = (
-            type: OperationType,
+            type: OPERATIONTYPE,
             name: string,
             tableName: string,
             datas: string | Object,
@@ -169,11 +169,11 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
                         queryMaker[name].datas[key] = datas;
                         queryMaker[name].keyId = keyId;
                     } else if (!isTypeString) {
-                        if (queryMaker[name].type == OperationType.Table || queryMaker[name].type == OperationType.Relation)
+                        if (queryMaker[name].type == OPERATIONTYPE.Table || queryMaker[name].type == OPERATIONTYPE.Relation)
                         queryMaker[name].datas = Object.assign(queryMaker[name].datas, datas);
                         queryMaker[name].keyId = keyId;
                         
-                        if (queryMaker[name].type == OperationType.Association)
+                        if (queryMaker[name].type == OPERATIONTYPE.Association)
                         queryMaker[createName(name)] = {
                             type: queryMaker[name].type,
                             table: queryMaker[name].table,
@@ -221,7 +221,7 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
                     const parentTableName = names[subParentEntity.table];
                     
                     addToQueryMaker(
-                        OperationType.Relation,
+                        OPERATIONTYPE.Relation,
                         tableName,
                         subEntity.table,
                         `@(select ${parentTableName}.id from ${parentTableName})@`,
@@ -234,7 +234,7 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
                             const parentTableName = names[subParentEntity.table];
                             message(true, MODES.INFO, `Add parent relation ${tableName} in`, parentTableName);                            
                             addToQueryMaker(
-                                OperationType.Relation,
+                                OPERATIONTYPE.Relation,
                                 parentTableName,
                                 subParentEntity.table,
                                 `@(select ${tableName}.id from ${tableName})@`,
@@ -246,7 +246,7 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
                                 const parentTableName = names[subParentEntity.table];
                                 message(true, MODES.INFO, `Add Table association ${tableName} in`, parentTableName);
                                 addToQueryMaker(
-                                    OperationType.Association,
+                                    OPERATIONTYPE.Association,
                                     relation.tableName,
                                     relation.tableName,
                                     {
@@ -262,7 +262,7 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
                     const parentTableName = names[subParentEntity.table];
                     message(true, MODES.INFO, `Add Relation ${tableName} in`, parentTableName);
                     addToQueryMaker(
-                        OperationType.Table,
+                        OPERATIONTYPE.Table,
                         parentTableName,
                         subParentEntity.table,
                         {
@@ -288,7 +288,7 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
                 names[newEntity.table] = name;
                 const test = start(value, newEntity, entity);
                 if (test) {
-                    addToQueryMaker(OperationType.Table, name, newEntity.table, test, "id", undefined);
+                    addToQueryMaker(OPERATIONTYPE.Table, name, newEntity.table, test, "id", undefined);
                     level--;
                 }
                 if (entity) addAssociation(newEntity, entity);
@@ -337,24 +337,28 @@ export function createPostSql(datas: Object, knexInstance: Knex | Knex.Transacti
     if ((names[postEntity.table] && queryMaker[postEntity.table] && queryMaker[postEntity.table].datas) || root === undefined) {
         queryMaker[postEntity.table].datas = Object.assign(root as {}, queryMaker[postEntity.table].datas);
         queryMaker[postEntity.table].keyId = main.id ? "id" : "*";
-        sqlResult = queryMakerToString(`WITH "log_request" as (select srid FROM "${_VOIDTABLE}" LIMIT 1)`);
+        sqlResult = queryMakerToString(`WITH "log_request" AS (SELECT srid FROM "${_VOIDTABLE}" LIMIT 1)`);
     } else {
         sqlResult = queryMakerToString(
             main.id
             ? root && Object.entries(root).length > 0
-            ? `WITH ${postEntity.table} as (${knexInstance(postEntity.table)
+            ? `WITH ${postEntity.table} AS (${knexInstance(postEntity.table)
                 .update(root)
                 // TODO is good conversion ?
                 .where({ id: main.id.toString() })
                 .toString()} RETURNING ${allFields})`
-                : `WITH ${postEntity.table} as (${knexInstance(postEntity.table).select().where({ id: main.id.toString() }).toString()})`
-                : `WITH ${postEntity.table} as (${knexInstance(postEntity.table).insert(root).toString()} RETURNING ${allFields})`
+                : `WITH ${postEntity.table} AS (${knexInstance(postEntity.table).select().where({ id: main.id.toString() }).toString()})`
+                : `WITH ${postEntity.table} AS (${knexInstance(postEntity.table).insert(root).toString()} RETURNING ${allFields})`
                 );
 
 
             }
     const temp = createQuerySelectPGQuery(main, main); 
-    sqlResult += queryAsJson(`SELECT ${temp && temp.select ? temp.select : "*"} FROM ${names[postEntity.table]} ${temp && temp.groupBy ? `GROUP BY ${temp.groupBy}` : ''}`, false, false);
+    sqlResult += queryAsJson({
+        query: `SELECT ${temp && temp.select ? temp.select : "*"} FROM ${names[postEntity.table]} ${temp && temp.groupBy ? `GROUP BY ${temp.groupBy}` : ''}`, 
+        singular: false, 
+        count: false
+    });
     logDebug(sqlResult);        
     return sqlResult;
 

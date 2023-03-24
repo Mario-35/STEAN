@@ -7,11 +7,10 @@
  */
 
 import { createQuerySelectString } from ".";
-import { isGraph, _DBDATAS } from "../../../db/constants";
+import { _DBDATAS } from "../../../db/constants";
 import { PgVisitor } from "../PgVisitor";
 
  export function createGetSql(main: PgVisitor): string {   
-    const count = main.timeSeries ? false : true;
     main.includes.forEach((includesItem) => {
         if (includesItem.navigationProperty.includes("/")) {                
             const names = includesItem.navigationProperty.split("/");
@@ -29,23 +28,6 @@ import { PgVisitor } from "../PgVisitor";
     });  
         
     main.includes.forEach((item) => item.asGetSql());
-
-    let fields:string[] = [];
-
-    if (isGraph(main)) {    
-        const table = _DBDATAS[main.parentEntity ? main.parentEntity: main.getEntity()].table;
-        fields =  [`(select ${table}."description" from ${table} where ${table}."id" = ${main.parentId ? main.parentId: main.id}) AS title, `];
-        
-    } 
-    
-    const temp = createQuerySelectString(main, main);
-
-    return main.resultFormat.generateSql({
-            listOfKeys: main.ArrayNames, 
-            id: main.parentId, 
-            query: temp,
-            interval: main.interval,
-            singular: false, 
-            count: count, fields: fields
-        });
+    main.sql = createQuerySelectString(main, main);
+    return main.onlyValue ? main.sql :  main.resultFormat.generateSql(main);
 }

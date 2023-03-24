@@ -8,11 +8,11 @@
 
 import fs from "fs";
 import path from "path";
-// export const jsFile = (name: string):string =>  fs.readFileSync(__dirname + `/${name}`, "utf-8");
+// export const addJsFile = (name: string):string =>  fs.readFileSync(__dirname + `/${name}`, "utf-8");
 
-export const jsFile = (name: string):string =>  (fs.existsSync(__dirname + `/${name}`))  ? fs.readFileSync(__dirname + `/${name}`, "utf-8") : fs.readFileSync(__dirname + `/${name.replace(".js",".min.js")}`, "utf-8");
+export const addJsFile = (name: string):string =>  (fs.existsSync(__dirname + `/${name}`))  ? fs.readFileSync(__dirname + `/${name}`, "utf-8") : fs.readFileSync(__dirname + `/${name.replace(".js",".min.js")}`, "utf-8");
 
-export const listJsFiles = ():string[] => {
+export const listaddJsFiles = ():string[] => {
   let result: string[] = [];
     fs.readdirSync(path.join(__dirname)).filter((e: string) => e.endsWith(".js")).forEach(file => {
         result.push(file);

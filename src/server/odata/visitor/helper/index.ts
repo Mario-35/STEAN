@@ -26,7 +26,3 @@ export { createPostSql } from "./createPostSql";
 export { createQuerySelectString, createQuerySelectPGQuery } from "./createQuery";
 export { getColumnsList } from "./getColumnsList";
 export { oDatatoDate } from "./oDatatoDate";
-
-// export const  queryAsGraph = (query: string, interval: string | undefined): string => {
-//     return queryAsJson(queryAsStep(query, interval), false, true);
-// };

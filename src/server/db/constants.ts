@@ -13,8 +13,7 @@ import { _CONFIGURATION } from "../configuration";
 import { _ENV_VERSION } from "../constants";
 import { getEntityName, returnFormats } from "../helpers";
 import { PgVisitor } from "../odata";
-import { ENTITIES, IEntity } from "../types";
-import { RELATIONS } from "../types/entity";
+import { ENTITIES, IEntity, RELATIONS } from "../types";
 
 export const isSingular = (input: string): boolean => {
     const entityName = getEntityName(input);

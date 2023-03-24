@@ -13,13 +13,13 @@ import { ConfigCtx, returnFormats } from "../helpers";
 import fs from "fs";
 import { db } from "../db";
 import { message } from "../logger";
-import { IReturnResult, MODES } from "../types";
+import { IReturnResult, MODES, USERRIGHTS } from "../types";
 import { _APIVERSION } from "../constants";
 import { queryHtmlPage } from "../views/query";
 import { CreateHtmlView, createIqueryFromContext,  } from "../views/helpers/";
 import { testRoutes } from "./helpers";
 import { DefaultState, Context } from "koa";
-import { ensureAuthenticated, getAuthenticatedUser, userRights } from "../types/user";
+import { ensureAuthenticated, getAuthenticatedUser } from "../types/user";
 import { createDatabase } from "../db/helpers";
 import { createOdata } from "../odata";
 import { _CONFIGURATION } from "../configuration";
@@ -28,7 +28,7 @@ export const unProtectedRoutes = new Router<DefaultState, Context>();
 
 // ALl others
 unProtectedRoutes.get("/(.*)", async (ctx) => {
-    const adminWithSuperAdminAccess = ctx._configName === "admin" ? ctx._user?.PDCUAS[userRights.SuperAdmin] === true ? true : false : true;
+    const adminWithSuperAdminAccess = ctx._configName === "admin" ? ctx._user?.PDCUAS[USERRIGHTS.SuperAdmin] === true ? true : false : true;
 
     switch (testRoutes(ctx.path).toUpperCase()) {
         case ctx._version.toUpperCase():
@@ -99,7 +99,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             return;
 
         case "ALL":
-            if (ctx.request["token"]?.PDCUAS[userRights.SuperAdmin] === true) {
+            if (ctx.request["token"]?.PDCUAS[USERRIGHTS.SuperAdmin] === true) {
                 ctx.type = returnFormats.json.type;
                 ctx.body = await userAccess.getAll();
             }
@@ -135,7 +135,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         case "USER":
             // Only to get user Infos
             const id = ctx.url.toUpperCase().match(/[0-9]/g)?.join("");
-            if (id && ctx.request["token"]?.PDCUAS[userRights.SuperAdmin] === true) {
+            if (id && ctx.request["token"]?.PDCUAS[USERRIGHTS.SuperAdmin] === true) {
                 const user = await userAccess.getSingle(id);
                 const createHtml = new CreateHtmlView(ctx);
                 ctx.type = returnFormats.html.type;
