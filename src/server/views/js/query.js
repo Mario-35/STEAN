@@ -85,7 +85,7 @@ function wait(on) {
   function refresh() {
     header("refresh");
     const tempEntity = SubOrNot();
-    populateMultiSelect("querySelect", columnsList(tempEntity) , null, "all");
+    populateMultiSelect("querySelect", columnsList(tempEntity).filter(e => !e.includes("_")) , null, "all");
     populateMultiSelect("queryOrderBy", columnsList(tempEntity) , null, _NONE, true);
     populateSelect(queryProperty, columnsList(tempEntity), _PARAMS.property != undefined ? _PARAMS.property :_NONE, true);
     populateMultiSelect("queryExpand", relationsList(tempEntity), null, _NONE);
@@ -141,8 +141,6 @@ function wait(on) {
           
     }
   };
-
-
 
 async function editDataClicked(id, _PARAMS) {
   const name = _PARAMS.seriesName;

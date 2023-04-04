@@ -1,5 +1,5 @@
 /**
- * showConfigCtx.
+ * showconfigCtx.
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
@@ -17,7 +17,7 @@ import koa from "koa";
 import { logAll, logDebug } from "../logger";
 import { _debug } from "../constants";
 
-export const ConfigCtx = (ctx: koa.Context): any => {
+export const configCtx = (ctx: koa.Context): any => {
     return {
         "_linkBase": `${ctx._linkBase}`,
         "_configName": `${ctx._configName}`,
@@ -48,9 +48,9 @@ export const ConfigCtx = (ctx: koa.Context): any => {
     };
 };
 
-export const showConfigCtx = (ctx: koa.Context, force?: boolean): void => {
+export const showconfigCtx = (ctx: koa.Context, force?: boolean): void => {
     if (_debug) logAll(ctx.request);
-    const temp = ConfigCtx(ctx);
+    const temp = configCtx(ctx);
     if (force) {
         console.log(temp);
     } else logDebug(temp);

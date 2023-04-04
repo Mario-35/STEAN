@@ -40,7 +40,7 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
             if (main.interval) main.addToBlanks(elem);  
             if (tempEntity.columns.hasOwnProperty(elem)) {                    
                 const column = tempEntity.columns[elem].alias ||`"${elem}"`;
-                if (main.id) returnValue.push(column.replace(/$ID+/g, <string>main.id) );
+                if (main.id) returnValue.push(column.replace(/$ID+/g, main.id.toString()) );
                 else returnValue.push(column && column != "" ? column : `"${elem}"`);                    
                 if (elem === "id" && (element.showRelations == true || csvOrArray)) {
                     if (csvOrArray)  main.addToArrayNames("id");            

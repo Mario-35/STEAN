@@ -18,7 +18,7 @@ export enum ENTITIES {
     CreateFile = 'CreateFile' ,
     Logs = 'Logs',
     Users = 'Users',
-    Configs= 'Configs',
+    Configs = 'Configs',
 }
 
 export const enum FORMATS {    

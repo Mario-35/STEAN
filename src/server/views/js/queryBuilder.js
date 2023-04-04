@@ -185,9 +185,7 @@ class QueryBuilder {
         // @ts-ignore
         options.forEach((key) => {
             const newOption = new Option(key, key);
-            // if (!Array.from(conditionSelect.options).find((option) => option.value === key)) {
-                choiceSelect.add(newOption);
-            // }
+            choiceSelect.add(newOption);
         });
         // add create AND button
         if (criteriumContainer.querySelector(".add-condition-button") === null) {

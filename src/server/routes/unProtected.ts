@@ -9,7 +9,7 @@
 import Router from "koa-router";
 import { apiAccess, userAccess } from "../db/dataAccess";
 import { _DBDATAS } from "../db/constants";
-import { ConfigCtx, returnFormats } from "../helpers";
+import { configCtx, returnFormats } from "../helpers";
 import fs from "fs";
 import { db } from "../db";
 import { message } from "../logger";
@@ -24,19 +24,20 @@ import { createDatabase } from "../db/helpers";
 import { createOdata } from "../odata";
 import { _CONFIGURATION } from "../configuration";
 import { messages } from "../messages";
+import { isAdmin, canDo } from ".";
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 
 // ALl others
 unProtectedRoutes.get("/(.*)", async (ctx) => {
-    const adminWithSuperAdminAccess = ctx._configName === "admin" ? ctx._user?.PDCUAS[USERRIGHTS.SuperAdmin] === true ? true : false : true;
+    const adminWithSuperAdminAccess = isAdmin(ctx) ?  canDo(ctx, USERRIGHTS.SuperAdmin) ? true : false : true;
 
     switch (testRoutes(ctx.path).toUpperCase()) {
         case ctx._version.toUpperCase():
             let expectedResponse: Record<string, unknown>[] = [{}];
             
-            if (ctx._configName === "admin" && !adminWithSuperAdminAccess) ctx.throw(401);
+            if (isAdmin(ctx) && !adminWithSuperAdminAccess) ctx.throw(401);
             Object.keys(_DBDATAS)
-                .filter((elem: string) => (ctx._configName === "admin") ?_DBDATAS[elem].admin === true : _DBDATAS[elem].order > 0)
+                .filter((elem: string) => isAdmin(ctx)  ?_DBDATAS[elem].admin === true : _DBDATAS[elem].order > 0)
                 .sort((a, b) => (_DBDATAS[a].order > _DBDATAS[b].order ? 1 : -1))
                 .forEach((value: string) => {
                 expectedResponse.push({
@@ -107,7 +108,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
 
         case "INFOS":
             ctx.type = returnFormats.json.type;
-            ctx.body = ConfigCtx(ctx);
+            ctx.body = configCtx(ctx);
             return;
 
         case "STATUS":

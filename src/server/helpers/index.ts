@@ -24,7 +24,7 @@ export { getConfigName } from "./getConfigName";
 export { getEntityName } from "./getEntityName";
 export { hidePasswordInJson } from "./hidePasswordInJson";
 export { setConfigToCtx } from "./setConfigToCtx";
-export { showConfigCtx, ConfigCtx } from "./showConfigCtx";
+export { showconfigCtx, configCtx } from "./showconfigCtx";
 export { returnFormats } from "./returnFormats";
 export { upload } from "./upload";
 export { notNull, isNull } from "./notNull";

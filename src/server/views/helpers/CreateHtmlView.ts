@@ -2,7 +2,7 @@ import koa from "koa";
 import { _CONFIGS, _CONFIGURATION } from "../../configuration";
 import { _DBDATAS } from "../../db/constants";
 import { IUser } from "../../db/interfaces";
-import { showConfigCtx } from "../../helpers";
+import { showconfigCtx } from "../../helpers";
 import { userHeader } from "../constant";
 import { addCssFile } from "../css";
 
@@ -11,7 +11,7 @@ export class CreateHtmlView {
 
     constructor(ctx: koa.Context) {
         this.ctx = ctx;
-        showConfigCtx(ctx);
+        showconfigCtx(ctx);
     }
 
     private css = (name: string): string => {

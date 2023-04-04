@@ -1,4 +1,4 @@
-/**
+/**getBigIntFromString
  * Loras entity.
  *
  * @copyright 2020-present Inrae
@@ -9,7 +9,7 @@
 import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
-import { getBigIntFromString, removeQuotes } from "../../helpers/index";
+import { getBigIntFromString, notNull, removeQuotes } from "../../helpers/index";
 import {  _DBDATAS } from "../constants";
 import { _DOUBLEQUOTE, _QUOTEDCOMA, _VOIDTABLE } from "../../constants";
 import { logDebug, message } from "../../logger";
@@ -18,17 +18,17 @@ import { messages, messagesReplace } from "../../messages/";
 
 
 
-const notNull = (input: any): boolean => {
-    switch (typeof input) {
-        case "string":
-            if(input && input != "" && input != null) return true;
-        case "object":
-            if(input && Object.keys(input).length > 0) return true;    
-        default:
-            return false;
-    }
+// const notNull = (input: any): boolean => {
+//     switch (typeof input) {
+//         case "string":
+//             if(input && input != "" && input != null) return true;
+//         case "object":
+//             if(input && Object.keys(input).length > 0) return true;    
+//         default:
+//             return false;
+//     }
     
-}
+// }
 
 export class Loras extends Common {
     synonym: object = {};

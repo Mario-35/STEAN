@@ -24,6 +24,7 @@ import { createOdata } from "../odata";
 import { db } from "../db";
 import { _CONFIGURATION } from "../configuration";
 import { messages } from "../messages";
+import { canDo } from ".";
 
 export const protectedRoutes = new Router<DefaultState, Context>();
 
@@ -88,7 +89,9 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
             } else {
                 const createHtml = new CreateHtmlView(ctx);
                 ctx.type = returnFormats.html.type;
-                ctx.body = createHtml.login({ login: false, body: ctx.request.body, why: why });
+                ctx.body = createHtml.login({   login: false, 
+                                                body: ctx.request.body, 
+                                                why: why});
             }
             return;
 
@@ -117,7 +120,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
                 if (returnValue) {
                     returnFormats.json.type;
                     ctx.status = 201;
-                    ctx.body = returnValue.body ? returnValue.body : returnValue.body;
+                    ctx.body = returnValue.body;
                 }
             } else ctx.throw(400);
         } else if (ctx.request.type.startsWith("multipart/form-data")) {
@@ -171,7 +174,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
 
 protectedRoutes.patch("/(.*)", async (ctx) => {
     ctx._addToLog = true;
-    if (ctx._user.PDCUAS[USERRIGHTS.Post] === true && Object.keys(ctx.request.body).length > 0) {
+    if (canDo(ctx, USERRIGHTS.Post) === true && Object.keys(ctx.request.body).length > 0) {
         const odataVisitor = await createOdata(ctx); 
         if (odataVisitor)  ctx._odata = odataVisitor;
         if (ctx._odata) {
@@ -197,7 +200,7 @@ protectedRoutes.patch("/(.*)", async (ctx) => {
 
 protectedRoutes.delete("/(.*)", async (ctx) => {
     ctx._addToLog = true;
-    if (ctx._user.PDCUAS[USERRIGHTS.Delete] === true) {
+    if (canDo(ctx, USERRIGHTS.Delete)  === true) {
         const odataVisitor = await createOdata(ctx); 
         if (odataVisitor)  ctx._odata = odataVisitor;
         if (ctx._odata) {

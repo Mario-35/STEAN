@@ -109,13 +109,13 @@ export class CreateFile extends Common {
                 
             message(true, MODES.INFO, "Create Table", paramsFile.tempTable);
     
-            await new Promise<void>((resolve, reject) => {
-                knex.transaction(async (tx: any) => {
+            await new Promise<Knex.Transaction>((resolve, reject) => {
+                knex.transaction(async (tx: Knex.Transaction) => {
                     const cleanup = (valid: boolean, err?: Error) => {
-                        if (valid == true) tx.commit();
-                        else tx.rollback();
+                        if (valid == true) tx.commit;
+                        else tx.rollback;
                         if (err) reject(err);
-                        resolve();
+                        resolve(tx);
                     };
     
                     const client = await tx.client.acquireConnection().catch((err: Error) => reject(err));
@@ -133,14 +133,14 @@ export class CreateFile extends Common {
                         cleanup(false, err);
                     });
     
-                    fileStream.on("end", async () => {
+                    fileStream.on("end", async (tx: Knex.Transaction) => {
                         message(true, MODES.INFO, "COPY TO ", paramsFile.tempTable);
                         if (returnValue && returnValue.body && returnValue.body["@iot.id"]) {
                             const datastreamId: string = returnValue.body["@iot.id"];
                             // await Common.dbContext.raw(`DELETE FROM "${paramsFile.tempTable}" WHERE value = '${headers.join(";")}';`); 
                             const sql = `INSERT INTO "${_DBDATAS.Observations.table}" ("datastream_id", "phenomenonTime", "resultTime", "_resulttexts")
                             SELECT '${datastreamId}', '2021-09-17T14:56:36+02:00', '2021-09-17T14:56:36+02:00', string_to_array("value", ';') FROM "${paramsFile.tempTable}" WHERE value != '${headers.join(";")}'`;
-                            await Common.dbContext.raw(sql); 
+                            await client.query(sql); 
                             cleanup(true);
                             return returnValue;
                         }

@@ -8,8 +8,6 @@
 
 import { RELATIONS } from ".";
 
-
-
 interface IEntityColumn {
     [key: string]: {
         readonly create: string;
@@ -25,8 +23,6 @@ interface IEntityColumn {
     };
 }
 
-
-
 interface IEntityRelation {
     type: RELATIONS; // relation Type
     expand: string; // table name
@@ -38,19 +34,6 @@ interface IEntityRelation {
     tableKey: string; // index key column name
 }
 
-export interface IEntity {
-    readonly name: string;
-    readonly clone?: string;
-    readonly singular: string;
-    readonly table: string;
-    readonly order: number;
-    readonly columns: IEntityColumn;
-    readonly admin: boolean;
-    readonly relations: { [key: string]: IEntityRelation };
-    readonly constraints?: {[key: string]: string};
-    readonly indexes?: {[key: string]: string};
-    readonly after?: string;
-}
 export interface IEntity {
     readonly name: string;
     readonly clone?: string;

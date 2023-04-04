@@ -12,7 +12,7 @@ const _CHECK = "✔";
 const _UP = "↑";
 const _DOWN = "↓";
 const _ALL = "all";
-const _SELECTED = "selcted";
+const _SELECTED = "selected";
 
 
 // load file json

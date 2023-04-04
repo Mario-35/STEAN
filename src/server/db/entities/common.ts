@@ -76,7 +76,7 @@ export class Common {
     // formatResult for graph and for observation request without Datastreams or MultiDatastreams
     formatResult = async (input: JSON): Promise<JSON | IGraphDatas> => {
         message(true, MODES.INFO, "formatResult", this.ctx._odata.resultFormat);
-        if (isGraph(this.ctx._odata)) {
+        if (isGraph(this.ctx._odata)) {            
             const entityName = getEntityName(this.ctx._odata.parentEntity ? this.ctx._odata.parentEntity : this.ctx._odata.entity);            
             let tempTitle  = "No Title"
             if (entityName && _DBDATAS[entityName].columns["name"])

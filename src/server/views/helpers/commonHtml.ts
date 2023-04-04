@@ -23,16 +23,18 @@ export const commonHtml = (input: string, params: IQuery, ): string => {
     message(true, MODES.HEAD, "commonHtml");
     message(true, MODES.INFO, "params", params);
     const result: string[] = input.replace(/\r\n/g,'\n').split('\n').map((e:string) => e.trim());   
-    params._DATAS = (params.admin === true ? _DBADMIN :  (params.user.admin === true || params.user.superAdmin === true) ? _DBDATAS : Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === false)))
-    ;
+    params._DATAS = (params.admin === true 
+        ? _DBADMIN 
+        :  (params.user.admin === true || params.user.superAdmin === true) 
+            ? _DBDATAS 
+            : Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === false)));
     
     const replaceInResult = (searhText: string, content: string) => {
         const index = result.indexOf(searhText);
         if (index > 0) result[index] = content;
     }
 
-    const action = `${params.host}/${params.version}/CreateObservations`;
-    
+    const action = `${params.host}/${params.version}/CreateObservations`;    
 
     const start = params.results ? "jsonObj = JSON.parse(`" + params.results + "`); jsonViewer.showJSON(jsonObj);" : "";
 
@@ -71,7 +73,6 @@ export const commonHtml = (input: string, params: IQuery, ): string => {
     listaddJsFiles().forEach((item: string) => {   
         const itemSearch = `<script src="${fileWithOutMin(item)}"></script>`;
         replaceInResult(itemSearch, `<script>${addJsFile(item)}</script>`);
-        
     });
 
     return result.join("").replace("_PARAMS={}", "_PARAMS=" + util.inspect(params, { showHidden: false, depth: null }))

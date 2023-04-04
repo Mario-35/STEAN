@@ -8,7 +8,6 @@
 
 import fs from "fs";
 import path from "path";
-// export const addJsFile = (name: string):string =>  fs.readFileSync(__dirname + `/${name}`, "utf-8");
 
 export const addJsFile = (name: string):string =>  (fs.existsSync(__dirname + `/${name}`))  ? fs.readFileSync(__dirname + `/${name}`, "utf-8") : fs.readFileSync(__dirname + `/${name.replace(".js",".min.js")}`, "utf-8");
 
