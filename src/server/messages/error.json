@@ -40,5 +40,6 @@
     "stream" : "stream error",
     "fileStream" : "fileStream error",
     "noValue" : "no value found",
-	"observationType": "Wrong value for observationType"
+	"observationType": "Wrong value for observationType",
+	"createUser": "Error in creating user"
 }

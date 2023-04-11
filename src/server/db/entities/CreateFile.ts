@@ -101,12 +101,13 @@ export class CreateFile extends Common {
             };
 
             returnValue = await createDataStream();
-            await knex.schema
-                .createTable(paramsFile.tempTable, (table: any) => {
-                    table.text("value");
-                })
-                .catch((err: Error) => ctx.throw(400, { detail: err.message }));
-                
+            await knex.schema.createTable(paramsFile.tempTable, (table: any) => {
+                                table.increments("id").unsigned().notNullable().primary();
+                                headers.forEach((value) => table.string(value));
+                            })
+                            .catch((err: Error) => ctx.throw(400, { detail: err.message }));
+
+
             message(true, MODES.INFO, "Create Table", paramsFile.tempTable);
     
             await new Promise<Knex.Transaction>((resolve, reject) => {
@@ -121,7 +122,10 @@ export class CreateFile extends Common {
                     const client = await tx.client.acquireConnection().catch((err: Error) => reject(err));
     
                     const stream = client
-                        .query( copyFrom.from( `COPY ${paramsFile.tempTable} FROM STDIN WITH (FORMAT csv)`))
+                        // .query( copyFrom.from( `COPY ${paramsFile.tempTable} FROM STDIN WITH (FORMAT csv)`))
+                        .query( copyFrom.from( `COPY ${paramsFile.tempTable} (${headers.join(",")}) FROM STDIN WITH (FORMAT csv, DELIMITER ';'${paramsFile.header})`))
+                        
+
                         .on("error", (err: Error) => {
                             message(true, MODES.ERROR, messages.errors.stream, err);
                             reject(err);
@@ -136,11 +140,7 @@ export class CreateFile extends Common {
                     fileStream.on("end", async (tx: Knex.Transaction) => {
                         message(true, MODES.INFO, "COPY TO ", paramsFile.tempTable);
                         if (returnValue && returnValue.body && returnValue.body["@iot.id"]) {
-                            const datastreamId: string = returnValue.body["@iot.id"];
-                            // await Common.dbContext.raw(`DELETE FROM "${paramsFile.tempTable}" WHERE value = '${headers.join(";")}';`); 
-                            const sql = `INSERT INTO "${_DBDATAS.Observations.table}" ("datastream_id", "phenomenonTime", "resultTime", "_resulttexts")
-                            SELECT '${datastreamId}', '2021-09-17T14:56:36+02:00', '2021-09-17T14:56:36+02:00', string_to_array("value", ';') FROM "${paramsFile.tempTable}" WHERE value != '${headers.join(";")}'`;
-                            await client.query(sql); 
+                            await client.query(`INSERT INTO "${_DBDATAS.Observations.table}" ("datastream_id", "phenomenonTime", "resultTime", "_resultjson") SELECT '${String(returnValue.body["@iot.id"])}', '2021-09-17T14:56:36+02:00', '2021-09-17T14:56:36+02:00', ROW_TO_JSON(p) FROM (SELECT * FROM ${paramsFile.tempTable}) as p`); 
                             cleanup(true);
                             return returnValue;
                         }

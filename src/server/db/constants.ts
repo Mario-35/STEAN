@@ -10,7 +10,7 @@
 
 import { Knex } from "knex";
 import { _CONFIGURATION } from "../configuration";
-import { _ENV_VERSION } from "../constants";
+// import { _ENV_VERSION } from "../constants";
 import { getEntityName, returnFormats } from "../helpers";
 import { PgVisitor } from "../odata";
 import { ENTITIES, IEntity, RELATIONS } from "../types";
@@ -29,6 +29,7 @@ export const getDateNow = async (conn: Knex | Knex.Transaction): Promise<string>
 }
 
 export const columnList = (input: IEntity) => Object.keys(input.columns).filter((word) => !word.includes("_"));
+export const _RIGHTS = 'SUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION NOBYPASSRLS CONNECTION LIMIT -1';
 
 const makeIDAlias = (table: string) => `"${table}"."id" AS "@iot.id"`;
 const _DATEFORMAT = 'YYYY-MM-DD"T"HH24:MI:SSZ';
@@ -1294,8 +1295,8 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         indexes: {}
     }    
 };
-
-
+export const countId  = (table: string) =>`SELECT n_live_tup::bigint as count FROM pg_stat_all_tables WHERE relname = '${table}'`;
 export const _ENTITIES = Object.values(ENTITIES);
 export const _DBDATAS = Object.freeze(DBDATAS);
+export const _DBST = Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === false));
 export const _DBADMIN = Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === true));

@@ -6,62 +6,53 @@
  *
  */
 
- import knex from "knex";
 import koa from "koa";
  import { createTable, testConnection } from ".";
  import { _CONFIGS, _CONFIGURATION } from "../../configuration";
- import { asyncForEach } from "../../helpers";
+ import { asyncForEach, isTest } from "../../helpers";
  import { logDebug, message } from "../../logger";
 import { MODES } from "../../types";
- import { _DBDATAS } from "../constants";
+ import { _DBDATAS, _DBST, _RIGHTS } from "../constants";
  import { datasDemo } from "../createDBDatas/datasDemo";
  import { triggers } from "../createDBDatas/triggers";
  
  export const createSTDatabase = async(configName: string, ctx?: koa.Context): Promise<{ [key: string]: string }> => {
       message(true, MODES.HEAD, "createDatabase", "createDatabase");
-      const config = _CONFIGS[configName];
-      const admin = _CONFIGS["admin"];
       // init result
-     const  returnValue: { [key: string]: string } = { "Start create Database": config.pg_database };
-     const adminCon = knex({
-        client: "pg",
-        connection: _CONFIGURATION.createKnexConnection("admin", "postgres"),
-        pool: { min: 0, max: 7 },
-        debug: false
-    });
+     const returnValue: { [key: string]: string } = { "Start create Database": _CONFIGS[configName].pg_database };
+     const adminConnection = _CONFIGURATION.getKnexConnection(_CONFIGURATION.getStringConnection("admin", "postgres"));
  
      // Test connection Admin
-     if (!testConnection(adminCon)) {
+     if (!testConnection(adminConnection)) {
          returnValue["DROP Error"] = "No Admin connection";
          return returnValue;
      }
  
      // in case of test always destroy DB
-     if (config.pg_database === "test") {
-         returnValue[`DROP Database`] = await adminCon
-             .raw(`DROP Database IF EXISTS ${config.pg_database}`)
+     if (_CONFIGS[configName].pg_database === "test") {
+         returnValue[`DROP Database`] = await adminConnection
+             .raw(`DROP Database IF EXISTS ${_CONFIGS[configName].pg_database}`)
              .then(() => "✔")
              .catch((err: Error) => err.message);
      }
  
      // create blank DATABASE
-     await adminCon
-         .raw(`CREATE Database ${config.pg_database}`)
+     await adminConnection
+         .raw(`CREATE Database ${_CONFIGS[configName].pg_database}`)
          .then(async () => {
-             returnValue[`Create Database`] = `${config.pg_database} ✔`;
+             returnValue[`Create Database`] = `${_CONFIGS[configName].pg_database} ✔`;
              // create USER if not exist
-             await adminCon.raw(`select count(*) FROM pg_user WHERE usename = '${config.pg_user}';`).then(async (res: any) => {
-                 if (res.rowCount < 1) {
-                     returnValue[`Create ROLE ${config.pg_user}`] = await adminCon
-                         .raw(`CREATE ROLE ${config.pg_user} WITH PASSWORD '${config.pg_password}' SUPERUSER;`)
+             await adminConnection.raw(`select count(*) FROM pg_user WHERE usename = '${_CONFIGS[configName].pg_user}';`).then(async (res: any) => {
+                 if (res.rows[0].count  == 0) {
+                     returnValue[`CREATE ROLE ${_CONFIGS[configName].pg_user}`] = await adminConnection .raw(`CREATE ROLE ${_CONFIGS[configName].pg_user} WITH PASSWORD '${_CONFIGS[configName].pg_password}' ${_RIGHTS};`)
                          .then(() => "✔")
                          .catch((err: Error) => err.message);
                  } else {
-                     await adminCon
-                         .raw(`ALTER ROLE ${config.pg_user} WITH PASSWORD '${config.pg_password}' SUPERUSER;`)
+                     await adminConnection
+                         .raw(`ALTER ROLE ${_CONFIGS[configName].pg_user} WITH PASSWORD '${_CONFIGS[configName].pg_password}' ${_RIGHTS};`)
                          .then(() => {
-                             returnValue[`Create/Alter ROLE`] = `${config.pg_user} ✔`;
-                             adminCon
+                             returnValue[`Create/Alter ROLE`] = `${_CONFIGS[configName].pg_user} ✔`;
+                             adminConnection
                                  .destroy()
                                  .then(() => {
                                      returnValue[`Admin connection destroy`] = "✔";
@@ -85,17 +76,7 @@ import { MODES } from "../../types";
          });
  
 
-      const connDb = knex({
-        client: "pg",
-        connection: {
-            host: admin.pg_host,
-            user: admin.pg_user,
-            password: admin.pg_password,
-            database: _CONFIGS[configName].pg_database
-        },
-        pool: { min: 0, max: 7 },
-        debug: false
-    });
+      const connDb = _CONFIGURATION.getKnexConnection(_CONFIGURATION.getStringConnection("admin", _CONFIGS[configName].pg_database));
 
      // create postgis
      returnValue[`Create postgis`] = await connDb
@@ -108,8 +89,8 @@ import { MODES } from "../../types";
          .then(() => "✔")
          .catch((err: Error) => err.message);
          
-     await asyncForEach(Object.keys(_DBDATAS), async (keyName: string) => {
-         await createTable(connDb, _DBDATAS[keyName], undefined);
+     await asyncForEach(Object.keys(_DBST), async (keyName: string) => {
+         await createTable(connDb, _DBST[keyName], undefined);
      });
 
      await asyncForEach(triggers, async (sql: string) => {
@@ -122,7 +103,7 @@ import { MODES } from "../../types";
         });
     });
  
-    await asyncForEach(datasDemo(), async (sql: string) => {
+    if (isTest()) await asyncForEach(datasDemo(), async (sql: string) => {
         returnValue["Feed datas"] = await connDb
         .raw(sql.split("\n").join(""))
         .then(() => "✔")
@@ -132,7 +113,7 @@ import { MODES } from "../../types";
         });
     });
  
-     await connDb.raw(`select count(*) FROM pg_user WHERE usename = '${config.pg_user}';`).then(() => {
+     await connDb.raw(`select count(*) FROM pg_user WHERE usename = '${_CONFIGS[configName].pg_user}';`).then(() => {
          returnValue["Create DB"] = "✔";
      });
      

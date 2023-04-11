@@ -7,9 +7,9 @@
  */
 
 import fs from "fs";
-import { _APIVERSION, _NODE_ENV } from "./constants";
+import { _APIVERSION, _appName, _appVersion, _NODE_ENV } from "./constants";
 import { message } from "./logger";
-import { asyncForEach, decrypt, hidePasswordInJson } from "./helpers";
+import { asyncForEach, decrypt,  hidePasswordInJson } from "./helpers";
 import util from "util";
 import Koa from "koa";
 import { app } from ".";
@@ -19,7 +19,7 @@ import { createDatabase } from "./db/helpers";
 import pg from "pg"
 import update  from "./config/update.json"
 import { messages, messagesReplace } from "./messages";
-import { MODES } from "./types";
+import { IUser, MODES } from "./types";
 
 
 /**
@@ -68,8 +68,7 @@ class configuration {
     static filePath: fs.PathOrFileDescriptor;
     static jsonConfiguration: any;
     static ports: number[] = [];
-
-
+    public postgresConnection: Knex<any, unknown[]>;
     constructor(file: fs.PathOrFileDescriptor) {
         message(true, MODES.CLASS, this.constructor.name, messages.infos.constructor);   
         configuration.filePath = file;    
@@ -77,6 +76,45 @@ class configuration {
         configuration.jsonConfiguration = JSON.parse(fileTemp);
         const input = configuration.jsonConfiguration.hasOwnProperty(_NODE_ENV) ? configuration.jsonConfiguration[_NODE_ENV] : configuration.jsonConfiguration;   
         Object.keys(input).forEach((element: string) => (this.configurationList[element] = this.format(input[element], element)));
+        this.postgresConnection = knex({
+            client: "pg",
+            connection: {
+                host: this.configurationList["admin"].pg_host,
+                user: this.configurationList["admin"].pg_user,
+                password: this.configurationList["admin"].pg_password,
+                database: "postgres",
+            },
+            pool: { min: 0, max: 7 },
+            debug: false
+        });
+    }
+
+    async createUser(connectName: string) {
+        const user:IUser = {
+            username: _CONFIGS[connectName].pg_user,
+            email: "default@email.com",
+            password: _CONFIGS[connectName].pg_password,
+            database: _CONFIGS[connectName].pg_database,
+            canPost: true,
+            canDelete: true,
+            canCreateUser: true,
+            canCreateDb: true,
+            superAdmin: false,
+            admin: false
+        }
+        message(true, MODES.CLASS, messages.infos.updateUser, user.username);   
+        await db["admin"].table("user").count().where({username: user.username}).then(async (res: any) => {
+            // recreate if exist because if you change key encrypt have to change  
+            if (res[0].count == 1) {
+                message(false, MODES.HEAD, messages.infos.updateUser, `${user.username} for ${connectName}`);
+                await db["admin"].table("user").update(user).where({username: user.username});
+            } else {
+                message(false, MODES.HEAD, messages.infos.createAdminUser, `${user.username} for ${connectName}`);
+                await db["admin"].table("user").insert(user);
+            }
+        }).catch((err: Error) => {
+            console.log(err);
+        });
     }
 
     // return config(s)
@@ -135,18 +173,7 @@ class configuration {
          return tempConfig;
     };
 
-    createKnexConnection(configName: string, database?: string): IDbConnection {
-        return {
-                host: this.configurationList[configName].pg_host,
-                user: this.configurationList[configName].pg_user,
-                password: this.configurationList[configName].pg_password,
-                database: database ? database : this.configurationList[configName].pg_database,
-                port: this.configurationList[configName].pg_port ? +String(this.configurationList[configName].pg_port) : -1,
-                retry: this.configurationList[configName].retry ? this.configurationList[configName].retry : 2,
-            }
-    }
-    
-    createConnection(configName: string): IDbConnection {
+    getStringConnection(configName: string, database?: string): IDbConnection {
         const returnValue = {
             host: this.configurationList[configName].pg_host || "ERROR",
             user: this.configurationList[configName].pg_user || "ERROR",
@@ -155,22 +182,26 @@ class configuration {
             port: this.configurationList[configName].pg_port ? +String(this.configurationList[configName].pg_port) : -1,
             retry: +String(this.configurationList[configName].retry)  || 2
     
-        };
+        }
         if (Object.values(returnValue).includes("ERROR")) throw new TypeError(`${messages.errors.configFile} [${returnValue}]`);
         return returnValue;
     };
 
-    getConnection(configName: string): Knex<any, unknown[]> {
-        const connection: IDbConnection = this.createConnection(configName);
+    getKnexConnection(connection: IDbConnection): Knex<any, unknown[]> {
         return knex({
             client: "pg",
-            connection: connection,
+            connection: {... connection, application_name: `${_appName} ${_appVersion}`},
             pool: { min: 0, max: 7 },
-            debug: false
+            debug: false,            
         })
     };
 
-    createConnections(): { [key: string]: Knex<any, unknown[]> } {
+    getConnection(configName: string): Knex<any, unknown[]> {
+        const connection: IDbConnection = this.getStringConnection(configName);
+        return this.getKnexConnection(connection);
+    };
+
+    createAllConnections(): { [key: string]: Knex<any, unknown[]> } {
         const returnValue: { [key: string]: Knex<any, unknown[]> } = {};
         Object.keys(this.configurationList).forEach((key: string) => {
             const tempConnection = _CONFIGURATION.getConnection(key);
@@ -181,7 +212,8 @@ class configuration {
      
     async addToServer(app: Koa<Koa.DefaultState, Koa.DefaultContext>, key: string): Promise<boolean> {   
         await this.isDbExist(key, true)
-            .then(async (res: boolean) => {                   
+            .then(async (res: boolean) => {   
+                await _CONFIGURATION.createUser(key);
                   const port = _CONFIGS[key].port;
                   if (port  > 0) {
                       if (configuration.ports.includes(port)) message(false, MODES.RESULT, `\x1b[35m[${key}]\x1b[32m ${messages.infos.addPort}`, port);
@@ -189,7 +221,7 @@ class configuration {
                         configuration.ports.push(port);
                               message(false, MODES.RESULT, `\x1b[33m[${key}]\x1b[32m ${messages.infos.ListenPort}`, port);
                           });
-                  }
+                  };
                   return res;
                   
               })
@@ -202,18 +234,10 @@ class configuration {
     };    
 
     async isDbExist(connectName: string, create: boolean): Promise<boolean> {
-        const connection: IDbConnection = this.createConnection(connectName);
         message(false, MODES.HEAD, messages.infos.connectName, connectName);
-    
+        const connection: IDbConnection = this.getStringConnection(connectName);
         await this.pgwait(connection);
-    
-        const tempConnection = knex({
-            client: "pg",
-            connection: connection,
-            pool: { min: 0, max: 7 },
-            debug: false
-        });
-        
+        const tempConnection = this.getKnexConnection(connection);
          if (!tempConnection) return false;
          return await tempConnection
              .raw("select 1+1 as result")
@@ -222,7 +246,7 @@ class configuration {
                  if (update) {
                     const list = update["database"];
                     await asyncForEach(list, async (operation: string) => {
-                        message(false, MODES.INFO, connectName, await tempConnection.raw(operation).then(() => "✔").catch((err: Error) => err.message));
+                        message(false, MODES.RESULT, `configuration ==> \x1b[33m${connectName}\x1b[32m`, await tempConnection.raw(operation).then(() => "✔").catch((err: Error) => err.message));
                     }); 
                  } 
                  tempConnection.destroy();
@@ -230,23 +254,27 @@ class configuration {
              })
              .catch(async (err: any) => {
                  let returnResult = false;
-                 if (err.code == "3D000" && create == true) {
+                 if (err.code === "28P01" ) {
+                    console.log("error connection");
+                    console.log(connection);
+                    
+                 } else if (err.code === "3D000" && create == true) {
                      message(false, MODES.DEBUG, messagesReplace(messages.infos.tryCreate, [messages.infos.db]), _CONFIGS[connectName].pg_database);
                      returnResult = await createDatabase(connectName)
                          .then(async () => {
-                             message(false, MODES.INFO, messagesReplace(messages.infos.create, [messages.infos.db]), "OK");
+                             message(false, MODES.RESULT, `${messages.infos.db} ${messages.infos.create} [${_CONFIGS[connectName].pg_database}]`, "OK");
                              return true;
                          })
                          .catch((err: Error) => {
                              message(false, MODES.ERROR, messagesReplace(messages.infos.create, [messages.infos.db]), err.message);
                              return false;
                          });
-                 }
+                 } else console.log(err);
                  tempConnection.destroy();
                  return returnResult;
              });
      };  
-     
+
     async pgwait(options: IDbConnection): Promise<boolean> {
         const pool = new pg.Pool({... options, database: "postgres" });
         let passage = 1;
@@ -254,20 +282,16 @@ class configuration {
             const d = new Date()
             return d.toLocaleTimeString()
         }
-        
-        const printStatusMsg = (status: string): void => {
-            message(false, MODES.RESULT, messagesReplace(messages.infos.dbPg, [status]), timeStamp());
-        }
     
         const connect = async (): Promise<boolean> => {
                 try {
-                    await pool.query('SELECT 1')
-                    printStatusMsg(messages.infos.offLine)
+                    await pool.query('SELECT 1');
+                    message(false, MODES.RESULT, messagesReplace(messages.infos.dbOnline, [options.database || "none"]), timeStamp());
                     await pool.end();
                     return true;
                 }   
                 catch (e) {
-                    if (passage === 1) printStatusMsg(messages.infos.offLine)
+                    // if (passage === 1) message(false, MODES.RESULT, messagesReplace(messages.infos.dbOnline, [options.database || "none"]), timeStamp());
                     return false;
                 }
         }

@@ -19,7 +19,7 @@ import {  MODES, userToken } from "./types";
 import serve from "koa-static";
 import path from "path";
 import compress from "koa-compress";
-import { _HELMETCONFIG, _KEYAPP, _ENV_VERSION, _NODE_ENV } from "./constants";
+import { _HELMETCONFIG, _KEYAPP, _appVersion, _NODE_ENV, _appName } from "./constants";
 import { _DBDATAS } from "./db/constants";
 import { _CONFIGS, _CONFIGURATION } from "./configuration";
 import { PgVisitor } from "./odata";
@@ -65,8 +65,8 @@ app.use((ctx, next) => {
 
 app.use(protectedRoutes.routes());
 
-message(false, MODES.HEAD, "env", _NODE_ENV);
-message(false, MODES.HEAD, "version", _ENV_VERSION);
+message(false, MODES.HEAD, "mode", _NODE_ENV);
+message(false, MODES.HEAD, `${_appName} version`, _appVersion);
 
 export const server = isTest()
     ? app.listen(_CONFIGS["test"].port, async () => {

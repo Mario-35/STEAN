@@ -14,7 +14,7 @@
  import { db } from "../db";
  
  export const writeToLog = async (ctx: koa.Context, error?: Object): Promise<void> => {
-    if (!ctx._addToLog === true ) return;
+    if (!ctx._addToLog == true ) return;
     try { 
         const req = {
             "method" : ctx.method,

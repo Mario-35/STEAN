@@ -16,6 +16,7 @@ import { addCssFile, listaddCssFiles } from "../css";
 import { addJsFile, listaddJsFiles } from "../js";
 import { IQuery } from "../constant";
 import { MODES } from "../../types";
+import { _appVersion } from "../../constants";
 
 const fileWithOutMin = (input: string): string => input.replace(".min",'');
 
@@ -77,5 +78,6 @@ export const commonHtml = (input: string, params: IQuery, ): string => {
 
     return result.join("").replace("_PARAMS={}", "_PARAMS=" + util.inspect(params, { showHidden: false, depth: null }))
         .replace("// @start@", start)
+        .replace("@version@", _appVersion)
         .replace("@action@", action);
 };

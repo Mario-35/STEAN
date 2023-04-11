@@ -8,4 +8,4 @@
 
 import { _CONFIGURATION } from "../configuration";
  
- export const db = _CONFIGURATION.createConnections();
+ export const db = _CONFIGURATION.createAllConnections();

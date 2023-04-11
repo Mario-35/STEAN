@@ -103,7 +103,7 @@ export class Common {
 
         return await Common.dbContext
             .raw(sql)
-            .then(async (res: any) => {    
+            .then(async (res: any) => {   
                 const nb = Number(res.rows[0].count);
                 if (nb > 0 && res.rows[0]) {                    
                     return this.createReturnResult({

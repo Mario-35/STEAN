@@ -16,15 +16,16 @@ import { addJsFile } from "../views/js";
 import util from "util";
 import { removeQuotes } from ".";
 import { PgVisitor } from "../odata";
-import { isGraph, _DBDATAS } from "../db/constants";
+import { countId, isGraph, _DBDATAS } from "../db/constants";
 
 export const queryAsJson = (input: {
     query: string;
     singular: boolean;
     count: boolean;
+    mario?: string;
     fields?: string[]
-  }): string => `SELECT ${input.count == true ? "\tcount(t),\n\t" : ""}${input.fields ? input.fields.join(",\n\t") : ""}coalesce(${input.singular === true ? "ROW_TO_JSON" : "json_agg"}(t), '${input.singular === true ? "{}" : "[]"}') AS results\n\tFROM (\n\t${input.query}) as t`;;
-  
+  }): string => `SELECT ${input.count == true ? `\t${input.mario ? `(${input.mario})` : 'count(t)'},\n\t` : ""}${input.fields ? input.fields.join(",\n\t") : ""}coalesce(${input.singular === true ? "ROW_TO_JSON" : "json_agg"}(t), '${input.singular === true ? "{}" : "[]"}') AS results\n\tFROM (\n\t${input.query}) as t`;;
+
 const  queryAsDataArray = (input: PgVisitor): string => queryAsJson({query: `SELECT (ARRAY['${Object.keys(input.arrayNames).map((e:string) => removeQuotes(e)).join("','")}']) as "component", count(*) as "dataArray@iot.count", jsonb_agg(allkeys) as "dataArray" FROM (SELECT  json_build_array(${Object.values(input.arrayNames).join()}) as allkeys FROM (${input.sql}) as p) as l`, singular: false, count: false});
 
 const  queryInterval = (input: PgVisitor): string => {
@@ -52,7 +53,7 @@ const _returnFormats: { [key in FORMATS]: IreturnFormat } = {
     generateSql(input: PgVisitor) {      
     return (input.interval) 
       ? queryInterval(input)
-      : queryAsJson({query: input.sql, singular: false, count: true, fields: generateFields(input)});
+      : queryAsJson({query: input.sql, singular: false, count: true, mario: input.count === true ? countId(_DBDATAS[input.entity].table) : undefined, fields: generateFields(input)});
     },
   },  // IMPORTANT TO HAVE THIS BEFORE GRAPH
   graphDatas: {
@@ -123,36 +124,7 @@ const _returnFormats: { [key in FORMATS]: IreturnFormat } = {
             return "No datas";
     },
     generateSql(input: PgVisitor) { 
-    return `WITH one AS (
-          SELECT  coalesce(json_agg(t), '[]') AS results
-          FROM (
-              SELECT (string_to_array(replace((SELECT "unitOfMeasurement"->'name' 
-                                              FROM "datastream" 
-                                              WHERE id = ${input.parentId})::text,'"',''), ','))  AS "component", 
-              count(*) as "dataArray@iot.count", 
-              jsonb_agg(allkeys) AS "dataArray" FROM (SELECT "result" AS "allkeys" 
-              FROM (
-                  SELECT "id", "observation"."_resulttexts" AS "result"
-                  FROM "observation"
-                  WHERE "observation"."id" IN (
-                      SELECT "observation"."id" 
-                      FROM "observation" 
-                      WHERE "observation"."datastream_id" = ${input.parentId} 
-                      ORDER BY "observation"."resultTime" ASC)
-                  ORDER BY "observation"."phenomenonTime",  "observation"."id") 
-              AS p) 
-          AS l) 
-      AS t),
-      two AS (
-          ${queryAsDataArray(input)}
-      )
-      SELECT
-          CASE
-              WHEN (SELECT "observationType" FROM "datastream" WHERE id = ${input.parentId}) = 'http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation' 
-              THEN (SELECT * FROM one)
-              ELSE (SELECT * FROM two)
-          END 
-    `}
+    return queryAsDataArray(input)}
   },
   txt: {
     name : "txt",

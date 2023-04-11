@@ -25,6 +25,7 @@ import { createOdata } from "../odata";
 import { _CONFIGURATION } from "../configuration";
 import { messages } from "../messages";
 import { isAdmin, canDo } from ".";
+import { getMetrics } from "../db/monitoring";
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 
 // ALl others
@@ -122,6 +123,11 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
                 }
             }
             ctx.redirect(`${ctx._rootName}login`);
+            return;
+
+        case "METRICS":            
+            ctx.type = returnFormats.json.type;
+            ctx.body = getMetrics();            
             return;
 
         case "QUERY":

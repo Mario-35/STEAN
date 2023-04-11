@@ -37,7 +37,6 @@ export class PgVisitor {
     count: boolean = false;
     onlyRef: boolean = false;
     onlyValue: boolean = false;
-    inlineCount: boolean;
     navigationProperty: string;
     resultFormat: IreturnFormat = returnFormats.json;
     includes: PgVisitor[] = [];
@@ -365,7 +364,7 @@ export class PgVisitor {
     }
 
     protected VisitInlineCount(node: Token, context: any) {
-        this.inlineCount = Literal.convert(node.value.value, node.value.raw);
+        this.count = Literal.convert(node.value.value, node.value.raw);
     }
 
     protected VisitFilter(node: Token, context: any) {

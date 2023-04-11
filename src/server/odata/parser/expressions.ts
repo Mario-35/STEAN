@@ -1012,7 +1012,7 @@ namespace Expressions {
     }
 
     export function countExpr(value: Utils.SourceArray, index: number): Lexer.Token | undefined {
-        if (Utils.equals(value, index, "/$count")) return Lexer.tokenize(value, index, index + 7, "/$count", Lexer.TokenType.CountExpression);
+        if (Utils.equals(value, index, "count")) return Lexer.tokenize(value, index, index + 5, "count", Lexer.TokenType.CountExpression);
     }
     export function refExpr(value: Utils.SourceArray, index: number): Lexer.Token | undefined {
         if (Utils.equals(value, index, "/$ref")) return Lexer.tokenize(value, index, index + 5, "/$ref", Lexer.TokenType.RefExpression);

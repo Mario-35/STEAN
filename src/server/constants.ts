@@ -8,15 +8,17 @@
 
 import fs from "fs";
 
+// let fileConfigJson: object | undefined = undefined;
 
-let fileConfigJson: object | undefined = undefined;
+// try {
+//     const fileConfig = fs.readFileSync(__dirname + "/package.json", "utf8");
+//     fileConfigJson = JSON.parse(fileConfig);
+// } catch (error) {
+//     fileConfigJson = undefined;
+// }
 
-try {
-    const fileConfig = fs.readFileSync(__dirname + "/package.json", "utf8");
-    fileConfigJson = JSON.parse(fileConfig);
-} catch (error) {
-    fileConfigJson = undefined;
-}
+export var _appName = process.env.npm_package_name || '_STEAN';
+export var _appVersion = process.env.npm_package_version || '0';
 
 
 export var _debug = process.env.DEBUG?.trim() === "true";
@@ -25,7 +27,6 @@ export const _VOIDTABLE = "spatial_ref_sys";
 export const _DOUBLEQUOTE = '"';
 export const _QUOTEDCOMA = '",\n"';
 export const _APIVERSION = "v1.0";
-export const _ENV_VERSION = process.env.npm_package_version ? process.env.npm_package_version : fileConfigJson ? fileConfigJson["version"] : "";
 export const _NODE_ENV = process.env.NODE_ENV ? process.env.NODE_ENV : "production";
 export const _HELMETCONFIG = Object.freeze({
     defaultSrc: ["'self'"],

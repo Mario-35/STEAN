@@ -86,7 +86,7 @@ export const createColumnHeaderName = async (filename: string): Promise<string[]
 
     for await (const line of rl) {
         try {
-            const cols = line.split(";");
+            const cols = line.split(";").map((e: string) => e.replace(/\./g,'').toLowerCase());
             fileStream.destroy();
             return cols;
         } catch (error) {
