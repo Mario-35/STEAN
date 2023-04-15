@@ -10,10 +10,9 @@ import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
 import { _DBDATAS } from "../constants";
-import { message } from "../../logger";
-import { ICsvColumns, ICsvFile, IReturnResult, MODES } from "../../types";
+import { _LOGS } from "../../logger";
+import { ICsvColumns, ICsvFile, IReturnResult } from "../../types";
 import { createColumnHeaderName} from "../helpers";
-import { _CONFIGURATION } from "../../configuration";
 import copyFrom from "pg-copy-streams";
 import fs from "fs";
 import { messages, messagesReplace } from "../../messages/";
@@ -40,11 +39,11 @@ export class CreateFile extends Common {
     }
 
     importCsvFileInDatastream = async (ctx: koa.Context, knex: Knex | Knex.Transaction, paramsFile: ICsvFile): Promise<IReturnResult | undefined> => {
-        message(true, MODES.HEAD, "importCsvFileInDatastream");
+        _LOGS.head("importCsvFileInDatastream");
         let returnValue: IReturnResult | undefined = undefined;
 
         const headers = await createColumnHeaderName(paramsFile.filename);
-        message(true, MODES.DEBUG, "importCsvFileInDatastream");
+        _LOGS.debug("importCsvFileInDatastream");
         
         if (headers) {
             const createDataStream = async () => {
@@ -89,12 +88,12 @@ export class CreateFile extends Common {
                     const returnValueError = await objectDatastream.getAll(); 
                     ctx._odata = copyCtx;
                     if (returnValueError) {
-                        returnValueError.body = returnValueError.body ?  returnValueError.body[0] : {};
+                        returnValueError.body = returnValueError.body ? returnValueError.body[0] : {};
                         if (returnValueError.body)
-                            await Common.dbContext.raw(`DELETE FROM "${_DBDATAS.Observations.table}" WHERE "datastream_id" = ${returnValueError.body["@iot.id"]}`)
+                            await Common.dbContext.raw(`DELETE FROM "${_DBDATAS.Observations.table}" WHERE "datastream_id" = ${returnValueError.body["@iot.id"]}`);
                         return returnValueError;
                     }
-                } finally  {
+                } finally {
                     ctx._odata = copyCtx;
                 }
 
@@ -108,7 +107,7 @@ export class CreateFile extends Common {
                             .catch((err: Error) => ctx.throw(400, { detail: err.message }));
 
 
-            message(true, MODES.INFO, "Create Table", paramsFile.tempTable);
+            _LOGS.debug("Create Table", paramsFile.tempTable);
     
             await new Promise<Knex.Transaction>((resolve, reject) => {
                 knex.transaction(async (tx: Knex.Transaction) => {
@@ -127,18 +126,18 @@ export class CreateFile extends Common {
                         
 
                         .on("error", (err: Error) => {
-                            message(true, MODES.ERROR, messages.errors.stream, err);
+                            _LOGS.error(messages.errors.stream, err);
                             reject(err);
                         });
                     
                     const fileStream = fs.createReadStream(paramsFile.filename);
                     fileStream.on("error", (err: Error) => {
-                        message(true, MODES.ERROR, messages.errors.fileStream, err);
+                        _LOGS.error(messages.errors.fileStream, err);
                         cleanup(false, err);
                     });
     
                     fileStream.on("end", async (tx: Knex.Transaction) => {
-                        message(true, MODES.INFO, "COPY TO ", paramsFile.tempTable);
+                        _LOGS.debug("COPY TO ", paramsFile.tempTable);
                         if (returnValue && returnValue.body && returnValue.body["@iot.id"]) {
                             await client.query(`INSERT INTO "${_DBDATAS.Observations.table}" ("datastream_id", "phenomenonTime", "resultTime", "_resultjson") SELECT '${String(returnValue.body["@iot.id"])}', '2021-09-17T14:56:36+02:00', '2021-09-17T14:56:36+02:00', ROW_TO_JSON(p) FROM (SELECT * FROM ${paramsFile.tempTable}) as p`); 
                             cleanup(true);
@@ -158,7 +157,7 @@ export class CreateFile extends Common {
     };
 
     async add(dataInput: Object): Promise<IReturnResult | undefined> {
-        message(true, MODES.HEAD, messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));        
+        _LOGS.head(messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));        
         if (this.ctx._datas) {
             const extras = this.ctx._datas;
             const myColumns: ICsvColumns[] = [];

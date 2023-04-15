@@ -10,14 +10,13 @@ import koa from "koa";
 import { createTable } from ".";
 import { _CONFIGS, _CONFIGURATION } from "../../configuration";
 import { asyncForEach } from "../../helpers";
-import { message } from "../../logger";
-import { MODES } from "../../types";
-import { _DBADMIN, _DBDATAS, _RIGHTS } from "../constants";
+import { _LOGS } from "../../logger";
+import { _DBADMIN, _RIGHTS } from "../constants";
 // import { IUser } from "../interfaces";
 
  
  export const createAdminDataBase = async(configName: string, ctx?: koa.Context): Promise<{ [key: string]: string }> => {
-    message(false, MODES.HEAD, "createAdminDataBase", "createDatabase");
+    _LOGS.head("createAdminDataBase", "createDatabase");
 
     // init result
     const config = _CONFIGS[configName];
@@ -30,10 +29,10 @@ import { _DBADMIN, _DBDATAS, _RIGHTS } from "../constants";
             .then(async () => {
                 returnValue["create Admin DB"] = "✔";
                 returnValue["User"] = await _CONFIGURATION.postgresConnection
-                    .raw(`select count(*) FROM pg_user WHERE usename = '${config.pg_user}';`)
+                    .raw(`SELECT count(*) FROM pg_user WHERE usename = '${config.pg_user}';`)
                     .then(async (res) => {
                         if (res.rowCount < 1) {
-                            message(false, MODES.INFO, "Create User", config.pg_user);
+                            _LOGS.infoSystem("Create User", config.pg_user);
                             return _CONFIGURATION.postgresConnection
                                 .raw(`CREATE ROLE ${config.pg_user} WITH PASSWORD '${config.pg_password}' ${_RIGHTS};`)
                                 .then(() => {
@@ -42,7 +41,7 @@ import { _DBADMIN, _DBDATAS, _RIGHTS } from "../constants";
                                 })
                                 .catch((err: Error) => err.message);
                         } else {
-                            message(false, MODES.INFO, "Update User", config.pg_user);
+                            _LOGS.infoSystem("Update User", config.pg_user);
                             return await _CONFIGURATION.postgresConnection
                                 .raw(`ALTER ROLE ${config.pg_user} WITH PASSWORD '${config.pg_password}' ${_RIGHTS};`)
                                 .then(() => {
@@ -63,4 +62,4 @@ import { _DBADMIN, _DBDATAS, _RIGHTS } from "../constants";
         await createTable(conn, _DBADMIN[keyName], undefined);
     });
     return returnValue;
-}
+};

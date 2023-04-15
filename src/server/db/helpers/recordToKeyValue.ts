@@ -7,7 +7,7 @@
  */
 
 
-export const recordToKeyValue = (input: string | Record<string, unknown>): Object => {
+export const recordToKeyValue = (input: string | Object): Object => {
     const returnValue: Object = [];
     if (typeof input == "object") {
         for (const [key, value] of Object.entries(input)) returnValue[key] = value;

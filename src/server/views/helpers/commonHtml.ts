@@ -8,32 +8,24 @@
 
 /* eslint-disable quotes */
 
-import { _DBDATAS, _DBADMIN } from "../../db/constants";
-import { message } from "../../logger";
+import { _LOGS } from "../../logger";
 import util from "util";
 import { cleanUrl } from "../../helpers";
 import { addCssFile, listaddCssFiles } from "../css";
 import { addJsFile, listaddJsFiles } from "../js";
 import { IQuery } from "../constant";
-import { MODES } from "../../types";
 import { _appVersion } from "../../constants";
 
 const fileWithOutMin = (input: string): string => input.replace(".min",'');
 
 export const commonHtml = (input: string, params: IQuery, ): string => {
-    message(true, MODES.HEAD, "commonHtml");
-    message(true, MODES.INFO, "params", params);
-    const result: string[] = input.replace(/\r\n/g,'\n').split('\n').map((e:string) => e.trim());   
-    params._DATAS = (params.admin === true 
-        ? _DBADMIN 
-        :  (params.user.admin === true || params.user.superAdmin === true) 
-            ? _DBDATAS 
-            : Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === false)));
-    
+    _LOGS.head("commonHtml");
+    _LOGS.debug("params", params);
+    const result: string[] = input.replace(/\r\n/g,'\n').split('\n').map((e:string) => e.trim()); 
     const replaceInResult = (searhText: string, content: string) => {
         const index = result.indexOf(searhText);
         if (index > 0) result[index] = content;
-    }
+    };
 
     const action = `${params.host}/${params.version}/CreateObservations`;    
 
@@ -64,7 +56,6 @@ export const commonHtml = (input: string, params: IQuery, ): string => {
             }
         });
     }
-
 
     listaddCssFiles().forEach((item: string) => {   
         const itemSearch = `<link rel="stylesheet" href="${fileWithOutMin(item)}">`;

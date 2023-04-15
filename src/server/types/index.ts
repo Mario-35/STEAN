@@ -12,4 +12,10 @@ export { IreturnFormat } from "./returnFormats";
 export { ICsvFile, ICsvColumns } from "./csvFile";
 export { IEntity } from "./entity";
 export { PgQuery } from "./pgQuery";
-export { ENTITIES, MODES, RELATIONS, USERRIGHTS, FORMATS, OPERATIONTYPE } from "./enum";
+export { ENTITIES, RELATIONS, USERRIGHTS, FORMATS, OPERATIONTYPE } from "./enum";
+
+export enum StreamType {
+    Datastreams = "Datastreams",
+    MultiDatastreams = "MultiDatastreams",
+    None = "None"
+ }

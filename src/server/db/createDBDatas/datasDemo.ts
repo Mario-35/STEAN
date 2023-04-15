@@ -9,7 +9,7 @@
  const numberStr = ["one", "two", "three", "four", "five", "six", "seven", "height", "nine", "ten"];
   
  // Institut Agro Rennes-Angers 48.1140652783794, -1.7062956999598533 
- const geoPos: { [key: string]: number[] }  = {
+ const geoPos: { [key: string]: number[] } = {
      "Centre commercial Grand Quartier" : [48.13765198324515, -1.6956051932646596],
      "Polyclinic Saint Laurent" : [48.139101133693764, -1.6571222811169917],
      "Golf municipal de Cesson-Sévigné": [48.12552590922048, -1.5889906727727678],
@@ -21,7 +21,7 @@
      "The Mem": [48.089982264765595, -1.7050636226736864],
      "Kenedy": [48.123242161802274, -1.7127016234011674],
      "Institut Agro Rennes-Angers": [48.1140652783794, -1.7062956999598533 ]
- }
+ };
  const positions = Object.values(geoPos);
  
  
@@ -36,7 +36,7 @@
                         'application/vnd.geo+json', 
                         '{"type":"Point","coordinates":["${positions[nb][0]}","${positions[nb][1]}"]}',
                          'Weather Station ${nb + 1}'
-                    ) RETURNING *)SELECT * FROM featureofinterest;`;
+                    ) RETURNING *) SELECT * FROM featureofinterest;`;
  
  const sensor = (nb: number) =>
      `WITH sensor AS (INSERT INTO "sensor" ("description", "encodingType", "metadata", "name") values ('PM sensor Number ${

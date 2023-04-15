@@ -10,8 +10,8 @@ import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
 import { _DBDATAS } from "../constants";
-import { message } from "../../logger";
-import { IReturnResult, MODES, USERRIGHTS } from "../../types";
+import { _LOGS } from "../../logger";
+import { IReturnResult, USERRIGHTS } from "../../types";
 import { _CONFIGURATION } from "../../configuration";
 import { hidePasswordInJson } from "../../helpers";
 import { db } from "..";
@@ -24,7 +24,7 @@ import { messages } from "../../messages/";
      }
 
      async getAll(): Promise<IReturnResult | undefined> {
-        message(true, MODES.CLASS, this.constructor.name, `getAll in ${this.ctx._odata.resultFormat} format`);
+        _LOGS.class(this.constructor.name, `getAll in ${this.ctx._odata.resultFormat} format`);
         if (this.ctx._user?.PDCUAS[USERRIGHTS.SuperAdmin] === true || this.ctx._user?.PDCUAS[USERRIGHTS.Admin] === true) {
             const temp = await db["admin"]
                 .table("user")
@@ -35,11 +35,11 @@ import { messages } from "../../messages/";
             return this.createReturnResult({
                 body: temp,
             });       
-        } else this.ctx.throw(401, { code: 401,  detail: messages.errors[401] });
+        } else this.ctx.throw(401, { code: 401, detail: messages.errors[401] });
      }
 
      async add(dataInput: Object | undefined): Promise<IReturnResult | undefined> {
-        message(true, MODES.OVERRIDE, this.constructor.name, "add");
+        _LOGS.override(this.constructor.name, "add");
 
         if (!dataInput) return;
         return this.createReturnResult({

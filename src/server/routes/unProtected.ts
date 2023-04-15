@@ -8,37 +8,38 @@
 
 import Router from "koa-router";
 import { apiAccess, userAccess } from "../db/dataAccess";
-import { _DBDATAS } from "../db/constants";
+import { _DBDATAS, _DBPUREST } from "../db/constants";
 import { configCtx, returnFormats } from "../helpers";
 import fs from "fs";
 import { db } from "../db";
-import { message } from "../logger";
-import { IReturnResult, MODES, USERRIGHTS } from "../types";
+import { _LOGS } from "../logger";
+import { IReturnResult, USERRIGHTS } from "../types";
 import { _APIVERSION } from "../constants";
 import { queryHtmlPage } from "../views/query";
-import { CreateHtmlView, createIqueryFromContext,  } from "../views/helpers/";
+import { CreateHtmlView, createIqueryFromContext, } from "../views/helpers/";
 import { testRoutes } from "./helpers";
 import { DefaultState, Context } from "koa";
 import { ensureAuthenticated, getAuthenticatedUser } from "../types/user";
 import { createDatabase } from "../db/helpers";
 import { createOdata } from "../odata";
-import { _CONFIGURATION } from "../configuration";
 import { messages } from "../messages";
 import { isAdmin, canDo } from ".";
 import { getMetrics } from "../db/monitoring";
+import { _CONFIGS } from "../configuration";
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 
 // ALl others
 unProtectedRoutes.get("/(.*)", async (ctx) => {
-    const adminWithSuperAdminAccess = isAdmin(ctx) ?  canDo(ctx, USERRIGHTS.SuperAdmin) ? true : false : true;
+    const adminWithSuperAdminAccess = isAdmin(ctx) ? canDo(ctx, USERRIGHTS.SuperAdmin) ? true : false : true;
 
     switch (testRoutes(ctx.path).toUpperCase()) {
         case ctx._version.toUpperCase():
-            let expectedResponse: Record<string, unknown>[] = [{}];
+            const expectedResponse: Object[] = [];
             
             if (isAdmin(ctx) && !adminWithSuperAdminAccess) ctx.throw(401);
-            Object.keys(_DBDATAS)
-                .filter((elem: string) => isAdmin(ctx)  ?_DBDATAS[elem].admin === true : _DBDATAS[elem].order > 0)
+            const src = _CONFIGS[ctx._configName].standard === true ? _DBPUREST : _DBDATAS;
+            Object.keys(src)
+                .filter((elem: string) => isAdmin(ctx) ?_DBDATAS[elem].admin === true : _DBDATAS[elem].order > 0)
                 .sort((a, b) => (_DBDATAS[a].order > _DBDATAS[b].order ? 1 : -1))
                 .forEach((value: string) => {
                 expectedResponse.push({
@@ -59,7 +60,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
                 ctx.type = returnFormats.icon.type;
                 ctx.body = fs.readFileSync(__dirname + "/favicon.ico");
             } catch (e) {
-                if (e instanceof Error) message(false, MODES.ERROR, e.message);
+                if (e instanceof Error) _LOGS.error(e.message);
             }
             return;
 
@@ -114,6 +115,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
 
         case "STATUS":
             if (ensureAuthenticated(ctx)) {
+                
                 const user = await getAuthenticatedUser(ctx);
                 if (user) {
                     const createHtml = new CreateHtmlView(ctx);
@@ -151,7 +153,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             return;
 
         case "CREATEDB":
-            message(true, MODES.HEAD, "GET createDB");
+            _LOGS.head("GET createDB");
             const returnValue = await createDatabase("test", ctx);
 
             if (returnValue) {
@@ -166,9 +168,9 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
     // API REQUEST
     if (ctx.path.includes(`/${_APIVERSION}`)) {        
         const odataVisitor = await createOdata(ctx); 
-        if (odataVisitor)  ctx._odata = odataVisitor;
+        if (odataVisitor) ctx._odata = odataVisitor;
         if (ctx._odata) {
-            message(true, MODES.HEAD, `GET ${_APIVERSION}`);
+            _LOGS.head(`GET ${_APIVERSION}`);
             const objectAccess = new apiAccess(ctx);
             if (objectAccess) {
                 if (ctx._odata.entity && Number(ctx._odata.id) === 0) {

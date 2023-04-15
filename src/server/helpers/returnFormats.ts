@@ -9,8 +9,8 @@
 
 import { Parser } from "json2csv";
 import koa from "koa";
-import { message } from "../logger";
-import { FORMATS, IreturnFormat, MODES } from "../types";
+import { _LOGS } from "../logger";
+import { FORMATS, IreturnFormat } from "../types";
 import { addCssFile } from "../views/css";
 import { addJsFile } from "../views/js";
 import util from "util";
@@ -24,11 +24,11 @@ export const queryAsJson = (input: {
     count: boolean;
     mario?: string;
     fields?: string[]
-  }): string => `SELECT ${input.count == true ? `\t${input.mario ? `(${input.mario})` : 'count(t)'},\n\t` : ""}${input.fields ? input.fields.join(",\n\t") : ""}coalesce(${input.singular === true ? "ROW_TO_JSON" : "json_agg"}(t), '${input.singular === true ? "{}" : "[]"}') AS results\n\tFROM (\n\t${input.query}) as t`;;
+  }): string => `SELECT ${input.count == true ? `\t${input.mario ? `(${input.mario})` : 'count(t)'},\n\t` : ""}${input.fields ? input.fields.join(",\n\t") : ""}coalesce(${input.singular === true ? "ROW_TO_JSON" : "json_agg"}(t), '${input.singular === true ? "{}" : "[]"}') AS results\n\tFROM (\n\t${input.query}) as t`;
 
-const  queryAsDataArray = (input: PgVisitor): string => queryAsJson({query: `SELECT (ARRAY['${Object.keys(input.arrayNames).map((e:string) => removeQuotes(e)).join("','")}']) as "component", count(*) as "dataArray@iot.count", jsonb_agg(allkeys) as "dataArray" FROM (SELECT  json_build_array(${Object.values(input.arrayNames).join()}) as allkeys FROM (${input.sql}) as p) as l`, singular: false, count: false});
+const queryAsDataArray = (input: PgVisitor): string => queryAsJson({query: `SELECT (ARRAY['${Object.keys(input.arrayNames).map((e:string) => removeQuotes(e)).join("','")}']) as "component", count(*) as "dataArray@iot.count", jsonb_agg(allkeys) as "dataArray" FROM (SELECT  json_build_array(${Object.values(input.arrayNames).join()}) as allkeys FROM (${input.sql}) as p) as l`, singular: false, count: false});
 
-const  queryInterval = (input: PgVisitor): string => {
+const queryInterval = (input: PgVisitor): string => {
   input.sql = input.interval 
       ? `WITH src as (\n\t${input.sql}), \n\trange_values AS (SELECT \n\t\tmin(srcdate) as minval, \n\t\tmax(srcdate) as maxval \n\tFROM src), \n\ttime_range AS (SELECT \n\t\tgenerate_series(minval::timestamp, maxval::timestamp , '${input.interval || "1 day"}'::interval)::TIMESTAMP WITHOUT TIME ZONE as step \n\tFROM range_values) \n\tSELECT ${input.blanks ? input.blanks.join(", \n\t") : ''} FROM src \n\t\tRIGHT JOIN time_range on srcdate = step`
       : input.sql;
@@ -36,7 +36,7 @@ const  queryInterval = (input: PgVisitor): string => {
 };
 
 const defaultFunction = (input: string | Object, ctx?: koa.Context) => input;
-const defaultForwat = (arr: {[key: string]: any}): string => arr["query"];
+const defaultForwat = (input: PgVisitor): string => input.sql;
 const generateFields = (input: PgVisitor): string[] => {
   let fields:string[] = [];
   if (isGraph(input)) {    
@@ -55,13 +55,13 @@ const _returnFormats: { [key in FORMATS]: IreturnFormat } = {
       ? queryInterval(input)
       : queryAsJson({query: input.sql, singular: false, count: true, mario: input.count === true ? countId(_DBDATAS[input.entity].table) : undefined, fields: generateFields(input)});
     },
-  },  // IMPORTANT TO HAVE THIS BEFORE GRAPH
+  }, // IMPORTANT TO HAVE THIS BEFORE GRAPH
   graphDatas: {
     name : "graphDatas",
     type: "application/json",
     format : defaultFunction,
     generateSql(input: PgVisitor) { 
-      input.blanks = ["id", "step as date", "result"]
+      input.blanks = ["id", "step as date", "result"];
       return queryInterval(input);
     },
   },
@@ -93,7 +93,7 @@ const _returnFormats: { [key in FORMATS]: IreturnFormat } = {
                 </html>`;  
     }, 
     generateSql(input: PgVisitor) { 
-      input.blanks = ["id", "step as date", "result"]
+      input.blanks = ["id", "step as date", "result"];
       return queryInterval(input);
     },
   },
@@ -117,14 +117,14 @@ const _returnFormats: { [key in FORMATS]: IreturnFormat } = {
         return parser.parse(input[0].dataArray);
       } catch (e) {
         if (e instanceof Error) {
-                  message(false, MODES.ERROR, e.message);
+                  _LOGS.error(e.message);
                   return e.message;
               }
             }
             return "No datas";
     },
     generateSql(input: PgVisitor) { 
-    return queryAsDataArray(input)}
+    return queryAsDataArray(input);}
   },
   txt: {
     name : "txt",

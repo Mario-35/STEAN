@@ -8,18 +8,18 @@
 
 import fs from "fs";
 import { _APIVERSION, _appName, _appVersion, _NODE_ENV } from "./constants";
-import { message } from "./logger";
-import { asyncForEach, decrypt,  hidePasswordInJson } from "./helpers";
+import { _LOGS } from "./logger";
+import { asyncForEach, decrypt, hidePasswordInJson, isTest } from "./helpers";
 import util from "util";
 import Koa from "koa";
 import { app } from ".";
 import { db } from "./db";
 import knex, { Knex } from "knex";
 import { createDatabase } from "./db/helpers";
-import pg from "pg"
-import update  from "./config/update.json"
+import pg from "pg";
+import update from "./config/update.json";
 import { messages, messagesReplace } from "./messages";
-import { IUser, MODES } from "./types";
+import { IUser } from "./types";
 
 
 /**
@@ -42,14 +42,15 @@ import { IUser, MODES } from "./types";
     pg_password: string;
     apiVersion: string;
     date_format: string;
-    webSiteDoc: string;
+    webSite: string;
     nb_page: number;
     lineLimit: number;
     retry: number;
     createUser?: boolean;
     forceHttps: boolean;
     alias: string[];
-    result_Type: "number" | "json" | "string";
+    standard: boolean;
+    logFile: string;
 }
 
 interface IDbConnection {
@@ -69,8 +70,7 @@ class configuration {
     static jsonConfiguration: any;
     static ports: number[] = [];
     public postgresConnection: Knex<any, unknown[]>;
-    constructor(file: fs.PathOrFileDescriptor) {
-        message(true, MODES.CLASS, this.constructor.name, messages.infos.constructor);   
+    constructor(file: fs.PathOrFileDescriptor) {   
         configuration.filePath = file;    
         const fileTemp = fs.readFileSync(file, "utf8");    
         configuration.jsonConfiguration = JSON.parse(fileTemp);
@@ -101,20 +101,46 @@ class configuration {
             canCreateDb: true,
             superAdmin: false,
             admin: false
-        }
-        message(true, MODES.CLASS, messages.infos.updateUser, user.username);   
+        };
+         _LOGS.class(messages.infos.updateUser, user.username);   
         await db["admin"].table("user").count().where({username: user.username}).then(async (res: any) => {
             // recreate if exist because if you change key encrypt have to change  
             if (res[0].count == 1) {
-                message(false, MODES.HEAD, messages.infos.updateUser, `${user.username} for ${connectName}`);
+                 _LOGS.head(messages.infos.updateUser, `${user.username} for ${connectName}`);
                 await db["admin"].table("user").update(user).where({username: user.username});
             } else {
-                message(false, MODES.HEAD, messages.infos.createAdminUser, `${user.username} for ${connectName}`);
+                 _LOGS.head(messages.infos.createAdminUser, `${user.username} for ${connectName}`);
                 await db["admin"].table("user").insert(user);
             }
         }).catch((err: Error) => {
             console.log(err);
         });
+    }
+
+    getConfigNameFromDatabase(input: string): string | undefined {        
+        let aliasName: undefined | string = undefined;
+        Object.keys(_CONFIGS).forEach((configName: string) => { if(_CONFIGS[configName].pg_database === input) aliasName = configName;});        
+        if (aliasName) return aliasName;
+        throw new Error(`No configuration found for ${input} name`);
+    }
+
+    getConfigNameFromContext(ctx: Koa.Context): string | undefined {
+        const port = ctx.req.socket.localPort;
+        if (port) {
+            const databaseName = isTest() ? ["test"] : Object.keys(_CONFIGS).filter((word) => (word != "test" && _CONFIGS[word].port) == port);
+            if (databaseName && databaseName.length === 1) return databaseName[0];
+        }
+        const name = ctx.originalUrl.split(ctx._version)[0].split("/").filter((e: string) => e != "")[0]; 
+               
+        if (name) {
+            const databaseName = isTest() ? "test" : Object.keys(_CONFIGS).includes(name) ? name: undefined;
+            if (databaseName) return databaseName;
+            let aliasName: undefined | string = undefined;
+            Object.keys(_CONFIGS).forEach((configName: string) => { if(_CONFIGS[configName].alias.includes(name)) aliasName = configName;});        
+            if (aliasName) return aliasName;
+            throw new Error(port ? `No configuration found for ${port} port or ${name} name` :`No configuration found for ${name} name`);
+        }
+        throw new Error(port ? `No configuration found for ${port} port or name missing` :`name missing`);
     }
 
     // return config(s)
@@ -127,7 +153,7 @@ class configuration {
     }
 
     format(input: JSON, name?: string): IConfigFile {
-        Object.keys(input).forEach((elem: string) => {input[elem] = decrypt(input[elem])});
+        Object.keys(input).forEach((elem: string) => {input[elem] = decrypt(input[elem]);});
         const returnValue = {
             name: name ? name : decrypt(input["pg_database"]) || "ERROR",
             port: input["port"] ? +input["port"] : -1,
@@ -138,20 +164,20 @@ class configuration {
             pg_database: name && name === "test" ? "test" : input["pg_database"] || "ERROR",
             apiVersion: input["apiVersion"] || _APIVERSION,
             date_format: input["date_format"] || "DD/MM/YYYY hh:mi:ss",
-            webSiteDoc: input["webSiteDoc"] || "no web site",
+            webSite: input["webSite"] || "no web site",
             nb_page: input["nb_page"] ? +input["nb_page"] : 200,
             lineLimit: input["lineLimit"] ? +input["lineLimit"] : 2000,
-            seed: name === "test" ? true : input["seed"] || false,
             forceHttps: input["forceHttps"] ? input["forceHttps"] : false,
             alias: input["alias"] ? String(input["alias"]).split(",") : [],
             retry: input["retry"] ? +input["retry"] : 2,
-            result_Type: input["result_Type"] ? input["result_Type"] : "number"
+            standard: input["standard"] ? input["standard"] : false,
+            logFile: input["logFile"] ? input["logFile"] : ""
         };
         if (Object.values(returnValue).includes("ERROR"))
             throw new TypeError(`${messages.errors.configFile} [${util.inspect(returnValue, { showHidden: false, depth: null })}]`);
     
         return returnValue;
-    };
+    }
 
     // add new config and create database if not exist
     async add(addJson: any): Promise<IConfigFile> {
@@ -168,10 +194,10 @@ class configuration {
           });
           this.configurationList[tempConfig.name] = tempConfig;
           await this.addToServer(app , tempConfig.name);
-          db[tempConfig.name] = this.getConnection(tempConfig.name);
+          db[tempConfig.name] = this.getKnexConnection(tempConfig.name);
           hidePasswordInJson(tempConfig);
          return tempConfig;
-    };
+    }
 
     getStringConnection(configName: string, database?: string): IDbConnection {
         const returnValue = {
@@ -180,61 +206,56 @@ class configuration {
             password: this.configurationList[configName].pg_password || "ERROR",
             database: this.configurationList[configName].pg_database || "ERROR",
             port: this.configurationList[configName].pg_port ? +String(this.configurationList[configName].pg_port) : -1,
-            retry: +String(this.configurationList[configName].retry)  || 2
-    
-        }
+            retry: +String(this.configurationList[configName].retry) || 2    
+        };
         if (Object.values(returnValue).includes("ERROR")) throw new TypeError(`${messages.errors.configFile} [${returnValue}]`);
         return returnValue;
-    };
+    }
 
-    getKnexConnection(connection: IDbConnection): Knex<any, unknown[]> {
+    getKnexConnection(connection: IDbConnection | string): Knex<any, unknown[]> {
+        if (typeof connection === "string") connection = this.getStringConnection(connection);
         return knex({
             client: "pg",
             connection: {... connection, application_name: `${_appName} ${_appVersion}`},
             pool: { min: 0, max: 7 },
             debug: false,            
-        })
-    };
-
-    getConnection(configName: string): Knex<any, unknown[]> {
-        const connection: IDbConnection = this.getStringConnection(configName);
-        return this.getKnexConnection(connection);
-    };
+        });
+    }
 
     createAllConnections(): { [key: string]: Knex<any, unknown[]> } {
         const returnValue: { [key: string]: Knex<any, unknown[]> } = {};
         Object.keys(this.configurationList).forEach((key: string) => {
-            const tempConnection = _CONFIGURATION.getConnection(key);
+            const tempConnection = _CONFIGURATION.getKnexConnection(key);
             if (tempConnection) returnValue[key] = tempConnection;
         });
         return returnValue;
-    };
+    }
      
     async addToServer(app: Koa<Koa.DefaultState, Koa.DefaultContext>, key: string): Promise<boolean> {   
         await this.isDbExist(key, true)
             .then(async (res: boolean) => {   
                 await _CONFIGURATION.createUser(key);
                   const port = _CONFIGS[key].port;
-                  if (port  > 0) {
-                      if (configuration.ports.includes(port)) message(false, MODES.RESULT, `\x1b[35m[${key}]\x1b[32m ${messages.infos.addPort}`, port);
+                  if (port > 0) {
+                      if (configuration.ports.includes(port)) _LOGS.result(`\x1b[35m[${key}]\x1b[32m ${messages.infos.addPort}`, port);
                       else app.listen(port, () => {
                         configuration.ports.push(port);
-                              message(false, MODES.RESULT, `\x1b[33m[${key}]\x1b[32m ${messages.infos.ListenPort}`, port);
+                               _LOGS.result(`\x1b[33m[${key}]\x1b[32m ${messages.infos.ListenPort}`, port);
                           });
-                  };
+                  }
                   return res;
                   
               })
               .catch((error: any) => {
-                  message(false, MODES.ERROR, messages.errors.unableFindCreate, _CONFIGS[key].pg_database);
+                  _LOGS.error(messages.errors.unableFindCreate, _CONFIGS[key].pg_database);
                   console.log(error);
                   process.exit(111);
               });
               return false;
-    };    
+    }    
 
     async isDbExist(connectName: string, create: boolean): Promise<boolean> {
-        message(false, MODES.HEAD, messages.infos.connectName, connectName);
+         _LOGS.booting(messages.infos.connectName, connectName);
         const connection: IDbConnection = this.getStringConnection(connectName);
         await this.pgwait(connection);
         const tempConnection = this.getKnexConnection(connection);
@@ -242,11 +263,11 @@ class configuration {
          return await tempConnection
              .raw("select 1+1 as result")
              .then(async () => {
-                 message(false, MODES.RESULT, messages.infos.dbOnline, _CONFIGS[connectName].pg_database);
+                  _LOGS.result(messages.infos.dbOnline, _CONFIGS[connectName].pg_database);
                  if (update) {
                     const list = update["database"];
                     await asyncForEach(list, async (operation: string) => {
-                        message(false, MODES.RESULT, `configuration ==> \x1b[33m${connectName}\x1b[32m`, await tempConnection.raw(operation).then(() => "✔").catch((err: Error) => err.message));
+                         _LOGS.result(`configuration ==> \x1b[33m${connectName}\x1b[32m`, await tempConnection.raw(operation).then(() => "✔").catch((err: Error) => err.message));
                     }); 
                  } 
                  tempConnection.destroy();
@@ -259,44 +280,44 @@ class configuration {
                     console.log(connection);
                     
                  } else if (err.code === "3D000" && create == true) {
-                     message(false, MODES.DEBUG, messagesReplace(messages.infos.tryCreate, [messages.infos.db]), _CONFIGS[connectName].pg_database);
+                     _LOGS.debug(messagesReplace(messages.infos.tryCreate, [messages.infos.db]), _CONFIGS[connectName].pg_database);
                      returnResult = await createDatabase(connectName)
                          .then(async () => {
-                             message(false, MODES.RESULT, `${messages.infos.db} ${messages.infos.create} [${_CONFIGS[connectName].pg_database}]`, "OK");
+                              _LOGS.result(`${messages.infos.db} ${messages.infos.create} [${_CONFIGS[connectName].pg_database}]`, "OK");
                              return true;
                          })
                          .catch((err: Error) => {
-                             message(false, MODES.ERROR, messagesReplace(messages.infos.create, [messages.infos.db]), err.message);
+                             _LOGS.error(messagesReplace(messages.infos.create, [messages.infos.db]), err.message);
                              return false;
                          });
                  } else console.log(err);
                  tempConnection.destroy();
                  return returnResult;
              });
-     };  
+     }  
 
     async pgwait(options: IDbConnection): Promise<boolean> {
         const pool = new pg.Pool({... options, database: "postgres" });
         let passage = 1;
         const timeStamp = (): string => {
-            const d = new Date()
-            return d.toLocaleTimeString()
-        }
+            const d = new Date();
+            return d.toLocaleTimeString();
+        };
     
         const connect = async (): Promise<boolean> => {
                 try {
                     await pool.query('SELECT 1');
-                    message(false, MODES.RESULT, messagesReplace(messages.infos.dbOnline, [options.database || "none"]), timeStamp());
+                     _LOGS.result(messagesReplace(messages.infos.dbOnline, [options.database || "none"]), timeStamp());
                     await pool.end();
                     return true;
                 }   
                 catch (e) {
-                    // if (passage === 1) message(false, MODES.RESULT, messagesReplace(messages.infos.dbOnline, [options.database || "none"]), timeStamp());
+                    // if (passage === 1)  _LOGS.result( messagesReplace(messages.infos.dbOnline, [options.database || "none"]), timeStamp());
                     return false;
                 }
-        }
+        };
         let testConnection = false;
-        let end = Number(Date.now()) + options.retry  * 1000;
+        const end = Number(Date.now()) + options.retry * 1000;
         do {        
             testConnection = await connect();
             passage += passage;

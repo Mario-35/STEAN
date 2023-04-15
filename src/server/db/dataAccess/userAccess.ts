@@ -6,13 +6,12 @@
  *
  */
 
-import { IUserDataAccess } from "../interfaces";
-import { IUser } from "../interfaces";
 import { _DBDATAS } from "../constants";
 import { encrypt } from "../../helpers/";
 import { db } from "..";
+import { IUser } from "../../types";
 
-export const userAccess: IUserDataAccess = {
+export const userAccess = {
     getAll: async () => {
         return await db["admin"]
             .table("user")

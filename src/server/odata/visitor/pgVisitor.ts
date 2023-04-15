@@ -1,21 +1,21 @@
-import { isGraph, isObservation, _DBDATAS, _ENTITIES } from "../../db/constants";
-import {  getEntityName, removeQuotes, returnFormats } from "../../helpers";
-import { IreturnFormat, MODES } from "../../types";
+import { isGraph, isObservation, _DBDATAS } from "../../db/constants";
+import { getEntityName, removeQuotes, returnFormats } from "../../helpers";
+import { IreturnFormat } from "../../types";
 import { Token } from "../parser/lexer";
 import { Literal } from "../parser/literal";
 import { SQLLiteral } from "../parser/sqlLiteral";
 import { SqlOptions } from "../parser/sqlOptions";
 import koa from "koa";
-import { logDebug, message } from "../../logger";
+import { _LOGS } from "../../logger";
 import { createGetSql, createPostSql, oDatatoDate } from "./helper";
 import { Knex } from "knex";
-import { _CONFIGS, _CONFIGURATION } from "../../configuration";
+import { _CONFIGS } from "../../configuration";
 import { messages } from "../../messages/";
 
 export class PgVisitor {
     public options: SqlOptions;
     // main entity
-    public entity: string = "";
+    public entity = "";
     // parent entity
     parentEntity: string | undefined = undefined;
     extras: undefined;
@@ -23,33 +23,33 @@ export class PgVisitor {
     idLog: bigint | string = BigInt(0);
     id: bigint | string = BigInt(0);
     parentId: bigint | string = BigInt(0);
-    select: string = "";
+    select = "";
     arrayNames: { [key: string]: string } = {} ;
-    where: string = "";
-    orderby: string = "";
+    where = "";
+    orderby = "";
     blanks: string[] | undefined = undefined;
     groupBy: string[] = [];
     expand: string[] = [];
     splitResult: string[] | undefined;
     interval: string | undefined;
-    skip: number = 0;
-    limit: number = 0;
-    count: boolean = false;
-    onlyRef: boolean = false;
-    onlyValue: boolean = false;
+    skip = 0;
+    limit = 0;
+    count = false;
+    onlyRef = false;
+    onlyValue = false;
     navigationProperty: string;
     resultFormat: IreturnFormat = returnFormats.json;
     includes: PgVisitor[] = [];
     parameters: unknown[] = [];
     ast: Token;
-    showRelations: boolean = true;
-    results: { [key: string]: string } = {}
-    sql: string = "";
+    showRelations = true;
+    results: { [key: string]: string } = {};
+    sql = "";
     constructor(options = <SqlOptions>{}, blank?: boolean) {
         this.options = options;
         this.onlyRef = options.onlyRef;
         this.onlyValue = options.onlyValue;
-        if (this.onlyValue  === true) this.resultFormat = returnFormats.txt;        
+        if (this.onlyValue === true) this.resultFormat = returnFormats.txt;        
     }
     
     
@@ -57,7 +57,7 @@ export class PgVisitor {
 // ***                                                           ROSSOURCES                                                                                            ***
 // ***********************************************************************************************************************************************************************
     public setEntity(input: string) { this.entity = input; }
-    public getEntity()  { return this.entity; } 
+    public getEntity() { return this.entity; } 
     public noLimit() {
         this.limit = 0;
         this.skip = 0;
@@ -69,37 +69,37 @@ export class PgVisitor {
     }
 
     addToBlanks(input: string) {
-        if (input.endsWith("Time")) input = `step AS "${input}"`
+        if (input.endsWith("Time")) input = `step AS "${input}"`;
         else if (input === "id") input = `coalesce("@iot.id", 0) AS "@iot.id"`;
-        else if (input.startsWith("CONCAT")) input = `${input}`
-        else if (input[0] !== "'") input = `"${input}"`
+        else if (input.startsWith("CONCAT")) input = `${input}`;
+        else if (input[0] !== "'") input = `"${input}"`;
         if (this.blanks)
             this.blanks.push(input);   
             else this.blanks = [input];            
     }
     
     init(ctx: koa.Context, node: Token) {
-        message(true, MODES.HEAD, "INIT PgVisitor");
+        _LOGS.head("INIT PgVisitor");
         this.limit = +_CONFIGS[ctx._configName].nb_page || 200;
         const temp = this.VisitRessources(node);
-        logDebug(temp);
+        _LOGS.infos("PgVisitor", temp);
         this.verifyRessources(ctx);
         return temp;
     }
 
     verifyRessources = (ctx: koa.Context): void => {
-        message(true, MODES.HEAD, "verifyRessources");
+        _LOGS.head("verifyRessources");
         // TODO REMOVE AFTER ALL 
         
         if (this.entity.toUpperCase() === "LORA") this.setEntity("Loras");
         if (this.parentEntity) {
-            if (!_DBDATAS[this.parentEntity].relations[this.entity])  ctx.throw(40, { detail: messages.errors.invalidPath + this.entity.trim() }); 
-        } else if (!_DBDATAS[this.entity])  ctx.throw(404, { detail: messages.errors.invalidPath + this.entity.trim() }); 
+            if (!_DBDATAS[this.parentEntity].relations[this.entity]) ctx.throw(40, { detail: messages.errors.invalidPath + this.entity.trim() }); 
+        } else if (!_DBDATAS[this.entity]) ctx.throw(404, { detail: messages.errors.invalidPath + this.entity.trim() }); 
     
-    }
+    };
 
     VisitRessources(node: Token, context?: any) {
-            var ressource = this[`VisitRessources${node.type}`]; 
+            const ressource = this[`VisitRessources${node.type}`]; 
             // console.log(`Ressource Visit ==========================> VisitRessources${node.type}`);            
             // console.log(node);
             // console.log(context);          
@@ -144,7 +144,7 @@ export class PgVisitor {
     }
 
     protected VisitRessourcesKeyPropertyValue(node: Token, context: any) {
-        this.id = this.options.loraId ? this.options.loraId :  node.value == "Edm.SByte" ? BigInt(node.raw) : node.raw;  
+        this.id = this.options.loraId ? this.options.loraId : node.value == "Edm.SByte" ? BigInt(node.raw) : node.raw;  
         this.where = this.options.loraId ? `"lora"."deveui" = '${this.options.loraId}'` : `id = ${this.id}`;              
     }
     
@@ -173,9 +173,9 @@ export class PgVisitor {
                 const tmpLinkSplit = tmpLink.split("in (");
                 if (BigInt(this.id) > 0) {
                     this.where = `${tmpLinkSplit[0]} = (SELECT id FROM (${tmpLinkSplit[1]} as l WHERE id = ${this.id})`;
-                } else  this.where = tmpLink;
+                } else this.where = tmpLink;
                 this.parentEntity = this.entity;
-                this.entity  = node.value.path.raw;
+                this.entity = node.value.path.raw;
             } else if (_DBDATAS[this.entity].columns[node.value.path.raw]) {
                     this.select = node.value.path.raw; 
                     this.showRelations = false;
@@ -218,22 +218,23 @@ export class PgVisitor {
 // ***********************************************************************************************************************************************************************
 
     start(ctx: koa.Context, node: Token) {
-        message(true, MODES.HEAD, "Start PgVisitor");
+        _LOGS.head("Start PgVisitor");
         const temp = this.Visit(node);
-        logDebug(temp);this.verifyQuery(ctx);
+        _LOGS.infos("PgVisitor", temp);
+        this.verifyQuery(ctx);
         return temp;
     }
 
     verifyQuery = (ctx: koa.Context): void => {
-        message(true, MODES.HEAD, "verifyQuery");
+        _LOGS.head("verifyQuery");
         if (this.entity === "Logs" && ctx._configName !== "admin") this.where += `${this.where.trim() == "" ? "" : " AND "} (database = '${_CONFIGS[ctx._configName].alias.join("' OR database ='")}')`;
 
         if (this.select.length > 0) {
-            const cols = [...Object.keys(_DBDATAS[this.entity].columns), ...Object.keys(_DBDATAS[this.entity].relations)]
+            const cols = [...Object.keys(_DBDATAS[this.entity].columns), ...Object.keys(_DBDATAS[this.entity].relations)];
             
             this.select.split(",").filter((e:string) => e.trim() != "").forEach((element:string) => {
                 const test = removeQuotes(element);   
-                if (!cols.includes(test) && test !== "result")  ctx.throw(404, {  detail: messages.errors.invalidName +  test} );   
+                if (!cols.includes(test) && test !== "result") ctx.throw(404, { detail: messages.errors.invalidName + test} );   
             }); 
         }
         const expands: string[] = [];
@@ -245,8 +246,8 @@ export class PgVisitor {
             const elems = elem.split("/");
             elems.unshift(this.entity);     
             if (elems[0]) {            
-                if (!Object.keys(_DBDATAS[elems[0]].relations).includes(elems[1]) )  ctx.throw(400, { detail:`Invalid expand path ${elems[1]} for ${elems[0]}` });  
-            }  else  ctx.throw(400, { detail: messages.errors.invalidEntity + elems[0] });  
+                if (!Object.keys(_DBDATAS[elems[0]].relations).includes(elems[1]) ) ctx.throw(400, { detail:`Invalid expand path ${elems[1]} for ${elems[0]}` });  
+            } else ctx.throw(400, { detail: messages.errors.invalidEntity + elems[0] });  
         });    
         
         if (isObservation(this.entity) === true && this.splitResult !== undefined && Number(this.parentId) == 0) {
@@ -258,14 +259,14 @@ export class PgVisitor {
 
         }
         // ctx._log = this.log;
-    }
+    };
 
     Visit(node: Token, context?: any) {
         this.ast = this.ast || node;
         context = context || { target: "where" };
 
         if (node) {
-            var visitor = this[`Visit${node.type}`];            
+            const visitor = this[`Visit${node.type}`];            
             // console.log(`VISIT =============================================> Visit${node.type}`);              
             // console.log(node);
             // console.log(context);          
@@ -287,14 +288,14 @@ export class PgVisitor {
                 if (typeof this.id == "string") {
                     this.where = `"lora"."deveui" = '${this.id}'`;
                 }
-            };
+            }
         }
         return this;
     }
 
     protected VisitExpand(node: Token, context: any) {
         node.value.items.forEach((item: Token) => {
-          let expandPath = item.value.path.raw;
+          const expandPath = item.value.path.raw;
           
           let visitor = this.includes.filter(v => v.navigationProperty == expandPath)[0];
           
@@ -368,7 +369,7 @@ export class PgVisitor {
     }
 
     protected VisitFilter(node: Token, context: any) {
-        if (this.where.trim() != "") this.where += " AND "
+        if (this.where.trim() != "") this.where += " AND ";
         context.target = "where";
         this.Visit(node.value, context);
     }
@@ -507,8 +508,8 @@ export class PgVisitor {
                         if (!context.key) {
                             context.key = _DBDATAS[this.entity].relations[context.relation].entityColumn;
                             this[context.target] += `"${context.key}"`;
-                        };
-                        return
+                        }
+                        return;
                     }
                 }  
                 
@@ -521,8 +522,8 @@ export class PgVisitor {
                     if (!context.key) {
                         context.key = _DBDATAS[this.entity].relations[context.relation].entityColumn;
                         this[context.target] = `"${_DBDATAS[this.entity].relations[context.relation].entityColumn}"`;
-                    };
-                    return
+                    }
+                    return;
                 }      
             }
         if (!context.key) this[context.target] += `"${node.value.name}"`;
@@ -574,19 +575,19 @@ export class PgVisitor {
             const temp = column.split("/");
             if (_DBDATAS[this.entity].relations.hasOwnProperty(temp[0])) {
                 const rel = _DBDATAS[this.entity].relations[temp[0]];
-                column = `(SELECT "${temp[1]}" FROM "${rel.tableName}" WHERE ${rel.expand} AND length("${temp[1]}"::text) > 2)`
+                column = `(SELECT "${temp[1]}" FROM "${rel.tableName}" WHERE ${rel.expand} AND length("${temp[1]}"::text) > 2)`;
                 test = _DBDATAS[rel.entityName].columns[temp[1]].test;
                 if (test) test = `(SELECT "${test}" FROM "${rel.tableName}" WHERE ${rel.expand})`;
             }
         } else if (!_DBDATAS[this.entity].columns.hasOwnProperty(column)) {
             if (_DBDATAS[this.entity].relations.hasOwnProperty(column)) {
                 const rel = _DBDATAS[this.entity].relations[column];
-                column = `(SELECT "${rel.entityColumn}" FROM "${rel.tableName}" WHERE ${rel.expand} AND length("${rel.entityColumn}"::text) > 2)`
+                column = `(SELECT "${rel.entityColumn}" FROM "${rel.tableName}" WHERE ${rel.expand} AND length("${rel.entityColumn}"::text) > 2)`;
                 test = _DBDATAS[rel.entityName].columns[rel.entityColumn].test;                
             } else throw new Error(`Invalid column ${column}`); 
         } else {
             test = `"${_DBDATAS[this.entity].columns[column].test}"`;
-            column  = `"${column}"`;
+            column = `"${column}"`;
         }
         if (test) column = `CASE 
         WHEN  ${test} = 'application/vnd.geo+json'
@@ -603,13 +604,13 @@ export class PgVisitor {
             let temp = decodeURIComponent(Literal.convert(params[index].value, params[index].raw));
             temp = temp === "result" ? "_resultnumber" : temp;
 
-            return (_DBDATAS[this.entity].columns[temp]) ? `"${temp}"` :  `'${temp}'`;
-        }
+            return (_DBDATAS[this.entity].columns[temp]) ? `"${temp}"` : `'${temp}'`;
+        };
 
         const geoColumnOrData = (index: number, srid: boolean): string => {
             const temp = decodeURIComponent(Literal.convert(params[index].value, params[index].raw)).replace("geography", "");
-            return (_DBDATAS[this.entity].columns[temp]) ? temp :  `${srid === true ? 'SRID=4326;' : '' }${removeQuotes(temp)}`;
-        }
+            return (_DBDATAS[this.entity].columns[temp]) ? temp : `${srid === true ? 'SRID=4326;' : '' }${removeQuotes(temp)}`;
+        };
 
         const cleanData = (index: number): string => params[index].value == 'Edm.String' ? removeQuotes(Literal.convert(params[index].value, params[index].raw)) : Literal.convert(params[index].value, params[index].raw);
 

@@ -17,11 +17,10 @@ import fs from "fs";
 //     fileConfigJson = undefined;
 // }
 
-export var _appName = process.env.npm_package_name || '_STEAN';
-export var _appVersion = process.env.npm_package_version || '0';
-
-
-export var _debug = process.env.DEBUG?.trim() === "true";
+export const _appName = process.env.npm_package_name || '_STEAN';
+export const _appVersion = process.env.npm_package_version || '0';
+export let _DEBUGFILE = false;
+export let _debug = true;
 export const _KEYAPP = fs.readFileSync(__dirname + "/config/.key", "utf8") || "zLwX893Mtt9Rc0TKvlInDXuZTFj9rxDV";
 export const _VOIDTABLE = "spatial_ref_sys";
 export const _DOUBLEQUOTE = '"';
@@ -34,6 +33,10 @@ export const _HELMETCONFIG = Object.freeze({
     styleSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com", "fonts.googleapis.com"]
 });
 
+export function setDebugFile(input: boolean) {
+    _DEBUGFILE = input;
+}
+
 export function setDebug(input: boolean) {
     _debug = input;
-};
+}

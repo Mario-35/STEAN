@@ -10,13 +10,13 @@ import { createSql, getColumnsList } from ".";
 import { isObservation, isSingular, _DBDATAS } from "../../../db/constants";
 import { getEntityName } from "../../../helpers";
 import { queryAsJson } from "../../../helpers/returnFormats";
-import { message } from "../../../logger";
-import { MODES, PgQuery } from "../../../types";
+import { _LOGS } from "../../../logger";
+import { PgQuery } from "../../../types";
 import { PgVisitor } from "../PgVisitor";
 
 
 export function createQueryString(main: PgVisitor, element: PgVisitor): string { 
-    message(true, MODES.HEAD, "createQueryString");  
+    _LOGS.head("createQueryString");  
     const tempPgQuery = createQueryPgQuery(main, element);
     if (!tempPgQuery) return "ERROR";
     const sql = createSql(tempPgQuery);
@@ -24,7 +24,7 @@ export function createQueryString(main: PgVisitor, element: PgVisitor): string {
 }
 
 export function createQueryPgQuery(main: PgVisitor, element: PgVisitor): PgQuery | undefined { 
-    message(true, MODES.HEAD, "createQueryPgQuery");  
+    _LOGS.head("createQueryPgQuery");  
     // get the name of the entity
     const realEntity = element.relation ? element.relation : element.getEntity() ;
     if (realEntity) {

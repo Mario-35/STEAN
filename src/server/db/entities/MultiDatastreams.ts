@@ -8,11 +8,10 @@
 
 import { Knex } from "knex";
 import koa from "koa";
-import { message } from "../../logger";
 import { Common } from "./common";
 import { messages, messagesReplace } from "../../messages/";
-import { MODES } from "../../types";
 import { _DBDATAS } from "../constants";
+import { _LOGS } from "../../logger";
 
 
 export class MultiDatastreams extends Common {
@@ -21,16 +20,16 @@ export class MultiDatastreams extends Common {
     }
 
     formatDataInput(input: Object | undefined): Object | undefined {
-        message(true, MODES.HEAD, `class ${this.constructor.name} override formatDataInput`);
+        _LOGS.head(`class ${this.constructor.name} override formatDataInput`);
         if (!input)
             this.ctx.throw(400, { code: 400, detail: messages.errors.noData });
 
         if (input["multiObservationDataTypes"] && input["unitOfMeasurements"] && input["ObservedProperties"]) {
             if (input["multiObservationDataTypes"].length != input["unitOfMeasurements"].length)
-                this.ctx.throw(400, { code: 400,  detail: messagesReplace(messages.errors.sizeListKeysUnitOfMeasurements, [input["unitOfMeasurements"].length, input["multiObservationDataTypes"].length]) });
+                this.ctx.throw(400, { code: 400, detail: messagesReplace(messages.errors.sizeListKeysUnitOfMeasurements, [input["unitOfMeasurements"].length, input["multiObservationDataTypes"].length]) });
 
             if (input["multiObservationDataTypes"].length != input["ObservedProperties"].length)
-                this.ctx.throw(400, { code: 400,  detail: messagesReplace(messages.errors.sizeListKeysObservedProperties, [input["ObservedProperties"].length, input["multiObservationDataTypes"].length]) });
+                this.ctx.throw(400, { code: 400, detail: messagesReplace(messages.errors.sizeListKeysObservedProperties, [input["ObservedProperties"].length, input["multiObservationDataTypes"].length]) });
         }
         if (input && input["multiObservationDataTypes"] && input["multiObservationDataTypes"] != null)
             input["multiObservationDataTypes"] = JSON.stringify(input["multiObservationDataTypes"]).replace("[", "{").replace("]", "}");

@@ -39,17 +39,6 @@ export const enum FORMATS {
     ico = "ico"
 }
 
-export enum MODES {  
-    HEAD = "HEAD",
-    DEBUG = "DEBUG", 
-    RESULT = "RESULT",
-    INFO = "INFO", 
-    ERROR = "ERROR", 
-    ENV = "ENV", 
-    CLASS = "CLASS", 
-    OVERRIDE = "OVERRIDE"
-}
-
 export enum RELATIONS {
     belongsTo,
     belongsToMany,

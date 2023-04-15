@@ -8,10 +8,9 @@
 
  import koa from "koa";
  import { getUserId } from "../helpers";
- import { logDebug } from ".";
- import { _CONFIGURATION } from "../configuration";
  import { _DBDATAS } from "../db/constants";
  import { db } from "../db";
+import { _LOGS } from ".";
  
  export const writeToLog = async (ctx: koa.Context, error?: Object): Promise<void> => {
     if (!ctx._addToLog == true ) return;
@@ -26,7 +25,7 @@
             "user_id" : getUserId(ctx).toString(),
             "error": error ? error["message"] + " : " + error["detail"] : "No Message",
             "replayid": ctx._odata.idLog && BigInt(ctx._odata.idLog) > 0 ? ctx._odata.idLog : undefined
-        }  
+        };  
         const code = Math.floor(req.code / 100);
         
         if (ctx._odata.idLog && BigInt(ctx._odata.idLog) > 0 && code !== 2) return;
@@ -35,10 +34,10 @@
                 await db["admin"].table(_DBDATAS.Logs.table).update({"entityid" : res[0]}).where({id: ctx._odata.idLog});
             }
         }).catch((error: any) => {
-            logDebug(error);
+            _LOGS.error(error);
         });
     } catch (error) {
-        logDebug(error);
+        _LOGS.error(error);
     }
  };
  

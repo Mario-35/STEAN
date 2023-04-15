@@ -8,21 +8,21 @@
  */
 
 import { Knex } from "knex";
-import { message } from "../../logger";
-import { IEntity, MODES } from "../../types";
+import { _LOGS } from "../../logger";
+import { IEntity } from "../../types";
 
 export const createTable = async(connectionDb: Knex | Knex.Transaction, tableEntity: IEntity, doAfter: string | undefined): Promise<{ [key: string]: string }> => {
     if(!tableEntity) return {};
 
-    let space = 5;
+    const space = 5;
     const tab = () => " ".repeat(space);
     const tabInsertion: string[] = [];
     const tabConstraints: string[] = [];
-    const  returnValue: { [key: string]: string } ={};
+    const returnValue: { [key: string]: string } ={};
 
     let insertion = "";
     if (!connectionDb) {
-        message(false, MODES.ERROR, "connection Error");
+        _LOGS.error("connection Error");
         return { error: "connection Error" };
     }
 
@@ -83,7 +83,7 @@ export const createTable = async(connectionDb: Knex | Knex.Transaction, tableEnt
             returnValue[`${tab()}Something to do after for ${tableEntity.table}`] = await connectionDb
                 .raw(tableEntity.after)
                 .then(() => "✔")
-                .catch((error: Error) => { console.log (error);return error.message});
+                .catch((error: Error) => { console.log (error);return error.message;});
     }
 
     // CREATE SOMETHING AFTER (migration)
@@ -95,4 +95,4 @@ export const createTable = async(connectionDb: Knex | Knex.Transaction, tableEnt
     }
 
     return returnValue;
-}
+};

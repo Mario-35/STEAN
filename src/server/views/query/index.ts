@@ -9,13 +9,11 @@
 /* eslint-disable quotes */
 
 import fs from "fs";
-import { _DBDATAS } from "../../db/constants";
-import { message } from "../../logger";
-import { MODES } from "../../types";
+import { _LOGS } from "../../logger";
 import { IQuery } from "../constant";
 import { commonHtml } from "../helpers";
 
 export const queryHtmlPage = (params: IQuery): string => {
-    message(true, MODES.HEAD, "queryHtmlPage");
+    _LOGS.head("queryHtmlPage");
     return commonHtml(fs.readFileSync(__dirname + "/query.html").toString(), params);
 };

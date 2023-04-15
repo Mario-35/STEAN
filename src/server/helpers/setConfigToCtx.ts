@@ -7,7 +7,6 @@
  */
 
 import koa from "koa";
-import { getConfigName } from ".";
 import { _CONFIGS, _CONFIGURATION } from "../configuration";
 import querystring from "querystring";
 import cookieModule from "cookie";
@@ -89,7 +88,7 @@ export const setConfigToCtx = (ctx: koa.Context): void => {
             .split("/")
             .filter((value: string) => value.match(/v{1}\d\.\d/g))[0] || _APIVERSION;
 
-    const temp = getConfigName(ctx);
+    const temp = _CONFIGURATION.getConfigNameFromContext(ctx);
 
     if (!temp) throw new Error("No config name found");    
     if (_CONFIGURATION.isInConfig(temp) === false) throw new Error(`${temp} Not present in config File`);    

@@ -35,7 +35,8 @@ interface IEntityRelation {
 }
 
 export interface IEntity {
-    readonly name: string;
+    readonly name: string; // Entity Name
+    readonly standard: boolean; // Is extend of SensorThings standard
     readonly clone?: string;
     readonly singular: string;
     readonly table: string;

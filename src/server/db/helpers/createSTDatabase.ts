@@ -6,18 +6,18 @@
  *
  */
 
+import knex from "knex";
 import koa from "koa";
  import { createTable, testConnection } from ".";
  import { _CONFIGS, _CONFIGURATION } from "../../configuration";
  import { asyncForEach, isTest } from "../../helpers";
- import { logDebug, message } from "../../logger";
-import { MODES } from "../../types";
- import { _DBDATAS, _DBST, _RIGHTS } from "../constants";
+ import { _LOGS } from "../../logger";
+ import { _DBST, _RIGHTS } from "../constants";
  import { datasDemo } from "../createDBDatas/datasDemo";
  import { triggers } from "../createDBDatas/triggers";
  
  export const createSTDatabase = async(configName: string, ctx?: koa.Context): Promise<{ [key: string]: string }> => {
-      message(true, MODES.HEAD, "createDatabase", "createDatabase");
+      _LOGS.head("createDatabase", "createDatabase");
       // init result
      const returnValue: { [key: string]: string } = { "Start create Database": _CONFIGS[configName].pg_database };
      const adminConnection = _CONFIGURATION.getKnexConnection(_CONFIGURATION.getStringConnection("admin", "postgres"));
@@ -43,7 +43,7 @@ import { MODES } from "../../types";
              returnValue[`Create Database`] = `${_CONFIGS[configName].pg_database} ✔`;
              // create USER if not exist
              await adminConnection.raw(`select count(*) FROM pg_user WHERE usename = '${_CONFIGS[configName].pg_user}';`).then(async (res: any) => {
-                 if (res.rows[0].count  == 0) {
+                 if (res.rows[0].count == 0) {
                      returnValue[`CREATE ROLE ${_CONFIGS[configName].pg_user}`] = await adminConnection .raw(`CREATE ROLE ${_CONFIGS[configName].pg_user} WITH PASSWORD '${_CONFIGS[configName].pg_password}' ${_RIGHTS};`)
                          .then(() => "✔")
                          .catch((err: Error) => err.message);
@@ -59,24 +59,29 @@ import { MODES } from "../../types";
                                  })
                                  .catch((err: Error) => {
                                      returnValue[`Admin connection destroy`] = "✖";
-                                     message(false, MODES.ERROR, err.message);
+                                     _LOGS.error(err.message);
                                  });
- 
                          })
                          .catch((err: Error) => {
-                             logDebug(err);
-                             message(false, MODES.ERROR, err.message);
+                             _LOGS.error(err);
                          });
                  }
              });
-         })
-         .catch((err: Error) => {
-             logDebug(err);
-             message(false, MODES.ERROR, err.message);
+         }).catch((err: Error) => {
+             _LOGS.error(err);
          });
  
-
-      const connDb = _CONFIGURATION.getKnexConnection(_CONFIGURATION.getStringConnection("admin", _CONFIGS[configName].pg_database));
+    const connDb = knex({
+        client: "pg",
+        connection: {
+            host: _CONFIGS["admin"].pg_host,
+            user: _CONFIGS["admin"].pg_user,
+            password: _CONFIGS["admin"].pg_password,
+            database: _CONFIGS[configName].pg_database
+        },
+        pool: { min: 0, max: 7 },
+        debug: false
+    });
 
      // create postgis
      returnValue[`Create postgis`] = await connDb
@@ -117,5 +122,6 @@ import { MODES } from "../../types";
          returnValue["Create DB"] = "✔";
      });
      
+     connDb.destroy();
      return returnValue;
- }
+ };

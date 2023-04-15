@@ -14,7 +14,7 @@ import koa from "koa";
  * @returns string or undefined
  */
 
-import { logAll, logDebug } from "../logger";
+import { _LOGS } from "../logger";
 import { _debug } from "../constants";
 
 export const configCtx = (ctx: koa.Context): any => {
@@ -49,9 +49,9 @@ export const configCtx = (ctx: koa.Context): any => {
 };
 
 export const showconfigCtx = (ctx: koa.Context, force?: boolean): void => {
-    if (_debug) logAll(ctx.request);
+    if (_debug) console.log(_LOGS.logAll(ctx.request));
     const temp = configCtx(ctx);
     if (force) {
         console.log(temp);
-    } else logDebug(temp);
+    } else _LOGS.infos("configCtx", temp);
 };

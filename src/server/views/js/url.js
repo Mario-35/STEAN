@@ -194,6 +194,7 @@
   
     addInOption("resultFormat", (queryResultFormat.value != "json" ) ? queryResultFormat.value : "");
     addInOption("debug", getIfChecked("checkDebug") ? "true" : "");
+    addInOption("count", getIfChecked("count") ? "true" : "");
     if (intervalOption.value != "" && isObservation() ) addInOption("interval",intervalOption.value);
     if (!["","0"].includes(skipOption.value)) addInOption("skip",skipOption.value);
     if (!["","0"].includes(topOption.value)) addInOption("top",topOption.value);

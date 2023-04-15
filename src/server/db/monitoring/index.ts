@@ -5,11 +5,11 @@ export const getMetrics = ():Object => {
     const username = 'postgres';
     
     const minVersion = (major: number, minor: number): boolean => {
-        if ( Number(`${major}.${minor}`) >= dbVersion) return false; else return true
-    }
+        if ( Number(`${major}.${minor}`) >= dbVersion) return false; else return true;
+    };
     const type = "all";
     const lto = 3 * 1000;
-    return  {
+    return {
         versionFull: 'select version()',
         version: `SELECT split_part(split_part(split_part((SELECT version()), ',', 1), ' ', 2), '.', 1) as version`,
         get_extensions: `SELECT extname||'-'||extversion FROM pg_extension`,
@@ -61,5 +61,5 @@ export const getMetrics = ():Object => {
     dump_pgstatarchiver: `SELECT date_trunc('seconds', now()), archived_count, last_archived_wal, last_archived_time, failed_count, last_failed_wal, last_failed_time, stats_reset FROM pg_stat_archiver`,
     dump_preparedxactstats: `SELECT date_trunc('seconds', now()), database, count(*) AS num_prepared, max(coalesce(extract('epoch' FROM date_trunc('second', current_timestamp-prepared)), 0)) oldest FROM pg_prepared_xacts GROUP BY database`,
     dump_statisticsext: `SELECT date_trunc('seconds', now()), current_database(), cn.nspname AS schemaname, c.relname AS tablename, sn.nspname AS stat_schemaname, s.stxname AS stat_name, pg_get_userbyid(s.stxowner) AS stat_owner, (SELECT array_agg(a.attname ORDER BY a.attnum) AS array_agg FROM unnest(s.stxkeys) k(k) JOIN pg_attribute a ON a.attrelid = s.stxrelid AND a.attnum = k.k) AS attnames, s.stxkind AS kinds FROM pg_statistic_ext s JOIN pg_class c ON c.oid = s.stxrelid LEFT JOIN pg_namespace cn ON cn.oid = c.relnamespace LEFT JOIN pg_namespace sn ON sn.oid = s.stxnamespace WHERE NOT (EXISTS (SELECT 1 FROM unnest(s.stxkeys) k(k) JOIN pg_attribute a ON a.attrelid = s.stxrelid AND a.attnum = k.k WHERE NOT has_column_privilege(c.oid, a.attnum, 'select'::text))) AND (c.relrowsecurity = false OR NOT row_security_active(c.oid))`,
-    }
-}
+    };
+};

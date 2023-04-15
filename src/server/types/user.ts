@@ -13,7 +13,6 @@
  import { decrypt } from "../helpers/crypto";
  import { isTest } from "../helpers";
  import { _KEYAPP } from "../constants";
- import { _CONFIGURATION } from "../configuration";
 import { db } from "../db";
  
  export interface IUser {

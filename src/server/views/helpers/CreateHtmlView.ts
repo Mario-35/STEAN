@@ -1,8 +1,15 @@
+/**
+ * Unprotected Routes for API.
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+
 import koa from "koa";
 import { _CONFIGS, _CONFIGURATION } from "../../configuration";
-import { _DBDATAS } from "../../db/constants";
-import { IUser } from "../../db/interfaces";
 import { showconfigCtx } from "../../helpers";
+import { IUser } from "../../types";
 import { userHeader } from "../constant";
 import { addCssFile } from "../css";
 
@@ -19,7 +26,7 @@ export class CreateHtmlView {
             case "user":
                 return addCssFile("userForm.css");
             default:
-                return                 addCssFile("query.css");
+                return addCssFile("query.css");
 
         }
     };
@@ -230,12 +237,13 @@ export class CreateHtmlView {
     };
 
     public status = (user: IUser): string => {
+      const config = _CONFIGURATION.getConfigNameFromDatabase(user.database);  
         return `<!DOCTYPE html> <html> ${this.head(
             "Status",
             "user"
         )} <body> <div class="login-wrap"> <div class="login-html"> <h2>You are authenticated.</h2> <div class="hr"></div> <h3>Username : ${
             user.username
-        }</h3> <h3>Hosting : ${user.database == "all" ? "all" : _CONFIGS[user.database].pg_host}</h3> <h3>Database : ${user.database}</h3> <h3>Status : ${
+        }</h3> <h3>Hosting : ${user.database == "all" ? "all" : config ? _CONFIGS[config].pg_host : "Not Found"}</h3> <h3>Database : ${user.database}</h3> <h3>Status : ${
             user.admin
         }</h3> ${user.superAdmin ? `<div class="inner"> <a href="${this.ctx._linkBase}/admin" class="button-admin" >users</a> </div>` : ""} ${this.foot([
             { href: this.ctx._linkBase + "/Logout", class: "button-logout", name: "Logout" },
@@ -253,23 +261,13 @@ export class CreateHtmlView {
     };
 
     public infos = async (): Promise<string> => {
-        // const temp = statsDatabase(this.ctx._configName);
-        // const res = await getConnection(this.ctx._configName].raw(temp.tables).then((res) => res.rows[0]);
-        // const admin = await getConnection("admin"].raw(temp.admin).then((res) => res.rows[0]);
-
-        // const fillTable = (): string => {
-        //     const returnValue: string[] = [`<tr><td>${this.ctx._linkBase}</td><td>${this.ctx._configName}</td></tr>`];
-        //     Object.keys(res).forEach((element: string) => returnValue.push(`<tr><td>Table ${element}</td><td>${res[element]}</td></tr>`));
-        //     Object.keys(admin).forEach((element: string) => returnValue.push(`<tr><td>${element}</td><td>${admin[element]}</td></tr>`));
-        //     return returnValue.join("");
-        // };
         return `<!DOCTYPE html> <html> ${this.head(
             "Infos",
             "user"
         )} <body> <div class="login-html"> <div class="table-wrapper"> <table class="fl-table"> <tbody>TODO</tbody></table> </div> ${this.foot([
             { href: this.ctx._linkBase + `/${this.ctx._version}/`, class: "button-submit", name: "Root" },
             { href: this.ctx._linkBase + `/${this.ctx._version}/Query`, class: "button", name: "Query" },
-            { href: `${_CONFIGS[this.ctx._configName].webSiteDoc}`, class: "button-logout", name: "Documentation" }
+            { href: `${_CONFIGS[this.ctx._configName].webSite}`, class: "button-logout", name: "Documentation" }
         ])} </div> </body> </html> `;
     };
 

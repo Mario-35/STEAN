@@ -489,7 +489,7 @@ describe("endpoint : Observations", () => {
             const datas = {
                 "phenomenonTime": "2017-02-07T18:02:00.000Z",
                 "resultTime": "2017-02-07T18:02:05.000Z",
-                "result": 21.6
+                "result": 23
             };
             const infos = {
                 api: `{post} ${entity.name} Post from Datastream`,

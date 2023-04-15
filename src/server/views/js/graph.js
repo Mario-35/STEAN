@@ -77,7 +77,7 @@ function createOptions(datas) {
         ],
         series: datasList
     };
-};
+}
 
 function showGraph(value) {
     const container = document.getElementById('graph');

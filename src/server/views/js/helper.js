@@ -10,12 +10,12 @@
   function header(message, infos) {
     if (isDebug) console.log(`==================== ${message} ====================`);
     if (isDebug && infos) typeof infos === "object" ? console.log(infos) : console.log(`==>${infos}<==`);
-  };
+  }
 
   // show spinner
   function wait(on) {
     toggleShowHide(spinner, on);
-  };
+  }
 
   async function asyncForEach(array, callback) {
     for (let index = 0; index < array.length; index++) {
@@ -23,10 +23,10 @@
     }
   }
 
-  const getElement = (input) =>  {
+  const getElement = (input) => {
     const elem = (typeof input === "string") ? document.getElementById(input) : input;
     return (typeof(elem) != 'undefined' && elem != null) ? elem : undefined;
-  }
+  };
 
   function getEntityName(search) {
     const testString = search
@@ -42,7 +42,7 @@
     }
 
 
-async function  getFetchDatas(url, format) {
+async function getFetchDatas(url, format) {
   header("getFetchDatas", url);
   const response = await fetch(encodeURI(url), {
     method: "GET",

@@ -10,25 +10,11 @@ import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
 import { getBigIntFromString, notNull, removeQuotes } from "../../helpers/index";
-import {  _DBDATAS } from "../constants";
+import { _DATEFORMATNOTIMEZONE, _DBDATAS } from "../constants";
 import { _DOUBLEQUOTE, _QUOTEDCOMA, _VOIDTABLE } from "../../constants";
-import { logDebug, message } from "../../logger";
-import { IReturnResult, MODES } from "../../types";
+import { _LOGS } from "../../logger";
+import { IReturnResult } from "../../types";
 import { messages, messagesReplace } from "../../messages/";
-
-
-
-// const notNull = (input: any): boolean => {
-//     switch (typeof input) {
-//         case "string":
-//             if(input && input != "" && input != null) return true;
-//         case "object":
-//             if(input && Object.keys(input).length > 0) return true;    
-//         default:
-//             return false;
-//     }
-    
-// }
 
 export class Loras extends Common {
     synonym: object = {};
@@ -36,7 +22,7 @@ export class Loras extends Common {
         super(ctx, knexInstance);
     }
     async prepareInputResult(dataInput: Object): Promise<Object> {
-        message(true, MODES.CLASS, this.constructor.name, "prepareInputResult"); 
+        _LOGS.class(this.constructor.name, "prepareInputResult"); 
         ["deveui", "sensor_id", "payload_deciphered"].forEach((key: string) => {
             if (dataInput[key]) dataInput[key] = dataInput[key].toUpperCase();
         });
@@ -45,9 +31,9 @@ export class Loras extends Common {
     // load decoder and decode payload with the code
 
 
-    async decodeLoraValues(knexInstance: Knex | Knex.Transaction, loraDeveui: string, input: any): Promise<{[key: string]: string}>  {   
+    async decodeLoraValues(knexInstance: Knex | Knex.Transaction, loraDeveui: string, input: any): Promise<{[key: string]: string}> {   
             
-       message(true, MODES.INFO, "decodeLoraValues", loraDeveui);
+       _LOGS.debug("decodeLoraValues", loraDeveui);
        try {
            return await knexInstance(_DBDATAS.Decoders.table).select("code").whereRaw(`id = (SELECT "decoder_id" FROM "${_DBDATAS.Loras.table}" WHERE "deveui" = '${loraDeveui}')`).first().then((res: any) => {
                if (res) {
@@ -61,10 +47,10 @@ export class Loras extends Common {
                return {"error" : "decoder error"};            
            });
        } catch (error) {
-           logDebug(error);           
+           _LOGS.error(error);           
        }
        return {"error" : "decoder error"};            
-   };
+   }
 
     createListQuery(input: string[], columnListString: string): string {
         const tempList = columnListString.split("COLUMN");
@@ -72,23 +58,23 @@ export class Loras extends Common {
     }
 
     async add(dataInput: Object, silent?: boolean): Promise<IReturnResult | undefined> {
-        message(true, MODES.OVERRIDE, messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));    
+        _LOGS.override(messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));    
         if (dataInput) dataInput = await this.prepareInputResult(dataInput);
 
         const decodeLoraPayload = async (knexInstance: Knex | Knex.Transaction, loraDeveui: string, input: string): Promise<any> => {
-            message(true, MODES.INFO, `decodeLoraPayload deveui : [${loraDeveui}]`, input);
+            _LOGS.debug(`decodeLoraPayload deveui : [${loraDeveui}]`, input);
             const ErrorMessage = "Decoding Payload error";
             return await knexInstance(_DBDATAS.Decoders.table).select("code", "nomenclature", "synonym", "dataKeys").whereRaw(`id = (SELECT "decoder_id" FROM "${_DBDATAS.Loras.table}" WHERE "deveui" = '${loraDeveui}')`).first().then((res: any) => {
                 try {
                     if (res) {     
                         this.synonym = res.synonym ? res.synonym : {};
                         const F = new Function("input", `${String(res.code)}; const nomenclature = ${JSON.stringify(res.nomenclature)}; return decode(input, nomenclature);`);                   
-                        const temp =  F(input);
+                        const temp = F(input);
                         return temp;
                     }
                  } catch (error) {
                      if (res.dataKeys) { 
-                        let temp: object | undefined = undefined;
+                        let temp: Object | undefined = undefined;
                         res.dataKeys.forEach((key: string) => {
                             if (dataInput["data"][key]) 
                                 temp = { messages : [ {"measurementValue" : dataInput["data"][key]}] }; 
@@ -111,7 +97,7 @@ export class Loras extends Common {
            if (!notNull(dataInput["deveui"])) {
                if (silent) 
                     return this.createReturnResult({ body: messages.errors.deveuiMessage });
-                    else this.ctx.throw(400, { code: 400,  detail: messages.errors.deveuiMessage });
+                    else this.ctx.throw(400, { code: 400, detail: messages.errors.deveuiMessage });
            }
            return await super.add(dataInput);
         }
@@ -120,7 +106,7 @@ export class Loras extends Common {
             if (!notNull(dataInput["deveui"])) {
                if (silent) 
                     return this.createReturnResult({ body: messages.errors.deveuiMessage });
-                    else this.ctx.throw(400, { code: 400,  detail: messages.errors.deveuiMessage });
+                    else this.ctx.throw(400, { code: 400, detail: messages.errors.deveuiMessage });
            }
            return await super.add(dataInput);
         }
@@ -128,7 +114,7 @@ export class Loras extends Common {
         if (!notNull(dataInput["deveui"])) {
             if (silent) 
                 return this.createReturnResult({ body: messages.errors.deveuiMessage });
-                else this.ctx.throw(400, { code: 400,  detail: messages.errors.deveuiMessage });
+                else this.ctx.throw(400, { code: 400, detail: messages.errors.deveuiMessage });
         }
         
         if (notNull(dataInput["payload_deciphered"])) {
@@ -137,8 +123,8 @@ export class Loras extends Common {
             if (dataInput["decodedPayload"].error && !dataInput["data"]) {
                 if (silent) 
                     return this.createReturnResult({ body: dataInput["decodedPayload"].error });
-                    else this.ctx.throw(400, { code: 400,  detail: dataInput["decodedPayload"].error });
-            };
+                    else this.ctx.throw(400, { code: 400, detail: dataInput["decodedPayload"].error });
+            }
         }
 
         const searchMulti = `(SELECT jsonb_agg(tmp.units -> 'name') AS keys 
@@ -159,7 +145,7 @@ export class Loras extends Common {
            if (!datastream) {
                const errorMessage = messages.errors.noStreamDeveui + dataInput["deveui"];
                if (silent) return this.createReturnResult({ body: errorMessage });
-               else this.ctx.throw(404, { code: 404,  detail: errorMessage });
+               else this.ctx.throw(404, { code: 404, detail: errorMessage });
            }
         }
 
@@ -172,18 +158,18 @@ export class Loras extends Common {
         if (!notNull(dataInput["formatedDatas"])) {
             if (silent) 
                  return this.createReturnResult({ body: messages.errors.dataMessage });
-                 else this.ctx.throw(400, { code: 400,  detail: messages.errors.dataMessage });
+                 else this.ctx.throw(400, { code: 400, detail: messages.errors.dataMessage });
         }
         
         dataInput["date"] = getDate();
         if (!dataInput["date"]) {
             if (silent) 
                 return this.createReturnResult({ body: messages.errors.noValidDate });
-                else this.ctx.throw(400, { code: 400,  detail: messages.errors.noValidDate });
+                else this.ctx.throw(400, { code: 400, detail: messages.errors.noValidDate });
             }
             
         if (multiDatastream) { 
-           message(true, MODES.DEBUG, "multiDatastream", multiDatastream);
+           _LOGS.debug("multiDatastream", multiDatastream);
            const listOfSortedValues: {[key: string]: number | null} = {};           
            multiDatastream.keys.forEach((element: string) => {  
                listOfSortedValues[element] = null;               
@@ -200,13 +186,13 @@ export class Loras extends Common {
                 }); 
            }); 
 
-           message(true, MODES.DEBUG, "Values", listOfSortedValues);
+           _LOGS.debug("Values", listOfSortedValues);
     
             // If all datas null
             if (Object.values(listOfSortedValues).filter((word) => word != null).length < 1) {
                 const errorMessage = `${messages.errors.dataNotCorresponding} [${multiDatastream.keys}]`;
                 if (silent) return this.createReturnResult({ body: errorMessage });
-                else this.ctx.throw(400, { code: 400,  detail: errorMessage });
+                else this.ctx.throw(400, { code: 400, detail: errorMessage });
             }
     
             const getFeatureOfInterest = getBigIntFromString(dataInput["FeatureOfInterest"]);
@@ -219,25 +205,25 @@ export class Loras extends Common {
     
             if (searchFOI["rows"].length < 1) {
                 if (silent) return this.createReturnResult({ body: messages.errors.noFoi });
-                else this.ctx.throw(400, { code: 400,  detail: messages.errors.noFoi });
+                else this.ctx.throw(400, { code: 400, detail: messages.errors.noFoi });
             }
             const temp = listOfSortedValues;
             if (temp && typeof temp == "object") {
                 const tempLength = Object.keys(temp).length;
     
-                message(true, MODES.DEBUG, "data : Keys", `${tempLength} : ${multiDatastream.keys.length}`);
+                _LOGS.debug("data : Keys", `${tempLength} : ${multiDatastream.keys.length}`);
                 if (tempLength != multiDatastream.keys.length) {
                     const errorMessage = messagesReplace(messages.errors.sizeListKeys, [String(tempLength), multiDatastream.keys.length]);
                     if (silent) return this.createReturnResult({ body: errorMessage });
-                    else this.ctx.throw(400, { code: 400,  detail: errorMessage });
+                    else this.ctx.throw(400, { code: 400, detail: errorMessage });
                    }
                }
     
             const insertObject = {
                 "featureofinterest_id": "(select featureofinterest1.id from featureofinterest1)",
                 "multidatastream_id": "(select multidatastream1.id from multidatastream1)",
-                "phenomenonTime": `to_timestamp('${dataInput["timestamp"]}','YYYY-MM-DD HH24:MI:SS')::timestamp`,
-                "resultTime": `to_timestamp('${dataInput["timestamp"]}','YYYY-MM-DD HH24:MI:SS')::timestamp`,
+                "phenomenonTime": `to_timestamp('${dataInput["timestamp"]}','${_DATEFORMATNOTIMEZONE}')::timestamp`,
+                "resultTime": `to_timestamp('${dataInput["timestamp"]}','${_DATEFORMATNOTIMEZONE}')::timestamp`,
                 "_resultnumbers": `array ${removeQuotes(JSON.stringify(Object.values(listOfSortedValues)))}`
             };
     
@@ -335,7 +321,7 @@ export class Loras extends Common {
                     }
                 });
         } else if (datastream) { 
-           message(true, MODES.DEBUG, "datastream", datastream);
+           _LOGS.debug("datastream", datastream);
            const getFeatureOfInterest = getBigIntFromString(dataInput["FeatureOfInterest"]);
            const searchFOI = await Common.dbContext.raw(
                getFeatureOfInterest
@@ -346,7 +332,7 @@ export class Loras extends Common {
            if (searchFOI["rows"].length < 1) {
                if (silent) 
                     return this.createReturnResult({ body: messages.errors.noFoi });
-                    else this.ctx.throw(400, { code: 400,  detail: messages.errors.noFoi });
+                    else this.ctx.throw(400, { code: 400, detail: messages.errors.noFoi });
            }
 
            const value = dataInput["decodedPayload"]["measurementValue"] 
@@ -355,17 +341,17 @@ export class Loras extends Common {
                     ? dataInput["decodedPayload"]["messages"][0]["measurementValue"]
                     : undefined;
 
-            if (!value)  {
+            if (!value) {
                 if (silent) 
                     return this.createReturnResult({ body: messages.errors.noValue });
-                    else this.ctx.throw(400, { code: 400,  detail: messages.errors.noValue });
+                    else this.ctx.throw(400, { code: 400, detail: messages.errors.noValue });
             }
             
            const insertObject = {
                "featureofinterest_id": "(select featureofinterest1.id from featureofinterest1)",
                "datastream_id": "(select datastream1.id from datastream1)",
-               "phenomenonTime": `to_timestamp('${dataInput["date"]}','YYYY-MM-DD HH24:MI:SS')::timestamp`,
-               "resultTime": `to_timestamp('${dataInput["date"]}}','YYYY-MM-DD HH24:MI:SS')::timestamp`,
+               "phenomenonTime": `to_timestamp('${dataInput["date"]}','${_DATEFORMATNOTIMEZONE}')::timestamp`,
+               "resultTime": `to_timestamp('${dataInput["date"]}}','${_DATEFORMATNOTIMEZONE}')::timestamp`,
                "_resultnumber": `${value}`
            };
            let searchDuplicate = "";
@@ -378,7 +364,7 @@ export class Loras extends Common {
                searchDuplicate = searchDuplicate.concat(
                    `"_resultnumber" = ${insertObject["_resultnumber"]}`
                );
-               message(true, MODES.DEBUG, "searchDuplicate", searchDuplicate);
+               _LOGS.debug("searchDuplicate", searchDuplicate);
    
            const sql = `WITH "${_VOIDTABLE}" as (select srid FROM "${_VOIDTABLE}" LIMIT 1)
                , featureofinterest1 AS (SELECT id FROM "${_DBDATAS.FeaturesOfInterest.table}"
@@ -435,7 +421,7 @@ export class Loras extends Common {
     }
 
     async update(idInput: bigint | string, dataInput: Object | undefined): Promise<IReturnResult | undefined> {
-        message(true, MODES.OVERRIDE, messagesReplace(messages.infos.classConstructor, [this.constructor.name, `update`]));
+        _LOGS.override(messagesReplace(messages.infos.classConstructor, [this.constructor.name, `update`]));
         return undefined;
     }
 }

@@ -34,7 +34,7 @@ const cardDatas = {};
 let dragText = "";
 
 // log debug test
-let isDebug = false;
+let isDebug = true;
 
 // replace at execution
 const _PARAMS={};

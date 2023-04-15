@@ -7,16 +7,15 @@
  */
 
 import { Knex } from "knex";
-import { message } from "../../logger";
-import { MODES } from "../../types";
+import { _LOGS } from "../../logger";
 
 export const testConnection = async (instance: Knex<any, unknown[]>): Promise<boolean> => {
-    message(true, MODES.INFO, "testConnection", instance.toString());
+    _LOGS.debug("testConnection", instance.toString());
 
     await instance.raw("select 1+1 as result").catch((err) => {
-        message(true, MODES.ERROR, "testConnection", err);
+        _LOGS.error("testConnection", err);
         return false;
     });
-    message(true, MODES.INFO, "testConnection", "OK");
+    _LOGS.debug("testConnection", "OK");
     return true;
 };

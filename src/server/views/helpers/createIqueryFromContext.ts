@@ -9,7 +9,7 @@
 /* eslint-disable quotes */
 
 import koa from "koa";
-import { _DBDATAS } from "../../db/constants";
+import { _DBADMIN, _DBDATAS, _DBST } from "../../db/constants";
 import { getAuthenticatedUser } from "../../types/user";
 import { IQuery } from "../constant";
 
@@ -41,6 +41,11 @@ export const createIqueryFromContext = async (ctx: koa.Context): Promise<IQuery>
               // TODO universal return
         graph: ctx.url.includes("$resultFormat=graph"),
         admin: ctx._configName === 'admin',
-        _DATAS: _DBDATAS
+        _DATAS: ctx._configName === 'admin' === true 
+            ? _DBADMIN 
+            : user && (user.admin === true || user.superAdmin === true) 
+                ? _DBDATAS 
+                : _DBST
+
     };
 };

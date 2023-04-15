@@ -9,7 +9,7 @@ let nb = 0;
 export function getNB(message: string): string {nb +=1; return `${message} ${String(nb)}`;} 
 
 // Institut Agro Rennes-Angers 48.1140652783794, -1.7062956999598533 
-export const geoPos: { [key: string]: number[] }  = {
+export const geoPos: { [key: string]: number[] } = {
     "Centre commercial Grand Quartier" : [48.13765198324515, -1.6956051932646596],
     "Polyclinic Saint Laurent" : [48.139101133693764, -1.6571222811169917],
     "Golf municipal de Cesson-Sévigné": [48.12552590922048, -1.5889906727727678],
@@ -21,7 +21,7 @@ export const geoPos: { [key: string]: number[] }  = {
     "The Mem": [48.089982264765595, -1.7050636226736864],
     "Kenedy": [48.123242161802274, -1.7127016234011674],
     "Institut Agro Rennes-Angers": [48.1140652783794, -1.7062956999598533 ]
-}
+};
 export const positions = Object.values(geoPos);
 export const nbColor = "\x1b[36m";
 export const nbColorTitle = "\x1b[35m";
@@ -41,7 +41,7 @@ export interface IApiInput {
     apiError?: string[];
     apiParam?: string[];
     apiSuccess?: string[];
-    apiParamExample?: Record<string, unknown>;
+    apiParamExample?: Object;
     result: any;
 }
 
@@ -230,7 +230,7 @@ export const limitResult = (input: object, keyName?: string) => {
     // console.log(input["body"]);
     if (input["body"][key]) input["body"][key] = [input["body"][key][0], input["body"][key][1], "..."];
     return input;
-}
+};
 
 const definitions = {
     properties : "A JSON Object containing user-annotated properties as key-value pairs.",
@@ -238,11 +238,11 @@ const definitions = {
     selfLink : "selfLink is the absolute URL of an entity that is unique among all other entities.",
     navigationLink : "navigationLink is the relative or absolute URL that retrieves content of related entities."
     
-}
+};
 
 const types = {
     id : "BigInt"
-}
+};
 export const infos = {
     Things: {
         definition: "A Thing is an object of the physical world (physical Things) or the information world (virtual Things) that is capable of being identified and integrated into communication networks<br>Thing is a good starting point to start creating the SensorThings model structure.<br><br>A Thing has Locations and one or more Datastreams to collect Observations. A minimal Thing can be created without a Location and Datastream and there are options to create a Things with a nested linked Location and Datastream.",
@@ -545,11 +545,11 @@ export const listOfColumns = (inputEntity: IEntity) => {
     });
     return {
         success, params
-    }
-}
+    };
+};
 
 export const blank = (nb: number) => '</br>'.repeat(nb);
-export const showHide = (name: string, content: string) =>  `<input id="show${name}" type=checkbox> <label for="show${name}">Click for Help</label> <span id="content${name}">${content}</span>`;
+export const showHide = (name: string, content: string) => `<input id="show${name}" type=checkbox> <label for="show${name}">Click for Help</label> <span id="content${name}">${content}</span>`;
 
 export const apiInfos = {
     "0" : `List of some code values used for identifying observations result types defined in the Datastream or MultiDatastream observationType.</b> <table> <thead> <tr> <th style="width: 20%">Type (O&M 2.0)</th> <th style="width: 70%">Value Code</th> <th style="width: 10%">Result</th> </tr> </thead> <tbody> <tr> <td>OM_CategoryObservation</td> <td>http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_CategoryObservation</td> <td>URI</td> </tr> <tr> <td>OM_CountObservation</td> <td>http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_CountObservation</td> <td>integer</td> </tr> <tr> <td>OM_Measurement</td> <td>http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement</td> <td>double</td> <tr> <td>OM_complexObservation</td> <td>http://www.opengis.net/def/observation-type/ogc-om/2.0/om_complex-observation</td> <td>array of double</td> </tr> <tr> <td>OM_Observation</td> <td>http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Observation</td> <td>any</td> </tr> <tr> <td>OM_TruthObservation</td> <td>http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_TruthObservation</td> <td>boolean</td> </tr> <tr> <td>OM_SWEArrayObservation</td> <td>http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation</td> <td>array</td> </tr> </tbody> </table>`, "9.2.2" : "To address to an entity set, users can simply put the entity set name after the service root URI. The service returns a JSON object with a property of value. The value of the property SHALL be a list of the entities in the specified entity set.",

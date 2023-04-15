@@ -8,9 +8,8 @@
 
 import { Knex } from "knex";
 import koa from "koa";
-import { message } from "../../logger";
+import { _LOGS } from "../../logger";
 import { messages } from "../../messages";
-import { MODES } from "../../types";
 import { _DBDATAS } from "../constants";
 import { Common } from "./common";
 
@@ -20,7 +19,7 @@ export class Datastreams extends Common {
     }
 
     formatDataInput(input: Object | undefined): Object | undefined {
-        message(true, MODES.OVERRIDE, "formatDataInput");  
+        _LOGS.override("formatDataInput");  
         if(input) {            
             if (input["observationType"]) {
                 if (!_DBDATAS.Datastreams.columns["observationType"].verify?.list.includes(input["observationType"]))

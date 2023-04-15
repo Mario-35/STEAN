@@ -11,7 +11,7 @@ const testNull = (input) => (input.value == "<empty string>" || input.value.trim
  */
 function wait(on) {
   toggleShowHide(spinner, on);
-};
+}
 
 
 // DON'T REMOVE !!!!
@@ -42,25 +42,25 @@ function wait(on) {
     const elemId = getElement(objName);
     if (elemId) return (elemId.checked === true);
     return false;
-  };
+  }
 
   function getIfId(objName) {
     const index = Number(nb.value);
     return (index > 0);
-  };
+  }
   
   function getDefaultValue(obj, list) {
     return obj.value != "" && list.includes(obj.value) ? obj.value : list[0]; 
-  };
+  }
 
   function getFormatOptions() {
-    let temp = importFile ? ["json"]  : ["json","csv","txt","dataArray","sql"];
+    let temp = importFile ? ["json"] : ["json","csv","txt","dataArray","sql"];
     if (isObservation() || queryResultFormat.value == "graph") {
-      temp.push("graph")
-      temp.push("graphDatas")
-    };
+      temp.push("graph");
+      temp.push("graphDatas");
+    }
     return temp;
-  };
+  }
 
   function updateForm() {
     header("updateForm");
@@ -77,8 +77,8 @@ function wait(on) {
     EnabledOrDisabled([queryProperty], (nb.value != ""));
     EnabledOrDisabled([onlyValue], (!queryProperty.value.startsWith(_NONE) && nb.value != ""));
     getElement("actionForm").action = `${optHost.value}/${optVersion.value}/${isObservation() ? "CreateObservations" : `${entity.value}(${nb.value})/CreateFile` }`;
-    if (getIfChecked("checkDebug"))  getElement("actionForm").action += "?$debug=true";
-  };
+    if (getIfChecked("checkDebug")) getElement("actionForm").action += "?$debug=true";
+  }
 
 
 
@@ -93,7 +93,7 @@ function wait(on) {
     updateBuilder();
     canShowQueryButton();
     EnabledOrDisabled([splitResultOption, splitResultOptionName], (subentity.value === "Observations" && entity.value === "MultiDatastreams"));
-  };
+  }
 
   function updateBuilder() {
     const ent = getEntityName(SubOrNot());
@@ -104,7 +104,7 @@ function wait(on) {
       fields.push({
         "value": e,
         "label": e,
-        "type":  _PARAMS._DATAS[ent].columns[e] && _PARAMS._DATAS[ent].columns[e].type  ? _PARAMS._DATAS[ent].columns[e].type : "text",
+        "type":  _PARAMS._DATAS[ent].columns[e] && _PARAMS._DATAS[ent].columns[e].type ? _PARAMS._DATAS[ent].columns[e].type : "text",
       });
     });
     if (builder) builder.clear("query-builder", fields); else builder = new QueryBuilder("query-builder", fields);
@@ -114,7 +114,7 @@ function wait(on) {
 
   function canShowQueryButton() {
     EnabledOrDisabled([go, btnShowLinks], (!testNull(subentity) && testNull(nb)) ? false : true);    
-  };
+  }
 
   // ===============================================================================
   // |                                  GO Button                                  |
@@ -140,7 +140,7 @@ function wait(on) {
       hide(addImport);
           
     }
-  };
+  }
 
 async function editDataClicked(id, _PARAMS) {
   const name = _PARAMS.seriesName;
@@ -172,7 +172,7 @@ async function editDataClicked(id, _PARAMS) {
       temp.push("$" + key + "=" + listOptions[key]);
     }
     return temp.join("&");
-  };
+  }
 
   function ToggleOption(test, key, value, deleteFalse){
     if (test) addOption(key, value, deleteFalse);
@@ -193,7 +193,7 @@ async function editDataClicked(id, _PARAMS) {
 
   function clear() {
     entity.value = _NONE;
-    subentity.value = _NONE
+    subentity.value = _NONE;
     topOption.value = 0;
     skipOption.value = 0;
     nb.value = 0;
@@ -208,14 +208,14 @@ async function editDataClicked(id, _PARAMS) {
     if (isDebug) console.log(_PARAMS);
     new SplitterBar(container, first, two);
     wait(false);
-    const tempEntity = _PARAMS.entity &&  _PARAMS.entity != "" ? _PARAMS.entity : "Things";
+    const tempEntity = _PARAMS.entity && _PARAMS.entity != "" ? _PARAMS.entity : "Things";
     populateSelect(entity, entityList(), tempEntity);
     const subs = relationsList(tempEntity);
     populateSelect(subentity, subs, subs.includes(_PARAMS.subentity) ? _PARAMS.subentity : _NONE, true);
 
-    if (_PARAMS.admin == true) populateSelect(entity, Object.keys(_PARAMS._DATAS), tempEntity);
+    populateSelect(entity, Object.keys(_PARAMS._DATAS), tempEntity);
 
-    populateSelect(method, entity.value == "Loras" ? ["GET","POST"]  : _PARAMS.methods, _PARAMS.method ? _PARAMS.method : "GET");
+    populateSelect(method, entity.value == "Loras" ? ["GET","POST"] : _PARAMS.methods, _PARAMS.method ? _PARAMS.method : "GET");
     populateSelect(selectSeries, ["year", "month", "day"], _NONE, true);
     hide(querySubExpand);
     nb.value = _PARAMS.id;

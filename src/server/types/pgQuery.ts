@@ -14,4 +14,4 @@ export interface PgQuery {
     groupBy?: string;
     skip?: number;
     limit?: number;
-};
+}

@@ -9,7 +9,6 @@
 /* eslint-disable quotes */
 
 import { Knex } from "knex";
-import { _CONFIGURATION } from "../configuration";
 // import { _ENV_VERSION } from "../constants";
 import { getEntityName, returnFormats } from "../helpers";
 import { PgVisitor } from "../odata";
@@ -18,21 +17,23 @@ import { ENTITIES, IEntity, RELATIONS } from "../types";
 export const isSingular = (input: string): boolean => {
     const entityName = getEntityName(input);
     return entityName ? (_DBDATAS[entityName].singular == input) : false;
-}
+};
 export const isGraph = (input: PgVisitor) => [returnFormats.graph, returnFormats.graphDatas].includes(input.resultFormat) ? true : undefined;
-export const isCsvOrArray = (input: PgVisitor) => [returnFormats.dataArray, returnFormats.csv].includes(input.resultFormat)  ? true : undefined;
+export const isCsvOrArray = (input: PgVisitor) => [returnFormats.dataArray, returnFormats.csv].includes(input.resultFormat) ? true : undefined;
 export const isObservation = (input: IEntity | string) => (typeof input === "string") ? input === _DBDATAS.Observations.name : input.name === _DBDATAS.Observations.name;
 // Get date by Database usefull to have the TimeZone
 export const getDateNow = async (conn: Knex | Knex.Transaction): Promise<string> => {
     const tempQuery = await conn.raw("select current_timestamp;");
     return tempQuery["rows"][0]["current_timestamp"];
-}
+};
 
 export const columnList = (input: IEntity) => Object.keys(input.columns).filter((word) => !word.includes("_"));
 export const _RIGHTS = 'SUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION NOBYPASSRLS CONNECTION LIMIT -1';
+const _DATEFORMAT = 'YYYY-MM-DD"T"HH24:MI:SSZ';
+export const _DATEFORMATNOTIMEZONE = 'YYYY-MM-DD HH24:MI:SS';
+
 
 const makeIDAlias = (table: string) => `"${table}"."id" AS "@iot.id"`;
-const _DATEFORMAT = 'YYYY-MM-DD"T"HH24:MI:SSZ';
 
 export const observationTypes = ["http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_CategoryObservation",
                                 "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_CountObservation",
@@ -49,6 +50,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         singular: "Thing",
         table: "thing",
         order: 10,
+        standard: true,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -122,6 +124,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         singular: "FeatureOfInterest",
         table: "featureofinterest",
         order: 4,
+        standard: true,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -191,6 +194,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         singular: "Location",
         table: "location",
         order: 6,
+        standard: true,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -281,6 +285,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         singular: "HistoricalLocation",
         table: "historical_location",
         order: 5,
+        standard: true,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -333,6 +338,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         singular: "locationHistoricalLocation",
         table: "location_historical_location",
         order: -1,
+        standard: true,
         columns: {
             location_id: {
                 create: "BIGINT NOT NULL"
@@ -360,6 +366,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         singular: "ObservedProperty",
         table: "observedproperty",
         order: 8,
+        standard: true,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -421,6 +428,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         singular: "Sensor",
         table: "sensor",
         order: 9,
+        standard: true,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -498,6 +506,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         singular: "Datastream",
         table: "datastream",
         order: 1,
+        standard: true,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -628,6 +637,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         singular: "MultiDatastream",
         table: "multidatastream",
         order: 2,
+        standard: true,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -763,6 +773,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         singular: "MultiDatastreamObservedProperty",
         table: "multi_datastream_observedproperty",
         order: -1,
+        standard: true,
         columns: {
             multidatastream_id: {
                 create: "BIGINT NOT NULL"
@@ -791,6 +802,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         singular: "Observation",
         table: "observation",
         order: 7,
+        standard: true,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -873,11 +885,15 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         },
         constraints: {
             observation_pkey: 'PRIMARY KEY ("id")',
-            observation_unik_result: 'UNIQUE ("_resultnumber", "_resultnumbers", "_resultjson", "_resulttexts", "_resulttext", "resultTime", "datastream_id", "multidatastream_id")',
-            observation_datastream_id_fkey: 'FOREIGN KEY ("datastream_id") REFERENCES "datastream"("id") ON UPDATE CASCADE ON DELETE CASCADE',
+            observation_unik_resultnumber: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id", "featureofinterest_id", "_resultnumber")',
+            observation_unik_resultnumbers: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id", "featureofinterest_id", "_resultnumbers")',
+            observation_unik_resultjson: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id", "featureofinterest_id", "_resultjson")',
+            observation_unik_resulttext: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id", "featureofinterest_id", "_resulttext")',
+            observation_unik_resulttexts: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id", "featureofinterest_id", "_resulttexts")',
+            observation_unik_resultint: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id", "featureofinterest_id", "_resultint")',
+            // observation_unik_result: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id", "featureofinterest_id", "result")',
             observation_multidatastream_id_fkey: 'FOREIGN KEY ("multidatastream_id") REFERENCES "multidatastream"("id") ON UPDATE CASCADE ON DELETE CASCADE',
-            observation_featureofinterest_id_fkey:
-                'FOREIGN KEY ("featureofinterest_id") REFERENCES "featureofinterest"("id") ON UPDATE CASCADE ON DELETE CASCADE'
+            observation_featureofinterest_id_fkey: 'FOREIGN KEY ("featureofinterest_id") REFERENCES "featureofinterest"("id") ON UPDATE CASCADE ON DELETE CASCADE'
         },
         indexes: {
             observation_datastream_id: 'ON public."observation" USING btree ("datastream_id")',
@@ -928,6 +944,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         singular: "HistoricalObservation",
         table: "historical_observation",
         order: -1,
+        standard: true,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -974,6 +991,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         singular: "ThingLocation",
         table: "thing_location",
         order: -1,
+        standard: true,
         columns: {
             thing_id: {
                 create: "BIGINT NOT NULL"
@@ -1000,6 +1018,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         singular: "Decoder",
         table: "decoder",
         order: 12,
+        standard: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -1063,6 +1082,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         singular: "Lora",
         table: "lora",
         order: 11,
+        standard: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -1151,6 +1171,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         table: "user",
         order: 21,
         admin: true,
+        standard: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY"
@@ -1195,6 +1216,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         table: "log_request",
         order: 22,
         admin: true,
+        standard: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -1259,6 +1281,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         table: "config",
         order: 20,
         admin: true,
+        standard: false,
         columns: {
             name: {
                 create: "TEXT GENERATED ALWAYS AS IDENTITY"
@@ -1276,6 +1299,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         singular: "CreateObservation",
         table: "",
         order: 0,
+        standard: true,
         columns: {},
         admin: false,
         relations: {},
@@ -1288,6 +1312,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         singular: "CreateFile",
         table: "",
         order: 0,
+        standard: false,
         columns: {},
         admin: false,
         relations: {},
@@ -1295,8 +1320,12 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         indexes: {}
     }    
 };
-export const countId  = (table: string) =>`SELECT n_live_tup::bigint as count FROM pg_stat_all_tables WHERE relname = '${table}'`;
+export const countId = (table: string) =>`SELECT count(id) FROM ${table}`;
 export const _ENTITIES = Object.values(ENTITIES);
 export const _DBDATAS = Object.freeze(DBDATAS);
 export const _DBST = Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === false));
+export const _DBPUREST = Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === false && v.standard === true));
 export const _DBADMIN = Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === true));
+
+// console.log(Object.keys(_DBDATAS.Observations.columns).forEach((e) => e.startsWith('_')));
+// console.log(Object.keys(_DBDATAS.Observations.columns));
