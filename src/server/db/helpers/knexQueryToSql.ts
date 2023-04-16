@@ -18,8 +18,8 @@ export const knexQueryToSql = (query: Knex.QueryBuilder): string => {
     const tempSqlNative = query.toSQL().toNative();
     let sql = tempSqlNative.sql;
 
-    tempSqlNative.bindings.forEach((Element: any, index: number) => {
-        sql = sql.split(`$${index + 1}`).join(Element);
+    tempSqlNative.bindings.forEach((Element: Knex.Value, index: number) => {
+        sql = sql.split(`$${index + 1}`).join(<string>Element);
     });
 
     return sql;

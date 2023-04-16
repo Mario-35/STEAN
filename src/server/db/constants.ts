@@ -9,10 +9,11 @@
 /* eslint-disable quotes */
 
 import { Knex } from "knex";
+import { Eentities, Erelations } from "../enums";
 // import { _ENV_VERSION } from "../constants";
 import { getEntityName, returnFormats } from "../helpers";
 import { PgVisitor } from "../odata";
-import { ENTITIES, IEntity, RELATIONS } from "../types";
+import { Ientity } from "../types";
 
 export const isSingular = (input: string): boolean => {
     const entityName = getEntityName(input);
@@ -20,14 +21,14 @@ export const isSingular = (input: string): boolean => {
 };
 export const isGraph = (input: PgVisitor) => [returnFormats.graph, returnFormats.graphDatas].includes(input.resultFormat) ? true : undefined;
 export const isCsvOrArray = (input: PgVisitor) => [returnFormats.dataArray, returnFormats.csv].includes(input.resultFormat) ? true : undefined;
-export const isObservation = (input: IEntity | string) => (typeof input === "string") ? input === _DBDATAS.Observations.name : input.name === _DBDATAS.Observations.name;
+export const isObservation = (input: Ientity | string) => (typeof input === "string") ? input === _DBDATAS.Observations.name : input.name === _DBDATAS.Observations.name;
 // Get date by Database usefull to have the TimeZone
 export const getDateNow = async (conn: Knex | Knex.Transaction): Promise<string> => {
     const tempQuery = await conn.raw("select current_timestamp;");
     return tempQuery["rows"][0]["current_timestamp"];
 };
 
-export const columnList = (input: IEntity) => Object.keys(input.columns).filter((word) => !word.includes("_"));
+export const columnList = (input: Ientity) => Object.keys(input.columns).filter((word) => !word.includes("_"));
 export const _RIGHTS = 'SUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION NOBYPASSRLS CONNECTION LIMIT -1';
 const _DATEFORMAT = 'YYYY-MM-DD"T"HH24:MI:SSZ';
 export const _DATEFORMATNOTIMEZONE = 'YYYY-MM-DD HH24:MI:SS';
@@ -44,7 +45,7 @@ export const observationTypes = ["http://www.opengis.net/def/observationType/OGC
                                 "http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation"];
 
 
-const DBDATAS: { [key in ENTITIES]: IEntity } = {
+const DBDATAS: { [key in Eentities]: Ientity } = {
     Things: {
         name: "Things",
         singular: "Thing",
@@ -77,7 +78,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         admin: false,
         relations: {
             Locations: {
-                type: RELATIONS.belongsToMany,
+                type: Erelations.belongsToMany,
                 expand: `"location"."id" in (select "thing_location"."location_id" from "thing_location" where "thing_location"."thing_id" = "thing"."id")`,
                 link: `"location"."id" in (select "thing_location"."location_id" from "thing_location" where "thing_location"."thing_id" = $ID)`,
                 entityName: "Locations",
@@ -87,7 +88,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "thing_id"
             },
             HistoricalLocations: {
-                type: RELATIONS.hasMany,
+                type: Erelations.hasMany,
                 expand: `"historical_location"."id" in (select "historical_location"."id" from "historical_location" where "historical_location"."thing_id" = "thing"."id")`,
                 link: `"historical_location"."id" in (select "historical_location"."id" from "historical_location" where "historical_location"."thing_id" = $ID)`,
                 entityName: "HistoricalLocation",
@@ -97,7 +98,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "id"
             },
             Datastreams: {
-                type: RELATIONS.hasMany,
+                type: Erelations.hasMany,
                 expand: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."thing_id" = "thing"."id")`,
                 link: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."thing_id" = $ID)`,
                 entityName: "Datastreams",
@@ -107,7 +108,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "id"
             },
             MultiDatastreams: {
-                type: RELATIONS.hasMany,
+                type: Erelations.hasMany,
                 expand: `"multidatastream"."id" in (select "multidatastream"."id" from "multidatastream" where "multidatastream"."thing_id" = "thing"."id")`,
                 link: `"multidatastream"."id" in (select "multidatastream"."id" from "multidatastream" where "multidatastream"."thing_id" = $ID)`,
                 entityName: "MultiDatastreams",
@@ -158,7 +159,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         admin: false,
         relations: {
             Observations: {
-                type: RELATIONS.hasMany,
+                type: Erelations.hasMany,
                 expand: `"observation"."id" in (select "observation"."id" from "observation" where "observation"."featureofinterest_id" = "featureofinterest"."id")`,
                 // link: `"observation"."id" = (select "observation"."id" from "observation" where "observation"."id" = $NESTED AND "observation"."featureofinterest_id" = $ID)`,
                 link: `"observation"."id" in (select "observation"."id" from "observation" where "observation"."featureofinterest_id" = $ID)`,
@@ -170,7 +171,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "id"
             },
             Locations: {
-                type: RELATIONS.belongsTo,
+                type: Erelations.belongsTo,
                 expand: `"location"."id" in (select "location"."id" from "location" where "location"."_default_foi" = "featureofinterest"."id")`,
                 link: "err: 404 : Not a valid Path.",
 
@@ -242,7 +243,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         admin: false,
         relations: {
             Things: {
-                type: RELATIONS.belongsToMany,
+                type: Erelations.belongsToMany,
                 expand: `"thing"."id" in (select "thing_location"."thing_id" from "thing_location" where "thing_location"."location_id" = "location"."id")`,
                 link: `"thing"."id" in (select "thing_location"."thing_id" from "thing_location" where "thing_location"."location_id" = $ID)`,
 
@@ -253,7 +254,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "thing_id"
             },
             HistoricalLocations: {
-                type: RELATIONS.belongsToMany,
+                type: Erelations.belongsToMany,
                 expand: `"historical_location"."id" in (select "historical_location"."id" from "historical_location" where "historical_location"."thing_id" in (select "thing_location"."thing_id" from "thing_location" where "thing_location"."location_id" = "location"."id"))`,
                 link: `"historical_location"."id" in (select "historical_location"."id" from "historical_location" where "historical_location"."thing_id" in (select "thing_location"."thing_id" from "thing_location" where "thing_location"."location_id" = $ID))`,
 
@@ -265,7 +266,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "id"
             },
             FeatureOfInterest: {
-                type: RELATIONS.belongsTo,
+                type: Erelations.belongsTo,
                 expand: `"featureofinterest"."id" = "location"."_default_foi"`,
                 // link: "err: 404 : Path is not valid.",
                 link: `"featureofinterest"."id" = (select "location"."_default_foi" from "location" where "location"."id" = $ID)`,
@@ -309,7 +310,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         relations: {
             // TODO NOT GOOD
             Things: {
-                type: RELATIONS.belongsTo,
+                type: Erelations.belongsTo,
                 expand: `"thing"."id" = "historical_location"."thing_id"`,
                 link: `"thing"."id" = (select "historical_location"."thing_id" from "historical_location" where "historical_location"."id" = $ID)`,
 
@@ -320,7 +321,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "id"
             },
             Locations: {
-                type: RELATIONS.belongsToMany,
+                type: Erelations.belongsToMany,
                 expand: `"location"."id" in (select "location"."id" from "location" where "location"."id" in (select "thing_location"."location_id" from "thing_location" where "thing_location"."thing_id" = "historical_location"."thing_id"))`,
                 link: `"location"."id" in (select "location"."id" from "location" where "location"."id" in (select "thing_location"."location_id" from "thing_location" where "thing_location"."thing_id" in (select "historical_location"."thing_id" from "historical_location" where "historical_location"."id" = $ID)))`,
 
@@ -398,7 +399,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         admin: false,
         relations: {
             Datastreams: {
-                type: RELATIONS.hasMany,
+                type: Erelations.hasMany,
                 // expand: "err: 501 : Not Implemented.",
                 expand: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."observedproperty_id" = "observedproperty"."id")`,
                 link: `"datastream"."id" in (SELECT "datastream"."id" FROM "datastream" WHERE "datastream"."observedproperty_id" = $ID)`,
@@ -410,7 +411,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "id"
             },
             MultiDatastreams: {
-                type: RELATIONS.hasMany,
+                type: Erelations.hasMany,
                 expand: `"multidatastream"."id" in (SELECT "multi_datastream_observedproperty"."multidatastream_id" FROM "multi_datastream_observedproperty" WHERE "multi_datastream_observedproperty"."observedproperty_id" = "observedproperty"."id")`,
                 link: `"multidatastream"."id" in (SELECT "multi_datastream_observedproperty"."multidatastream_id" FROM "multi_datastream_observedproperty" WHERE "multi_datastream_observedproperty"."observedproperty_id" = $ID)`,
 
@@ -468,7 +469,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         admin: false,
         relations: {
             Datastreams: {
-                type: RELATIONS.hasMany,
+                type: Erelations.hasMany,
                 expand: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."id" = "sensor"."id")`,
                 link: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."sensor_id" = $ID)`,
                 entityName: "Datastreams",
@@ -478,7 +479,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "id"
             },
             MultiDatastreams: {
-                type: RELATIONS.hasMany,
+                type: Erelations.hasMany,
                 expand: `"multidatastream"."id" in (select "multidatastream"."id" from "multidatastream" where "multidatastream"."id" = "sensor"."id")`,
                 link: `"multidatastream"."id" in (select "multidatastream"."id" from "multidatastream" where "multidatastream"."sensor_id" = $ID)`,
 
@@ -489,7 +490,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "id"
             },
             Loras: {
-                type: RELATIONS.belongsTo,
+                type: Erelations.belongsTo,
                 expand: `"lora"."id" = (select "lora"."id" from "lora" where "lora"."sensor_id" = "sensor"."id")`,
                 link: `"lora"."id" = (select "lora"."id" from "lora" where "lora"."sensor_id" = $ID)`,
                 entityName: "Loras",
@@ -567,7 +568,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         admin: false,
         relations: {
             Thing: {
-                type: RELATIONS.belongsTo,
+                type: Erelations.belongsTo,
                 expand: `"thing"."id" = "datastream"."thing_id"`,
                 link: `"thing"."id" = (select "datastream"."thing_id" from "datastream" where "datastream"."id" =$ID)`,
                 entityName: "Things",
@@ -577,7 +578,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "id"
             },
             Sensor: {
-                type: RELATIONS.belongsTo,
+                type: Erelations.belongsTo,
                 expand: `"sensor"."id" = "datastream"."sensor_id"`,
                 link: `"sensor"."id" = (select "datastream"."sensor_id" from "datastream" where "datastream"."id" =$ID)`,
 
@@ -588,7 +589,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "id"
             },
             ObservedProperty: {
-                type: RELATIONS.belongsTo,
+                type: Erelations.belongsTo,
                 expand: `"observedproperty"."id" = "datastream"."observedproperty_id"`,
                 link: `"observedproperty"."id" = (select "datastream"."observedproperty_id" from "datastream" where "datastream"."id" =$ID)`,
                 entityName: "ObservedProperties",
@@ -598,7 +599,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "id"
             },
             Observations: {
-                type: RELATIONS.hasMany,
+                type: Erelations.hasMany,
                 expand: `"observation"."id" in (select "observation"."id" from "observation" where "observation"."datastream_id" = "datastream"."id" ORDER BY "observation"."resultTime" ASC)`,
                 link: `"observation"."id" in (select "observation"."id" from "observation" where "observation"."datastream_id" = $ID ORDER BY "observation"."resultTime" ASC)`,
                 entityName: "Observations",
@@ -608,7 +609,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "id"
             },
             Loras: {
-                type: RELATIONS.belongsTo,
+                type: Erelations.belongsTo,
                 expand: `"lora"."id" = (select "lora"."id" from "lora" where "lora"."datastream_id" = "datastream"."id")`,
                 link: `"lora"."id" = (select "lora"."id" from "lora" where "lora"."datastream_id" = $ID)`,
                 entityName: "loras",
@@ -703,7 +704,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
     admin: false,
         relations: {
             Thing: {
-                type: RELATIONS.belongsTo,
+                type: Erelations.belongsTo,
                 expand: `"thing"."id" = "multidatastream"."thing_id"`,
                 link: `"thing"."id" = (select "multidatastream"."thing_id" from "multidatastream" where "multidatastream"."id" =$ID)`,
 
@@ -714,7 +715,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "id"
             },
             Sensor: {
-                type: RELATIONS.belongsTo,
+                type: Erelations.belongsTo,
                 expand: `"sensor"."id" = "multidatastream"."sensor_id"`,
                 link: `"sensor"."id" = (select "multidatastream"."sensor_id" from "multidatastream" where "multidatastream"."id" =$ID)`,
 
@@ -725,7 +726,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "id"
             },
             Observations: {
-                type: RELATIONS.hasMany,
+                type: Erelations.hasMany,
                 expand: `"observation"."id" in (select "observation"."id" from "observation" where "observation"."multidatastream_id" = "multidatastream"."id")`,
                 link: `"observation"."id" in (select "observation"."id" from "observation" where "observation"."multidatastream_id" = $ID)`,
 
@@ -736,7 +737,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "id"
             },
             ObservedProperties: {
-                type: RELATIONS.belongsTo,
+                type: Erelations.belongsTo,
                 expand: `"observedproperty"."id" in (SELECT "multi_datastream_observedproperty"."observedproperty_id" FROM "multi_datastream_observedproperty" WHERE "multi_datastream_observedproperty"."multidatastream_id" = "multidatastream"."id")`,
                 link: `"observedproperty"."id" in (SELECT "multi_datastream_observedproperty"."observedproperty_id" FROM "multi_datastream_observedproperty" WHERE "multi_datastream_observedproperty"."multidatastream_id" = $ID)`,
                 entityName: "ObservedProperties",
@@ -746,7 +747,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "multidatastream_id"
             },
             Loras: {
-                type: RELATIONS.belongsTo,
+                type: Erelations.belongsTo,
                 expand: `"lora"."id" = (select "lora"."id" from "lora" where "lora"."multidatastream_id" = "multidatastream"."id")`,
                 link: `"lora"."id" = (select "lora"."id" from "lora" where "lora"."multidatastream_id" = $ID)`,
                 entityName: "loras",
@@ -903,7 +904,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         admin: false,
         relations: {
             Datastream: {
-                type: RELATIONS.belongsTo,
+                type: Erelations.belongsTo,
                 expand: `"datastream"."id" = "observation"."datastream_id"`,
                 link: `"datastream"."id" = (SELECT "observation"."datastream_id" FROM "observation" WHERE "observation"."id" = $ID)`,
                 entityName: "Datastreams",
@@ -913,7 +914,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "id"
             },
             MultiDatastream: {
-                type: RELATIONS.belongsTo,
+                type: Erelations.belongsTo,
                 expand: `"multidatastream"."id" = "observation"."multidatastream_id"`,
                 link: `"multidatastream"."id" = (SELECT "observation"."multidatastream_id" FROM "observation" WHERE "observation"."id" = $ID)`,
 
@@ -924,7 +925,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "id"
             },
             FeatureOfInterest: {
-                type: RELATIONS.belongsTo,
+                type: Erelations.belongsTo,
                 expand: `"featureofinterest"."id" = "observation"."featureofinterest_id"`,
                 // link: "err: 501 : Not Implemented.",
                 link: `"featureofinterest"."id" = (SELECT "observation"."featureofinterest_id" FROM "observation" WHERE "observation"."id" = $ID)`,
@@ -973,7 +974,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         admin: false,
         relations: {
             Observations: {
-                type: RELATIONS.belongsTo,
+                type: Erelations.belongsTo,
                 expand: `"observation"."id" = "historical_observation"."observation_id"`,
                 link: "err: 501 : Not Implemented.",
 
@@ -1065,7 +1066,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         admin: false,
         relations: {
             Loras: {
-                type: RELATIONS.hasMany,
+                type: Erelations.hasMany,
                 expand: `"lora"."id" in (select "lora"."id" from "lora" where "lora"."decoder_id" = "decoder"."id")`,
                 link: `"lora"."id" in (select "lora"."id" from "lora" where "lora"."decoder_id" = $ID)`,
                 entityName: "Loras",
@@ -1133,7 +1134,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
         admin: false,
         relations: {
             Datastream: {
-                type: RELATIONS.belongsTo,
+                type: Erelations.belongsTo,
                 expand: `"datastream"."id" = "lora"."datastream_id"`,
                 link: `"datastream"."id" (SELECT "lora"."datastream_id" FROM "lara" WHERE "lora"."id" = $ID)`,
                 entityName: "Datastreams",
@@ -1143,7 +1144,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "id"
             },
             MultiDatastream: {
-                type: RELATIONS.belongsTo,
+                type: Erelations.belongsTo,
                 expand: `"multidatastream"."id" = "lora"."multidatastream_id"`,
                 link: `"multidatastream"."id" = (SELECT "lora"."multidatastream_id" FROM "lora" WHERE "lora"."id" = $ID)`,
                 entityName: "MultiDatastreams",
@@ -1153,7 +1154,7 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
                 tableKey: "id"
             },
             Decoder: {
-                type: RELATIONS.belongsTo,
+                type: Erelations.belongsTo,
                 expand: `"decoder"."id" = "lora"."decoder_id"`,
                 link: `"decoder"."id" = (SELECT "lora"."decoder_id" FROM "lora" WHERE "lora"."id" = $ID)`,
                 entityName: "Decoders",
@@ -1321,11 +1322,8 @@ const DBDATAS: { [key in ENTITIES]: IEntity } = {
     }    
 };
 export const countId = (table: string) =>`SELECT count(id) FROM ${table}`;
-export const _ENTITIES = Object.values(ENTITIES);
+export const _Eentities = Object.values(Eentities);
 export const _DBDATAS = Object.freeze(DBDATAS);
 export const _DBST = Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === false));
 export const _DBPUREST = Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === false && v.standard === true));
 export const _DBADMIN = Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === true));
-
-// console.log(Object.keys(_DBDATAS.Observations.columns).forEach((e) => e.startsWith('_')));
-// console.log(Object.keys(_DBDATAS.Observations.columns));

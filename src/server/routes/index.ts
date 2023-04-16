@@ -7,18 +7,19 @@
  */
 
 import Koa from "koa";
+import { decodeToken } from "../authentication";
 import { setDebug, _debug } from "../constants";
+import { EuserRights } from "../enums";
 import { configCtx, setConfigToCtx } from "../helpers";
 import { writeToLog } from "../logger";
-import { USERRIGHTS } from "../types";
-import { decodeToken } from "../types/user";
 
 export const isAdmin = (ctx: Koa.Context):boolean => ctx._configName === "admin";
-export const canDo = (ctx: Koa.Context, what: USERRIGHTS):boolean => ctx._user.PDCUAS[what];
+export const canDo = (ctx: Koa.Context, what: EuserRights):boolean => ctx._user.PDCUAS[what];
 
 
 export { protectedRoutes } from "./protected";
 export { unProtectedRoutes } from "./unProtected";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const routerHandle = async (ctx: Koa.Context, next: any) => {
     
     try {
@@ -33,11 +34,13 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
             PDCUAS: [false, false, false, false, false, false]
         };
         if (_debug === true) console.log(configCtx(ctx));
-        
-        await next().then(async (res: any) => {            
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any        
+        await next().then(async (res: object) => {            
             await writeToLog(ctx);
         });
     } catch (error: any) {
+        if (error instanceof Error) console.log("============================ OK");
+        
         if (error.message.includes("|")) {
             const temp = error.message.split("|");
             error.statusCode = +temp[0];

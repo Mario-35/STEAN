@@ -10,12 +10,13 @@ import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
 import { _DBDATAS } from "../constants";
-import { _LOGS } from "../../logger";
-import { IReturnResult, USERRIGHTS } from "../../types";
-import { _CONFIGURATION } from "../../configuration";
+import { Logs } from "../../logger";
+import { IreturnResult } from "../../types";
+import { CONFIGURATION } from "../../configuration";
 import { hidePasswordInJson } from "../../helpers";
 import { db } from "..";
 import { messages } from "../../messages/";
+import { EuserRights } from "../../enums";
 
  
  export class Users extends Common {
@@ -23,9 +24,9 @@ import { messages } from "../../messages/";
          super(ctx, knexInstance);
      }
 
-     async getAll(): Promise<IReturnResult | undefined> {
-        _LOGS.class(this.constructor.name, `getAll in ${this.ctx._odata.resultFormat} format`);
-        if (this.ctx._user?.PDCUAS[USERRIGHTS.SuperAdmin] === true || this.ctx._user?.PDCUAS[USERRIGHTS.Admin] === true) {
+     async getAll(): Promise<IreturnResult | undefined> {
+        Logs.class(this.constructor.name, `getAll in ${this.ctx._odata.resultFormat} format`);
+        if (this.ctx._user?.PDCUAS[EuserRights.SuperAdmin] === true || this.ctx._user?.PDCUAS[EuserRights.Admin] === true) {
             const temp = await db["admin"]
                 .table("user")
                 .select(Object.keys(_DBDATAS.Users.columns))
@@ -38,12 +39,12 @@ import { messages } from "../../messages/";
         } else this.ctx.throw(401, { code: 401, detail: messages.errors[401] });
      }
 
-     async add(dataInput: Object | undefined): Promise<IReturnResult | undefined> {
-        _LOGS.override(this.constructor.name, "add");
+     async add(dataInput: object | undefined): Promise<IreturnResult | undefined> {
+        Logs.override(this.constructor.name, "add");
 
         if (!dataInput) return;
         return this.createReturnResult({
-            body: await _CONFIGURATION.add(dataInput),
+            body: await CONFIGURATION.add(dataInput),
         });
     }
 

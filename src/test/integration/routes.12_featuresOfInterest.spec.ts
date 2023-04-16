@@ -31,7 +31,7 @@ import {
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
 import { _DBDATAS } from "../../server/db/constants";
-import { IEntity } from "../../server/types";
+import { Ientity } from "../../server/types";
 import { testsKeys as observations_testsKeys } from "./routes.11_observations.spec";
 
 const testsKeys = ["@iot.id", "@iot.selfLink", "Observations@iot.navigationLink", "name", "description", "encodingType", "feature"];
@@ -40,7 +40,7 @@ chai.use(chaiHttp);
 const should = chai.should();
 
 const docs: IApiDoc[] = [];
-const entity: IEntity = _DBDATAS.FeaturesOfInterest;
+const entity: Ientity = _DBDATAS.FeaturesOfInterest;
 
 const addToApiDoc = (input: IApiInput) => {
     docs.push(prepareToApiDoc(input, entity.name));
@@ -65,7 +65,7 @@ addToApiDoc({
         chai.request(server)
             .post("/test/v1.0/login")
             .send(identification)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 token = String(res.body["token"]);
                 done();
             });
@@ -116,7 +116,7 @@ addToApiDoc({
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -150,7 +150,7 @@ addToApiDoc({
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -167,7 +167,7 @@ addToApiDoc({
             const name = "Observations";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(1)/${name}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -184,7 +184,7 @@ addToApiDoc({
             const name = "Observations";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(1)?$expand=${name}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -227,7 +227,7 @@ addToApiDoc({
                 .post(`/test${infos.apiExample.http}`)
                 .send(infos.apiParamExample)
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
@@ -242,7 +242,7 @@ addToApiDoc({
                 .post("/test/v1.0/FeaturesOfInterest")
                 .send({})
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(400);
                     res.type.should.equal("application/json");
@@ -284,7 +284,7 @@ addToApiDoc({
                         .patch(`/test${infos.apiExample.http}`)
                         .send(infos.apiParamExample)
                         .set("Cookie", `${keyTokenName}=${token}`)
-                        .end((err: any, res: any) => {
+                        .end((err: Error, res: any) => {
                             should.not.exist(err);
                             res.status.should.equal(200);
                             res.type.should.equal("application/json");
@@ -315,7 +315,7 @@ addToApiDoc({
                     }
                 })
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(404);
                     res.type.should.equal("application/json");
@@ -348,7 +348,7 @@ addToApiDoc({
                     chai.request(server)
                         .delete(`/test${infos.apiExample.http}`)
                         .set("Cookie", `${keyTokenName}=${token}`)
-                        .end((err: any, res: any) => {
+                        .end((err: Error, res: any) => {
                             should.not.exist(err);
                             res.status.should.equal(204);
                             dbTest(entity.table)
@@ -366,7 +366,7 @@ addToApiDoc({
             chai.request(server)
                 .delete(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(404);
                     res.type.should.equal("application/json");

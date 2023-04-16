@@ -8,7 +8,7 @@
 
 export const hidePasswordInJson = (obj: object): object => {
     for (const [k, v] of Object.entries(obj)) {
-      if (k.includes("password"))  obj[k] = "*****";
+      if (k.includes("password")) obj[k] = "*****";
        else if (typeof v === "object") hidePasswordInJson(v);      
     }
     return obj;

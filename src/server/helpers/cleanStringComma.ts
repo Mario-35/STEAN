@@ -12,6 +12,5 @@
  * @returns clean string without undesired comma(s)
  */
 export const cleanStringComma = (input: string): string => {
-    const temp = input.split(",");
-    return temp.filter((word: string) => word.trim() != "").join(", ");
-}
+    return input.split(",").filter((word: string) => word.trim() != "").join(", ");
+};

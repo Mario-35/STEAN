@@ -23,7 +23,6 @@ const should = chai.should();
 const docs: IApiDoc[] = [];
 
 
-
 const addToApiDoc = (input: IApiInput) => {
     docs.push(prepareToApiDoc(input, "Import"));
 };
@@ -73,7 +72,7 @@ describe("CSV Import", function () {
         chai.request(server)
             .post("/test/v1.0/login")
             .send(identification)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 token = String(res.body["token"]);
                 done();
             });
@@ -123,7 +122,7 @@ describe("CSV Import", function () {
             .field("nb", "1")
             .attach("file", "./src/test/integration/files/simple.csv")
             .set("Cookie", `${keyTokenName}=${token}`)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 if (err) console.log(err);
                 else {
                     res.should.have.status(201);
@@ -152,7 +151,7 @@ describe("CSV Import", function () {
             .field("nb", "1")
             .attach("file", "./src/test/integration/files/multi.csv")
             .set("Cookie", `${keyTokenName}=${token}`)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 if (err) console.log(err);
                 else {
                     should.not.exist(err);

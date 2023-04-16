@@ -15,7 +15,6 @@ export { importCsv, createColumnHeaderName } from "./importCsv";
 export { knexQueryToSql } from "./knexQueryToSql";
 export { recordToKeyValue } from "./recordToKeyValue";
 export { removeKeyFromUrl } from "./removeKeyFromUrl";
-export { renameProp } from "./renameProp";
 export { testConnection } from "./testConnection";
 export { verifyId } from "./verifyId";
 export { parseSql } from "./parseSql";

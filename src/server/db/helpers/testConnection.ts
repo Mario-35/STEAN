@@ -7,15 +7,16 @@
  */
 
 import { Knex } from "knex";
-import { _LOGS } from "../../logger";
+import { Logs } from "../../logger";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const testConnection = async (instance: Knex<any, unknown[]>): Promise<boolean> => {
-    _LOGS.debug("testConnection", instance.toString());
+    Logs.debug("testConnection", instance.toString());
 
     await instance.raw("select 1+1 as result").catch((err) => {
-        _LOGS.error("testConnection", err);
+        Logs.error("testConnection", err);
         return false;
     });
-    _LOGS.debug("testConnection", "OK");
+    Logs.debug("testConnection", "OK");
     return true;
 };

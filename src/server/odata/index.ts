@@ -2,7 +2,7 @@ import { query, resourcePath } from "./parser/parser";
 import { Token } from "./parser/lexer";
 import koa from "koa";
 import { cleanUrl } from "../helpers";
-import { _CONFIGS, _CONFIGURATION } from "../configuration";
+import { CONFIGURATION } from "../configuration";
 import { _DBDATAS } from "../db/constants";
 import { PgVisitor } from "./visitor/PgVisitor";
 import { SqlOptions } from "./parser/sqlOptions";
@@ -14,10 +14,10 @@ const doSomeWarkAfterAst = async (input: PgVisitor, ctx: koa.Context) => {
         const temp = await db[ctx._configName].raw(`select jsonb_agg(tmp.units -> 'name') as keys from ( select jsonb_array_elements("unitOfMeasurements") as units from ${_DBDATAS.MultiDatastreams.table} where id = ${input.parentId} ) as tmp`);
         input.splitResult = temp.rows[0]["keys"];
     }   
-}
+};
 
 export const createOdata = async (ctx: koa.Context):Promise<PgVisitor | undefined> => {
-    const blankUrl = `$top=${_CONFIGS[ctx._configName].nb_page ? +_CONFIGS[ctx._configName].nb_page : 200}`;
+    const blankUrl = `$top=${CONFIGURATION.list[ctx._configName].nb_page ? +CONFIGURATION.list[ctx._configName].nb_page : 200}`;
     const options: SqlOptions = {loraId: undefined, rootBase: ctx._rootName, onlyValue: false, onlyRef: false, method: ctx.method};
 
     let urlSrc = ctx.href.normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(ctx._version)[1];
@@ -33,7 +33,7 @@ export const createOdata = async (ctx: koa.Context):Promise<PgVisitor | undefine
             options.loraId = idLora;
             urlSrc = urlSrc.replace(idLora, "0");
         }        
-    };
+    }
 
     urlSrc = cleanUrl(urlSrc.replace(/\@iot.id\b/, "id"));
     
@@ -69,5 +69,5 @@ export const createOdata = async (ctx: koa.Context):Promise<PgVisitor | undefine
         await doSomeWarkAfterAst(temp, ctx);
         
         return temp;
-}
+};
 

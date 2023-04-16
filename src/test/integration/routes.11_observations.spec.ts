@@ -32,7 +32,7 @@ import {
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
 import { _DBDATAS } from "../../server/db/constants";
-import { IEntity } from "../../server/types";
+import { Ientity } from "../../server/types";
 import { testsKeys as Datastreams_testsKeys } from "./routes.07_datastreams.spec";
 export const testsKeys = [
     "@iot.id",
@@ -53,8 +53,7 @@ chai.use(chaiHttp);
 const should = chai.should();
 
 const docs: IApiDoc[] = [];
-const entity: IEntity = _DBDATAS.Observations;
-
+const entity: Ientity = _DBDATAS.Observations;
 
 
 const addToApiDoc = (input: IApiInput) => {
@@ -81,7 +80,7 @@ describe("endpoint : Observations", () => {
         chai.request(server)
             .post("/test/v1.0/login")
             .send(identification)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 token = String(res.body["token"]);
                 done();
             });
@@ -138,7 +137,7 @@ describe("endpoint : Observations", () => {
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -177,7 +176,7 @@ describe("endpoint : Observations", () => {
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -201,7 +200,7 @@ describe("endpoint : Observations", () => {
         //     };
         //     chai.request(server)
         //         .get(`/test${infos.apiExample.http}`)
-        //         .end((err: any, res: any) => {
+        //         .end((err: Error, res: any) => {
         //             should.not.exist(err);
         //             res.status.should.equal(200);
         //             res.type.should.equal("application/json");
@@ -227,7 +226,7 @@ describe("endpoint : Observations", () => {
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -254,7 +253,7 @@ describe("endpoint : Observations", () => {
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -280,7 +279,7 @@ describe("endpoint : Observations", () => {
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -295,7 +294,7 @@ describe("endpoint : Observations", () => {
         it("Return errors with spliResult on Observation entity Only", (done) => {
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}?$splitResult=ALL`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     res.status.should.equal(400);
                     res.type.should.equal("application/json");
                     res.body.detail.should.contain("Split result not allowed");
@@ -318,7 +317,7 @@ describe("endpoint : Observations", () => {
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -346,7 +345,7 @@ describe("endpoint : Observations", () => {
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -374,7 +373,7 @@ describe("endpoint : Observations", () => {
         //     };
         //     chai.request(server)
         //         .get(`/test${infos.apiExample.http}`)
-        //         .end((err: any, res: any) => {
+        //         .end((err: Error, res: any) => {
         //             console.log(res.body);
                     
         //             should.not.exist(err);
@@ -417,7 +416,7 @@ describe("endpoint : Observations", () => {
                 .post(`/test${infos.apiExample.http}`)
                 .send(infos.apiParamExample)
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
@@ -432,7 +431,7 @@ describe("endpoint : Observations", () => {
                 .post(`/test/v1.0/${entity.name}`)
                 .send({})
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(400);
                     res.type.should.equal("application/json");
@@ -475,7 +474,7 @@ describe("endpoint : Observations", () => {
                 .post(`/test${infos.apiExample.http}`)
                 .send(infos.apiParamExample)
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
@@ -508,7 +507,7 @@ describe("endpoint : Observations", () => {
                 .post(`/test${infos.apiExample.http}`)
                 .send(infos.apiParamExample)
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end(async (err: any, res: any) => {
+                .end(async (err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
@@ -550,7 +549,7 @@ describe("endpoint : Observations", () => {
                 .post(`/test${infos.apiExample.http}`)
                 .send(infos.apiParamExample)
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end(async (err: any, res: any) => {
+                .end(async (err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
@@ -603,7 +602,7 @@ describe("endpoint : Observations", () => {
                 .post(`/test${infos.apiExample.http}`)
                 .send(infos.apiParamExample)
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end(async (err: any, res: any) => {
+                .end(async (err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
@@ -650,7 +649,7 @@ describe("endpoint : Observations", () => {
                 .post(`/test${infos.apiExample.http}`)
                 .send(infos.apiParamExample)
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end(async (err: any, res: any) => {
+                .end(async (err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(400);
                     res.type.should.equal("application/json");
@@ -689,7 +688,7 @@ describe("endpoint : Observations", () => {
                         .patch(`/test${infos.apiExample.http}`)
                         .send(infos.apiParamExample)
                         .set("Cookie", `${keyTokenName}=${token}`)
-                        .end((err: any, res: any) => {
+                        .end((err: Error, res: any) => {
                             should.not.exist(err);
                             res.status.should.equal(200);
                             res.type.should.equal("application/json");
@@ -712,7 +711,7 @@ describe("endpoint : Observations", () => {
                     Datastream: { "@iot.id": 1 }
                 })
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(404);
                     res.type.should.equal("application/json");
@@ -750,7 +749,7 @@ describe("endpoint : Observations", () => {
                         .patch(`/test${infos.apiExample.http}`)
                         .send(infos.apiParamExample)
                         .set("Cookie", `${keyTokenName}=${token}`)
-                        .end((err: any, res: any) => {
+                        .end((err: Error, res: any) => {
                             should.not.exist(err);
                             res.status.should.equal(200);
                             res.type.should.equal("application/json");
@@ -787,7 +786,7 @@ describe("endpoint : Observations", () => {
                     chai.request(server)
                         .delete(`/test${infos.apiExample.http}`)
                         .set("Cookie", `${keyTokenName}=${token}`)
-                        .end((err: any, res: any) => {
+                        .end((err: Error, res: any) => {
                             should.not.exist(err);
                             res.status.should.equal(204);
                             dbTest("observation")
@@ -806,7 +805,7 @@ describe("endpoint : Observations", () => {
             chai.request(server)
                 .delete(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(404);
                     res.type.should.equal("application/json");

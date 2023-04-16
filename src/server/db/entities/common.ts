@@ -10,10 +10,10 @@ import koa from "koa";
 import { Knex } from "knex";
 import { isGraph, _DBDATAS } from "../constants";
 import { getEntityName, isNull, removeQuotes, returnFormats } from "../../helpers/index";
-import { _LOGS } from "../../logger";
-import { IReturnResult } from "../../types";
+import { Logs } from "../../logger";
+import { IreturnResult } from "../../types";
 import { createGraph, extractMessageError, knexQueryToSql, removeKeyFromUrl, verifyId } from "../helpers";
-import { _CONFIGS } from "../../configuration";
+import { CONFIGURATION } from "../../configuration";
 import { IGraphDatas } from "../helpers/createGraph";
 import { messages } from "../../messages/";
 
@@ -24,7 +24,7 @@ export class Common {
     public linkBase: string;
 
     constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
-        _LOGS.class(this.constructor.name, messages.infos.constructor);
+        Logs.class(this.constructor.name, messages.infos.constructor);
         this.ctx = ctx;
         if (knexInstance) Common.dbContext = knexInstance;
         this.nextLinkBase = removeKeyFromUrl(`${this.ctx._odata.options.rootBase}${this.ctx.href.split(`${ctx._version}/`)[1]}`, ["top", "skip"]);
@@ -32,19 +32,19 @@ export class Common {
     }
 
     // only for override
-    formatDataInput(input: Object | undefined): Object | undefined {
+    formatDataInput(input: object | undefined): object | undefined {
         return input;
     }
 
     // Log full Query
     logQuery(input: Knex.QueryBuilder | string): void {
         const queryString = typeof input === "string" ? input : knexQueryToSql(input);
-        _LOGS.query(`\n${queryString}`);
+        Logs.query(`\n${queryString}`);
     }
 
     // create a blank ReturnResult
-    createReturnResult(args: Record<string, unknown>): IReturnResult {
-        _LOGS.class(this.constructor.name, "createReturnResult");
+    createReturnResult(args: Record<string, unknown>): IreturnResult {
+        Logs.class(this.constructor.name, "createReturnResult");
         return {
             ...{
                 id: undefined,
@@ -60,7 +60,7 @@ export class Common {
     // create the nextLink
     nextLink = (resLength: number): string | undefined => {
         if (this.ctx._odata.limit < 1) return;       
-        const max: number = this.ctx._odata.limit > 0 ? +this.ctx._odata.limit : +_CONFIGS[this.ctx._configName].nb_page;
+        const max: number = this.ctx._odata.limit > 0 ? +this.ctx._odata.limit : +CONFIGURATION.list[this.ctx._configName].nb_page;
         if (resLength >= max) return `${encodeURI(this.nextLinkBase)}${this.nextLinkBase.includes("?") ? "&" : "?"}$top=${this.ctx._odata.limit}&$skip=${this.ctx._odata.skip + this.ctx._odata.limit}`;
     };
     
@@ -68,13 +68,13 @@ export class Common {
     prevLink = (resLength: number): string | undefined => {
         if (this.ctx._odata.limit < 1) return;
         const prev = this.ctx._odata.skip - this.ctx._odata.limit;
-        if ((_CONFIGS[this.ctx._configName].nb_page && resLength >= +_CONFIGS[this.ctx._configName].nb_page || this.ctx._odata.limit) && prev >= 0)
+        if ((CONFIGURATION.list[this.ctx._configName].nb_page && resLength >= +CONFIGURATION.list[this.ctx._configName].nb_page || this.ctx._odata.limit) && prev >= 0)
             return `${encodeURI(this.nextLinkBase)}${this.nextLinkBase.includes("?") ? "&" : "?"}$top=${this.ctx._odata.limit}&$skip=${prev}`;
     };
 
     // formatResult for graph and for observation request without Datastreams or MultiDatastreams
     formatResult = async (input: JSON): Promise<JSON | IGraphDatas> => {
-        _LOGS.debug("formatResult", this.ctx._odata.resultFormat);
+        Logs.debug("formatResult", this.ctx._odata.resultFormat);
         if (isGraph(this.ctx._odata)) {            
             const entityName = getEntityName(this.ctx._odata.parentEntity ? this.ctx._odata.parentEntity : this.ctx._odata.entity);            
             let tempTitle = "No Title";
@@ -83,15 +83,15 @@ export class Common {
                         .select("name")
                         .where({id: this.ctx._odata.parentEntity ? this.ctx._odata.parentId: this.ctx._odata.id})
                         .limit(1)
-                        .then((res: any) => tempTitle = res[0].name);
+                        .then((res: object) => tempTitle = res[0].name);
             const temp = createGraph(input, tempTitle);
             return temp ? temp : JSON.parse('');
         }
         return input;
     };
 
-    async getAll(): Promise<IReturnResult | undefined> {
-        _LOGS.class(this.constructor.name, `getAll in ${this.ctx._odata.resultFormat} format`);
+    async getAll(): Promise<IreturnResult | undefined> {
+        Logs.class(this.constructor.name, `getAll in ${this.ctx._odata.resultFormat} format`);
 
         const sql = this.ctx._odata.asGetSql();
 
@@ -103,17 +103,17 @@ export class Common {
 
         return await Common.dbContext
             .raw(sql)
-            .then(async (res: any) => {   
-                const nb = Number(res.rows[0].count);
-                if (nb > 0 && res.rows[0]) {                    
+            .then(async (res: object) => {   
+                const nb = Number(res["rows"][0].count);
+                if (nb > 0 && res["rows"][0]) {                    
                     return this.createReturnResult({
                         id: isNaN(nb) ? undefined : nb,
                         nextLink: this.nextLink(nb),
                         prevLink: this.prevLink(nb),
-                        body: await this.formatResult(res.rows[0].results)
+                        body: await this.formatResult(res["rows"][0].results)
                     });
                 } else return this.createReturnResult({ 
-                        body: res.rows[0].results || res.rows[0]
+                        body: res["rows"][0].results || res["rows"][0]
                     });
             })
             .catch((err: Error) => this.ctx.throw(400, { code: 400,detail: err.message }));
@@ -123,8 +123,8 @@ export class Common {
         return (typeof input === "object") ? JSON.stringify(input) : removeQuotes(input);
     }
 
-    async getSingle(idInput: bigint | string): Promise<IReturnResult | undefined> {
-        _LOGS.class(this.constructor.name, `getSingle [${idInput}]`);
+    async getSingle(idInput: bigint | string): Promise<IreturnResult | undefined> {
+        Logs.class(this.constructor.name, `getSingle [${idInput}]`);
 
         const sql = this.ctx._odata.asGetSql();
 
@@ -136,26 +136,26 @@ export class Common {
         
         return await Common.dbContext
         .raw(sql)
-        .then((res: any) => {
+        .then((res: object) => {
                 if (this.ctx._odata.select && this.ctx._odata.onlyValue) 
-                    return this.createReturnResult({ body: String(res.rows[0][this.ctx._odata.select == "id" ? "@iot.id" : this.ctx._odata.select ]) });
+                    return this.createReturnResult({ body: String(res["rows"][0][this.ctx._odata.select == "id" ? "@iot.id" : this.ctx._odata.select ]) });
                 
-                const nb = Number(res.rows[0].count);
-                if (nb > 0 && res.rows[0].results[0]) {
+                const nb = Number(res["rows"][0].count);
+                if (nb > 0 && res["rows"][0].results[0]) {
                     return this.createReturnResult({
                         id: nb,
                         nextLink: this.nextLink(nb),
                         prevLink: this.prevLink(nb),
-                        body: res.rows[0].results[0]
+                        body: res["rows"][0].results[0]
                     });
                 }
             })
             .catch((err: Error) => this.ctx.throw(400, { code: 400, detail: err.message }));
     }
 
-    async add(dataInput: Object | undefined): Promise<IReturnResult | undefined> {
+    async add(dataInput: object | undefined): Promise<IreturnResult | undefined> {
         
-        _LOGS.class(this.constructor.name, "add");
+        Logs.class(this.constructor.name, "add");
         
         dataInput = this.formatDataInput(dataInput);
         
@@ -169,23 +169,23 @@ export class Common {
 
         return await Common.dbContext
             .raw(sql)
-            .then((res: any) => {                     
-                if (res.rows) {
-                    if (res.rows[0].duplicate) this.ctx.throw(409, { code: 409, detail: `${this.constructor.name} already exist`, link: `${this.linkBase}(${[res.rows[0].duplicate]})` });
-                    if (res.rows[0].results[0]) this.formatResult(res.rows[0].results[0]);
+            .then((res: object) => {                     
+                if (res["rows"]) {
+                    if (res["rows"][0].duplicate) this.ctx.throw(409, { code: 409, detail: `${this.constructor.name} already exist`, link: `${this.linkBase}(${[res["rows"][0].duplicate]})` });
+                    if (res["rows"][0].results[0]) this.formatResult(res["rows"][0].results[0]);
                     return this.createReturnResult({
-                        body: res.rows[0].results[0],
+                        body: res["rows"][0].results[0],
                         query: sql
                     });
                 }
             })
-            .catch((err: any) => {          
-                this.ctx.throw(400, { code: 400, detail: err.detail });
+            .catch((err: Error) => {          
+                this.ctx.throw(400, { code: 400, detail: err["detail"] });
             });
     }
 
-    async update(idInput: bigint | string, dataInput: Object | undefined): Promise<IReturnResult | undefined> {
-        _LOGS.class(this.constructor.name, "update");
+    async update(idInput: bigint | string, dataInput: object | undefined): Promise<IreturnResult | undefined> {
+        Logs.class(this.constructor.name, "update");
 
         if (!dataInput) this.ctx.throw(400, { code: 400, detail: messages.errors.noDataSend + "update" });
 
@@ -205,19 +205,19 @@ export class Common {
 
         return await Common.dbContext
             .raw(sql)
-            .then((res: any) => {
-                if (res.rows) {
-                    if (res.rows[0].results[0]) this.formatResult(res.rows[0].results[0]);
-                    return this.createReturnResult({ body: res.rows[0].results[0], query: sql });
+            .then((res: object) => {
+                if (res["rows"]) {
+                    if (res["rows"][0].results[0]) this.formatResult(res["rows"][0].results[0]);
+                    return this.createReturnResult({ body: res["rows"][0].results[0], query: sql });
                 }
             })
-            .catch((err: any) => {
-                this.ctx.throw(400, { code: 400, detail: err.detail });
+            .catch((err: Error) => {
+                this.ctx.throw(400, { code: 400, detail: err["detail"] });
             });
     }
 
-    async delete(idInput: bigint | string): Promise<IReturnResult | undefined> {
-        _LOGS.class(this.constructor.name, "delete");
+    async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {
+        Logs.class(this.constructor.name, "delete");
 
         if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ id: BigInt(idInput), body: `DELETE FROM "${_DBDATAS[this.constructor.name].table}" WHERE id= ${idInput}` });
 
@@ -228,8 +228,8 @@ export class Common {
             const query: Knex.QueryBuilder = Common.dbContext(_DBDATAS[this.constructor.name].table).del().where({ id: idInput });
             const returnValue = await query;
             return this.createReturnResult({ id: BigInt(returnValue) });
-        } catch (error: any) {
-            this.ctx.throw(400, { code: 400, detail: extractMessageError(error.message) });
+        } catch (err: any) {
+            this.ctx.throw(400, { code: 400, detail: extractMessageError(err.message) });
         }
     }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { isGraph, isObservation, _DBDATAS } from "../../db/constants";
 import { getEntityName, removeQuotes, returnFormats } from "../../helpers";
 import { IreturnFormat } from "../../types";
@@ -6,10 +7,10 @@ import { Literal } from "../parser/literal";
 import { SQLLiteral } from "../parser/sqlLiteral";
 import { SqlOptions } from "../parser/sqlOptions";
 import koa from "koa";
-import { _LOGS } from "../../logger";
+import { Logs } from "../../logger";
 import { createGetSql, createPostSql, oDatatoDate } from "./helper";
 import { Knex } from "knex";
-import { _CONFIGS } from "../../configuration";
+import { CONFIGURATION } from "../../configuration";
 import { messages } from "../../messages/";
 
 export class PgVisitor {
@@ -45,7 +46,7 @@ export class PgVisitor {
     showRelations = true;
     results: { [key: string]: string } = {};
     sql = "";
-    constructor(options = <SqlOptions>{}, blank?: boolean) {
+    constructor(options = <SqlOptions>{}) {
         this.options = options;
         this.onlyRef = options.onlyRef;
         this.onlyValue = options.onlyValue;
@@ -79,16 +80,16 @@ export class PgVisitor {
     }
     
     init(ctx: koa.Context, node: Token) {
-        _LOGS.head("INIT PgVisitor");
-        this.limit = +_CONFIGS[ctx._configName].nb_page || 200;
+        Logs.head("INIT PgVisitor");
+        this.limit = +CONFIGURATION.list[ctx._configName].nb_page || 200;
         const temp = this.VisitRessources(node);
-        _LOGS.infos("PgVisitor", temp);
+        Logs.infos("PgVisitor", temp);
         this.verifyRessources(ctx);
         return temp;
     }
 
     verifyRessources = (ctx: koa.Context): void => {
-        _LOGS.head("verifyRessources");
+        Logs.head("verifyRessources");
         // TODO REMOVE AFTER ALL 
         
         if (this.entity.toUpperCase() === "LORA") this.setEntity("Loras");
@@ -197,7 +198,7 @@ export class PgVisitor {
         }
     } 
 
-    asPatchSql(datas: Object | Object, knexInstance: Knex | Knex.Transaction): string { 
+    asPatchSql(datas: object , knexInstance: Knex | Knex.Transaction): string { 
         try {
             return createPostSql(datas, knexInstance , this);
         } catch (error) {
@@ -205,7 +206,7 @@ export class PgVisitor {
         }
     }  
 
-    asPostSql(datas: Object | Object, knexInstance: Knex | Knex.Transaction): string { 
+    asPostSql(datas: object , knexInstance: Knex | Knex.Transaction): string { 
         try {
             return createPostSql(datas, knexInstance , this);
         } catch (error) {
@@ -218,16 +219,16 @@ export class PgVisitor {
 // ***********************************************************************************************************************************************************************
 
     start(ctx: koa.Context, node: Token) {
-        _LOGS.head("Start PgVisitor");
+        Logs.head("Start PgVisitor");
         const temp = this.Visit(node);
-        _LOGS.infos("PgVisitor", temp);
+        Logs.infos("PgVisitor", temp);
         this.verifyQuery(ctx);
         return temp;
     }
 
     verifyQuery = (ctx: koa.Context): void => {
-        _LOGS.head("verifyQuery");
-        if (this.entity === "Logs" && ctx._configName !== "admin") this.where += `${this.where.trim() == "" ? "" : " AND "} (database = '${_CONFIGS[ctx._configName].alias.join("' OR database ='")}')`;
+        Logs.head("verifyQuery");
+        if (this.entity === "Logs" && ctx._configName !== "admin") this.where += `${this.where.trim() == "" ? "" : " AND "} (database = '${CONFIGURATION.list[ctx._configName].alias.join("' OR database ='")}')`;
 
         if (this.select.length > 0) {
             const cols = [...Object.keys(_DBDATAS[this.entity].columns), ...Object.keys(_DBDATAS[this.entity].relations)];
@@ -494,7 +495,6 @@ export class PgVisitor {
     public parameterObject(): { [key: number]: unknown } {
         return Object.assign({}, this.parameters);
     }
-
  
 
     protected VisitODataIdentifier(node: Token, context: any) {

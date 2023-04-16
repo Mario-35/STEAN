@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Lexer from "./lexer";
 import PrimitiveLiteral from "./primitiveLiteral";
 import Expressions from "./expressions";
@@ -9,11 +10,11 @@ export const parserFactory = function(fn: any) {
     return function (source: any, options: any) {
         options = options || {};
         const raw = new Uint16Array(source.length);
-        let pos = 0;
+        const pos = 0;
         for (let i = 0; i < source.length; i++) {
             raw[i] = source.charCodeAt(i);
         }
-        let result = fn(raw, pos, options.metadata);
+        const result = fn(raw, pos, options.metadata);
         if (!result) throw new Error("Fail at " + pos);
         if (result.next < raw.length) throw new Error(`Unexpected character at [${source}]` + result.next);
         return result;

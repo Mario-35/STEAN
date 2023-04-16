@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * notNull.
  *
@@ -16,7 +17,7 @@ const isNullOrNotNull = (input: any, ret: boolean): boolean => {
             return !ret;
     }
     
-}
+};
 
 export const notNull = (input: any): boolean => isNullOrNotNull (input, true); 
 

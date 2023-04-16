@@ -6,7 +6,7 @@
  *
  */
 
-import { logs } from "./logs";
+import { Logger } from "./logger";
 export { writeToLog } from "./writeToLog";
-export const _LOGS = new logs();
+export const Logs = new Logger();
 

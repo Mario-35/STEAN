@@ -16,6 +16,8 @@ describe("Create Database.", function () {
         chai.request(server)
             .get("/test/v1.0/createDB")
             .end((err: Error, res: any) => {    
+                console.log(res.body);
+                
                 if (err) console.error(err);
                 should.not.exist(err);
                 res.status.should.equal(201);

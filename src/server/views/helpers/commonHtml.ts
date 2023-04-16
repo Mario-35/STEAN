@@ -8,19 +8,19 @@
 
 /* eslint-disable quotes */
 
-import { _LOGS } from "../../logger";
+import { Logs } from "../../logger";
 import util from "util";
 import { cleanUrl } from "../../helpers";
 import { addCssFile, listaddCssFiles } from "../css";
 import { addJsFile, listaddJsFiles } from "../js";
-import { IQuery } from "../constant";
-import { _appVersion } from "../../constants";
+import { APP_VERSION } from "../../constants";
+import { Iquery } from "../../types";
 
 const fileWithOutMin = (input: string): string => input.replace(".min",'');
 
-export const commonHtml = (input: string, params: IQuery, ): string => {
-    _LOGS.head("commonHtml");
-    _LOGS.debug("params", params);
+export const commonHtml = (input: string, params: Iquery, ): string => {
+    Logs.head("commonHtml");
+    Logs.debug("params", params);
     const result: string[] = input.replace(/\r\n/g,'\n').split('\n').map((e:string) => e.trim()); 
     const replaceInResult = (searhText: string, content: string) => {
         const index = result.indexOf(searhText);
@@ -69,6 +69,6 @@ export const commonHtml = (input: string, params: IQuery, ): string => {
 
     return result.join("").replace("_PARAMS={}", "_PARAMS=" + util.inspect(params, { showHidden: false, depth: null }))
         .replace("// @start@", start)
-        .replace("@version@", _appVersion)
+        .replace("@version@", APP_VERSION)
         .replace("@action@", action);
 };

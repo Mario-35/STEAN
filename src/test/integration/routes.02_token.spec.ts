@@ -49,7 +49,7 @@ describe("Identification : Token", () => {
                 .post(`/test${infos.apiExample.http}`)
                 .type("form")
                 .send(identification)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.body.should.include.keys("token");
                     res.body.should.include.keys("message");
@@ -74,7 +74,7 @@ describe("Identification : Token", () => {
                 .post(`/test${infos.apiExample.http}`)
                 .type("form")
                 .send(infos.apiParamExample)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(401);
                     res.body.should.include.keys("message");
@@ -96,7 +96,7 @@ describe("Identification : Token", () => {
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.body.should.include.keys("message");
                     res.body.message.should.eql("Logout succeeded");

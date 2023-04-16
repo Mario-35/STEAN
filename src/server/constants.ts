@@ -8,26 +8,18 @@
 
 import fs from "fs";
 
-// let fileConfigJson: object | undefined = undefined;
+export const APP_NAME = process.env.npm_package_name || '_STEAN';
+export const APP_VERSION = process.env.npm_package_version || '0';
+export const APP_KEY = fs.readFileSync(__dirname + "/config/.key", "utf8") || "zLwX893Mtt9Rc0TKvlInDXuZTFj9rxDV";
 
-// try {
-//     const fileConfig = fs.readFileSync(__dirname + "/package.json", "utf8");
-//     fileConfigJson = JSON.parse(fileConfig);
-// } catch (error) {
-//     fileConfigJson = undefined;
-// }
-
-export const _appName = process.env.npm_package_name || '_STEAN';
-export const _appVersion = process.env.npm_package_version || '0';
 export let _DEBUGFILE = false;
 export let _debug = true;
-export const _KEYAPP = fs.readFileSync(__dirname + "/config/.key", "utf8") || "zLwX893Mtt9Rc0TKvlInDXuZTFj9rxDV";
 export const _VOIDTABLE = "spatial_ref_sys";
 export const _DOUBLEQUOTE = '"';
 export const _QUOTEDCOMA = '",\n"';
-export const _APIVERSION = "v1.0";
-export const _NODE_ENV = process.env.NODE_ENV ? process.env.NODE_ENV : "production";
-export const _HELMETCONFIG = Object.freeze({
+export const API_VERSION = "v1.0";
+export const NODE_ENV = process.env.NODE_ENV ? process.env.NODE_ENV : "production";
+export const HELMET_CONFIG = Object.freeze({
     defaultSrc: ["'self'"],
     scriptSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com"],
     styleSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com", "fonts.googleapis.com"]

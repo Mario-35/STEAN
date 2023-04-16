@@ -8,8 +8,8 @@
 
 import fs from "fs";
 import copyFrom from "pg-copy-streams";
-import { _LOGS } from "../../logger";
-import { ICsvColumns, ICsvFile } from "../../types";
+import { Logs } from "../../logger";
+import { IcsvColumn, IcsvFile } from "../../types";
 import { _DBDATAS } from "../constants";
 import readline from "readline";
 import { Knex } from "knex";
@@ -30,7 +30,7 @@ interface ICsvImport {
     columns: string[];
 }
 
-const dateSqlRequest = async (paramsFile: ICsvFile): Promise<ICsvImport | undefined> => {
+const dateSqlRequest = async (paramsFile: IcsvFile): Promise<ICsvImport | undefined> => {
     const returnValue: ICsvImport = { dateSql: "", columns: [] };
     const fileStream = fs.createReadStream(paramsFile.filename);
     const regexDate = /^[0-9]{2}[\/][0-9]{2}[\/][0-9]{4}$/g;
@@ -51,7 +51,7 @@ const dateSqlRequest = async (paramsFile: ICsvFile): Promise<ICsvImport | undefi
         const splitColumns = line.split(";");
         if (regexDateHour.test(splitColumns[0]) == true) {
             const nbCol = (line.match(/;/g) || []).length;
-            _LOGS.result("dateSqlRequest", "Date Hour");
+            Logs.result("dateSqlRequest", "Date Hour");
             returnValue.columns = ["datehour"];
             for (let i = 0; i < nbCol; i++) returnValue.columns.push(`value${i + 1}`);
 
@@ -59,7 +59,7 @@ const dateSqlRequest = async (paramsFile: ICsvFile): Promise<ICsvImport | undefi
             returnValue.dateSql = `TO_TIMESTAMP(REPLACE("${paramsFile.tempTable}".datehour, '24:00:00', '23:59:59'), 'DD/MM/YYYY HH24:MI:SS')`;
             return returnValue;
         } else if (regexDate.test(splitColumns[0]) == true && regexHour.test(splitColumns[1]) == true) {
-            _LOGS.result("dateSqlRequest", "date ; hour");
+            Logs.result("dateSqlRequest", "date ; hour");
             const nbCol = (line.match(/;/g) || []).length;
 
             returnValue.columns = ["date", "hour"];
@@ -94,24 +94,24 @@ export const createColumnHeaderName = async (filename: string): Promise<string[]
         }
     }
 };
-export const importCsv = async (ctx: koa.Context, knex: Knex | Knex.Transaction, paramsFile: ICsvFile): Promise<string[]> => {
-    _LOGS.head("importCsv");
+export const importCsv = async (ctx: koa.Context, knex: Knex | Knex.Transaction, paramsFile: IcsvFile): Promise<string[]> => {
+    Logs.head("importCsv");
     const returnValue: string[] = [];
 
     const sqlRequest = await dateSqlRequest(paramsFile);
 
     if (sqlRequest) {
         await knex.schema
-            .createTable(paramsFile.tempTable, (table: any) => {
+            .createTable(paramsFile.tempTable, (table) => {
                 table.increments("id").unsigned().notNullable().primary();
                 sqlRequest.columns.forEach((value) => table.string(value));
             })
             .catch((err: Error) => ctx.throw(400, { detail: err.message }));
 
-        _LOGS.debug("Create Table", paramsFile.tempTable);
+        Logs.debug("Create Table", paramsFile.tempTable);
 
         await new Promise<void>((resolve, reject) => {
-            knex.transaction(async (tx: any) => {
+            knex.transaction(async (tx) => {
                 const cleanup = (valid: boolean, err?: Error) => {
                     if (valid == true) tx.commit();
                     else tx.rollback();
@@ -127,24 +127,24 @@ export const importCsv = async (ctx: koa.Context, knex: Knex | Knex.Transaction,
                         )
                     )
                     .on("error", (err: Error) => {
-                        _LOGS.error("stream error", err);
+                        Logs.error("stream error", err);
                         reject(err);
                     });
 
                 const fileStream = fs.createReadStream(paramsFile.filename);
 
                 fileStream.on("error", (err: Error) => {
-                    _LOGS.error("fileStream error", err);
+                    Logs.error("fileStream error", err);
                     cleanup(false, err);
                 });
 
                 fileStream.on("end", async () => {
-                    _LOGS.debug("COPY TO ", paramsFile.tempTable);
+                    Logs.debug("COPY TO ", paramsFile.tempTable);
                     const scriptSql: string[] = [];
                     const scriptSqlResult: string[] = [];
 
                     Object.keys(paramsFile.columns).forEach(async (myColumn: string, index: number) => {
-                        const csvColumn: ICsvColumns = paramsFile.columns[myColumn];
+                        const csvColumn: IcsvColumn = paramsFile.columns[myColumn];
 
                         const valueSql = `CASE "${paramsFile.tempTable}".value${csvColumn.column} WHEN '---' THEN NULL ELSE cast(REPLACE(value${csvColumn.column},',','.') as float) END`;
 
@@ -165,19 +165,19 @@ export const importCsv = async (ctx: koa.Context, knex: Knex | Knex.Transaction,
                     scriptSql.push(scriptSqlResult.join(""));
 
                     const mySql = scriptSql.join("");
-                    _LOGS.result("query", mySql);
+                    Logs.result("query", mySql);
                     const res = await client.query(mySql).catch((err: Error) => {
                         cleanup(false, err);
                     });
 
-                    _LOGS.debug("SQL Executing", "Ok");
-                    if (res && res.rows)
-                        res.rows
+                    Logs.debug("SQL Executing", "Ok");
+                    if (res && res["rows"])
+                        res["rows"]
                             .map((elem: { [key: string]: string }) => elem["id"])
                             .forEach((element: string) => {
                                 returnValue.push(element);
                             });
-                    else _LOGS.error("Query", "no result");
+                    else Logs.error("Query", "no result");
 
                     cleanup(true);
                     resolve();

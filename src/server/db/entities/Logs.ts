@@ -9,13 +9,12 @@
 import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
-import { _DBADMIN, _DBDATAS } from "../constants";
-import { _CONFIGURATION } from "../../configuration";
+import { CONFIGURATION } from "../../configuration";
  
 export class Logs extends Common {
     constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {         
         super(ctx, knexInstance);
-        Common.dbContext = _CONFIGURATION.getKnexConnection("admin");    
+        Common.dbContext = CONFIGURATION.getKnexConnection("admin");    
     }
 }
  

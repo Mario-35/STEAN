@@ -31,7 +31,7 @@ import {
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
 import { _DBDATAS } from "../../server/db/constants";
-import { IEntity } from "../../server/types";
+import { Ientity } from "../../server/types";
 import { testsKeys as locations_testsKeys } from "./routes.05_locations.spec";
 
 const testsKeys = ["@iot.selfLink", "@iot.id", "Things@iot.navigationLink", "Locations@iot.navigationLink", "time"];
@@ -41,7 +41,7 @@ chai.use(chaiHttp);
 const should = chai.should();
 
 const docs: IApiDoc[] = [];
-const entity: IEntity = _DBDATAS.HistoricalLocations;
+const entity: Ientity = _DBDATAS.HistoricalLocations;
 
 const addToApiDoc = (input: IApiInput) => {
     docs.push(prepareToApiDoc(input, entity.name));
@@ -65,7 +65,7 @@ describe("endpoint : HistoricalLocations", () => {
         chai.request(server)
             .post("/test/v1.0/login")
             .send(identification)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 token = String(res.body["token"]);
                 done();
             });
@@ -123,7 +123,7 @@ describe("endpoint : HistoricalLocations", () => {
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -162,7 +162,7 @@ describe("endpoint : HistoricalLocations", () => {
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -190,7 +190,7 @@ describe("endpoint : HistoricalLocations", () => {
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -204,7 +204,7 @@ describe("endpoint : HistoricalLocations", () => {
             const name = "Things";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(2)/Things`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -223,7 +223,7 @@ describe("endpoint : HistoricalLocations", () => {
             const name = "Locations";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(2)/Locations`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -240,7 +240,7 @@ describe("endpoint : HistoricalLocations", () => {
             const name = "Things";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(2)?$expand=${name}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -258,7 +258,7 @@ describe("endpoint : HistoricalLocations", () => {
             const name = "Locations";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(2)?$expand=${name}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -298,7 +298,7 @@ describe("endpoint : HistoricalLocations", () => {
                         .patch(`/test${infos.apiExample.http}`)
                         .send(infos.apiParamExample)
                         .set("Cookie", `${keyTokenName}=${token}`)
-                        .end((err: any, res: any) => {
+                        .end((err: Error, res: any) => {
                             should.not.exist(err);
                             // res.status.should.equal(200);
                             // res.type.should.equal("application/json");
@@ -318,7 +318,7 @@ describe("endpoint : HistoricalLocations", () => {
                     "time": "2015-02-07T19:22:11.297Z"
                 })
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(404);
                     res.type.should.equal("application/json");
@@ -352,7 +352,7 @@ describe("endpoint : HistoricalLocations", () => {
                     chai.request(server)
                         .delete(`/test${infos.apiExample.http}`)
                         .set("Cookie", `${keyTokenName}=${token}`)
-                        .end((err: any, res: any) => {
+                        .end((err: Error, res: any) => {
                             should.not.exist(err);
                             // res.status.should.equal(204);
                             dbTest(entity.table)
@@ -371,7 +371,7 @@ describe("endpoint : HistoricalLocations", () => {
             chai.request(server)
                 .delete(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(404);
                     res.type.should.equal("application/json");

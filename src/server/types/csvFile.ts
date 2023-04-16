@@ -1,22 +1,18 @@
 /**
- * CsvFile interface.
+ * csvFile interface.
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
 
-export interface ICsvColumns {
-    column: string;
-    datastream: string;
-    featureOfInterest: string;
-}
+import { IcsvColumn } from ".";
 
-export interface ICsvFile {
+export interface IcsvFile {
     filename: string;
     tempTable: string;
     dataStreamId: bigint;
-    columns: ICsvColumns[];
+    columns: IcsvColumn[];
     header: string;
     duplicates: boolean;
 }

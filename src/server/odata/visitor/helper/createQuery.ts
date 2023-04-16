@@ -10,21 +10,21 @@ import { createSql, getColumnsList } from ".";
 import { isObservation, isSingular, _DBDATAS } from "../../../db/constants";
 import { getEntityName } from "../../../helpers";
 import { queryAsJson } from "../../../helpers/returnFormats";
-import { _LOGS } from "../../../logger";
-import { PgQuery } from "../../../types";
+import { Logs } from "../../../logger";
+import { IpgQuery } from "../../../types";
 import { PgVisitor } from "../PgVisitor";
 
 
 export function createQueryString(main: PgVisitor, element: PgVisitor): string { 
-    _LOGS.head("createQueryString");  
-    const tempPgQuery = createQueryPgQuery(main, element);
-    if (!tempPgQuery) return "ERROR";
-    const sql = createSql(tempPgQuery);
+    Logs.head("createQueryString");  
+    const tempIpgQuery = createQueryIpgQuery(main, element);
+    if (!tempIpgQuery) return "ERROR";
+    const sql = createSql(tempIpgQuery);
     return sql;
 }
 
-export function createQueryPgQuery(main: PgVisitor, element: PgVisitor): PgQuery | undefined { 
-    _LOGS.head("createQueryPgQuery");  
+export function createQueryIpgQuery(main: PgVisitor, element: PgVisitor): IpgQuery | undefined { 
+    Logs.head("createQueryIpgQuery");  
     // get the name of the entity
     const realEntity = element.relation ? element.relation : element.getEntity() ;
     if (realEntity) {

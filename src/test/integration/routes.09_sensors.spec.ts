@@ -33,7 +33,7 @@ import {
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
 import { _DBDATAS } from "../../server/db/constants";
-import { IEntity } from "../../server/types";
+import { Ientity } from "../../server/types";
 import { testsKeys as datastreams_testsKeys } from "./routes.07_datastreams.spec";
 export const testsKeys = ["@iot.id", "@iot.selfLink", "Datastreams@iot.navigationLink", "MultiDatastreams@iot.navigationLink", "Loras@iot.navigationLink","name", "description"];
 
@@ -42,8 +42,7 @@ chai.use(chaiHttp);
 const should = chai.should();
 
 const docs: IApiDoc[] = [];
-const entity: IEntity = _DBDATAS.Sensors;
-
+const entity: Ientity = _DBDATAS.Sensors;
 
 
 const addToApiDoc = (input: IApiInput) => {
@@ -74,7 +73,7 @@ describe("endpoint : Sensors", () => {
 
     before((done) => {
         
-    //     createListColumns(entity.table, (err: any, value: any) => {
+    //     createListColumns(entity.table, (err: Error, value: any) => {
     //         columns = ["{number} id @iot.id", "{relation} selfLink @iot.selfLink", ...value];
     //         Object.keys(entity.relations).forEach((elem: string) => {
     //             columns.push(`{relation} ${elem} ${elem}@iot.navigationLink`);
@@ -82,7 +81,7 @@ describe("endpoint : Sensors", () => {
         chai.request(server)
             .post("/test/v1.0/login")
             .send(identification)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 token = String(res.body["token"]);
                 done();
             });
@@ -177,7 +176,7 @@ describe("endpoint : Sensors", () => {
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -204,7 +203,7 @@ describe("endpoint : Sensors", () => {
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -219,7 +218,7 @@ describe("endpoint : Sensors", () => {
             const name = "Datastreams";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(1)/Datastreams`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -238,7 +237,7 @@ describe("endpoint : Sensors", () => {
             const name = "MultiDatastreams";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(1)/MultiDatastreams`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -256,7 +255,7 @@ describe("endpoint : Sensors", () => {
             const name = "Datastreams";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(1)?$expand=${name}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -274,7 +273,7 @@ describe("endpoint : Sensors", () => {
             const name = "MultiDatastreams";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(3)?$expand=${name}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -315,7 +314,7 @@ describe("endpoint : Sensors", () => {
                 .post(`/test${infos.apiExample.http}`)
                 .send(infos.apiParamExample)
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
@@ -330,7 +329,7 @@ describe("endpoint : Sensors", () => {
                 .post("/test/v1.0/Sensors")
                 .send({})
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(400);
                     res.type.should.equal("application/json");
@@ -368,7 +367,7 @@ describe("endpoint : Sensors", () => {
                         .patch(`/test${infos.apiExample.http}`)
                         .send(infos.apiParamExample)
                         .set("Cookie", `${keyTokenName}=${token}`)
-                        .end((err: any, res: any) => {
+                        .end((err: Error, res: any) => {
                             should.not.exist(err);
                             res.status.should.equal(200);
                             res.type.should.equal("application/json");
@@ -394,7 +393,7 @@ describe("endpoint : Sensors", () => {
                     description: "This is a new PM 2.5 sensor"
                 })
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(404);
                     res.type.should.equal("application/json");
@@ -430,7 +429,7 @@ describe("endpoint : Sensors", () => {
                     chai.request(server)
                         .delete(`/test${infos.apiExample.http}`)
                         .set("Cookie", `${keyTokenName}=${token}`)
-                        .end((err: any, res: any) => {
+                        .end((err: Error, res: any) => {
                             should.not.exist(err);
                             res.status.should.equal(204);
                             dbTest("sensor")
@@ -448,7 +447,7 @@ describe("endpoint : Sensors", () => {
             chai.request(server)
                 .delete(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(404);
                     res.type.should.equal("application/json");

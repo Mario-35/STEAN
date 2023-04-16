@@ -12,8 +12,8 @@ import { Common } from "./common";
 import { getBigIntFromString, notNull, removeQuotes } from "../../helpers/index";
 import { _DATEFORMATNOTIMEZONE, _DBDATAS } from "../constants";
 import { _DOUBLEQUOTE, _QUOTEDCOMA, _VOIDTABLE } from "../../constants";
-import { _LOGS } from "../../logger";
-import { IReturnResult } from "../../types";
+import { Logs } from "../../logger";
+import { IreturnResult } from "../../types";
 import { messages, messagesReplace } from "../../messages/";
 
 export class Loras extends Common {
@@ -21,8 +21,8 @@ export class Loras extends Common {
     constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
         super(ctx, knexInstance);
     }
-    async prepareInputResult(dataInput: Object): Promise<Object> {
-        _LOGS.class(this.constructor.name, "prepareInputResult"); 
+    async prepareInputResult(dataInput: object): Promise<object> {
+        Logs.class(this.constructor.name, "prepareInputResult"); 
         ["deveui", "sensor_id", "payload_deciphered"].forEach((key: string) => {
             if (dataInput[key]) dataInput[key] = dataInput[key].toUpperCase();
         });
@@ -31,14 +31,14 @@ export class Loras extends Common {
     // load decoder and decode payload with the code
 
 
-    async decodeLoraValues(knexInstance: Knex | Knex.Transaction, loraDeveui: string, input: any): Promise<{[key: string]: string}> {   
+    async decodeLoraValues(knexInstance: Knex | Knex.Transaction, loraDeveui: string, input: JSON): Promise<{[key: string]: string}> {   
             
-       _LOGS.debug("decodeLoraValues", loraDeveui);
+       Logs.debug("decodeLoraValues", loraDeveui);
        try {
-           return await knexInstance(_DBDATAS.Decoders.table).select("code").whereRaw(`id = (SELECT "decoder_id" FROM "${_DBDATAS.Loras.table}" WHERE "deveui" = '${loraDeveui}')`).first().then((res: any) => {
+           return await knexInstance(_DBDATAS.Decoders.table).select("code").whereRaw(`id = (SELECT "decoder_id" FROM "${_DBDATAS.Loras.table}" WHERE "deveui" = '${loraDeveui}')`).first().then((res: object) => {
                if (res) {
                    try {
-                       const F = new Function("input", String(res.code));                       
+                       const F = new Function("input", String(res["code"]));                       
                        return F(input);
                    } catch (error) {
                        return {"error" : "decoder error"};            
@@ -47,7 +47,7 @@ export class Loras extends Common {
                return {"error" : "decoder error"};            
            });
        } catch (error) {
-           _LOGS.error(error);           
+           Logs.error(error);           
        }
        return {"error" : "decoder error"};            
    }
@@ -57,12 +57,12 @@ export class Loras extends Common {
         return tempList[0].concat(_DOUBLEQUOTE, input.join(`"${tempList[1]}${tempList[0]}"`), _DOUBLEQUOTE, tempList[1]);
     }
 
-    async add(dataInput: Object, silent?: boolean): Promise<IReturnResult | undefined> {
-        _LOGS.override(messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));    
+    async add(dataInput: object, silent?: boolean): Promise<IreturnResult | undefined> {
+        Logs.override(messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));    
         if (dataInput) dataInput = await this.prepareInputResult(dataInput);
 
         const decodeLoraPayload = async (knexInstance: Knex | Knex.Transaction, loraDeveui: string, input: string): Promise<any> => {
-            _LOGS.debug(`decodeLoraPayload deveui : [${loraDeveui}]`, input);
+            Logs.debug(`decodeLoraPayload deveui : [${loraDeveui}]`, input);
             const ErrorMessage = "Decoding Payload error";
             return await knexInstance(_DBDATAS.Decoders.table).select("code", "nomenclature", "synonym", "dataKeys").whereRaw(`id = (SELECT "decoder_id" FROM "${_DBDATAS.Loras.table}" WHERE "deveui" = '${loraDeveui}')`).first().then((res: any) => {
                 try {
@@ -74,7 +74,7 @@ export class Loras extends Common {
                     }
                  } catch (error) {
                      if (res.dataKeys) { 
-                        let temp: Object | undefined = undefined;
+                        let temp: object | undefined = undefined;
                         res.dataKeys.forEach((key: string) => {
                             if (dataInput["data"][key]) 
                                 temp = { messages : [ {"measurementValue" : dataInput["data"][key]}] }; 
@@ -169,7 +169,7 @@ export class Loras extends Common {
             }
             
         if (multiDatastream) { 
-           _LOGS.debug("multiDatastream", multiDatastream);
+           Logs.debug("multiDatastream", multiDatastream);
            const listOfSortedValues: {[key: string]: number | null} = {};           
            multiDatastream.keys.forEach((element: string) => {  
                listOfSortedValues[element] = null;               
@@ -186,7 +186,7 @@ export class Loras extends Common {
                 }); 
            }); 
 
-           _LOGS.debug("Values", listOfSortedValues);
+           Logs.debug("Values", listOfSortedValues);
     
             // If all datas null
             if (Object.values(listOfSortedValues).filter((word) => word != null).length < 1) {
@@ -211,7 +211,7 @@ export class Loras extends Common {
             if (temp && typeof temp == "object") {
                 const tempLength = Object.keys(temp).length;
     
-                _LOGS.debug("data : Keys", `${tempLength} : ${multiDatastream.keys.length}`);
+                Logs.debug("data : Keys", `${tempLength} : ${multiDatastream.keys.length}`);
                 if (tempLength != multiDatastream.keys.length) {
                     const errorMessage = messagesReplace(messages.errors.sizeListKeys, [String(tempLength), multiDatastream.keys.length]);
                     if (silent) return this.createReturnResult({ body: errorMessage });
@@ -292,7 +292,7 @@ export class Loras extends Common {
             return await Common.dbContext
                 .raw(sql)
                 .then(async (res: any) => {
-                    const tempResult = res.rows[0].result[0];
+                    const tempResult = res["rows"][0].result[0];
                     if (tempResult.id != null) {
                         const _resultnumbers = {};
                         tempResult.keys.forEach((elem: string, index: number) => {
@@ -321,7 +321,7 @@ export class Loras extends Common {
                     }
                 });
         } else if (datastream) { 
-           _LOGS.debug("datastream", datastream);
+           Logs.debug("datastream", datastream);
            const getFeatureOfInterest = getBigIntFromString(dataInput["FeatureOfInterest"]);
            const searchFOI = await Common.dbContext.raw(
                getFeatureOfInterest
@@ -364,7 +364,7 @@ export class Loras extends Common {
                searchDuplicate = searchDuplicate.concat(
                    `"_resultnumber" = ${insertObject["_resultnumber"]}`
                );
-               _LOGS.debug("searchDuplicate", searchDuplicate);
+               Logs.debug("searchDuplicate", searchDuplicate);
    
            const sql = `WITH "${_VOIDTABLE}" as (select srid FROM "${_VOIDTABLE}" LIMIT 1)
                , featureofinterest1 AS (SELECT id FROM "${_DBDATAS.FeaturesOfInterest.table}"
@@ -393,7 +393,7 @@ export class Loras extends Common {
            return await Common.dbContext
                .raw(sql)
                .then(async (res: any) => {
-                   const tempResult = res.rows[0].result[0];
+                   const tempResult = res["rows"][0].result[0];
                    if (tempResult.id != null) {
                        const result = {
                            "@iot.id": tempResult.id,
@@ -420,8 +420,8 @@ export class Loras extends Common {
        }
     }
 
-    async update(idInput: bigint | string, dataInput: Object | undefined): Promise<IReturnResult | undefined> {
-        _LOGS.override(messagesReplace(messages.infos.classConstructor, [this.constructor.name, `update`]));
+    async update(idInput: bigint | string, dataInput: object | undefined): Promise<IreturnResult | undefined> {
+        Logs.override(messagesReplace(messages.infos.classConstructor, [this.constructor.name, `update`]));
         return undefined;
     }
 }

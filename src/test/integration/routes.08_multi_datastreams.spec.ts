@@ -33,7 +33,7 @@ import {
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
 import { _DBDATAS } from "../../server/db/constants";
-import { IEntity } from "../../server/types";
+import { Ientity } from "../../server/types";
 
 export const testsKeys = [
     "@iot.id",
@@ -54,7 +54,7 @@ chai.use(chaiHttp);
 const should = chai.should();
 
 const docs: IApiDoc[] = [];
-const entity: IEntity = _DBDATAS.MultiDatastreams;
+const entity: Ientity = _DBDATAS.MultiDatastreams;
 
 const addToApiDoc = (input: IApiInput) => {
     docs.push(prepareToApiDoc(input, entity.name));
@@ -70,7 +70,7 @@ addToApiDoc({
 
 describe("endpoint : MultiDatastream", () => {
     let myId = "";
-    let myError = "";
+    const myError = "";
     let firstID = 0;
     const temp = listOfColumns(entity);
     const success = temp.success;
@@ -81,7 +81,7 @@ describe("endpoint : MultiDatastream", () => {
         chai.request(server)
             .post("/test/v1.0/login")
             .send(identification)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 token = String(res.body["token"]);
                 done();
             });
@@ -139,7 +139,7 @@ describe("endpoint : MultiDatastream", () => {
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -181,7 +181,7 @@ describe("endpoint : MultiDatastream", () => {
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -214,7 +214,7 @@ describe("endpoint : MultiDatastream", () => {
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -232,7 +232,7 @@ describe("endpoint : MultiDatastream", () => {
             const name = "Thing";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(10)/${name}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -251,7 +251,7 @@ describe("endpoint : MultiDatastream", () => {
             const name = "Sensor";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(10)/${name}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -268,7 +268,7 @@ describe("endpoint : MultiDatastream", () => {
             const name = "ObservedProperties";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(10)/${name}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -285,7 +285,7 @@ describe("endpoint : MultiDatastream", () => {
             const name = "Observations";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(10)/${name}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -303,7 +303,7 @@ describe("endpoint : MultiDatastream", () => {
             const name = "Thing";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(2)?$expand=${name}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -321,7 +321,7 @@ describe("endpoint : MultiDatastream", () => {
             const name = "Sensor";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(2)?$expand=${name}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -337,7 +337,7 @@ describe("endpoint : MultiDatastream", () => {
             const name = "Observations";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(2)?$expand=${name}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -354,7 +354,7 @@ describe("endpoint : MultiDatastream", () => {
             const name = "ObservedProperties";
             chai.request(server)
                 .get(`/test/v1.0/${entity.name}(1)?$expand=${name}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -422,7 +422,7 @@ describe("endpoint : MultiDatastream", () => {
                 .post(`/test${infos.apiExample.http}`)
                 .send(infos.apiParamExample)
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
@@ -437,7 +437,7 @@ describe("endpoint : MultiDatastream", () => {
                 .post("/test/v1.0/MultiDatastreams")
                 .send({})
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(400);
                     res.type.should.equal("application/json");
@@ -508,7 +508,7 @@ describe("endpoint : MultiDatastream", () => {
                 .post(`/test${infos.apiExample.http}`)
                 .send(infos.apiParamExample)
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
@@ -554,7 +554,7 @@ describe("endpoint : MultiDatastream", () => {
                     ]
                 })
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(400);
                     res.body["detail"].should.eql("Size of list of ObservedProperties (1) is not equal to size of multiObservationDataTypes (2)");
@@ -596,7 +596,7 @@ describe("endpoint : MultiDatastream", () => {
                     ]
                 })
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(400);
                     res.body["detail"].should.eql("Size of list of unitOfMeasurements (1) is not equal to size of multiObservationDataTypes (2)");
@@ -633,7 +633,7 @@ describe("endpoint : MultiDatastream", () => {
                         .patch(`/test${infos.apiExample.http}`)
                         .send(infos.apiParamExample)
                         .set("Cookie", `${keyTokenName}=${token}`)
-                        .end((err: any, res: any) => {
+                        .end((err: Error, res: any) => {
                             should.not.exist(err);
                             res.status.should.equal(200);
                             res.type.should.equal("application/json");
@@ -660,7 +660,7 @@ describe("endpoint : MultiDatastream", () => {
                     name: "temp_readings"
                 })
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(404);
                     res.type.should.equal("application/json");
@@ -697,7 +697,7 @@ describe("endpoint : MultiDatastream", () => {
                     chai.request(server)
                         .delete(`/test${infos.apiExample.http}`)
                         .set("Cookie", `${keyTokenName}=${token}`)
-                        .end((err: any, res: any) => {
+                        .end((err: Error, res: any) => {
                             should.not.exist(err);
                             res.status.should.equal(204);
                             dbTest(_DBDATAS.MultiDatastreams.table)
@@ -716,7 +716,7 @@ describe("endpoint : MultiDatastream", () => {
             chai.request(server)
                 .delete(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .set("Cookie", `${keyTokenName}=${token}`)
-                .end((err: any, res: any) => {
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(404);
                     res.type.should.equal("application/json");

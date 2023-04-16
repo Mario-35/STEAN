@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // import { PrimitiveTypeEnum } from '@odata/metadata';
 import { Token, TokenType } from './lexer';
 

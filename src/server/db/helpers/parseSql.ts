@@ -1,8 +1,8 @@
 function isSubquery(str: string, parenthesisLevel: number): number {
-    return  parenthesisLevel - (str.replace(/\(/g,'').length - str.replace(/\)/g,'').length );
+    return parenthesisLevel - (str.replace(/\(/g,'').length - str.replace(/\)/g,'').length );
 }
   
-function split_sql(str: any, tab :number): string {
+function split_sql(str: string, tab :number): string[] {
     const sp = "  ";
     return str.replace(/\s{1,}/g," ")
         .replace(/ AND /ig,"~::~"+sp.repeat(tab * 2)+"AND ")
@@ -66,7 +66,7 @@ function split_sql(str: any, tab :number): string {
 
     let ar:string[] = [];
     let deep = 0;
-    let tab = 0;
+    const tab = 0;
     let parenthesisLevel = 0;
     let str = '';
   
@@ -84,21 +84,21 @@ function split_sql(str: any, tab :number): string {
   
           parenthesisLevel = isSubquery(ar[ix], parenthesisLevel);
   
-          if( /\s{0,}\s{0,}SELECT\s{0,}/.exec(ar[ix]))  {
+          if( /\s{0,}\s{0,}SELECT\s{0,}/.exec(ar[ix])) {
               ar[ix] = ar[ix].replace(/\,/g,",\n"+"  ".repeat(tab)+"");
           }
   
-          if( /\s{0,}\(\s{0,}SELECT\s{0,}/.exec(ar[ix]))  {
+          if( /\s{0,}\(\s{0,}SELECT\s{0,}/.exec(ar[ix])) {
               deep++;
               str += shift[deep]+ar[ix];
           } else
-          if( /\'/.exec(ar[ix]) )  {
+          if( /\'/.exec(ar[ix]) ) {
               if(parenthesisLevel<1 && deep) {
                   deep--;
               }
               str += ar[ix];
           }
-          else  {
+          else {
               str += shift[deep]+ar[ix];
               if(parenthesisLevel<1 && deep) {
                   deep--;
@@ -106,4 +106,4 @@ function split_sql(str: any, tab :number): string {
           }
       }
       return str.replace(/^\n{1,}/,'').replace(/\n{1,}/g,"\n");
-  };
+  }

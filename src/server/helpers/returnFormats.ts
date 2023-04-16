@@ -9,14 +9,15 @@
 
 import { Parser } from "json2csv";
 import koa from "koa";
-import { _LOGS } from "../logger";
-import { FORMATS, IreturnFormat } from "../types";
+import { Logs } from "../logger";
+import { IreturnFormat } from "../types";
 import { addCssFile } from "../views/css";
 import { addJsFile } from "../views/js";
 import util from "util";
 import { removeQuotes } from ".";
 import { PgVisitor } from "../odata";
 import { countId, isGraph, _DBDATAS } from "../db/constants";
+import { Eformats } from "../enums";
 
 export const queryAsJson = (input: {
     query: string;
@@ -35,7 +36,7 @@ const queryInterval = (input: PgVisitor): string => {
   return queryAsJson({query: input.sql, singular: false, count: true});
 };
 
-const defaultFunction = (input: string | Object, ctx?: koa.Context) => input;
+const defaultFunction = (input: string | object) => input;
 const defaultForwat = (input: PgVisitor): string => input.sql;
 const generateFields = (input: PgVisitor): string[] => {
   let fields:string[] = [];
@@ -45,7 +46,7 @@ const generateFields = (input: PgVisitor): string[] => {
   } 
   return fields;
 };
-const _returnFormats: { [key in FORMATS]: IreturnFormat } = {
+const _returnFormats: { [key in Eformats]: IreturnFormat } = {
   json: {
     name : "json",
     type: "application/json",
@@ -68,7 +69,7 @@ const _returnFormats: { [key in FORMATS]: IreturnFormat } = {
   graph: {
     name : "graph",
     type: "text/html;charset=utf8",
-    format(input: string | Object, ctx: koa.Context): string | Object {
+    format(input: string | object, ctx: koa.Context): string | object {
       const edit = "async function editDataClicked(id, params) { new Observation({ title: `${params.seriesName}`, date: params.name, value : params.data.toString(), id: id }); } ";
       return `<!DOCTYPE text/html>
                 <html lang="fr">
@@ -108,7 +109,7 @@ const _returnFormats: { [key in FORMATS]: IreturnFormat } = {
   csv: {
     name : "csv",
     type: "text/csv",
-    format :(input: string | Object) => {
+    format :(input: string | object) => {
       const opts = { delimiter: ";", includeEmptyRows: true, escapedQuote: "",header: false};            
       if (input && input[0].dataArray)
       try {
@@ -117,7 +118,7 @@ const _returnFormats: { [key in FORMATS]: IreturnFormat } = {
         return parser.parse(input[0].dataArray);
       } catch (e) {
         if (e instanceof Error) {
-                  _LOGS.error(e.message);
+                  Logs.error(e.message);
                   return e.message;
               }
             }
@@ -129,7 +130,7 @@ const _returnFormats: { [key in FORMATS]: IreturnFormat } = {
   txt: {
     name : "txt",
     type: "text/plain",
-    format :(input: string | Object, ctx?: koa.Context) => Object.entries(input).length > 0 ? util.inspect(input, { showHidden: true, depth: 4 }) : JSON.stringify(input),
+    format :(input: string | object) => Object.entries(input).length > 0 ? util.inspect(input, { showHidden: true, depth: 4 }) : JSON.stringify(input),
     generateSql(input: PgVisitor) {  
       return queryAsJson({query: input.sql, singular: false, count: false});
     },

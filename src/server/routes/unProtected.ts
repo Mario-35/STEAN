@@ -12,32 +12,33 @@ import { _DBDATAS, _DBPUREST } from "../db/constants";
 import { configCtx, returnFormats } from "../helpers";
 import fs from "fs";
 import { db } from "../db";
-import { _LOGS } from "../logger";
-import { IReturnResult, USERRIGHTS } from "../types";
-import { _APIVERSION } from "../constants";
+import { Logs } from "../logger";
+import { IreturnResult } from "../types";
+import { EuserRights } from "../enums";
+import { API_VERSION } from "../constants";
 import { queryHtmlPage } from "../views/query";
 import { CreateHtmlView, createIqueryFromContext, } from "../views/helpers/";
 import { testRoutes } from "./helpers";
 import { DefaultState, Context } from "koa";
-import { ensureAuthenticated, getAuthenticatedUser } from "../types/user";
 import { createDatabase } from "../db/helpers";
 import { createOdata } from "../odata";
 import { messages } from "../messages";
 import { isAdmin, canDo } from ".";
 import { getMetrics } from "../db/monitoring";
-import { _CONFIGS } from "../configuration";
+import { CONFIGURATION } from "../configuration";
+import { ensureAuthenticated, getAuthenticatedUser } from "../authentication";
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 
 // ALl others
 unProtectedRoutes.get("/(.*)", async (ctx) => {
-    const adminWithSuperAdminAccess = isAdmin(ctx) ? canDo(ctx, USERRIGHTS.SuperAdmin) ? true : false : true;
+    const adminWithSuperAdminAccess = isAdmin(ctx) ? canDo(ctx, EuserRights.SuperAdmin) ? true : false : true;
 
     switch (testRoutes(ctx.path).toUpperCase()) {
         case ctx._version.toUpperCase():
-            const expectedResponse: Object[] = [];
+            const expectedResponse: object[] = [];
             
             if (isAdmin(ctx) && !adminWithSuperAdminAccess) ctx.throw(401);
-            const src = _CONFIGS[ctx._configName].standard === true ? _DBPUREST : _DBDATAS;
+            const src = CONFIGURATION.list[ctx._configName].standard === true ? _DBPUREST : _DBDATAS;
             Object.keys(src)
                 .filter((elem: string) => isAdmin(ctx) ?_DBDATAS[elem].admin === true : _DBDATAS[elem].order > 0)
                 .sort((a, b) => (_DBDATAS[a].order > _DBDATAS[b].order ? 1 : -1))
@@ -60,7 +61,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
                 ctx.type = returnFormats.icon.type;
                 ctx.body = fs.readFileSync(__dirname + "/favicon.ico");
             } catch (e) {
-                if (e instanceof Error) _LOGS.error(e.message);
+                if (e instanceof Error) Logs.error(e.message);
             }
             return;
 
@@ -102,7 +103,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             return;
 
         case "ALL":
-            if (ctx.request["token"]?.PDCUAS[USERRIGHTS.SuperAdmin] === true) {
+            if (ctx.request["token"]?.PDCUAS[EuserRights.SuperAdmin] === true) {
                 ctx.type = returnFormats.json.type;
                 ctx.body = await userAccess.getAll();
             }
@@ -144,7 +145,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         case "USER":
             // Only to get user Infos
             const id = ctx.url.toUpperCase().match(/[0-9]/g)?.join("");
-            if (id && ctx.request["token"]?.PDCUAS[USERRIGHTS.SuperAdmin] === true) {
+            if (id && ctx.request["token"]?.PDCUAS[EuserRights.SuperAdmin] === true) {
                 const user = await userAccess.getSingle(id);
                 const createHtml = new CreateHtmlView(ctx);
                 ctx.type = returnFormats.html.type;
@@ -153,8 +154,8 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             return;
 
         case "CREATEDB":
-            _LOGS.head("GET createDB");
-            const returnValue = await createDatabase("test", ctx);
+            Logs.head("GET createDB");
+            const returnValue = await createDatabase("test");
 
             if (returnValue) {
                 ctx.status = 201;
@@ -166,11 +167,11 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             return;
     }
     // API REQUEST
-    if (ctx.path.includes(`/${_APIVERSION}`)) {        
+    if (ctx.path.includes(`/${API_VERSION}`)) {        
         const odataVisitor = await createOdata(ctx); 
         if (odataVisitor) ctx._odata = odataVisitor;
         if (ctx._odata) {
-            _LOGS.head(`GET ${_APIVERSION}`);
+            Logs.head(`GET ${API_VERSION}`);
             const objectAccess = new apiAccess(ctx);
             if (objectAccess) {
                 if (ctx._odata.entity && Number(ctx._odata.id) === 0) {
@@ -181,12 +182,12 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
                             "@iot.nextLink": returnValue.nextLink,
                             "@iot.prevLink": returnValue.prevLink,
                             value: returnValue.body
-                        } as Object : returnValue.body;
+                        } as object : returnValue.body;
                         ctx.type = ctx._odata.resultFormat.type;
-                        ctx.body = ctx._odata.resultFormat.format(datas as Object, ctx);
+                        ctx.body = ctx._odata.resultFormat.format(datas as object, ctx);
                     } else ctx.throw(404);
                 } else if ( (ctx._odata.id && typeof ctx._odata.id == "bigint" && ctx._odata.id > 0) || (typeof ctx._odata.id == "string" && ctx._odata.id != "") ) {
-                    const returnValue: IReturnResult | undefined = await objectAccess.getSingle(ctx._odata.id);
+                    const returnValue: IreturnResult | undefined = await objectAccess.getSingle(ctx._odata.id);
                     if (returnValue && returnValue.body) {
                         ctx.type = ctx._odata.resultFormat.type;
                         ctx.body = ctx._odata.resultFormat.format(returnValue.body);

@@ -7,11 +7,11 @@
  */
 
 import koa from "koa";
-import { _CONFIGS, _CONFIGURATION } from "../configuration";
+import { CONFIGURATION } from "../configuration";
 import querystring from "querystring";
 import cookieModule from "cookie";
 import cookieParser from "cookie-parser";
-import { _KEYAPP, _APIVERSION } from "../constants";
+import { APP_KEY, API_VERSION } from "../constants";
 
 /**
  *
@@ -27,7 +27,7 @@ const bearerToken = (ctx: koa.Context) => {
     const headerKey = "Bearer";
     const cookie = true;
 
-    if (cookie && !_KEYAPP) {
+    if (cookie && !APP_KEY) {
         throw new Error("[koa-bearer-token]: You must provide a secret token to cookie attribute, or disable signed property");
     }
 
@@ -59,7 +59,7 @@ const bearerToken = (ctx: koa.Context) => {
         if (cookie && header.cookie) {
             const plainCookie = getCookie(header.cookie, "jwt-session"); // seeks the key
             if (plainCookie) {
-                const cookieToken = cookieParser.signedCookie(plainCookie, _KEYAPP);
+                const cookieToken = cookieParser.signedCookie(plainCookie, APP_KEY);
 
                 if (cookieToken) {
                     token = cookieToken;
@@ -86,12 +86,12 @@ export const setConfigToCtx = (ctx: koa.Context): void => {
         ctx.originalUrl
             .replace(/[//]+/g, "/")
             .split("/")
-            .filter((value: string) => value.match(/v{1}\d\.\d/g))[0] || _APIVERSION;
+            .filter((value: string) => value.match(/v{1}\d\.\d/g))[0] || API_VERSION;
 
-    const temp = _CONFIGURATION.getConfigNameFromContext(ctx);
+    const temp = CONFIGURATION.getConfigNameFromContext(ctx);
 
     if (!temp) throw new Error("No config name found");    
-    if (_CONFIGURATION.isInConfig(temp) === false) throw new Error(`${temp} Not present in config File`);    
+    if (CONFIGURATION.isInConfig(temp) === false) throw new Error(`${temp} Not present in config File`);    
 
     ctx._configName = temp.trim().toLowerCase();
 
@@ -99,7 +99,7 @@ export const setConfigToCtx = (ctx: koa.Context): void => {
 
     const protocol = ctx.request.headers["x-forwarded-proto"]
         ? ctx.request.headers["x-forwarded-proto"]
-        : _CONFIGS[ctx._configName].forceHttps && _CONFIGS[ctx._configName].forceHttps == true
+        : CONFIGURATION.list[ctx._configName].forceHttps && CONFIGURATION.list[ctx._configName].forceHttps == true
         ? "https"
         : ctx.protocol;
 
@@ -110,5 +110,5 @@ export const setConfigToCtx = (ctx: koa.Context): void => {
         : "";
 
     if (!ctx._linkBase.includes(ctx._configName)) ctx._linkBase = ctx._linkBase + "/" + ctx._configName;
-    ctx._rootName = process.env.NODE_ENV?.trim() === "test"  ? `proxy/${ctx._version}/` : `${ctx._linkBase}/${ctx._version}/`;
+    ctx._rootName = process.env.NODE_ENV?.trim() === "test" ? `proxy/${ctx._version}/` : `${ctx._linkBase}/${ctx._version}/`;
 };

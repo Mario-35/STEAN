@@ -7,7 +7,6 @@
  */
 
 import { createQueryString } from ".";
-import { _DBDATAS } from "../../../db/constants";
 import { PgVisitor } from "../PgVisitor";
 
  export function createGetSql(main: PgVisitor): string {   
@@ -24,10 +23,10 @@ import { PgVisitor } from "../PgVisitor";
                 visitor.navigationProperty = names[1];
                 includesItem.includes.push(visitor);
             }
-        };
+        }
     });  
         
     main.includes.forEach((item) => item.asGetSql());
     main.sql = createQueryString(main, main);
-    return main.onlyValue ? main.sql :  main.resultFormat.generateSql(main);
+    return main.onlyValue ? main.sql : main.resultFormat.generateSql(main);
 }

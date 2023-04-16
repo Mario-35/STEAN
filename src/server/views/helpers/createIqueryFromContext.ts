@@ -9,11 +9,11 @@
 /* eslint-disable quotes */
 
 import koa from "koa";
+import { getAuthenticatedUser } from "../../authentication";
 import { _DBADMIN, _DBDATAS, _DBST } from "../../db/constants";
-import { getAuthenticatedUser } from "../../types/user";
-import { IQuery } from "../constant";
+import { Iquery } from "../../types";
 
-export const createIqueryFromContext = async (ctx: koa.Context): Promise<IQuery> => {
+export const createIqueryFromContext = async (ctx: koa.Context): Promise<Iquery> => {
     const user = await getAuthenticatedUser(ctx);
     
     return {

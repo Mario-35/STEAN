@@ -11,7 +11,7 @@ import koa from "koa";
 import { Common } from "./common";
 import { messages, messagesReplace } from "../../messages/";
 import { _DBDATAS } from "../constants";
-import { _LOGS } from "../../logger";
+import { Logs } from "../../logger";
 
 
 export class MultiDatastreams extends Common {
@@ -19,8 +19,8 @@ export class MultiDatastreams extends Common {
         super(ctx, knexInstance);
     }
 
-    formatDataInput(input: Object | undefined): Object | undefined {
-        _LOGS.head(`class ${this.constructor.name} override formatDataInput`);
+    formatDataInput(input: object | undefined): object | undefined {
+        Logs.head(`class ${this.constructor.name} override formatDataInput`);
         if (!input)
             this.ctx.throw(400, { code: 400, detail: messages.errors.noData });
 

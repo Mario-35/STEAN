@@ -15,7 +15,7 @@ export const getColumnsListType = (tableName: string): {[key: string]: string} |
     if (!name) return;
     const returnValue: {[key: string]: string} = {};
     Object.keys(_DBDATAS[name].columns).forEach((elem: string) => {
-        returnValue[elem]  = _DBDATAS[name].columns[elem].type;
+        returnValue[elem] = _DBDATAS[name].columns[elem].type;
     });
     return returnValue;
-}
+};

@@ -8,10 +8,10 @@
  */
 
 import { Knex } from "knex";
-import { _LOGS } from "../../logger";
-import { IEntity } from "../../types";
+import { Logs } from "../../logger";
+import { Ientity } from "../../types";
 
-export const createTable = async(connectionDb: Knex | Knex.Transaction, tableEntity: IEntity, doAfter: string | undefined): Promise<{ [key: string]: string }> => {
+export const createTable = async(connectionDb: Knex | Knex.Transaction, tableEntity: Ientity, doAfter: string | undefined): Promise<{ [key: string]: string }> => {
     if(!tableEntity) return {};
 
     const space = 5;
@@ -22,7 +22,7 @@ export const createTable = async(connectionDb: Knex | Knex.Transaction, tableEnt
 
     let insertion = "";
     if (!connectionDb) {
-        _LOGS.error("connection Error");
+        Logs.error("connection Error");
         return { error: "connection Error" };
     }
 

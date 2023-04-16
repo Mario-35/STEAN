@@ -1,21 +1,23 @@
 /**
- * Index entities.
+ * Index Types.
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
 
-export { IUser, userToken } from "./user";
-export { IReturnResult } from "./returnResult";
-export { IreturnFormat } from "./returnFormats";
-export { ICsvFile, ICsvColumns } from "./csvFile";
-export { IEntity } from "./entity";
-export { PgQuery } from "./pgQuery";
-export { ENTITIES, RELATIONS, USERRIGHTS, FORMATS, OPERATIONTYPE } from "./enum";
+export { IreturnResult } from "./returnResult";
+export { IreturnFormat } from "./returnFormat";
+export { IcsvFile } from "./csvFile";
+export { IcsvColumn } from "./csvColumn";
+export { IentityColumn } from "./entityColumn";
+export { IconfigFile } from "./configFile";
+export { IentityRelation } from "./entityRelation";
+export { IdbConnection } from "./dbConnection";
+export { Ientity } from "./entity";
+export { IpgQuery } from "./pgQuery";
+export { Iuser } from "./user";
+export { Iquery } from "./query";
+export { IuserToken } from "./userToken";
 
-export enum StreamType {
-    Datastreams = "Datastreams",
-    MultiDatastreams = "MultiDatastreams",
-    None = "None"
- }
+

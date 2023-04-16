@@ -47,7 +47,7 @@ describe("Odata", () => {
             apiName: "OdataExpand",
             apiDescription: `Use $expand query option to request inline information for related entities of the requested entity collection.${apiInfos["9.3.2.1"]}`,
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#expand",
-            apiExample: {   http: "/v1.0/Things(6)?$expand=Datastreams",
+            apiExample: { http: "/v1.0/Things(6)?$expand=Datastreams",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -55,7 +55,7 @@ describe("Odata", () => {
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
@@ -84,7 +84,7 @@ describe("Odata", () => {
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
@@ -117,7 +117,7 @@ describe("Odata", () => {
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 // there should be no errors
                 should.not.exist(err);
                 // there should be a 200 status code
@@ -146,7 +146,7 @@ describe("Odata", () => {
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 // there should be no errors
                 should.not.exist(err);
                 // there should be a 200 status code
@@ -176,7 +176,7 @@ describe("Odata", () => {
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 // there should be no errors
                 should.not.exist(err);
                 // there should be a 200 status code
@@ -200,11 +200,11 @@ describe("Odata", () => {
             apiExample: { http: "/v1.0/Things(1)?$select=description",
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
+            python: defaultGet("python", "KEYHTTP") }
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
@@ -307,7 +307,7 @@ describe("Odata", () => {
             apiExample: { http: "/v1.0/Observations?$skip=3",
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
+            python: defaultGet("python", "KEYHTTP") }
         };
         dbTest("observation")
             .count()
@@ -336,7 +336,7 @@ describe("Odata", () => {
                 apiExample: { http: "/v1.0/Observations?$skip=3&$top=2&$count=true",
                 curl: defaultGet("curl", "KEYHTTP"),
                 javascript: defaultGet("javascript", "KEYHTTP"),
-                python: defaultGet("python", "KEYHTTP")  }
+                python: defaultGet("python", "KEYHTTP") }
             };
     
             chai.request(server)
@@ -457,7 +457,7 @@ describe("Odata", () => {
             apiExample: { http: "/v1.0/Observations?$filter=phenomenonTime gt '2021-01-01' and phenomenonTime lt '2021-10-16'",
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
+            python: defaultGet("python", "KEYHTTP") }
         };
 
         chai.request(server)

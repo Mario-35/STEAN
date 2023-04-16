@@ -8,13 +8,13 @@
 
 import { columnList, isCsvOrArray, isGraph, isObservation, _DBDATAS } from "../../../db/constants";
 import { getEntityName, goodName, removeQuotes } from "../../../helpers";
-import { IEntity } from "../../../types";
+import { Ientity } from "../../../types";
 import { PgVisitor } from "../PgVisitor";
 
-export function getColumnsList(tableName: string, main: PgVisitor, element: PgVisitor): string[] | undefined  {
+export function getColumnsList(tableName: string, main: PgVisitor, element: PgVisitor): string[] | undefined {
     const temp = getEntityName(tableName.trim());
     if (!temp) return;
-    const tempEntity:IEntity = _DBDATAS[temp];
+    const tempEntity:Ientity = _DBDATAS[temp];
     const ResultgroupBy:string [] = [];
     const csvOrArray = isCsvOrArray(main);
     const returnValue: string[] = isGraph(main)
@@ -43,9 +43,9 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
                 if (main.id) returnValue.push(column.replace(/$ID+/g, main.id.toString()) );
                 else returnValue.push(column && column != "" ? column : `"${elem}"`);                    
                 if (elem === "id" && (element.showRelations == true || csvOrArray)) {
-                    if (csvOrArray)  main.addToArrayNames("id");            
+                    if (csvOrArray) main.addToArrayNames("id");            
                     else returnValue.push(selfLink);    
-                }  else  main.addToArrayNames(elem); 
+                } else main.addToArrayNames(elem); 
             } else if (tempEntity.relations[elem]) {
                 const tempTable = getEntityName(elem);
                 const relation = `CONCAT('${main.options.rootBase}${tempEntity.name}(', "${tempEntity.table}"."id", ')/${tempTable}') AS "${tempTable}@iot.navigationLink"`;   
@@ -67,9 +67,9 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
             element.groupBy.push(`"${tempEntity.table}"."id"`);
         });
         else {
-            if (!isSelect) element.groupBy = cols.filter(e => tempEntity.columns[removeQuotes(e)].create  != "").map(e => `"${tempEntity.table}"."${e}"`);
-                else  if (![_DBDATAS.MultiDatastreams.name, _DBDATAS.Datastreams.name].includes(tableName)) {
-                    element.groupBy = cols.filter(e => tempEntity.columns[removeQuotes(e)].create  != "").map(e => `"${tempEntity.table}".${e}`);
+            if (!isSelect) element.groupBy = cols.filter(e => tempEntity.columns[removeQuotes(e)].create != "").map(e => `"${tempEntity.table}"."${e}"`);
+                else if (![_DBDATAS.MultiDatastreams.name, _DBDATAS.Datastreams.name].includes(tableName)) {
+                    element.groupBy = cols.filter(e => tempEntity.columns[removeQuotes(e)].create != "").map(e => `"${tempEntity.table}".${e}`);
                     element.groupBy.push(`"${tempEntity.table}"."id"`);
                 }
             ResultgroupBy.forEach(e => element.groupBy.push(e));

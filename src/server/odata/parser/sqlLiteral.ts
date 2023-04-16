@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Literal } from "./literal";
 
 export class SQLLiteral extends Literal {

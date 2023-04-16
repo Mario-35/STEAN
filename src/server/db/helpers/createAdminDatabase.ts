@@ -6,47 +6,46 @@
  *
  */
 
-import koa from "koa";
 import { createTable } from ".";
-import { _CONFIGS, _CONFIGURATION } from "../../configuration";
+import { CONFIGURATION } from "../../configuration";
 import { asyncForEach } from "../../helpers";
-import { _LOGS } from "../../logger";
+import { Logs } from "../../logger";
 import { _DBADMIN, _RIGHTS } from "../constants";
-// import { IUser } from "../interfaces";
+// import { Iuser } from "../interfaces";
 
  
- export const createAdminDataBase = async(configName: string, ctx?: koa.Context): Promise<{ [key: string]: string }> => {
-    _LOGS.head("createAdminDataBase", "createDatabase");
+ export const createAdminDataBase = async(configName: string): Promise<{ [key: string]: string }> => {
+    Logs.head("createAdminDataBase", "createDatabase");
 
     // init result
-    const config = _CONFIGS[configName];
+    const config = CONFIGURATION.list[configName];
     const returnValue = { "Start create Database": config.pg_database };
     // create blank DATABASE
 
-    if (_CONFIGURATION.postgresConnection)
-        await _CONFIGURATION.postgresConnection
+    if (CONFIGURATION.postgresConnection)
+        await CONFIGURATION.postgresConnection
             .raw(`CREATE Database ${config.pg_database}`)
             .then(async () => {
                 returnValue["create Admin DB"] = "✔";
-                returnValue["User"] = await _CONFIGURATION.postgresConnection
+                returnValue["User"] = await CONFIGURATION.postgresConnection
                     .raw(`SELECT count(*) FROM pg_user WHERE usename = '${config.pg_user}';`)
                     .then(async (res) => {
                         if (res.rowCount < 1) {
-                            _LOGS.infoSystem("Create User", config.pg_user);
-                            return _CONFIGURATION.postgresConnection
+                            Logs.infoSystem("Create User", config.pg_user);
+                            return CONFIGURATION.postgresConnection
                                 .raw(`CREATE ROLE ${config.pg_user} WITH PASSWORD '${config.pg_password}' ${_RIGHTS};`)
                                 .then(() => {
-                                    _CONFIGURATION.postgresConnection.destroy();
+                                    CONFIGURATION.postgresConnection.destroy();
                                     return "Create User ✔";
                                 })
                                 .catch((err: Error) => err.message);
                         } else {
-                            _LOGS.infoSystem("Update User", config.pg_user);
-                            return await _CONFIGURATION.postgresConnection
+                            Logs.infoSystem("Update User", config.pg_user);
+                            return await CONFIGURATION.postgresConnection
                                 .raw(`ALTER ROLE ${config.pg_user} WITH PASSWORD '${config.pg_password}' ${_RIGHTS};`)
                                 .then(() => {
-                                    _CONFIGURATION.postgresConnection.destroy().catch((err: Error) => err.message);
-                                    _CONFIGURATION.postgresConnection.destroy();
+                                    CONFIGURATION.postgresConnection.destroy().catch((err: Error) => err.message);
+                                    CONFIGURATION.postgresConnection.destroy();
                                     return "Update User ✔";
                                 })
                                 .catch((err: Error) => err.message);
@@ -56,7 +55,7 @@ import { _DBADMIN, _RIGHTS } from "../constants";
             .catch((err: Error) => err.message);
 
     // create tables   
-    const conn = _CONFIGURATION.getKnexConnection(_CONFIGURATION.getStringConnection("admin"));
+    const conn = CONFIGURATION.getKnexConnection(CONFIGURATION.getStringConnection("admin"));
 
     await asyncForEach(Object.keys(_DBADMIN), async (keyName: string) => {
         await createTable(conn, _DBADMIN[keyName], undefined);

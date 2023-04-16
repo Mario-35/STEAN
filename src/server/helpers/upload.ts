@@ -12,7 +12,7 @@ import path from "path";
 import util from "util";
 import fs from "fs";
 import koa from "koa";
-import { _LOGS } from "../logger";
+import { Logs } from "../logger";
 
 /**
  *
@@ -48,7 +48,7 @@ export const upload = (ctx: koa.Context): Promise<{[key: string]: string}> => {
                     data.state = `GET ${chunk.length} bytes`;
                 });
                 file.on("error", (error: Error) => {
-                    _LOGS.error(error.message);
+                    Logs.error(error.message);
                 });
                 file.on("end", () => {
                     data.state = "UPLOAD FINISHED";
@@ -60,7 +60,7 @@ export const upload = (ctx: koa.Context): Promise<{[key: string]: string}> => {
             data[fieldname] = value;
         });
         busboy.on("error", (error: Error) => {
-            _LOGS.error(error.message);
+            Logs.error(error.message);
             data.state = "ERROR";
             reject(error);
         });

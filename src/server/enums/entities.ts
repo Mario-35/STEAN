@@ -1,4 +1,12 @@
-export enum ENTITIES {    
+/**
+ * entities Enum.
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+
+export enum Eentities {    
     Things = 'Things' ,
     FeaturesOfInterest = 'FeaturesOfInterest' ,
     Locations = 'Locations' ,
@@ -19,42 +27,4 @@ export enum ENTITIES {
     Logs = 'Logs',
     Users = 'Users',
     Configs = 'Configs',
-}
-
-export const enum FORMATS {    
-    json = "json", 
-    csv = "csv",
-    txt = "txt", 
-    sql = "sql", 
-    html = "html", 
-    icon = "icon", 
-    graph = "graph", 
-    graphDatas = "graphDatas", 
-    dataArray = "dataArray", 
-    css = "css", 
-    js = "js", 
-    png = "png", 
-    jpg = "jpg", 
-    jpeg = "jpeg", 
-    ico = "ico"
-}
-
-export enum RELATIONS {
-    belongsTo,
-    belongsToMany,
-    hasMany
-}
-
-export enum USERRIGHTS {
-    Post = 0,
-    Delete = 1,
-    Create = 2,
-    UserCreate = 3,
-    Admin = 4,
-    SuperAdmin = 5
-}
-
-export enum OPERATIONTYPE { Table,
-    Relation,
-    Association
 }

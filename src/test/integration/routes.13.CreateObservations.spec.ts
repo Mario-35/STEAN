@@ -20,7 +20,6 @@ const should = chai.should();
 const docs: IApiDoc[] = [];
 
 
-
 const addToApiDoc = (input: IApiInput) => {
     docs.push(prepareToApiDoc(input, "CreateObservations"));
 };
@@ -44,7 +43,7 @@ describe("endpoint : Create Observations [13.2]", () => {
         chai.request(server)
             .post("/test/v1.0/login")
             .send(identification)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 token = String(res.body["token"]);
                 done();
             });
@@ -79,7 +78,7 @@ describe("endpoint : Create Observations [13.2]", () => {
             .post("/test/v1.0/CreateObservations")
             .send(infos.apiParamExample)
             .set("Cookie", `${keyTokenName}=${token}`)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(201);
                 res.type.should.equal("application/json");

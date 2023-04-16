@@ -7,14 +7,21 @@
  */
 
 import koa from "koa";
-import { _CONFIGS, _CONFIGURATION } from "../../configuration";
+import { CONFIGURATION } from "../../configuration";
 import { showconfigCtx } from "../../helpers";
-import { IUser } from "../../types";
-import { userHeader } from "../constant";
+import { Iuser } from "../../types";
 import { addCssFile } from "../css";
 
 export class CreateHtmlView {
     private ctx: koa.Context;
+    private userHeader: {[key: string]: string} = Object.freeze({
+      "canPost": "post",
+      "canDelete": "Delete",
+      "canCreateUser": "Create User",
+      "canCreateDb": "Create DB",
+      "admin": "admin",
+      "superAdmin": "Super Admin"
+  });
 
     constructor(ctx: koa.Context) {
         this.ctx = ctx;
@@ -175,10 +182,10 @@ export class CreateHtmlView {
         const temp: string[] = [];
 
         Object.keys(user).forEach((element: string) => {
-            if (Object.keys(userHeader).includes(element)) {
+            if (Object.keys(this.userHeader).includes(element)) {
                 temp.push('<div class="group">');
                 temp.push(`<input type="checkbox" id="${element}" name="${element}"${user[element] == true ? "checked" : ""}>`);
-                temp.push(`<label for="canPost">${userHeader[element]}</label>`);
+                temp.push(`<label for="canPost">${this.userHeader[element]}</label>`);
                 temp.push("</div>");
             }
         });
@@ -236,14 +243,14 @@ export class CreateHtmlView {
               </html>`;
     };
 
-    public status = (user: IUser): string => {
-      const config = _CONFIGURATION.getConfigNameFromDatabase(user.database);  
+    public status = (user: Iuser): string => {
+      const config = CONFIGURATION.getConfigNameFromDatabase(user.database);  
         return `<!DOCTYPE html> <html> ${this.head(
             "Status",
             "user"
         )} <body> <div class="login-wrap"> <div class="login-html"> <h2>You are authenticated.</h2> <div class="hr"></div> <h3>Username : ${
             user.username
-        }</h3> <h3>Hosting : ${user.database == "all" ? "all" : config ? _CONFIGS[config].pg_host : "Not Found"}</h3> <h3>Database : ${user.database}</h3> <h3>Status : ${
+        }</h3> <h3>Hosting : ${user.database == "all" ? "all" : config ? CONFIGURATION.list[config].pg_host : "Not Found"}</h3> <h3>Database : ${user.database}</h3> <h3>Status : ${
             user.admin
         }</h3> ${user.superAdmin ? `<div class="inner"> <a href="${this.ctx._linkBase}/admin" class="button-admin" >users</a> </div>` : ""} ${this.foot([
             { href: this.ctx._linkBase + "/Logout", class: "button-logout", name: "Logout" },
@@ -267,12 +274,12 @@ export class CreateHtmlView {
         )} <body> <div class="login-html"> <div class="table-wrapper"> <table class="fl-table"> <tbody>TODO</tbody></table> </div> ${this.foot([
             { href: this.ctx._linkBase + `/${this.ctx._version}/`, class: "button-submit", name: "Root" },
             { href: this.ctx._linkBase + `/${this.ctx._version}/Query`, class: "button", name: "Query" },
-            { href: `${_CONFIGS[this.ctx._configName].webSite}`, class: "button-logout", name: "Documentation" }
+            { href: `${CONFIGURATION.list[this.ctx._configName].webSite}`, class: "button-logout", name: "Documentation" }
         ])} </div> </body> </html> `;
     };
 
-    public admin = (user: IUser, Host: string, version: string): string => {
-        return `<!DOCTYPE html> <html> <head> <title>Admin</title> <style> var crudApp=new function(){this.users={},this.userHeader=${userHeader},this.category=["Business","Computers","Programming","Science"],this.col=[],this.loadDatas=async function(){document.ctx.includes("/Admin")?document.ctx.split("/Admin")[0]:document.ctx.includes("/admin")&&document.ctx.split("/admin")[0];let t=await fetch("/all",{method:"GET",headers:{"Content-Type":"application/json"}});try{var e=await t.text();this.users=JSON.parse(e)}catch(t){console.log("Error",t.message)}},this.createTable=async function(){await this.loadDatas(),this.col=Object.keys(this.users[0]).filter(t=>"id"!=t.toLowerCase());var t=document.createElement("table");t.setAttribute("class","fl-table"),t.setAttribute("id","usersTable");for(var e=t.insertRow(-1),i=0;i<this.col.length;i++){var s=document.createElement("th");const t=this.userHeader[this.col[i]]?this.userHeader[this.col[i]]:this.col[i];s.innerHTML=t,e.appendChild(s)}this.td=document.createElement("td"),e.appendChild(this.td);var n=document.createElement("input");n.setAttribute("type","button"),n.setAttribute("value","Add"),n.setAttribute("id","New"+r),n.setAttribute("class","btn_submit _submit"),n.setAttribute("onclick","crudApp.CreateNew()"),this.td.appendChild(n);for(var r=0;r<this.users.length;r++){e=t.insertRow(-1);for(var a=0;a<this.col.length;a++){var d=e.insertCell(-1);const t=this.users[r][this.col[a]];d.innerHTML="true"==t.toString()?"✔":"false"==t.toString()?"✖":t.toString()}this.td=document.createElement("td"),e.appendChild(this.td);var c=document.createElement("input");c.setAttribute("type","button"),c.setAttribute("value","Edit"),c.setAttribute("id","Edit"+r),c.setAttribute("class","btn_go _go"),c.setAttribute("onclick",`;
+    public admin = (user: Iuser, Host: string, version: string): string => {
+        return `<!DOCTYPE html> <html> <head> <title>Admin</title> <style> var crudApp=new function(){this.users={},this.userHeader=${this.userHeader},this.category=["Business","Computers","Programming","Science"],this.col=[],this.loadDatas=async function(){document.ctx.includes("/Admin")?document.ctx.split("/Admin")[0]:document.ctx.includes("/admin")&&document.ctx.split("/admin")[0];let t=await fetch("/all",{method:"GET",headers:{"Content-Type":"application/json"}});try{var e=await t.text();this.users=JSON.parse(e)}catch(t){console.log("Error",t.message)}},this.createTable=async function(){await this.loadDatas(),this.col=Object.keys(this.users[0]).filter(t=>"id"!=t.toLowerCase());var t=document.createElement("table");t.setAttribute("class","fl-table"),t.setAttribute("id","usersTable");for(var e=t.insertRow(-1),i=0;i<this.col.length;i++){var s=document.createElement("th");const t=this.userHeader[this.col[i]]?this.userHeader[this.col[i]]:this.col[i];s.innerHTML=t,e.appendChild(s)}this.td=document.createElement("td"),e.appendChild(this.td);var n=document.createElement("input");n.setAttribute("type","button"),n.setAttribute("value","Add"),n.setAttribute("id","New"+r),n.setAttribute("class","btn_submit _submit"),n.setAttribute("onclick","crudApp.CreateNew()"),this.td.appendChild(n);for(var r=0;r<this.users.length;r++){e=t.insertRow(-1);for(var a=0;a<this.col.length;a++){var d=e.insertCell(-1);const t=this.users[r][this.col[a]];d.innerHTML="true"==t.toString()?"✔":"false"==t.toString()?"✖":t.toString()}this.td=document.createElement("td"),e.appendChild(this.td);var c=document.createElement("input");c.setAttribute("type","button"),c.setAttribute("value","Edit"),c.setAttribute("id","Edit"+r),c.setAttribute("class","btn_go _go"),c.setAttribute("onclick",`;
     };
 
   }

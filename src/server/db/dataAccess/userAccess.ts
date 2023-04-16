@@ -7,9 +7,9 @@
  */
 
 import { _DBDATAS } from "../constants";
-import { encrypt } from "../../helpers/";
 import { db } from "..";
-import { IUser } from "../../types";
+import { Iuser } from "../../types";
+import { encrypt } from "../../helpers";
 
 export const userAccess = {
     getAll: async () => {
@@ -27,7 +27,7 @@ export const userAccess = {
             .where({ id: +id });
     },
 
-    add: async (data: IUser) => {
+    add: async (data: Iuser) => {
         return await db["admin"]
             .table("user")
             .insert({
@@ -45,7 +45,7 @@ export const userAccess = {
             .returning("*");
     },
 
-    update: async (data: IUser): Promise<IUser | any> => {
+    update: async (data: Iuser): Promise<Iuser | any> => {
         return await db["admin"]
             .table("user")
             .update({

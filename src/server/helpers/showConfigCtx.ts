@@ -14,10 +14,10 @@ import koa from "koa";
  * @returns string or undefined
  */
 
-import { _LOGS } from "../logger";
+import { Logs } from "../logger";
 import { _debug } from "../constants";
 
-export const configCtx = (ctx: koa.Context): any => {
+export const configCtx = (ctx: koa.Context): object => {
     return {
         "_linkBase": `${ctx._linkBase}`,
         "_configName": `${ctx._configName}`,
@@ -49,9 +49,9 @@ export const configCtx = (ctx: koa.Context): any => {
 };
 
 export const showconfigCtx = (ctx: koa.Context, force?: boolean): void => {
-    if (_debug) console.log(_LOGS.logAll(ctx.request));
+    if (_debug) console.log(Logs.logAll(ctx.request));
     const temp = configCtx(ctx);
     if (force) {
         console.log(temp);
-    } else _LOGS.infos("configCtx", temp);
+    } else Logs.infos("configCtx", temp);
 };

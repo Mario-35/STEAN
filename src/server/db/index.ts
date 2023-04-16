@@ -6,6 +6,6 @@
  * @author mario.adam@inrae.fr
  */
 
-import { _CONFIGURATION } from "../configuration";
+import { CONFIGURATION } from "../configuration";
  
- export const db = _CONFIGURATION.createAllConnections();
+ export const db = CONFIGURATION.createAllConnections();

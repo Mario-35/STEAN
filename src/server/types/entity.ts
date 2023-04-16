@@ -6,44 +6,18 @@
  *
  */
 
-import { RELATIONS } from ".";
+import { IentityColumn, IentityRelation } from ".";
 
-interface IEntityColumn {
-    [key: string]: {
-        readonly create: string;
-        readonly alias?: string;
-        readonly unique?: boolean;
-        readonly test?: string;
-        readonly dataList?: { [key: string]: string };
-        readonly type?: string;
-        readonly verify?: {
-            list: string[];
-            default: string;
-        }
-    };
-}
-
-interface IEntityRelation {
-    type: RELATIONS; // relation Type
-    expand: string; // table name
-    link: string; // link query
-    entityName: string; // table name
-    tableName: string; // table reference
-    relationKey: string; // column name
-    entityColumn: string; // column name
-    tableKey: string; // index key column name
-}
-
-export interface IEntity {
+export interface Ientity {
     readonly name: string; // Entity Name
     readonly standard: boolean; // Is extend of SensorThings standard
     readonly clone?: string;
     readonly singular: string;
     readonly table: string;
     readonly order: number;
-    readonly columns: IEntityColumn;
+    readonly columns: IentityColumn;
     readonly admin: boolean;
-    readonly relations: { [key: string]: IEntityRelation };
+    readonly relations: { [key: string]: IentityRelation };
     readonly constraints?: {[key: string]: string};
     readonly indexes?: {[key: string]: string};
     readonly after?: string;

@@ -9,9 +9,9 @@
 import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
-import { _LOGS } from "../../logger";
-import { IReturnResult } from "../../types";
-import { _CONFIGS, _CONFIGURATION } from "../../configuration";
+import { Logs } from "../../logger";
+import { IreturnResult } from "../../types";
+import { CONFIGURATION } from "../../configuration";
 import { hidePasswordInJson } from "../../helpers";
 import { messages, messagesReplace } from "../../messages";
 
@@ -20,15 +20,15 @@ export class Configs extends Common {
          super(ctx, knexInstance);
      }
 
-     async getAll(): Promise<IReturnResult | undefined> {
-        _LOGS.override(messagesReplace(messages.infos.classConstructor, [this.constructor.name, `getAll`]));    
-        return this.createReturnResult({ body: hidePasswordInJson(this.ctx._configName === 'admin' ? _CONFIGS :_CONFIGS[this.ctx._configName]) });       
+     async getAll(): Promise<IreturnResult | undefined> {
+        Logs.override(messagesReplace(messages.infos.classConstructor, [this.constructor.name, `getAll`]));    
+        return this.createReturnResult({ body: hidePasswordInJson(this.ctx._configName === 'admin' ? CONFIGURATION.list :CONFIGURATION.list[this.ctx._configName]) });       
      }
 
-     async add(dataInput: Object | undefined): Promise<IReturnResult | undefined> {
-         _LOGS.override(messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));    
+     async add(dataInput: object | undefined): Promise<IreturnResult | undefined> {
+         Logs.override(messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));    
          if (!dataInput) return;
-         return this.createReturnResult({ body: await _CONFIGURATION.add(dataInput), });
+         return this.createReturnResult({ body: await CONFIGURATION.add(dataInput), });
     }
 
  }

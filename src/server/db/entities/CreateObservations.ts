@@ -10,31 +10,27 @@ import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
 import { _DBDATAS } from "../constants";
-import { _LOGS } from "../../logger";
-import { ICsvColumns, ICsvFile, IReturnResult, StreamType } from "../../types";
+import { Logs } from "../../logger";
+import { IcsvColumn, IcsvFile, IreturnResult } from "../../types";
 import { importCsv, verifyId } from "../helpers";
 import { asyncForEach, stringToBool } from "../../helpers";
 import { messages, messagesReplace } from "../../messages/";
+import { EstreamType } from "../../enums";
 
 export class CreateObservations extends Common {
     constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
         super(ctx, knexInstance);
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getStreamId(input: object, conn: Knex.Transaction<any, any[]>): BigInt {
-        const streamType: StreamType = input["Datastream"] ? StreamType.Datastreams : input["MultiDatastream"] ? StreamType.MultiDatastreams : StreamType.None;
-        if (streamType === StreamType.None) return BigInt(-1);
+        const streamType: EstreamType = input["Datastream"] ? EstreamType.Datastreams : input["MultiDatastream"] ? EstreamType.MultiDatastreams : EstreamType.None;
+        if (streamType === EstreamType.None) return BigInt(-1);
         const streamId: string | undefined = input[streamType]["@iot.id"];
         if (streamId) {
             try {
                 conn.raw(`SELECT id FROM "${_DBDATAS[streamType].table}" WHERE id = ${BigInt(streamId)} LIMIT 1`)
-                .then((res: any) => {
-                    console.log(res);
-                    return BigInt(res.rows[0].id);
-                    
-                });
+                .then((res: object) => BigInt(res["rows"][0].id));
             } catch (error) {
-                console.log(error);
-                
                 return BigInt(-1);
             }
         }
@@ -73,8 +69,8 @@ export class CreateObservations extends Common {
         else if (typeof inputValue == "object") return { key: "_resultnumbers", value: `{"${Object.values(inputValue).join('","')}"}` };
     }
 
-    async add(dataInput: Object): Promise<IReturnResult | undefined> {
-        _LOGS.override(messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));    
+    async add(dataInput: object): Promise<IreturnResult | undefined> {
+        Logs.override(messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));    
         const returnValue: string[] = [];
         let total = 0;
         let doublons = 0;
@@ -85,7 +81,7 @@ export class CreateObservations extends Common {
             if (!datasJson["columns"]) this.ctx.throw(404, { code: 404, detail: messages.errors.noColumn });
             if (!datasJson["duplicates"]) datasJson["duplicates"] = true;
 
-            const myColumns: ICsvColumns[] = [];
+            const myColumns: IcsvColumn[] = [];
             const testDatastreamID: bigint[] = [];
             const testFeatureOfInterestID: bigint[] = [];
             Object.keys(datasJson["columns"]).forEach((element: string) => {
@@ -100,7 +96,7 @@ export class CreateObservations extends Common {
                 if (BigInt(tempFoiId) > 1) testFeatureOfInterestID.push(BigInt(tempFoiId));
             });
 
-            const paramsFile: ICsvFile = {
+            const paramsFile: IcsvFile = {
                 tempTable: `temp${Date.now().toString()}`,
                 filename: extras["file"],
                 columns: myColumns,
@@ -112,7 +108,7 @@ export class CreateObservations extends Common {
             const testDatastream = await verifyId(Common.dbContext, testDatastreamID, _DBDATAS.Datastreams.table);
 
             if (!testDatastream) {
-                _LOGS.debug("test Datastream ID", testDatastreamID);
+                Logs.debug("test Datastream ID", testDatastreamID);
                 this.ctx.throw(404, {
                     code: 404, detail: testDatastreamID.length > 0 ? messages.errors.noId + testDatastreamID : messages.errors.noIds + testDatastreamID
                 });
@@ -121,7 +117,7 @@ export class CreateObservations extends Common {
             const testFeatureOfInterest = await verifyId(Common.dbContext, testFeatureOfInterestID, _DBDATAS.FeaturesOfInterest.table);
 
             if (!testFeatureOfInterest) {
-                _LOGS.debug("test FeatureOfInterest ID", testFeatureOfInterestID);
+                Logs.debug("test FeatureOfInterest ID", testFeatureOfInterestID);
                 this.ctx.throw(404, {
                     code: 404, 
                     detail:
@@ -136,7 +132,7 @@ export class CreateObservations extends Common {
                 res.forEach((element: string) => returnValue.push(this.linkBase.replace("CreateObservations", "Observations") + "(" + element + ")"));
             });
 
-            _LOGS.debug("importCsv", "OK");
+            Logs.debug("importCsv", "OK");
         } else { /// classic Create
             const dataStreamId: string = dataInput["Datastream"]["@iot.id"];
 
@@ -147,9 +143,9 @@ export class CreateObservations extends Common {
             const indexResult = dataInput["components"].indexOf("result");
             await asyncForEach(dataInput["dataArray"], async (elem: string[]) => {
                 const sql = `INSERT INTO "observation" ("datastream_id", ${this.createListColumnsValues("COLUMNS", dataInput["components"], elem[indexResult])}) VALUES (${this.createListColumnsValues("VALUES", [dataStreamId, ...elem])}) RETURNING id`;
-                _LOGS.query(sql);
+                Logs.query(sql);
                 await Common.dbContext.raw(sql).then((res: any) => {
-                    returnValue.push(this.linkBase.replace("Create", "") + "(" + res.rows[0].id + ")");
+                    returnValue.push(this.linkBase.replace("Create", "") + "(" + res["rows"][0].id + ")");
                     total += 1;
                 }).catch((error: any) => {
                     console.log(error);

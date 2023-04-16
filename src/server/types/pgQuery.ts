@@ -1,12 +1,12 @@
 /**
- * PgQuery interface.
+ * pgQuery interface.
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
 
-export interface PgQuery {
+export interface IpgQuery {
     from: string;
     select: string;
     where?: string;

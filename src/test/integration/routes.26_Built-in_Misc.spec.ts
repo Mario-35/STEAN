@@ -39,7 +39,7 @@ describe("Odata BuiltInMisc", () => {
             apiName: "BuiltInMiscInterval",
             apiDescription: "The interval keyword rounds the input postgresSql interval (see reference below) parameter to the nearest interval.",
             apiReference: "https://www.postgresql.org/docs/15/ecpg-pgtypes.html#ECPG-PGTYPES-INTERVAL",
-            apiExample: {   http: "/v1.0/Datastreams(3)/Observations?$interval=1 hour",
+            apiExample: { http: "/v1.0/Datastreams(3)/Observations?$interval=1 hour",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -47,7 +47,7 @@ describe("Odata BuiltInMisc", () => {
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => { 
+            .end((err: Error, res: any) => { 
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
@@ -65,7 +65,7 @@ describe("Odata BuiltInMisc", () => {
     it("interval(15 min)", (done) => {
         chai.request(server)
             .get(`/test/v1.0/Datastreams(3)/Observations?$interval=15 min`)
-            .end((err: any, res: any) => { 
+            .end((err: Error, res: any) => { 
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
@@ -82,7 +82,7 @@ describe("Odata BuiltInMisc", () => {
     it("interval(1 min)", (done) => {
         chai.request(server)
             .get(`/test/v1.0/Datastreams(3)/Observations?$interval=1 min`)
-            .end((err: any, res: any) => {                 
+            .end((err: Error, res: any) => {                 
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
@@ -99,7 +99,7 @@ describe("Odata BuiltInMisc", () => {
     it("interval(1 day)", (done) => {
         chai.request(server)
             .get(`/test/v1.0/Datastreams(4)/Observations?$interval=1 day`)
-            .end((err: any, res: any) => { 
+            .end((err: Error, res: any) => { 
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");

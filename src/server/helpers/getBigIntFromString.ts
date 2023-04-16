@@ -6,7 +6,7 @@
  *
  */
 
-import { _LOGS } from "../logger";
+import { Logs } from "../logger";
 
 /**
  *
@@ -23,7 +23,7 @@ export const getBigIntFromString = (input: string | bigint | number): bigint | u
             }
             return BigInt(input);
         } catch (error) {
-            _LOGS.error(error);
+            Logs.error(error);
         }
     }
 };

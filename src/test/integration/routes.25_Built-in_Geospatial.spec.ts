@@ -46,7 +46,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
             apiName: "BuiltInGeospatialDistanceLocation",
             apiDescription: "The round function rounds the input numeric parameter to the nearest numeric value with no decimal component. The mid-point between two integers is rounded away from zero, i.e. 0.5 is rounded to 1 and ‑0.5 is rounded to -1.",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
-            apiExample: {   http: `/v1.0/Locations?$filter=geo.distance(location, geography'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`,
+            apiExample: { http: `/v1.0/Locations?$filter=geo.distance(location, geography'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -54,7 +54,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
@@ -71,7 +71,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
             apiName: "BuiltInGeospatialDistanceFoi",
             apiDescription: "The round function rounds the input numeric parameter to the nearest numeric value with no decimal component. The mid-point between two integers is rounded away from zero, i.e. 0.5 is rounded to 1 and ‑0.5 is rounded to -1.",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
-            apiExample: {   http: `/v1.0/Observations?$filter=geo.distance(FeatureOfInterest/feature,geography'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`,
+            apiExample: { http: `/v1.0/Observations?$filter=geo.distance(FeatureOfInterest/feature,geography'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -79,7 +79,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
@@ -96,7 +96,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
             apiName: "BuiltInGeospatiaLengthLocation",
             apiDescription: "The geo.length function returns the total length of its line string parameter in the coordinate reference system signified by its SRID.",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
-            apiExample: {   http: `/v1.0/Locations?$filter=geo.length(location,'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`,
+            apiExample: { http: `/v1.0/Locations?$filter=geo.length(location,'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -104,7 +104,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
@@ -121,7 +121,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
             apiName: "BuiltInGeospatiaLengthFoi",
             apiDescription: "The geo.length function returns the total length of its line string parameter in the coordinate reference system signified by its SRID.",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
-            apiExample: {   http: `/v1.0/Observations?$filter=geo.length(FeatureOfInterest/feature,'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`,
+            apiExample: { http: `/v1.0/Observations?$filter=geo.length(FeatureOfInterest/feature,'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -129,7 +129,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
@@ -146,7 +146,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
             apiName: "BuiltInGeospatialIntersectsLocation",
             apiDescription: "The geo.intersects function returns true if the specified point lies within the interior or on the boundary of the specified polygon, otherwise it returns false.",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
-            apiExample: {   http: "/v1.0/Locations?$filter=geo.intersects(location,'LINESTRING(48.13765198324515 -1.6956051932646596, 48.06467042196109 -1.623116279666956)')",
+            apiExample: { http: "/v1.0/Locations?$filter=geo.intersects(location,'LINESTRING(48.13765198324515 -1.6956051932646596, 48.06467042196109 -1.623116279666956)')",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -154,7 +154,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {                
+            .end((err: Error, res: any) => {                
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
@@ -171,7 +171,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
             apiName: "BuiltInGeospatialIntersectsFoi",
             apiDescription: "The geo.intersects function returns true if the specified point lies within the interior or on the boundary of the specified polygon, otherwise it returns false.",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
-            apiExample: {   http: "/v1.0/Observations?$filter=geo.intersects(FeatureOfInterest/feature, 'LINESTRING(48.11829243294942 -1.717928984533772, 48.06467042196109 -1.623116279666956)')",
+            apiExample: { http: "/v1.0/Observations?$filter=geo.intersects(FeatureOfInterest/feature, 'LINESTRING(48.11829243294942 -1.717928984533772, 48.06467042196109 -1.623116279666956)')",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -179,7 +179,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
@@ -204,7 +204,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
     //     };
     //     chai.request(server)
     //         .get(`/test${infos.apiExample.http}`)
-    //         .end((err: any, res: any) => {
+    //         .end((err: Error, res: any) => {
     //             should.not.exist(err);
     //             res.status.should.equal(200);
     //             res.type.should.equal("application/json");
@@ -222,7 +222,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
             apiName: "BuiltInGeospatialEquarsLocation",
             apiDescription: "geo.equals( geometry A , geometry B ) Returns true if the given geometries are 'spatially equal'. Use this for a 'better' answer than '='. Note by spatially equal we mean ST_Within(A,B) = true and ST_Within(B,A) = true and also mean ordering of points can be different but represent the same geometry structure.",
             apiReference: "https://postgis.net/docs/ST_Equals.html",
-            apiExample: {   http: `/v1.0/Locations?$filter=geo.equals(location,'POINT(${positions[1][0]} ${positions[1][1]})')`,
+            apiExample: { http: `/v1.0/Locations?$filter=geo.equals(location,'POINT(${positions[1][0]} ${positions[1][1]})')`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -230,7 +230,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
@@ -247,7 +247,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
             apiName: "BuiltInGeospatialEquarsFoi",
             apiDescription: "geo.equals( geometry A , geometry B ) Returns true if the given geometries are 'spatially equal'. Use this for a 'better' answer than '='. Note by spatially equal we mean ST_Within(A,B) = true and ST_Within(B,A) = true and also mean ordering of points can be different but represent the same geometry structure.",
             apiReference: "https://postgis.net/docs/ST_Equals.html",
-            apiExample: {   http: `/v1.0/Observations?$filter=geo.equals(FeatureOfInterest/feature,'POINT(${positions[1][0]} ${positions[1][1]})')`,
+            apiExample: { http: `/v1.0/Observations?$filter=geo.equals(FeatureOfInterest/feature,'POINT(${positions[1][0]} ${positions[1][1]})')`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -255,7 +255,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
@@ -272,7 +272,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
             apiName: "BuiltInGeospatialDisjointLocation",
             apiDescription: "geo.disjoint( geometry A , geometry B ) Overlaps, Touches, Within all imply geometries are not spatially disjoint. If any of the aforementioned returns true, then the geometries are not spatially disjoint. Disjoint implies false for spatial intersection.",
             apiReference: "https://postgis.net/docs/ST_Disjoint.html",
-            apiExample: {   http: `/v1.0/Locations?$filter=geo.disjoint(location,'MULTIPOINT(${point.join()})')`,
+            apiExample: { http: `/v1.0/Locations?$filter=geo.disjoint(location,'MULTIPOINT(${point.join()})')`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -280,7 +280,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
@@ -297,7 +297,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
             apiName: "BuiltInGeospatialDisjointFoi",
             apiDescription: "geo.disjoint( geometry A , geometry B ) Overlaps, Touches, Within all imply geometries are not spatially disjoint. If any of the aforementioned returns true, then the geometries are not spatially disjoint. Disjoint implies false for spatial intersection.",
             apiReference: "https://postgis.net/docs/ST_Disjoint.html",
-            apiExample: {   http: `/v1.0/Observations?$filter=geo.disjoint(FeatureOfInterest/feature,'MULTIPOINT(${point.join()})')`,
+            apiExample: { http: `/v1.0/Observations?$filter=geo.disjoint(FeatureOfInterest/feature,'MULTIPOINT(${point.join()})')`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -305,7 +305,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
@@ -322,7 +322,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
             apiName: "BuiltInGeospatialContainsLocation",
             apiDescription: "geo.contains(A, B) returns TRUE if geometry B is completely inside geometry A. A contains B if and only if no points of B lie in the exterior of A, and at least one point of the interior of B lies in the interior of A.",
             apiReference: "https://postgis.net/docs/ST_Contains.html",
-            apiExample: {   http: `/v1.0/Locations?$filter=geo.contains(location, geography'POINT(${startPoint[0]} ${startPoint[1]})')`,
+            apiExample: { http: `/v1.0/Locations?$filter=geo.contains(location, geography'POINT(${startPoint[0]} ${startPoint[1]})')`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -330,7 +330,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
@@ -347,7 +347,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
             apiName: "BuiltInGeospatialContainsFoi",
             apiDescription: "geo.contains(A, B) returns TRUE if geometry B is completely inside geometry A. A contains B if and only if no points of B lie in the exterior of A, and at least one point of the interior of B lies in the interior of A.",
             apiReference: "https://postgis.net/docs/ST_Contains.html",
-            apiExample: {   http: `/v1.0/Observations?$filter=geo.contains(FeatureOfInterest/feature, geography'POINT(${positions[1][0]} ${positions[1][1]})')`,
+            apiExample: { http: `/v1.0/Observations?$filter=geo.contains(FeatureOfInterest/feature, geography'POINT(${positions[1][0]} ${positions[1][1]})')`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -355,7 +355,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: any, res: any) => {
+            .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
@@ -380,7 +380,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
     //     };
     //     chai.request(server)
     //         .get(`/test${infos.apiExample.http}`)
-    //         .end((err: any, res: any) => {
+    //         .end((err: Error, res: any) => {
     //             console.log(infos.apiExample.http);
                 
     //             should.not.exist(err);
@@ -393,7 +393,6 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
     //             done();
     //         });
     // });
-
  
 
     // it(`geo.overlaps(location, geography'MULTIPOINT(${point.join()})')`, (done) => {
@@ -410,7 +409,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
     //     };
     //     chai.request(server)
     //         .get(`/test${infos.apiExample.http}`)
-    //         .end((err: any, res: any) => {
+    //         .end((err: Error, res: any) => {
     //             console.log(infos.apiExample.http);
     //             should.not.exist(err);
     //             res.status.should.equal(200);

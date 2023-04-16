@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 function integer(value: string): number {
     return +value;
 }
@@ -15,7 +16,7 @@ function float(value: string): number {
 
 export class Literal {
     constructor(type: string, value: string) {
-        let result = (this[type] || ((_: any) => _))(value);
+        const result = (this[type] || ((_: any) => _))(value);
         this.valueOf = () => result;
     }
     static convert(type: string, value: string): any {
@@ -75,10 +76,10 @@ export class Literal {
         return new Date(`1970-01-01T${value}Z`);
     }
     "Edm.Duration"(value: string) {
-        var m = value.match(/P([0-9]*D)?T?([0-9]{1,2}H)?([0-9]{1,2}M)?([\.0-9]*S)?/);
+        const m = value.match(/P([0-9]*D)?T?([0-9]{1,2}H)?([0-9]{1,2}M)?([\.0-9]*S)?/);
         if (m) {
-            var d = new Date(0);
-            for (var i = 1; i < m.length; i++) {
+            const d = new Date(0);
+            for (let i = 1; i < m.length; i++) {
                 switch (m[i].slice(-1)) {
                     case "D":
                         d.setDate(parseInt(m[i]));

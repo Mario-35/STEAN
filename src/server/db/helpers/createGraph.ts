@@ -6,7 +6,7 @@
  *
  */
 
-import { _LOGS } from "../../logger";
+import { Logs } from "../../logger";
 
 // Create object compatible with Apache Echarts
 // https://echarts.apache.org/examples/en/index.html
@@ -19,7 +19,7 @@ export interface IGraphDatas {
 }
 
 export const createGraph = (input: JSON, mainTitle: string): IGraphDatas | undefined => {
-    _LOGS.class("createGraph");
+    Logs.class("createGraph");
     if (input)
         try {
             const multi = typeof input[0]["result"] === "object" && input[0]["result"] != null;
@@ -49,7 +49,7 @@ export const createGraph = (input: JSON, mainTitle: string): IGraphDatas | undef
             });
             return returnResult;
         } catch (error) {
-            _LOGS.error(error);
+            Logs.error(error);
             return;
         }
 };

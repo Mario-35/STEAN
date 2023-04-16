@@ -13,16 +13,16 @@ import helmet from "koa-helmet";
 import json from "koa-json";
 import { protectedRoutes, routerHandle, unProtectedRoutes } from "./routes/";
 import cors from "@koa/cors";
-import { asyncForEach, isTest, logToFile } from "./helpers";
-import { userToken } from "./types";
+import { asyncForEach, isTest } from "./helpers";
 import serve from "koa-static";
 import path from "path";
 import compress from "koa-compress";
-import { _HELMETCONFIG, _KEYAPP, _appVersion, _NODE_ENV, _appName } from "./constants";
-import { _CONFIGS, _CONFIGURATION } from "./configuration";
+import { HELMET_CONFIG, APP_KEY, APP_VERSION, NODE_ENV, APP_NAME } from "./constants";
+import { CONFIGURATION } from "./configuration";
 import { PgVisitor } from "./odata";
 import { messages } from "./messages";
-import { _LOGS } from "./logger";
+import { Logs } from "./logger";
+import { IuserToken } from "./types";
 
 // Extend koa context (no ts test on it)
 declare module "koa" {
@@ -33,13 +33,13 @@ declare module "koa" {
         _version: string;
         _odata: PgVisitor;
         _datas: {[key: string]: string};
-        _user: userToken;
+        _user: IuserToken;
         _addToLog: boolean;
     }
 }
 
 // Add log To File
-logToFile(false);
+
 
 // new koa server https://koajs.com/
 export const app = new Koa();
@@ -48,7 +48,7 @@ export const app = new Koa();
 app.use(serve(path.join(__dirname, "public")));
 
 // helmet protection https://github.com/venables/koa-helmet
-app.use(helmet.contentSecurityPolicy({ directives: _HELMETCONFIG }));
+app.use(helmet.contentSecurityPolicy({ directives: HELMET_CONFIG }));
 
 // router
 app.use(routerHandle);
@@ -71,27 +71,27 @@ app.use(compress());
 app.use(unProtectedRoutes.routes());
 
 app.use((ctx, next) => {
-    ctx.state.secret = _KEYAPP;
+    ctx.state.secret = APP_KEY;
     return next();
 });
 
 // authenticated routes
 app.use(protectedRoutes.routes());
 
-_LOGS.booting(`START ${_appName} version : ${_appVersion}`, `${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()}`);
-_LOGS.booting("mode", _NODE_ENV);
+Logs.booting(`START ${APP_NAME} version : ${APP_VERSION}`, `${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()}`);
+Logs.booting("mode", NODE_ENV);
 
 export const server = isTest()
     // Start listening Test
-    ? app.listen(_CONFIGS["test"].port, async () => {
-        _LOGS.booting(messages.infos.serverListening, _CONFIGS["test"].port);
+    ? app.listen(CONFIGURATION.list["test"].port, async () => {
+        Logs.booting(messages.infos.serverListening, CONFIGURATION.list["test"].port);
       })
     : asyncForEach(
         // Start listening ALL in config file        
-          Object.keys(_CONFIGS),
+          Object.keys(CONFIGURATION.list),
           async (key: string) => {  
             try {
-                await _CONFIGURATION.addToServer(app, key);
+                await CONFIGURATION.addToServer(app, key);
             } catch (error) {
                 console.log(error);                
             }          

@@ -6,10 +6,9 @@
  *
  */
 
-import { _CONFIGURATION } from "../configuration";
 
 export const testRoutes = (input: string): string => {
-    let result: string | undefined =
+    const result: string | undefined =
         input.trim() != "/"
             ? input
                   .split("/")

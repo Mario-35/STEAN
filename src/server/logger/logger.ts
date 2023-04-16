@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import util from "util";
 import { _debug } from "../constants";
 
 
-export class logs {
+export class Logger {
     private col = {
         Reset : "\x1b[0m",
         Bright : "\x1b[1m",

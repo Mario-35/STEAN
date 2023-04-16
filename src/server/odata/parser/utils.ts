@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-namespace */
 namespace Utils {
     export type SourceArray = number[] | Uint16Array;
 
