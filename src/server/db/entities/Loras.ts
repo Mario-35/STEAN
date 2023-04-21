@@ -10,7 +10,7 @@ import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
 import { getBigIntFromString, notNull, removeQuotes } from "../../helpers/index";
-import { _DATEFORMATNOTIMEZONE, _DBDATAS } from "../constants";
+import { _DATEFORMATNOTIMEZONE } from "../constants";
 import { _DOUBLEQUOTE, _QUOTEDCOMA, _VOIDTABLE } from "../../constants";
 import { Logs } from "../../logger";
 import { IreturnResult } from "../../types";
@@ -35,7 +35,7 @@ export class Loras extends Common {
             
        Logs.debug("decodeLoraValues", loraDeveui);
        try {
-           return await knexInstance(_DBDATAS.Decoders.table).select("code").whereRaw(`id = (SELECT "decoder_id" FROM "${_DBDATAS.Loras.table}" WHERE "deveui" = '${loraDeveui}')`).first().then((res: object) => {
+           return await knexInstance(this.DBST.Decoders.table).select("code").whereRaw(`id = (SELECT "decoder_id" FROM "${this.DBST.Loras.table}" WHERE "deveui" = '${loraDeveui}')`).first().then((res: object) => {
                if (res) {
                    try {
                        const F = new Function("input", String(res["code"]));                       
@@ -64,7 +64,7 @@ export class Loras extends Common {
         const decodeLoraPayload = async (knexInstance: Knex | Knex.Transaction, loraDeveui: string, input: string): Promise<any> => {
             Logs.debug(`decodeLoraPayload deveui : [${loraDeveui}]`, input);
             const ErrorMessage = "Decoding Payload error";
-            return await knexInstance(_DBDATAS.Decoders.table).select("code", "nomenclature", "synonym", "dataKeys").whereRaw(`id = (SELECT "decoder_id" FROM "${_DBDATAS.Loras.table}" WHERE "deveui" = '${loraDeveui}')`).first().then((res: any) => {
+            return await knexInstance(this.DBST.Decoders.table).select("code", "nomenclature", "synonym", "dataKeys").whereRaw(`id = (SELECT "decoder_id" FROM "${this.DBST.Loras.table}" WHERE "deveui" = '${loraDeveui}')`).first().then((res: any) => {
                 try {
                     if (res) {     
                         this.synonym = res.synonym ? res.synonym : {};
@@ -129,18 +129,18 @@ export class Loras extends Common {
 
         const searchMulti = `(SELECT jsonb_agg(tmp.units -> 'name') AS keys 
                                 FROM ( SELECT jsonb_array_elements("unitOfMeasurements") AS units ) AS tmp) 
-                                    FROM "${ _DBDATAS.MultiDatastreams.table }" 
-                                    WHERE "${_DBDATAS.MultiDatastreams.table}".id = (
-                                        SELECT "${_DBDATAS.Loras.table}"."multidatastream_id" 
-                                        FROM "${_DBDATAS.Loras.table}" 
-                                        WHERE "${_DBDATAS.Loras.table}"."deveui" = '${dataInput["deveui"]}')`;
+                                    FROM "${ this.DBST.MultiDatastreams.table }" 
+                                    WHERE "${this.DBST.MultiDatastreams.table}".id = (
+                                        SELECT "${this.DBST.Loras.table}"."multidatastream_id" 
+                                        FROM "${this.DBST.Loras.table}" 
+                                        WHERE "${this.DBST.Loras.table}"."deveui" = '${dataInput["deveui"]}')`;
 
         const tempSql = await Common.dbContext.raw(`SELECT id, thing_id, ${searchMulti}`);
         const multiDatastream = tempSql.rows[0];
         let datastream = undefined;
         
         if (!multiDatastream) {
-            const tempSql = await Common.dbContext.raw(`SELECT id, thing_id FROM "${_DBDATAS.Datastreams.table}" WHERE "${_DBDATAS.Datastreams.table}".id = (SELECT "${_DBDATAS.Loras.table}"."datastream_id" FROM "${_DBDATAS.Loras.table}" WHERE "${_DBDATAS.Loras.table}"."deveui" = '${dataInput["deveui"]}')`);
+            const tempSql = await Common.dbContext.raw(`SELECT id, thing_id FROM "${this.DBST.Datastreams.table}" WHERE "${this.DBST.Datastreams.table}".id = (SELECT "${this.DBST.Loras.table}"."datastream_id" FROM "${this.DBST.Loras.table}" WHERE "${this.DBST.Loras.table}"."deveui" = '${dataInput["deveui"]}')`);
             datastream = tempSql.rows[0];
            if (!datastream) {
                const errorMessage = messages.errors.noStreamDeveui + dataInput["deveui"];
@@ -200,7 +200,7 @@ export class Loras extends Common {
             const searchFOI = await Common.dbContext.raw(
                 getFeatureOfInterest
                     ? `select coalesce((select "id" from "featureofinterest" where "id" = ${getFeatureOfInterest}), ${getFeatureOfInterest}) AS id `
-                    : `SELECT id FROM ${_DBDATAS.FeaturesOfInterest.table} WHERE id = (SELECT _default_foi FROM "${_DBDATAS.Locations.table}" WHERE id = (SELECT location_id FROM ${_DBDATAS.ThingsLocations.table} WHERE thing_id = (SELECT thing_id FROM ${_DBDATAS.MultiDatastreams.table} WHERE id =${multiDatastream.id})))`
+                    : `SELECT id FROM ${this.DBST.FeaturesOfInterest.table} WHERE id = (SELECT _default_foi FROM "${this.DBST.Locations.table}" WHERE id = (SELECT location_id FROM ${this.DBST.ThingsLocations.table} WHERE thing_id = (SELECT thing_id FROM ${this.DBST.MultiDatastreams.table} WHERE id =${multiDatastream.id})))`
             );
     
             if (searchFOI["rows"].length < 1) {
@@ -240,19 +240,19 @@ export class Loras extends Common {
                         const tmp = JSON.stringify(elem);
                         return tmp == "null" ? tmp : `${tmp}`;
                     })
-                    .join(",")}}'::float8[]`
+                    .join(",")}}'::float4[]`
             );
 
             const sql = `WITH "${_VOIDTABLE}" as (select srid FROM "${_VOIDTABLE}" LIMIT 1)
-                , featureofinterest1 AS (SELECT id FROM "${_DBDATAS.FeaturesOfInterest.table}"
-                                         WHERE id = (SELECT _default_foi FROM "${_DBDATAS.Locations.table}" 
-                                         WHERE id = (SELECT location_id FROM "${_DBDATAS.ThingsLocations.table}" 
-                                         WHERE thing_id = (SELECT thing_id FROM "${_DBDATAS.MultiDatastreams.table}" 
+                , featureofinterest1 AS (SELECT id FROM "${this.DBST.FeaturesOfInterest.table}"
+                                         WHERE id = (SELECT _default_foi FROM "${this.DBST.Locations.table}" 
+                                         WHERE id = (SELECT location_id FROM "${this.DBST.ThingsLocations.table}" 
+                                         WHERE thing_id = (SELECT thing_id FROM "${this.DBST.MultiDatastreams.table}" 
                                          WHERE id =${multiDatastream.id}))))
                 , multidatastream1 AS (SELECT id, thing_id, ${searchMulti} LIMIT 1)
                 , myValues ( "${Object.keys(insertObject).join(_QUOTEDCOMA)}") AS (values (${Object.values(insertObject).join()}))
-                , searchDuplicate as (SELECT * FROM "${_DBDATAS.Observations.table}" WHERE ${searchDuplicate})
-                , observation1 AS (INSERT INTO  "${_DBDATAS.Observations.table}" ("${Object.keys(insertObject).join(_QUOTEDCOMA)}") SELECT * FROM myValues
+                , searchDuplicate as (SELECT * FROM "${this.DBST.Observations.table}" WHERE ${searchDuplicate})
+                , observation1 AS (INSERT INTO  "${this.DBST.Observations.table}" ("${Object.keys(insertObject).join(_QUOTEDCOMA)}") SELECT * FROM myValues
                                 WHERE NOT EXISTS (SELECT * FROM searchDuplicate)
                                 AND (SELECT id FROM multidatastream1) IS NOT NULL
                                 RETURNING *, _resultnumbers AS result)
@@ -266,15 +266,15 @@ export class Loras extends Common {
                  SELECT coalesce(json_agg(t), '[]') AS result FROM result1 AS t`;            
     
             // const sql = `WITH "${_VOIDTABLE}" as (select srid FROM "${_VOIDTABLE}" LIMIT 1)
-            //     , featureofinterest1 AS (SELECT id FROM "${_DBDATAS.FeaturesOfInterest.table}"
-            //                              WHERE id = (SELECT _default_foi FROM "${_DBDATAS.Locations.table}" 
-            //                              WHERE id = (SELECT location_id FROM "${_DBDATAS.ThingsLocations.table}" 
-            //                              WHERE thing_id = (SELECT thing_id FROM "${_DBDATAS.MultiDatastreams.table}" 
+            //     , featureofinterest1 AS (SELECT id FROM "${this.DBST.FeaturesOfInterest.table}"
+            //                              WHERE id = (SELECT _default_foi FROM "${this.DBST.Locations.table}" 
+            //                              WHERE id = (SELECT location_id FROM "${this.DBST.ThingsLocations.table}" 
+            //                              WHERE thing_id = (SELECT thing_id FROM "${this.DBST.MultiDatastreams.table}" 
             //                              WHERE id =${multiDatastream.id}))))
             //     , multidatastream1 AS (SELECT id, thing_id, ${searchMulti} LIMIT 1)
             //     , myValues ( "${Object.keys(insertObject).join(_QUOTEDCOMA)}") AS (values (${Object.values(insertObject).join()}))
-            //     , searchDuplicate as (SELECT * FROM "${_DBDATAS.Observations.table}" WHERE ${searchDuplicate})
-            //     , observation1 AS (INSERT INTO  "${_DBDATAS.Observations.table}" ("${Object.keys(insertObject).join(_QUOTEDCOMA)}") SELECT * FROM myValues
+            //     , searchDuplicate as (SELECT * FROM "${this.DBST.Observations.table}" WHERE ${searchDuplicate})
+            //     , observation1 AS (INSERT INTO  "${this.DBST.Observations.table}" ("${Object.keys(insertObject).join(_QUOTEDCOMA)}") SELECT * FROM myValues
             //                     WHERE NOT EXISTS (SELECT * FROM searchDuplicate)
             //                     AND (SELECT id FROM multidatastream1) IS NOT NULL
             //                     RETURNING *, _resultnumbers AS result)
@@ -306,7 +306,7 @@ export class Loras extends Common {
                             result: _resultnumbers
                         };
     
-                        Object.keys(_DBDATAS["Observations"].relations).forEach((word) => {
+                        Object.keys(this.DBST["Observations"].relations).forEach((word) => {
                             result[`${word}@iot.navigationLink`] = `${this.ctx._odata.options.rootBase}Observations(${tempResult.id})/${word}`;
                         });
     
@@ -326,7 +326,7 @@ export class Loras extends Common {
            const searchFOI = await Common.dbContext.raw(
                getFeatureOfInterest
                    ? `SELECT coalesce((SELECT "id" FROM "featureofinterest" WHERE "id" = ${getFeatureOfInterest}), ${getFeatureOfInterest}) AS id `
-                   : `SELECT id FROM ${_DBDATAS.FeaturesOfInterest.table} WHERE id = (SELECT _default_foi FROM "${_DBDATAS.Locations.table}" WHERE id = (SELECT location_id FROM ${_DBDATAS.ThingsLocations.table} WHERE thing_id = (SELECT thing_id FROM ${_DBDATAS.Datastreams.table} WHERE id =${datastream.id})))`
+                   : `SELECT id FROM ${this.DBST.FeaturesOfInterest.table} WHERE id = (SELECT _default_foi FROM "${this.DBST.Locations.table}" WHERE id = (SELECT location_id FROM ${this.DBST.ThingsLocations.table} WHERE thing_id = (SELECT thing_id FROM ${this.DBST.Datastreams.table} WHERE id =${datastream.id})))`
            );
    
            if (searchFOI["rows"].length < 1) {
@@ -367,15 +367,15 @@ export class Loras extends Common {
                Logs.debug("searchDuplicate", searchDuplicate);
    
            const sql = `WITH "${_VOIDTABLE}" as (select srid FROM "${_VOIDTABLE}" LIMIT 1)
-               , featureofinterest1 AS (SELECT id FROM "${_DBDATAS.FeaturesOfInterest.table}"
-                                        WHERE id = (SELECT _default_foi FROM "${_DBDATAS.Locations.table}" 
-                                        WHERE id = (SELECT location_id FROM "${_DBDATAS.ThingsLocations.table}" 
-                                        WHERE thing_id = (SELECT thing_id FROM "${_DBDATAS.Datastreams.table}" 
+               , featureofinterest1 AS (SELECT id FROM "${this.DBST.FeaturesOfInterest.table}"
+                                        WHERE id = (SELECT _default_foi FROM "${this.DBST.Locations.table}" 
+                                        WHERE id = (SELECT location_id FROM "${this.DBST.ThingsLocations.table}" 
+                                        WHERE thing_id = (SELECT thing_id FROM "${this.DBST.Datastreams.table}" 
                                         WHERE id =${datastream.id}))))
-               , datastream1 AS (SELECT id, thing_id FROM "${_DBDATAS.Datastreams.table}" WHERE id =${datastream.id})
+               , datastream1 AS (SELECT id, thing_id FROM "${this.DBST.Datastreams.table}" WHERE id =${datastream.id})
                , myValues ( "${Object.keys(insertObject).join(_QUOTEDCOMA)}") AS (values (${Object.values(insertObject).join()}))
-               , searchDuplicate as (SELECT * FROM "${_DBDATAS.Observations.table}" WHERE ${searchDuplicate})
-               , observation1 AS (INSERT INTO  "${_DBDATAS.Observations.table}" ("${Object.keys(insertObject).join(_QUOTEDCOMA)}") SELECT * FROM myValues
+               , searchDuplicate as (SELECT * FROM "${this.DBST.Observations.table}" WHERE ${searchDuplicate})
+               , observation1 AS (INSERT INTO  "${this.DBST.Observations.table}" ("${Object.keys(insertObject).join(_QUOTEDCOMA)}") SELECT * FROM myValues
                                 WHERE NOT EXISTS (SELECT * FROM searchDuplicate)
                                AND (select id from datastream1) IS NOT NULL
                                RETURNING *)
@@ -403,7 +403,7 @@ export class Loras extends Common {
                            result: tempResult._resultnumbers
                        };
    
-                       Object.keys(_DBDATAS["Observations"].relations).forEach((word) => {
+                       Object.keys(this.DBST["Observations"].relations).forEach((word) => {
                            result[`${word}@iot.navigationLink`] = `${this.ctx._odata.options.rootBase}Observations(${tempResult.id})/${word}`;
                        });
    

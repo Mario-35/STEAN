@@ -9,7 +9,6 @@
 import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
-import { _DBDATAS } from "../constants";
 import { Logs } from "../../logger";
 import { IreturnResult } from "../../types";
 import { CONFIGURATION } from "../../configuration";
@@ -17,6 +16,7 @@ import { hidePasswordInJson } from "../../helpers";
 import { db } from "..";
 import { messages } from "../../messages/";
 import { EuserRights } from "../../enums";
+import { _DBADMIN } from "../constants";
 
  
  export class Users extends Common {
@@ -29,7 +29,7 @@ import { EuserRights } from "../../enums";
         if (this.ctx._user?.PDCUAS[EuserRights.SuperAdmin] === true || this.ctx._user?.PDCUAS[EuserRights.Admin] === true) {
             const temp = await db["admin"]
                 .table("user")
-                .select(Object.keys(_DBDATAS.Users.columns))
+                .select(Object.keys(_DBADMIN.Users.columns))
                 .orderBy("id");
             
             hidePasswordInJson(temp);

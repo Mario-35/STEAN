@@ -8,6 +8,7 @@
 
 import Koa from "koa";
 import { decodeToken } from "../authentication";
+import { CONFIGURATION } from "../configuration";
 import { setDebug, _debug } from "../constants";
 import { EuserRights } from "../enums";
 import { configCtx, setConfigToCtx } from "../helpers";
@@ -26,6 +27,7 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
         setDebug(ctx.request.url.includes("$debug=true"));
         ctx._addToLog = false;
         setConfigToCtx(ctx);
+        
         const tempUser = decodeToken(ctx); 
         ctx._user = tempUser ? tempUser : {
             id: 0,
@@ -34,14 +36,14 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
             PDCUAS: [false, false, false, false, false, false]
         };
         if (_debug === true) console.log(configCtx(ctx));
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any        
         await next().then(async (res: object) => {            
             await writeToLog(ctx);
         });
-    } catch (error: any) {
-        if (error instanceof Error) console.log("============================ OK");
-        
-        if (error.message.includes("|")) {
+     // eslint-disable-next-line @typescript-eslint/no-explicit-any        
+    } catch (error: any) {     
+        CONFIGURATION.writeError(ctx.request, error);
+         
+        if (error.message && error.message.includes("|")) {
             const temp = error.message.split("|");
             error.statusCode = +temp[0];
             error.message = temp[1];

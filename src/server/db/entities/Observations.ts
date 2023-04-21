@@ -9,7 +9,7 @@
 import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
-import { getDateNow } from "../constants";
+import { getDBDateNow } from "../constants";
 import { Logs } from "../../logger";
 import { IreturnResult } from "../../types";
 import { getBigIntFromString } from "../../helpers";
@@ -73,7 +73,7 @@ export class Observations extends Common {
     async update(idInput: bigint, dataInput: object | undefined): Promise<IreturnResult | undefined> {
         Logs.head(`class ${this.constructor.name} override update`);
         if (dataInput) dataInput = await this.prepareInputResult(dataInput);
-        if (dataInput) dataInput["validTime"] = await getDateNow(Common.dbContext);
+        if (dataInput) dataInput["validTime"] = await getDBDateNow(Common.dbContext);
         return await super.update(idInput, dataInput);
     }
 }

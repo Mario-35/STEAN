@@ -7,16 +7,16 @@
  */
 
 import knex from "knex";
-const CONFIGURATION.list = require("../server/configuration/config.json")["test"];
+const config = require("../server/configuration/config.json")["test"];
 
 export const dbTest = knex({
     client: "pg",
     connection: {
-        host: CONFIGURATION.list["test"].pg_host,
-        user: CONFIGURATION.list["test"].pg_user,
-        password: CONFIGURATION.list["test"].pg_password,
+        host: config["test"].pg_host,
+        user: config["test"].pg_user,
+        password: config["test"].pg_password,
         database: "test",
-        port: CONFIGURATION.list["test"].pg_port
+        port: config["test"].pg_port
     },
     pool: {
         min: 0,

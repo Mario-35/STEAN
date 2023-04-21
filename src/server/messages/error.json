@@ -26,6 +26,7 @@
 	"noHeaderCsv": "No Header found in csv file",
 	"noId": "No id found for : ",
 	"noIds": "One of id not found for : ",
+	"noStream": "No datastream or multiDatastream found",
 	"noStreamDeveui": "No datastream or multiDatastream found for deveui : ",
 	"noValidDate": "No valid date found",
 	"observationExist": "Observation already exist",

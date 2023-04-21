@@ -14,5 +14,4 @@ export interface IcsvFile {
     dataStreamId: bigint;
     columns: IcsvColumn[];
     header: string;
-    duplicates: boolean;
 }

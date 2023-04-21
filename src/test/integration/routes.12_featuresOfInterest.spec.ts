@@ -30,7 +30,7 @@ import {
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
-import { _DBDATAS } from "../../server/db/constants";
+import { DBDATAS } from "../../server/db/constants";
 import { Ientity } from "../../server/types";
 import { testsKeys as observations_testsKeys } from "./routes.11_observations.spec";
 
@@ -40,7 +40,7 @@ chai.use(chaiHttp);
 const should = chai.should();
 
 const docs: IApiDoc[] = [];
-const entity: Ientity = _DBDATAS.FeaturesOfInterest;
+const entity: Ientity = DBDATAS.FeaturesOfInterest;
 
 const addToApiDoc = (input: IApiInput) => {
     docs.push(prepareToApiDoc(input, entity.name));

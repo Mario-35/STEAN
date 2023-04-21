@@ -35,6 +35,19 @@ addToApiDoc({
     result: ""
 });
 
+const datasObs = (datastream: number) => {
+    return {"Datastream": { "@iot.id": datastream },
+    "components": ["phenomenonTime", "result", "resultTime", "FeatureOfInterest/id"],
+    "dataArray@iot.count": 4,
+    "dataArray": [
+        ["2017-01-13T10:20:00.000Z", 90, "2017-01-13T10:20:00.000Z", 1],
+        ["2017-01-13T10:21:00.000Z", 91, "2017-01-13T10:21:00.000Z", 1],
+        ["2017-02-13T10:22:00.000Z", 92, "2017-02-13T10:22:00.000Z", 1],
+        ["2017-02-13T10:22:00.000Z", 93, "2017-02-13T10:22:00.000Z", 1]
+    ]
+};
+};
+
 describe("endpoint : Create Observations [13.2]", () => {
     let token = "";
 
@@ -49,29 +62,18 @@ describe("endpoint : Create Observations [13.2]", () => {
             });
     });
 
-    it("should return 3 observations links added that was added", (done) => {
-        const datas = {
-            "Datastream": { "@iot.id": 1 },
-            "components": ["phenomenonTime", "result", "resultTime", "FeatureOfInterest/id"],
-            "dataArray@iot.count": 3,
-            "dataArray": [
-                ["2017-01-13T10:20:00.000Z", 90, "2017-01-13T10:20:00.000Z", 1],
-                ["2017-01-13T10:21:00.000Z", 91, "2017-01-13T10:21:00.000Z", 1],
-                ["2017-02-13T10:22:00.000Z", 92, "2017-02-13T10:22:00.000Z", 1],
-                ["2017-02-13T10:22:00.000Z", 93, "2017-02-13T10:22:00.000Z", 1]
-            ]
-        };
+    it("should return 4 observations links added that was added", (done) => {
         const infos = {
             api: `{post} CreateObservations Add.`,
             apiName: "PostCreateObservations",
             apiDescription: "Create Observations with CreateObservations",
             apiExample: {
                 http: "/v1.0/CreateObservations",
-                curl: defaultPost("curl", "KEYHTTP", datas),
-                javascript: defaultPost("javascript", "KEYHTTP", datas),
-                python: defaultPost("python", "KEYHTTP", datas)
+                curl: defaultPost("curl", "KEYHTTP", datasObs(1)),
+                javascript: defaultPost("javascript", "KEYHTTP", datasObs(1)),
+                python: defaultPost("python", "KEYHTTP", datasObs(1))
             },
-            apiParamExample: datas
+            apiParamExample: datasObs(1)
         };
 
         chai.request(server)
@@ -114,4 +116,85 @@ describe("endpoint : Create Observations [13.2]", () => {
                 done();
             });
     });
-});
+
+    it("should return 4 observations links added that was added", (done) => {
+        chai.request(server)
+            .post("/test/v1.0/CreateObservations")
+            .send(datasObs(2))
+            .set("Cookie", `${keyTokenName}=${token}`)
+            .end((err: Error, res: any) => {
+                should.not.exist(err);
+                res.status.should.equal(201);
+                res.type.should.equal("application/json");
+                res.body[0].should.include("/v1.0/Observations(");
+                res.body[1].should.include("/v1.0/Observations(");
+                res.body[2].should.include("/v1.0/Observations(");
+                done();
+            });
+    });
+
+    it("should return 4 observations duplicate", (done) => {
+        const infos = {
+            api: `{post} CreateObservations Add duplicate.`,
+            apiName: "PostCreateObservationsDuplicate",
+            apiDescription: "Create Observations duplicate with CreateObservations",
+            apiExample: {
+                http: "/v1.0/CreateObservations",
+                curl: defaultPost("curl", "KEYHTTP", datasObs(2)),
+                javascript: defaultPost("javascript", "KEYHTTP", datasObs(2)),
+                python: defaultPost("python", "KEYHTTP", datasObs(2))
+            },
+            apiParamExample: datasObs(2)
+        };
+        
+        chai.request(server)
+        .post("/test/v1.0/CreateObservations")
+        .send(datasObs(2))
+        .set("Cookie", `${keyTokenName}=${token}`)
+            .end((err: Error, res: any) => {
+                should.not.exist(err);
+                res.status.should.equal(201);
+                res.type.should.equal("application/json");
+                res.body.length.should.eql(4);
+                // res.body[0].should.eql("Duplicate (2017-01-13T10:20:00.000Z,90,2017-01-13T10:20:00.000Z,1)");
+                addToApiDoc({ ...infos, result: limitResult(res) });
+                done();
+            });
+    });
+        
+    it("should return 4 observations duplicate", (done) => {
+        const datas = {
+            "duplicate": "delete",
+            ... datasObs(2)
+        };
+        const infos = {
+            api: `{post} CreateObservations Add.`,
+            apiName: "PostCreateObservationsDuplicateDelete",
+            apiDescription: "Create Observations duplicate delete with CreateObservations",
+            apiExample: {
+                http: "/v1.0/CreateObservations",
+                curl: defaultPost("curl", "KEYHTTP", datas),
+                javascript: defaultPost("javascript", "KEYHTTP", datas),
+                python: defaultPost("python", "KEYHTTP", datas)
+            },
+            apiParamExample: datas
+        };
+        
+        chai.request(server)
+        .post("/test/v1.0/CreateObservations")
+        .send(datas)
+        .set("Cookie", `${keyTokenName}=${token}`)
+        .end((err: Error, res: any) => {
+            should.not.exist(err);
+            res.status.should.equal(201);
+            res.type.should.equal("application/json");
+            res.body.length.should.eql(8);
+            res.body[0].should.eql("Duplicate (2017-01-13T10:20:00.000Z,90,2017-01-13T10:20:00.000Z,1)");
+            res.body[1].should.include("delete id ==>");
+            addToApiDoc({ ...infos, result: limitResult(res) });
+            done();
+        });
+    });
+        
+    });
+    

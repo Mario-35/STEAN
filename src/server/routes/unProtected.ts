@@ -8,7 +8,7 @@
 
 import Router from "koa-router";
 import { apiAccess, userAccess } from "../db/dataAccess";
-import { _DBDATAS, _DBPUREST } from "../db/constants";
+import { DBDATAS } from "../db/constants";
 import { configCtx, returnFormats } from "../helpers";
 import fs from "fs";
 import { db } from "../db";
@@ -36,15 +36,13 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
     switch (testRoutes(ctx.path).toUpperCase()) {
         case ctx._version.toUpperCase():
             const expectedResponse: object[] = [];
-            
             if (isAdmin(ctx) && !adminWithSuperAdminAccess) ctx.throw(401);
-            const src = CONFIGURATION.list[ctx._configName].standard === true ? _DBPUREST : _DBDATAS;
-            Object.keys(src)
-                .filter((elem: string) => isAdmin(ctx) ?_DBDATAS[elem].admin === true : _DBDATAS[elem].order > 0)
-                .sort((a, b) => (_DBDATAS[a].order > _DBDATAS[b].order ? 1 : -1))
+            CONFIGURATION.list[ctx._configName].dbEntities
+                .filter((elem: string) => isAdmin(ctx) ?DBDATAS[elem].admin === true : DBDATAS[elem].order > 0)
+                .sort((a, b) => (DBDATAS[a].order > DBDATAS[b].order ? 1 : -1))
                 .forEach((value: string) => {
                 expectedResponse.push({
-                    name: _DBDATAS[value].name,
+                    name: DBDATAS[value].name,
                     url: `${ctx._linkBase}/${ctx._version}/${value}`
                 });
             }); 
@@ -116,7 +114,6 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
 
         case "STATUS":
             if (ensureAuthenticated(ctx)) {
-                
                 const user = await getAuthenticatedUser(ctx);
                 if (user) {
                     const createHtml = new CreateHtmlView(ctx);
@@ -175,7 +172,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             const objectAccess = new apiAccess(ctx);
             if (objectAccess) {
                 if (ctx._odata.entity && Number(ctx._odata.id) === 0) {
-                    const returnValue = await objectAccess.getAll();
+                    const returnValue = await objectAccess.getAll();                    
                     if (returnValue) {
                         const datas = ctx._odata.resultFormat === returnFormats.json ? {
                             "@iot.count": returnValue.id?.toString(),

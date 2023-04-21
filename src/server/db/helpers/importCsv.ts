@@ -10,10 +10,10 @@ import fs from "fs";
 import copyFrom from "pg-copy-streams";
 import { Logs } from "../../logger";
 import { IcsvColumn, IcsvFile } from "../../types";
-import { _DBDATAS } from "../constants";
 import readline from "readline";
 import { Knex } from "knex";
 import koa from "koa";
+import { DBDATAS } from "../constants";
 
 /**
  *
@@ -148,14 +148,11 @@ export const importCsv = async (ctx: koa.Context, knex: Knex | Knex.Transaction,
 
                         const valueSql = `CASE "${paramsFile.tempTable}".value${csvColumn.column} WHEN '---' THEN NULL ELSE cast(REPLACE(value${csvColumn.column},',','.') as float) END`;
 
-                        const whereNotIn =
-                            paramsFile.duplicates == false
-                                ? ""
-                                : ` WHERE "${paramsFile.tempTable}".id NOT IN (SELECT "${paramsFile.tempTable}".id FROM "${paramsFile.tempTable}", "${_DBDATAS.Observations.table}" WHERE "${_DBDATAS.Observations.table}"."datastream_id" = ${csvColumn.datastream} AND "${_DBDATAS.Observations.table}"."featureofinterest_id" = ${csvColumn.featureOfInterest} AND "${_DBDATAS.Observations.table}"."phenomenonTime" = ${sqlRequest.dateSql} AND "${_DBDATAS.Observations.table}"."resultTime" = ${sqlRequest.dateSql} AND "${_DBDATAS.Observations.table}"."_resultnumber" = ${valueSql})`;
+                        const whereNotIn =` WHERE "${paramsFile.tempTable}".id NOT IN (SELECT "${paramsFile.tempTable}".id FROM "${paramsFile.tempTable}", "${DBDATAS.Observations.table}" WHERE "${DBDATAS.Observations.table}"."datastream_id" = ${csvColumn.datastream} AND "${DBDATAS.Observations.table}"."featureofinterest_id" = ${csvColumn.featureOfInterest} AND "${DBDATAS.Observations.table}"."phenomenonTime" = ${sqlRequest.dateSql} AND "${DBDATAS.Observations.table}"."resultTime" = ${sqlRequest.dateSql} AND "${DBDATAS.Observations.table}"."_resultnumber" = ${valueSql})`;
 
                         scriptSql.push(
                             `${index == 0 ? "WITH" : ","} updated${index + 1} as (INSERT into "${
-                                _DBDATAS.Observations.table
+                                DBDATAS.Observations.table
                             }" ("datastream_id", "featureofinterest_id", "phenomenonTime","resultTime", "_resultnumber") SELECT ${csvColumn.datastream}, ${
                                 csvColumn.featureOfInterest
                             },  ${sqlRequest.dateSql}, ${sqlRequest.dateSql},${valueSql} FROM "${paramsFile.tempTable}"${whereNotIn} returning id)`

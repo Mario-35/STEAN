@@ -32,7 +32,7 @@ import {
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
-import { _DBDATAS } from "../../server/db/constants";
+import { DBDATAS } from "../../server/db/constants";
 import { Ientity } from "../../server/types";
 
 export const testsKeys = [
@@ -54,7 +54,7 @@ chai.use(chaiHttp);
 const should = chai.should();
 
 const docs: IApiDoc[] = [];
-const entity: Ientity = _DBDATAS.MultiDatastreams;
+const entity: Ientity = DBDATAS.MultiDatastreams;
 
 const addToApiDoc = (input: IApiInput) => {
     docs.push(prepareToApiDoc(input, entity.name));
@@ -102,7 +102,7 @@ describe("endpoint : MultiDatastream", () => {
                 },
                 apiSuccess: ["{number} id @iot.id", "{relation} selfLink @iot.selfLink", ...success]
             };
-            dbTest(_DBDATAS.MultiDatastreams.table)
+            dbTest(DBDATAS.MultiDatastreams.table)
                 .count()
                 .then((result) => {
                     const nb = Number(result[0]["count"]);
@@ -607,7 +607,7 @@ describe("endpoint : MultiDatastream", () => {
 
     describe(`{patch} ${entity.name} ${nbColorTitle}[10.3]`, () => {
         it(`Return updated ${entity.name} ${nbColor}[10.3.1]`, (done) => {
-            dbTest(_DBDATAS.MultiDatastreams.table)
+            dbTest(DBDATAS.MultiDatastreams.table)
                 .select("*")
                 .orderBy("id")
                 .then((items) => {
@@ -675,7 +675,7 @@ describe("endpoint : MultiDatastream", () => {
 
     describe(`{delete} ${entity.name} ${nbColorTitle}[10.4]`, () => {
         it(`Delete ${entity.name} return no content with code 204 ${nbColor}[10.4.1]`, (done) => {
-            dbTest(_DBDATAS.MultiDatastreams.table)
+            dbTest(DBDATAS.MultiDatastreams.table)
                 .select("*")
                 .orderBy("id")
                 .then((items) => {
@@ -700,7 +700,7 @@ describe("endpoint : MultiDatastream", () => {
                         .end((err: Error, res: any) => {
                             should.not.exist(err);
                             res.status.should.equal(204);
-                            dbTest(_DBDATAS.MultiDatastreams.table)
+                            dbTest(DBDATAS.MultiDatastreams.table)
                                 .select("*")
                                 .orderBy("id")
                                 .then((newItems) => {

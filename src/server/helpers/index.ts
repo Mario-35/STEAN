@@ -10,8 +10,6 @@ import koa from "koa";
 
 export const goodName = (input: string): string => input.replace(/[ ]+/g, "").toLowerCase();
 export const removeQuotes = (input: string): string => input.replace(/['"]+/g, "");
-export const boolToString = (input: boolean | undefined): string => (input && input == true ? "true" : "false");
-export const stringToBool = (input: string | undefined): boolean => (input && input.toString().toLowerCase() == "true" ? true : false);
 export const isTest = () => process.env.NODE_ENV?.trim() === "test" || false;
 export const getUserId = (ctx: koa.Context): number => ctx.state.user && ctx.state.user.id ? ctx.state.user.id : -1;
 

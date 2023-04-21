@@ -10,9 +10,7 @@ import fs from "fs";
 
 export const APP_NAME = process.env.npm_package_name || '_STEAN';
 export const APP_VERSION = process.env.npm_package_version || '0';
-export const APP_KEY = fs.readFileSync(__dirname + "/config/.key", "utf8") || "zLwX893Mtt9Rc0TKvlInDXuZTFj9rxDV";
-
-export let _DEBUGFILE = false;
+export const APP_KEY = fs.readFileSync(__dirname + "/configuration/.key", "utf8") || "zLwX893Mtt9Rc0TKvlInDXuZTFj9rxDV";
 export let _debug = true;
 export const _VOIDTABLE = "spatial_ref_sys";
 export const _DOUBLEQUOTE = '"';
@@ -24,10 +22,6 @@ export const HELMET_CONFIG = Object.freeze({
     scriptSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com"],
     styleSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com", "fonts.googleapis.com"]
 });
-
-export function setDebugFile(input: boolean) {
-    _DEBUGFILE = input;
-}
 
 export function setDebug(input: boolean) {
     _debug = input;

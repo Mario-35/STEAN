@@ -10,7 +10,6 @@ import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
 import { messages, messagesReplace } from "../../messages/";
-import { _DBDATAS } from "../constants";
 import { Logs } from "../../logger";
 
 
@@ -35,10 +34,10 @@ export class MultiDatastreams extends Common {
             input["multiObservationDataTypes"] = JSON.stringify(input["multiObservationDataTypes"]).replace("[", "{").replace("]", "}");
 
         if (input["observationType"]) {
-            if (!_DBDATAS.MultiDatastreams.columns["observationType"].verify?.list.includes(input["observationType"]))
+            if (!this.DBST.MultiDatastreams.columns["observationType"].verify?.list.includes(input["observationType"]))
                 this.ctx.throw(400, { code: 400, detail: messages.errors["observationType"]});
                 
-        } else input["observationType"] = _DBDATAS.MultiDatastreams.columns["observationType"].verify?.default;
+        } else input["observationType"] = this.DBST.MultiDatastreams.columns["observationType"].verify?.default;
 
         return input;
     }

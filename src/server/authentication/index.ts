@@ -12,7 +12,3 @@ export { decodeToken } from "./decodeToken";
 export { userAuthenticated } from "./userAuthenticated";
 export { getAuthenticatedUser } from "./getAuthenticatedUser";
 export { ensureAuthenticated } from "./ensureAuthenticated";
-
-
-
-

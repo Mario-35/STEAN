@@ -13,7 +13,7 @@ import { IApiDoc, IApiInput, prepareToApiDoc, generateApiDoc, identification, ke
 
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
-import { _DBDATAS } from "../../server/db/constants";
+import { DBDATAS } from "../../server/db/constants";
 import { getBigIntFromString } from "../../server/helpers";
 
 chai.use(chaiHttp);
@@ -162,7 +162,7 @@ describe("CSV Import", function () {
                         const temp = getBigIntFromString(element);
                         if (temp) ids.push(temp);
                     });
-                    dbTest(_DBDATAS.Observations.table)
+                    dbTest(DBDATAS.Observations.table)
                         .whereIn("id", ids)
                         .orderBy("id")
                         .then((test) => {

@@ -48,7 +48,7 @@ export class Logger {
      }
 
      logAll(input: any, colors?: boolean) { 
-        return util.inspect(input, { showHidden: false, depth: null, colors: colors || false }); 
+        return typeof input === "object" ? util.inspect(input, { showHidden: false, depth: null, colors: colors || false }) : input; 
     }
 
      booting(cle: string, value: string | number) {

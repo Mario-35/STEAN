@@ -11,7 +11,7 @@ import knex from "knex";
  import { CONFIGURATION } from "../../configuration";
  import { asyncForEach, isTest } from "../../helpers";
  import { Logs } from "../../logger";
- import { _DBST, _RIGHTS } from "../constants";
+ import { DBDATAS, _RIGHTS } from "../constants";
  import { datasDemo } from "../createDBDatas/datasDemo";
  import { triggers } from "../createDBDatas/triggers";
  
@@ -92,9 +92,9 @@ import knex from "knex";
          .raw("CREATE EXTENSION IF NOT EXISTS tablefunc;")
          .then(() => "✔")
          .catch((err: Error) => err.message);
-         
-     await asyncForEach(Object.keys(_DBST), async (keyName: string) => {
-         await createTable(connDb, _DBST[keyName], undefined);
+
+     await asyncForEach(CONFIGURATION.list[configName].dbEntities, async (keyName: string) => {
+         await createTable(connDb, DBDATAS[keyName], undefined);
      });
 
      await asyncForEach(triggers, async (sql: string) => {

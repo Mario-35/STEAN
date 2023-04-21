@@ -33,7 +33,7 @@ import {
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
-import { _DBDATAS } from "../../server/db/constants";
+import { DBDATAS } from "../../server/db/constants";
 import { Ientity } from "../../server/types";
 
 export const testsKeys = [
@@ -53,7 +53,7 @@ chai.use(chaiHttp);
 const should = chai.should();
 
 const docs: IApiDoc[] = [];
-const entity: Ientity = _DBDATAS.Things;
+const entity: Ientity = DBDATAS.Things;
 
 const addToApiDoc = (input: IApiInput) => {
     docs.push(prepareToApiDoc(input, entity.name));
@@ -104,8 +104,6 @@ describe("endpoint : Thing [8.2.1]", () => {
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
                 .end((err, res) => {
-                    console.log(res.body);
-                    
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");

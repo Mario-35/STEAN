@@ -7,15 +7,15 @@
  */
 
 import { Knex } from "knex";
-import { createQueryIpgQuery } from ".";
+import { createpgQuery } from ".";
 import { _VOIDTABLE } from "../../../constants";
-import { _DBDATAS } from "../../../db/constants";
 import { getBigIntFromString, getEntityName } from "../../../helpers";
 import { queryAsJson } from "../../../helpers/returnFormats";
 import { Logs } from "../../../logger";
 import { Ientity } from "../../../types";
 import { EoperationType } from "../../../enums/";
 import { PgVisitor } from "../PgVisitor";
+import { DBDATAS } from "../../../db/constants";
 
 export function createPostSql(datas: object, knexInstance: Knex | Knex.Transaction, main: PgVisitor): string {
     let sqlResult = "";
@@ -28,8 +28,8 @@ export function createPostSql(datas: object, knexInstance: Knex | Knex.Transacti
         };
     } = {};
     const tempEntity = main.getEntity();
-    const postEntity: Ientity = _DBDATAS[tempEntity == "CreateFile" ? "Datastreams" : tempEntity];
-    const postParentEntity: Ientity | undefined = main.parentEntity ? _DBDATAS[main.parentEntity ] : undefined;
+    const postEntity: Ientity = DBDATAS[tempEntity == "CreateFile" ? "Datastreams" : tempEntity];
+    const postParentEntity: Ientity | undefined = main.parentEntity ? DBDATAS[main.parentEntity ] : undefined;
     const names: { [key: string]: string } = {
         [postEntity.table]: postEntity.table
     };
@@ -283,7 +283,7 @@ export function createPostSql(datas: object, knexInstance: Knex | Knex.Transacti
         const subBlock = (key: string, value: object) => {
             const entityNameSearch = getEntityName(key);
             if (entityNameSearch) {
-                const newEntity = _DBDATAS[entityNameSearch];
+                const newEntity = DBDATAS[entityNameSearch];
                 const name = createName(newEntity.table);
                 names[newEntity.table] = name;
                 const test = start(value, newEntity, entity);
@@ -324,7 +324,7 @@ export function createPostSql(datas: object, knexInstance: Knex | Knex.Transacti
     if (main.parentEntity) {
         const entityName = getEntityName(main.parentEntity);
         Logs.debug("Found entity : ", entityName);
-        const callEntity = entityName ? _DBDATAS[entityName] : undefined;
+        const callEntity = entityName ? DBDATAS[entityName] : undefined;
         const id: bigint | undefined =
         typeof main.parentId== "string" ? getBigIntFromString(main.parentId) : main.parentId;
         if (entityName && callEntity && id && id > 0) {
@@ -353,7 +353,7 @@ export function createPostSql(datas: object, knexInstance: Knex | Knex.Transacti
 
 
             }
-    const temp = createQueryIpgQuery(main, main); 
+    const temp = createpgQuery(main, main); 
     sqlResult += queryAsJson({
         query: `SELECT ${temp && temp.select ? temp.select : "*"} FROM ${names[postEntity.table]} ${temp && temp.groupBy ? `GROUP BY ${temp.groupBy}` : ''}`, 
         singular: false, 

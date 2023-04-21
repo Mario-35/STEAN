@@ -10,7 +10,6 @@ import { Knex } from "knex";
 import koa from "koa";
 import { Logs } from "../../logger";
 import { messages } from "../../messages";
-import { _DBDATAS } from "../constants";
 import { Common } from "./common";
 
 export class Datastreams extends Common {
@@ -18,14 +17,14 @@ export class Datastreams extends Common {
         super(ctx, knexInstance);
     }
 
-    formatDataInput(input: Object | undefined): Object | undefined {
+    formatDataInput(input: object | undefined): object | undefined {
         Logs.override("formatDataInput");  
         if(input) {            
             if (input["observationType"]) {
-                if (!_DBDATAS.Datastreams.columns["observationType"].verify?.list.includes(input["observationType"]))
+                if (!this.DBST.Datastreams.columns["observationType"].verify?.list.includes(input["observationType"]))
                  this.ctx.throw(400, { code: 400, detail: messages.errors["observationType"]});
                  
-            } else input["observationType"] = _DBDATAS.Datastreams.columns["observationType"].verify?.default;
+            } else input["observationType"] = this.DBST.Datastreams.columns["observationType"].verify?.default;
         }
         return input;
     }

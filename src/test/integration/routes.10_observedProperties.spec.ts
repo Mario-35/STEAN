@@ -32,7 +32,7 @@ import {
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
-import { _DBDATAS } from "../../server/db/constants";
+import { DBDATAS } from "../../server/db/constants";
 import { Ientity } from "../../server/types";
 import { testsKeys as datastreams_testsKeys } from "./routes.07_datastreams.spec";
 
@@ -43,7 +43,7 @@ chai.use(chaiHttp);
 const should = chai.should();
 
 const docs: IApiDoc[] = [];
-const entity: Ientity = _DBDATAS.ObservedProperties;
+const entity: Ientity = DBDATAS.ObservedProperties;
 
 
 const addToApiDoc = (input: IApiInput) => {

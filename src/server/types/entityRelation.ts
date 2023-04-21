@@ -6,7 +6,8 @@
  *
  */
 
-import { Erelations } from ".";
+import { Erelations } from "../enums";
+
 
 export interface IentityRelation {
     type: Erelations; // relation Type

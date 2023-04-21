@@ -49,9 +49,9 @@ export const configCtx = (ctx: koa.Context): object => {
 };
 
 export const showconfigCtx = (ctx: koa.Context, force?: boolean): void => {
-    if (_debug) console.log(Logs.logAll(ctx.request));
+    if (_debug) Logs.logAll(ctx.request);
     const temp = configCtx(ctx);
     if (force) {
-        console.log(temp);
+        Logs.logAll(temp);
     } else Logs.infos("configCtx", temp);
 };

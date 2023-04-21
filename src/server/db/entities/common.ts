@@ -8,10 +8,10 @@
 
 import koa from "koa";
 import { Knex } from "knex";
-import { isGraph, _DBDATAS } from "../constants";
+import { isGraph, _DBLIST } from "../constants";
 import { getEntityName, isNull, removeQuotes, returnFormats } from "../../helpers/index";
 import { Logs } from "../../logger";
-import { IreturnResult } from "../../types";
+import { Ientity, IreturnResult } from "../../types";
 import { createGraph, extractMessageError, knexQueryToSql, removeKeyFromUrl, verifyId } from "../helpers";
 import { CONFIGURATION } from "../../configuration";
 import { IGraphDatas } from "../helpers/createGraph";
@@ -22,6 +22,7 @@ export class Common {
     static dbContext: Knex | Knex.Transaction;
     public nextLinkBase: string;
     public linkBase: string;
+    public DBST: { [key: string]: Ientity; };
 
     constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
         Logs.class(this.constructor.name, messages.infos.constructor);
@@ -29,6 +30,7 @@ export class Common {
         if (knexInstance) Common.dbContext = knexInstance;
         this.nextLinkBase = removeKeyFromUrl(`${this.ctx._odata.options.rootBase}${this.ctx.href.split(`${ctx._version}/`)[1]}`, ["top", "skip"]);
         this.linkBase = `${this.ctx._odata.options.rootBase}${this.constructor.name}`; 
+        this.DBST = _DBLIST(CONFIGURATION.list[this.ctx._configName].dbEntities);
     }
 
     // only for override
@@ -78,8 +80,8 @@ export class Common {
         if (isGraph(this.ctx._odata)) {            
             const entityName = getEntityName(this.ctx._odata.parentEntity ? this.ctx._odata.parentEntity : this.ctx._odata.entity);            
             let tempTitle = "No Title";
-            if (entityName && _DBDATAS[entityName].columns["name"])
-            await Common.dbContext(_DBDATAS[entityName].table)
+            if (entityName && this.DBST[entityName].columns["name"])
+            await Common.dbContext(this.DBST[entityName].table)
                         .select("name")
                         .where({id: this.ctx._odata.parentEntity ? this.ctx._odata.parentId: this.ctx._odata.id})
                         .limit(1)
@@ -189,7 +191,7 @@ export class Common {
 
         if (!dataInput) this.ctx.throw(400, { code: 400, detail: messages.errors.noDataSend + "update" });
 
-        const testIfId = await verifyId(Common.dbContext, BigInt(idInput), _DBDATAS[this.constructor.name].table);
+        const testIfId = await verifyId(Common.dbContext, BigInt(idInput), this.DBST[this.constructor.name].table);
 
         if (testIfId === false) this.ctx.throw(404, { code: 404, detail: messages.errors.noId + idInput });
 
@@ -219,13 +221,13 @@ export class Common {
     async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {
         Logs.class(this.constructor.name, "delete");
 
-        if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ id: BigInt(idInput), body: `DELETE FROM "${_DBDATAS[this.constructor.name].table}" WHERE id= ${idInput}` });
+        if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ id: BigInt(idInput), body: `DELETE FROM "${this.DBST[this.constructor.name].table}" WHERE id= ${idInput}` });
 
-        const testIfId = await verifyId(Common.dbContext, BigInt(idInput), _DBDATAS[this.constructor.name].table);
+        const testIfId = await verifyId(Common.dbContext, BigInt(idInput), this.DBST[this.constructor.name].table);
         if (testIfId === false) this.ctx.throw(404, { code: 404, detail: messages.errors.noId + idInput });
 
         try {
-            const query: Knex.QueryBuilder = Common.dbContext(_DBDATAS[this.constructor.name].table).del().where({ id: idInput });
+            const query: Knex.QueryBuilder = Common.dbContext(this.DBST[this.constructor.name].table).del().where({ id: idInput });
             const returnValue = await query;
             return this.createReturnResult({ id: BigInt(returnValue) });
         } catch (err: any) {

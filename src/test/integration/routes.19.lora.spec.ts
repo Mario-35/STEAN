@@ -12,7 +12,7 @@
  import chaiHttp from "chai-http";
  import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, identification, keyTokenName, defaultPost, getNB, limitResult, apiInfos, showHide, nbColor, nbColorTitle } from "./constant";
  import { server } from "../../server/index";
- import { _DBDATAS } from "../../server/db/constants";
+ import { DBDATAS } from "../../server/db/constants";
  import { Ientity } from "../../server/types";
  
  const testsKeys = [
@@ -32,15 +32,15 @@
  const should = chai.should();
  
  const docs: IApiDoc[] = [];
- const entity: Ientity = _DBDATAS.Loras;
- // const entityObs: Ientity = _DBDATAS.Observations;
+ const entity: Ientity = DBDATAS.Loras;
+ // const entityObs: Ientity = DBDATAS.Observations;
  let firstLoraID = "";
  let firstLoraDEVEUI = "";
  
  const dataInput = {
      "Battery": 3.28,
-     "Humidity": 4.5859375,
-     "Temperature": 17.7982073974609
+     "Humidity": 4.5859,
+     "Temperature": 17.79
  };
  
  
@@ -174,9 +174,9 @@
          it("should return the Lora observation that was added", (done) => {
              const datas = {
                  "data": {
-                    "Battery": 3.28,
-                    "Humidity": 4.5859375,
-                    "Temperature": 17.7982073974609
+                    "Battery": dataInput.Battery,
+                    "Humidity": dataInput.Humidity,
+                    "Temperature": dataInput.Temperature
                 },
                  "deveui": "8cf9574000002d4d",
                  "sensor_id": "8cf9574000002d4d",

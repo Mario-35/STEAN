@@ -7,19 +7,20 @@
  */
 
 import fs from "fs";
-import { API_VERSION, APP_NAME, APP_VERSION, NODE_ENV, setDebugFile } from "./constants";
-import { Logs } from "./logger";
-import { asyncForEach, decrypt, hidePasswordInJson, isTest } from "./helpers";
+import { API_VERSION, APP_NAME, APP_VERSION, NODE_ENV, setDebug } from "../constants";
+import { Logs } from "../logger";
+import { asyncForEach, decrypt, encrypt, hidePasswordInJson, isTest } from "../helpers";
 import util from "util";
 import Koa from "koa";
-import { app } from ".";
-import { db } from "./db";
+import { app } from "..";
+import { db } from "../db";
 import knex, { Knex } from "knex";
-import { createDatabase } from "./db/helpers";
+import { createDatabase } from "../db/helpers";
 import pg from "pg";
-import update from "./config/update.json";
-import { messages, messagesReplace } from "./messages";
-import { IconfigFile, IdbConnection, Iuser } from "./types";
+import update from "./update.json";
+import { messages, messagesReplace } from "../messages";
+import { IconfigFile, IdbConnection, Iuser } from "../types";
+import { DBDATAS, _DBADMIN } from "../db/constants";
 
 
 // class to create configs environements
@@ -50,6 +51,25 @@ class Configuration {
             debug: false
         });
         this.logToFile(this.list["admin"]["logFile"]);
+        Logs.booting("active error to file", "errorFile.md");
+        const errFile = fs.createWriteStream("errorFile.md", { flags: 'w' });
+        errFile.write(`## Start : ${this.timeStamp()} \n`);
+    }
+
+    timeStamp(): string {
+        const d = new Date();
+        return d.toLocaleTimeString();
+    }
+
+    writeError(req: Koa.Request | undefined, ...data: any[]) {        
+        const errFile = fs.createWriteStream("errorFile.md", { flags: 'a' });
+        errFile.write(`# ${this.timeStamp()} : \n`); 
+        if(req) {
+            errFile.write(`## ${req.url} : \n`);        
+            errFile.write(util.format.apply(null, req.body) + '\n');        
+        }
+        errFile.write(`==================================\n`);        
+        errFile.write(util.format.apply(null, data) + '\n');        
     }
 
     logToFile(file: string) {        
@@ -57,14 +77,14 @@ class Configuration {
         if (active) Logs.head("active Logs to file", file);
       
         if (active === false) return;
-        setDebugFile(active);
+        setDebug(active);
         // Or 'w' to truncate the file every time the process starts.
         const logFile = fs.createWriteStream(file, { flags: 'a' });
       
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         console.log = function (...data: any[]) {
           logFile.write(util.format.apply(null, data).replace(/\u001b[^m]*?m/g,"") + '\n');
-        if (!isTest())process.stdout.write(util.format.apply(null, data) + '\n');
+          if (!isTest())process.stdout.write(util.format.apply(null, data) + '\n');
         };
         console.error = console.log;
       }
@@ -74,7 +94,7 @@ class Configuration {
         const user:Iuser = {
             username: this.list[connectName].pg_user,
             email: "default@email.com",
-            password: this.list[connectName].pg_password,
+            password: encrypt(this.list[connectName].pg_password),
             database: this.list[connectName].pg_database,
             canPost: true,
             canDelete: true,
@@ -87,10 +107,10 @@ class Configuration {
         await db["admin"].table("user").count().where({username: user.username}).then(async (res: object) => {
             // recreate if exist because if you change key encrypt have to change  
             if (res[0].count == 1) {
-                 Logs.head(messages.infos.updateUser, `${user.username} for ${connectName}`);
+                 Logs.booting(messages.infos.updateUser, `${user.username} for ${connectName}`);
                 await db["admin"].table("user").update(user).where({username: user.username});
             } else {
-                 Logs.head(messages.infos.createAdminUser, `${user.username} for ${connectName}`);
+                 Logs.booting(messages.infos.createAdminUser, `${user.username} for ${connectName}`);
                 await db["admin"].table("user").insert(user);
             }
         }).catch((err: Error) => {
@@ -131,12 +151,15 @@ class Configuration {
     isInConfig(key: string):boolean {
         return Object.keys(this.list).includes(key.trim().toLowerCase()) ;  
     }
-
+    add_items_to_array_at_position(array: string[], index: number, new_items: string[]) {
+        return [...array.slice(0, index), ...new_items, ...array.slice(index)];
+    }
     format(input: object, name?: string): IconfigFile {
         // If config encrypted
         Object.keys(input).forEach((elem: string) => {input[elem] = decrypt(input[elem]);});
-        const returnValue = {
-            name: name ? name : decrypt(input["pg_database"]) || "ERROR",
+        const goodName = name ? name : decrypt(input["pg_database"]) || "ERROR";
+        const returnValue: IconfigFile = {
+            name: goodName,
             port: input["port"] ? +input["port"] : -1,
             pg_host: input["pg_host"] || "ERROR",
             pg_port: input["pg_port"] ? +input["pg_port"] : 5432,
@@ -151,12 +174,17 @@ class Configuration {
             forceHttps: input["forceHttps"] ? input["forceHttps"] : false,
             alias: input["alias"] ? String(input["alias"]).split(",") : [],
             retry: input["retry"] ? +input["retry"] : 2,
-            standard: input["standard"] ? input["standard"] : false,
-            logFile: input["log"] ? input["log"] : ""
+            lora: input["lora"] ? input["lora"] : false,
+            multiDatastream: input["multiDatastream"] ? input["multiDatastream"] : false,
+            logFile: input["log"] ? input["log"] : "",
+            dbEntities: goodName === "admin" 
+                                        ? Object.keys(_DBADMIN)
+                                        : Object.keys(Object.fromEntries(Object.entries(DBDATAS).filter(([k,v]) => v.admin === false && v.lora === false && v.multiDatastream === false))),
+            
         };
-        if (Object.values(returnValue).includes("ERROR"))
-            throw new TypeError(`${messages.errors.configFile} [${util.inspect(returnValue, { showHidden: false, depth: null })}]`);
-    
+        if (Object.values(returnValue).includes("ERROR")) throw new TypeError(`${messages.errors.configFile} [${util.inspect(returnValue, { showHidden: false, depth: null })}]`);
+        if (returnValue.multiDatastream === true) returnValue.dbEntities = this.add_items_to_array_at_position(returnValue.dbEntities ,returnValue.dbEntities.indexOf("Observations"), Object.keys(Object.fromEntries(Object.entries(DBDATAS).filter(([k,v]) => v.admin === false && v.multiDatastream === true))));
+        if (returnValue.lora === true) returnValue.dbEntities = returnValue.dbEntities.concat(Object.keys(Object.fromEntries(Object.entries(DBDATAS).filter(([k,v]) => v.admin === false && v.lora === true))));
         return returnValue;
     }
 
@@ -282,15 +310,11 @@ class Configuration {
     async pgwait(options: IdbConnection): Promise<boolean> {
         const pool = new pg.Pool({... options, database: "postgres" });
         let passage = 1;
-        const timeStamp = (): string => {
-            const d = new Date();
-            return d.toLocaleTimeString();
-        };
-    
+   
         const connect = async (): Promise<boolean> => {
                 try {
                     await pool.query('SELECT 1');
-                     Logs.result(messagesReplace(messages.infos.dbOnline, [options.database || "none"]), timeStamp());
+                     Logs.result(messagesReplace(messages.infos.dbOnline, [options.database || "none"]), this.timeStamp());
                     await pool.end();
                     return true;
                 }   
@@ -309,4 +333,4 @@ class Configuration {
     }
 }
 
-export const CONFIGURATION = new Configuration(__dirname + "/config/config.json");
+export const CONFIGURATION = new Configuration(__dirname + "/config.json");

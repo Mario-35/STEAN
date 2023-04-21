@@ -6,16 +6,16 @@
  *
  */
 
-import { _DBDATAS } from "../constants";
 import { db } from "..";
 import { Iuser } from "../../types";
 import { encrypt } from "../../helpers";
+import { _DBADMIN } from "../constants";
 
 export const userAccess = {
     getAll: async () => {
         return await db["admin"]
             .table("user")
-            .select(Object.keys(_DBDATAS.Users.columns).filter((word) => word.toLowerCase() != "password"))
+            .select(Object.keys(_DBADMIN.Users.columns).filter((word) => word.toLowerCase() != "password"))
             .orderBy("id");
     },
 

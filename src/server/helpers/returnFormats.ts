@@ -16,7 +16,7 @@ import { addJsFile } from "../views/js";
 import util from "util";
 import { removeQuotes } from ".";
 import { PgVisitor } from "../odata";
-import { countId, isGraph, _DBDATAS } from "../db/constants";
+import { countId, DBDATAS, isGraph } from "../db/constants";
 import { Eformats } from "../enums";
 
 export const queryAsJson = (input: {
@@ -25,7 +25,7 @@ export const queryAsJson = (input: {
     count: boolean;
     mario?: string;
     fields?: string[]
-  }): string => `SELECT ${input.count == true ? `\t${input.mario ? `(${input.mario})` : 'count(t)'},\n\t` : ""}${input.fields ? input.fields.join(",\n\t") : ""}coalesce(${input.singular === true ? "ROW_TO_JSON" : "json_agg"}(t), '${input.singular === true ? "{}" : "[]"}') AS results\n\tFROM (\n\t${input.query}) as t`;
+  }): string => input.query.trim() === "" ? "": `SELECT ${input.count == true ? `\t${input.mario ? `(${input.mario})` : 'count(t)'},\n\t` : ""}${input.fields ? input.fields.join(",\n\t") : ""}coalesce(${input.singular === true ? "ROW_TO_JSON" : "json_agg"}(t), '${input.singular === true ? "{}" : "[]"}') AS results\n\tFROM (\n\t${input.query}) as t`;
 
 const queryAsDataArray = (input: PgVisitor): string => queryAsJson({query: `SELECT (ARRAY['${Object.keys(input.arrayNames).map((e:string) => removeQuotes(e)).join("','")}']) as "component", count(*) as "dataArray@iot.count", jsonb_agg(allkeys) as "dataArray" FROM (SELECT  json_build_array(${Object.values(input.arrayNames).join()}) as allkeys FROM (${input.sql}) as p) as l`, singular: false, count: false});
 
@@ -41,7 +41,7 @@ const defaultForwat = (input: PgVisitor): string => input.sql;
 const generateFields = (input: PgVisitor): string[] => {
   let fields:string[] = [];
   if (isGraph(input)) {    
-    const table = _DBDATAS[input.parentEntity ? input.parentEntity: input.getEntity()].table;
+    const table = DBDATAS[input.parentEntity ? input.parentEntity: input.getEntity()].table;
     fields = [`(select ${table}."description" from ${table} where ${table}."id" = ${input.parentId ? input.parentId: input.id}) AS title, `];
   } 
   return fields;
@@ -54,7 +54,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
     generateSql(input: PgVisitor) {      
     return (input.interval) 
       ? queryInterval(input)
-      : queryAsJson({query: input.sql, singular: false, count: true, mario: input.count === true ? countId(_DBDATAS[input.entity].table) : undefined, fields: generateFields(input)});
+      : queryAsJson({query: input.sql, singular: false, count: true, mario: input.count === true ? countId(DBDATAS[input.entity].table) : undefined, fields: generateFields(input)});
     },
   }, // IMPORTANT TO HAVE THIS BEFORE GRAPH
   graphDatas: {

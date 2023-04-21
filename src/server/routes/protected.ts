@@ -41,7 +41,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
                             user: user.username,
                             token: user.token
                         };
-                } else {
+                } else {                    
                     ctx.throw(401);
                 }
             });

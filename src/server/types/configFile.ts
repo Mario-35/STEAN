@@ -25,7 +25,9 @@ export interface IconfigFile {
     createUser?: boolean;
     forceHttps: boolean;
     alias: string[];
-    standard: boolean;
+    lora: boolean;
+    multiDatastream: boolean;
     logFile: string;
+    dbEntities: string[];
 }
 

@@ -10,7 +10,6 @@ export { createDatabase } from "./createDatabase";
 export { createGraph } from "./createGraph";
 export { createTable } from "./createTable";
 export { extractMessageError } from "./extractMessageError";
-export { getColumnsListType } from "./getColumnsListType";
 export { importCsv, createColumnHeaderName } from "./importCsv";
 export { knexQueryToSql } from "./knexQueryToSql";
 export { recordToKeyValue } from "./recordToKeyValue";

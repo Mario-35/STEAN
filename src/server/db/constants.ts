@@ -10,48 +10,42 @@
 
 import { Knex } from "knex";
 import { Eentities, Erelations } from "../enums";
-// import { _ENV_VERSION } from "../constants";
 import { getEntityName, returnFormats } from "../helpers";
 import { PgVisitor } from "../odata";
 import { Ientity } from "../types";
 
-export const isSingular = (input: string): boolean => {
-    const entityName = getEntityName(input);
-    return entityName ? (_DBDATAS[entityName].singular == input) : false;
-};
+export const isSingular = (input: string): boolean => { const entityName = getEntityName(input); return entityName ? (DBDATAS[entityName].singular == input) : false; };
 export const isGraph = (input: PgVisitor) => [returnFormats.graph, returnFormats.graphDatas].includes(input.resultFormat) ? true : undefined;
 export const isCsvOrArray = (input: PgVisitor) => [returnFormats.dataArray, returnFormats.csv].includes(input.resultFormat) ? true : undefined;
-export const isObservation = (input: Ientity | string) => (typeof input === "string") ? input === _DBDATAS.Observations.name : input.name === _DBDATAS.Observations.name;
-// Get date by Database usefull to have the TimeZone
-export const getDateNow = async (conn: Knex | Knex.Transaction): Promise<string> => {
-    const tempQuery = await conn.raw("select current_timestamp;");
-    return tempQuery["rows"][0]["current_timestamp"];
-};
-
+export const isObservation = (input: Ientity | string) => (typeof input === "string") ? input === DBDATAS.Observations.name : input.name === DBDATAS.Observations.name;
+export const getDBDateNow = async (conn: Knex | Knex.Transaction): Promise<string> => { const tempQuery = await conn.raw("select current_timestamp;"); return tempQuery["rows"][0]["current_timestamp"]; };
 export const columnList = (input: Ientity) => Object.keys(input.columns).filter((word) => !word.includes("_"));
 export const _RIGHTS = 'SUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION NOBYPASSRLS CONNECTION LIMIT -1';
-const _DATEFORMAT = 'YYYY-MM-DD"T"HH24:MI:SSZ';
+export const _DATEFORMAT = 'YYYY-MM-DD"T"HH24:MI:SSZ';
 export const _DATEFORMATNOTIMEZONE = 'YYYY-MM-DD HH24:MI:SS';
+export const _DATEFORMATWITHIMEZONE = 'YYYY-MM-DD HH:MI:SSTZH:TZM';
+export const observationTypes = {
+    "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_CategoryObservation": "_resulttext",
+    "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_CountObservation": "_resultint",
+    "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement": "_resultnumber",
+    "http://www.opengis.net/def/observation-type/ogc-om/2.0/om_complex-observation 	array of": "_resultnumbers",
+    "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Observation": "any",
+    "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_TruthObservation": "_resultBoolean",
+    "http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation": "_resulttexts"
+};
 
 
 const makeIDAlias = (table: string) => `"${table}"."id" AS "@iot.id"`;
 
-export const observationTypes = ["http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_CategoryObservation",
-                                "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_CountObservation",
-                                "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
-                                "http://www.opengis.net/def/observation-type/ogc-om/2.0/om_complex-observation",
-                                "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Observation",
-                                "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_TruthObservation",
-                                "http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation"];
 
-
-const DBDATAS: { [key in Eentities]: Ientity } = {
+const dbs: { [key in Eentities]: Ientity } = {
     Things: {
         name: "Things",
         singular: "Thing",
         table: "thing",
         order: 10,
-        standard: true,
+        lora: false,
+        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -125,7 +119,8 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
         singular: "FeatureOfInterest",
         table: "featureofinterest",
         order: 4,
-        standard: true,
+        lora: false,
+        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -195,7 +190,8 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
         singular: "Location",
         table: "location",
         order: 6,
-        standard: true,
+        lora: false,
+        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -286,7 +282,8 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
         singular: "HistoricalLocation",
         table: "historical_location",
         order: 5,
-        standard: true,
+        lora: false,
+        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -339,7 +336,8 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
         singular: "locationHistoricalLocation",
         table: "location_historical_location",
         order: -1,
-        standard: true,
+        lora: false,
+        multiDatastream: false,
         columns: {
             location_id: {
                 create: "BIGINT NOT NULL"
@@ -367,7 +365,8 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
         singular: "ObservedProperty",
         table: "observedproperty",
         order: 8,
-        standard: true,
+        lora: false,
+        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -429,7 +428,8 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
         singular: "Sensor",
         table: "sensor",
         order: 9,
-        standard: true,
+        lora: false,
+        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -507,7 +507,8 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
         singular: "Datastream",
         table: "datastream",
         order: 1,
-        standard: true,
+        lora: false,
+        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -523,10 +524,10 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
                 type : "text"
             },
             observationType: {
-                create: "text NOT NULL DEFAULT 'http://www.opengis.net/def/ogc-om/OM_Measurement'::text",
+                create: "text NOT NULL DEFAULT 'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement'::text",
                 type : "list",
                 verify: {
-                    list: observationTypes,
+                    list: Object.keys(observationTypes),
                     default: "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement"
                 }
             },
@@ -638,7 +639,8 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
         singular: "MultiDatastream",
         table: "multidatastream",
         order: 2,
-        standard: true,
+        lora: false,
+        multiDatastream: true,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -661,7 +663,7 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
                 create: "text NOT NULL DEFAULT 'http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation'::text",
                 type : "list",
                 verify: {
-                    list: observationTypes,
+                    list: Object.keys(observationTypes),
                     default: "http://www.opengis.net/def/observation-type/ogc-om/2.0/om_complex-observation"
                 }
             },
@@ -774,7 +776,8 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
         singular: "MultiDatastreamObservedProperty",
         table: "multi_datastream_observedproperty",
         order: -1,
-        standard: true,
+        lora: false,
+        multiDatastream: true,
         columns: {
             multidatastream_id: {
                 create: "BIGINT NOT NULL"
@@ -803,7 +806,8 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
         singular: "Observation",
         table: "observation",
         order: 7,
-        standard: true,
+        lora: false,
+        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -819,9 +823,19 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
                 alias: ` CASE 
                 WHEN "observation"."_resultnumber" IS NOT NULL THEN json_object_agg('result',"observation"."_resultnumber")->'result'
                 WHEN "observation"."_resultnumbers" IS NOT NULL THEN ( SELECT json_object_agg(key, value) 
-                  FROM ( SELECT jsonb_array_elements_text("keys") AS key, unnest("observation"."_resultnumbers")::float8 AS value 
+                  FROM ( SELECT jsonb_array_elements_text("keys") AS key, unnest("observation"."_resultnumbers")::float4 AS value 
                   FROM (SELECT (SELECT jsonb_agg(tmp.units -> 'name') AS keys FROM (SELECT jsonb_array_elements("unitOfMeasurements") AS units 
                   FROM "multidatastream" where id = "multidatastream_id" ) AS tmp) ) AS tmp2 ) AS tmp3)
+                WHEN "observation"."_resultjson" IS NOT NULL THEN json_object_agg('result',"observation"."_resultjson")->'result'
+                WHEN "observation"."_resulttexts" IS NOT NULL THEN json_object_agg('result',(SELECT json_object_agg(key, value) 
+                  FROM ( SELECT replace(unnest(keys), '"','') as key, unnest("observation"."_resulttexts") AS value 
+                  FROM ( SELECT keys FROM  string_to_array((select "unitOfMeasurement"->'name'::text 
+                  FROM "datastream" WHERE id = coalesce("datastream_id", "multidatastream_id"))::text, ',') keys ) AS tmp2 ) AS tmp3 ))->'result'
+                WHEN "observation"."_resulttext" IS NOT NULL THEN json_object_agg('result',"observation"."_resulttext")->'result'
+                end as "result"`,
+                alias_lora: ` CASE 
+                WHEN "observation"."_resultnumber" IS NOT NULL THEN json_object_agg('result',"observation"."_resultnumber")->'result'
+                WHEN "observation"."_resultnumbers" IS NOT NULL THEN json_object_agg('result',"observation"."_resultnumbers")->'result'
                 WHEN "observation"."_resultjson" IS NOT NULL THEN json_object_agg('result',"observation"."_resultjson")->'result'
                 WHEN "observation"."_resulttexts" IS NOT NULL THEN json_object_agg('result',(SELECT json_object_agg(key, value) 
                   FROM ( SELECT replace(unnest(keys), '"','') as key, unnest("observation"."_resulttexts") AS value 
@@ -836,11 +850,11 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
                 type : "number"
             },
             _resultnumber: {
-                create: "float8 NULL",
+                create: "float4 NULL",
                 type : "number"
             },
             _resultnumbers: {
-                create: "float8[] NULL",
+                create: "float4[] NULL",
                 type : "number[]"
             },
             _resultjson: {
@@ -917,7 +931,6 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
                 type: Erelations.belongsTo,
                 expand: `"multidatastream"."id" = "observation"."multidatastream_id"`,
                 link: `"multidatastream"."id" = (SELECT "observation"."multidatastream_id" FROM "observation" WHERE "observation"."id" = $ID)`,
-
                 entityName: "MultiDatastreams",
                 tableName: "observation",
                 relationKey: "id",
@@ -945,7 +958,8 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
         singular: "HistoricalObservation",
         table: "historical_observation",
         order: -1,
-        standard: true,
+        lora: false,
+        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -955,10 +969,10 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
                 create: "timestamptz DEFAULT CURRENT_TIMESTAMP"
             },
             _resultnumber: {
-                create: "float8 NULL"
+                create: "float4 NULL"
             },
             _resultnumbers: {
-                create: "float8[] NULL"
+                create: "float4[] NULL"
             },
             observation_id: {
                 create: "BIGINT NULL"
@@ -992,7 +1006,8 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
         singular: "ThingLocation",
         table: "thing_location",
         order: -1,
-        standard: true,
+        lora: false,
+        multiDatastream: false,
         columns: {
             thing_id: {
                 create: "BIGINT NOT NULL"
@@ -1019,7 +1034,8 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
         singular: "Decoder",
         table: "decoder",
         order: 12,
-        standard: false,
+        lora: true,
+        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -1083,7 +1099,8 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
         singular: "Lora",
         table: "lora",
         order: 11,
-        standard: false,
+        lora: true,
+        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -1172,7 +1189,8 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
         table: "user",
         order: 21,
         admin: true,
-        standard: false,
+        lora: true,
+        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY"
@@ -1217,7 +1235,8 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
         table: "log_request",
         order: 22,
         admin: true,
-        standard: false,
+        lora: true,
+        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -1282,7 +1301,8 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
         table: "config",
         order: 20,
         admin: true,
-        standard: false,
+        lora: true,
+        multiDatastream: false,
         columns: {
             name: {
                 create: "TEXT GENERATED ALWAYS AS IDENTITY"
@@ -1300,7 +1320,8 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
         singular: "CreateObservation",
         table: "",
         order: 0,
-        standard: true,
+        lora: false,
+        multiDatastream: false,
         columns: {},
         admin: false,
         relations: {},
@@ -1313,7 +1334,8 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
         singular: "CreateFile",
         table: "",
         order: 0,
-        standard: false,
+        lora: false,
+        multiDatastream: false,
         columns: {},
         admin: false,
         relations: {},
@@ -1322,8 +1344,8 @@ const DBDATAS: { [key in Eentities]: Ientity } = {
     }    
 };
 export const countId = (table: string) =>`SELECT count(id) FROM ${table}`;
-export const _Eentities = Object.values(Eentities);
-export const _DBDATAS = Object.freeze(DBDATAS);
-export const _DBST = Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === false));
-export const _DBPUREST = Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === false && v.standard === true));
-export const _DBADMIN = Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === true));
+export const _Entities = Object.values(Eentities);
+export const DBDATAS = Object.freeze(dbs);
+export const _DBADMIN = Object.fromEntries(Object.entries(DBDATAS).filter(([k,v]) => v.admin === true));
+export const _DBLIST = (list: string[]) => Object.fromEntries(Object.entries(DBDATAS).filter(([k,v]) => list.includes(k)));
+ 

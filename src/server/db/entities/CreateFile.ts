@@ -9,7 +9,6 @@
 import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
-import { _DBDATAS } from "../constants";
 import { Logs } from "../../logger";
 import { IcsvColumn, IcsvFile, IreturnResult } from "../../types";
 import { createColumnHeaderName} from "../helpers";
@@ -50,16 +49,16 @@ export class CreateFile extends Common {
                 const nameOfFile = paramsFile.filename.split("/").reverse()[0];
                 const copyCtx = Object.assign({}, ctx._odata);
                 const tempId= ctx._odata.id.toString();
-                ctx._odata.entity = _DBDATAS.Datastreams.name;
+                ctx._odata.entity = this.DBST.Datastreams.name;
 
                 // IMPORTANT TO ADD instead update
                 ctx._odata.id = "";
                 ctx._odata.resultFormat = returnFormats.json;
                 ctx._addToLog = false;      
 
-                const objectDatastream = new entities[_DBDATAS.Datastreams.name](ctx, Common.dbContext);
+                const objectDatastream = new entities[this.DBST.Datastreams.name](ctx, Common.dbContext);
                 const myDatas = {
-                    "name": `${_DBDATAS.Datastreams.name} import file ${nameOfFile}`,
+                    "name": `${this.DBST.Datastreams.name} import file ${nameOfFile}`,
                     "description": "Description in meta ?",
                     "observationType": "http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation",
                     "Thing": { "@iot.id": tempId },
@@ -90,7 +89,7 @@ export class CreateFile extends Common {
                     if (returnValueError) {
                         returnValueError.body = returnValueError.body ? returnValueError.body[0] : {};
                         if (returnValueError.body)
-                            await Common.dbContext.raw(`DELETE FROM "${_DBDATAS.Observations.table}" WHERE "datastream_id" = ${returnValueError.body["@iot.id"]}`);
+                            await Common.dbContext.raw(`DELETE FROM "${this.DBST.Observations.table}" WHERE "datastream_id" = ${returnValueError.body["@iot.id"]}`);
                         return returnValueError;
                     }
                 } finally {
@@ -140,7 +139,7 @@ export class CreateFile extends Common {
                     fileStream.on("end", async (tx: Knex.Transaction) => {
                         Logs.debug("COPY TO ", paramsFile.tempTable);
                         if (returnValue && returnValue.body && returnValue.body["@iot.id"]) {
-                            await client.query(`INSERT INTO "${_DBDATAS.Observations.table}" ("datastream_id", "phenomenonTime", "resultTime", "_resultjson") SELECT '${String(returnValue.body["@iot.id"])}', '2021-09-17T14:56:36+02:00', '2021-09-17T14:56:36+02:00', ROW_TO_JSON(p) FROM (SELECT * FROM ${paramsFile.tempTable}) as p`); 
+                            await client.query(`INSERT INTO "${this.DBST.Observations.table}" ("datastream_id", "phenomenonTime", "resultTime", "_resultjson") SELECT '${String(returnValue.body["@iot.id"])}', '2021-09-17T14:56:36+02:00', '2021-09-17T14:56:36+02:00', ROW_TO_JSON(p) FROM (SELECT * FROM ${paramsFile.tempTable}) as p`); 
                             cleanup(true);
                             return returnValue;
                         }
@@ -167,8 +166,7 @@ export class CreateFile extends Common {
                 filename: extras["file"],
                 columns: myColumns,
                 header:  ", HEADER" ,
-                dataStreamId: BigInt("0"), // only for interface
-                duplicates: true
+                dataStreamId: BigInt("0") // only for interface
             };
             const temp = await this.importCsvFileInDatastream(this.ctx, Common.dbContext, paramsFile);
             return this.createReturnResult({

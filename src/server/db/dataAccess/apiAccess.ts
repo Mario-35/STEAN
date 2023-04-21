@@ -46,8 +46,8 @@ export class apiAccess {
     }
 
     async add(): Promise<IreturnResult | undefined> {
-        Logs.class(this.constructor.name, "add");
-        if (this.myEntity) return await this.myEntity.add(recordToKeyValue(this.ctx.request.body));
+        Logs.class(this.constructor.name, "add");        
+        if (this.myEntity) return await this.myEntity.add(JSON.parse(JSON.stringify(this.ctx.request.body)));
     }
 
     async update(idInput: bigint | string): Promise<IreturnResult | undefined> {

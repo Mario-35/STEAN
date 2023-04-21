@@ -10,7 +10,6 @@ process.env.NODE_ENV = "test";
 
 
 // import { db } from "../../server/db";
-import { _DBDATAS } from "../../server/db/constants";
 
 describe("Delete test Database", function () {
     it("Destroy", async (done) => {

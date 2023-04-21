@@ -6,7 +6,7 @@
  *
  */
 
-import { columnList, isCsvOrArray, isGraph, isObservation, _DBDATAS } from "../../../db/constants";
+import { columnList, DBDATAS, isCsvOrArray, isGraph, isObservation } from "../../../db/constants";
 import { getEntityName, goodName, removeQuotes } from "../../../helpers";
 import { Ientity } from "../../../types";
 import { PgVisitor } from "../PgVisitor";
@@ -14,7 +14,7 @@ import { PgVisitor } from "../PgVisitor";
 export function getColumnsList(tableName: string, main: PgVisitor, element: PgVisitor): string[] | undefined {
     const temp = getEntityName(tableName.trim());
     if (!temp) return;
-    const tempEntity:Ientity = _DBDATAS[temp];
+    const tempEntity:Ientity = DBDATAS[temp];
     const ResultgroupBy:string [] = [];
     const csvOrArray = isCsvOrArray(main);
     const returnValue: string[] = isGraph(main)
@@ -38,8 +38,10 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
         else cols.forEach((elem: string) => {                    
             elem = removeQuotes(elem);
             if (main.interval) main.addToBlanks(elem);  
-            if (tempEntity.columns.hasOwnProperty(elem)) {                    
-                const column = tempEntity.columns[elem].alias ||`"${elem}"`;
+            if (tempEntity.columns.hasOwnProperty(elem)) {  
+                const column = main.config.lora === false && tempEntity.columns[elem].alias_lora 
+                            ? tempEntity.columns[elem].alias_lora ||`"${elem}"` 
+                            : tempEntity.columns[elem].alias ||`"${elem}"`;
                 if (main.id) returnValue.push(column.replace(/$ID+/g, main.id.toString()) );
                 else returnValue.push(column && column != "" ? column : `"${elem}"`);                    
                 if (elem === "id" && (element.showRelations == true || csvOrArray)) {
@@ -64,11 +66,11 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
             returnValue.push( `"_resultnumbers"[(select position from  multidatastream, jsonb_array_elements("multidatastream"."unitOfMeasurements") with ordinality arr(elem, position) where id = "multidatastream_id" and elem->>'name' = '${elem}')] as "${alias}"` );  
             main.addToArrayNames(alias);
             Object.keys(tempEntity.columns).filter((word) => word.includes("_")).forEach(e => ResultgroupBy.push(`"${tempEntity.table}"."${e}"`));
-            element.groupBy.push(`"${tempEntity.table}"."id"`);
+            // element.groupBy.push(`"${tempEntity.table}"."id"`);
         });
         else {
             if (!isSelect) element.groupBy = cols.filter(e => tempEntity.columns[removeQuotes(e)].create != "").map(e => `"${tempEntity.table}"."${e}"`);
-                else if (![_DBDATAS.MultiDatastreams.name, _DBDATAS.Datastreams.name].includes(tableName)) {
+                else if (![DBDATAS.MultiDatastreams.name, DBDATAS.Datastreams.name].includes(tableName)) {
                     element.groupBy = cols.filter(e => tempEntity.columns[removeQuotes(e)].create != "").map(e => `"${tempEntity.table}".${e}`);
                     element.groupBy.push(`"${tempEntity.table}"."id"`);
                 }

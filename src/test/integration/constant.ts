@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { Ientity } from "../../server/types";
-const conf = require("../../server/config/config.json");
+const conf = require("../../server/configuration/config.json");
 const apidocJson = require("../apidoc.json");
 export const identification = { "username": conf["test"]["test"].pg_user, "password": conf["test"]["test"].pg_password };
 
@@ -222,7 +222,6 @@ export const writeAddToFile = (): void => {
         encoding: "utf-8"
     });
 };
-
 
 
 export const limitResult = (input: object, keyName?: string) => {  

@@ -11,5 +11,4 @@ export { Eformats } from "./formats";
 export { EoperationType } from "./operationType";
 export { Erelations } from "./relations";
 export { EuserRights } from "./userRights";
-export { EstreamType } from "./streamType";
 
