@@ -8,6 +8,7 @@
 
 export { Eentities } from "./entities";
 export { Eformats } from "./formats";
+export { EColor } from "./colors";
 export { EoperationType } from "./operationType";
 export { Erelations } from "./relations";
 export { EuserRights } from "./userRights";

@@ -7,7 +7,8 @@
  */
 
 import { createSql, getColumnsList } from ".";
-import { isObservation, isSingular, DBDATAS } from "../../../db/constants";
+import { DBDATAS } from "../../../db/constants";
+import { isObservation, isSingular } from "../../../db/helpers";
 import { getEntityName } from "../../../helpers";
 import { queryAsJson } from "../../../helpers/returnFormats";
 import { Logs } from "../../../logger";

@@ -6,7 +6,8 @@
  *
  */
 
-import { columnList, DBDATAS, isCsvOrArray, isGraph, isObservation } from "../../../db/constants";
+import { DBDATAS } from "../../../db/constants";
+import { columnList, isCsvOrArray, isGraph, isObservation } from "../../../db/helpers";
 import { getEntityName, goodName, removeQuotes } from "../../../helpers";
 import { Ientity } from "../../../types";
 import { PgVisitor } from "../PgVisitor";

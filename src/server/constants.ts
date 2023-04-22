@@ -17,6 +17,10 @@ export const _DOUBLEQUOTE = '"';
 export const _QUOTEDCOMA = '",\n"';
 export const API_VERSION = "v1.0";
 export const NODE_ENV = process.env.NODE_ENV ? process.env.NODE_ENV : "production";
+export const TIMESTAMP = (): string => {
+    const d = new Date();
+    return d.toLocaleTimeString();
+};
 export const HELMET_CONFIG = Object.freeze({
     defaultSrc: ["'self'"],
     scriptSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com"],

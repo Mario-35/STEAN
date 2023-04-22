@@ -145,24 +145,16 @@ export const importCsv = async (ctx: koa.Context, knex: Knex | Knex.Transaction,
 
                     Object.keys(paramsFile.columns).forEach(async (myColumn: string, index: number) => {
                         const csvColumn: IcsvColumn = paramsFile.columns[myColumn];
-
                         const valueSql = `CASE "${paramsFile.tempTable}".value${csvColumn.column} WHEN '---' THEN NULL ELSE cast(REPLACE(value${csvColumn.column},',','.') as float) END`;
-
-                        const whereNotIn =` WHERE "${paramsFile.tempTable}".id NOT IN (SELECT "${paramsFile.tempTable}".id FROM "${paramsFile.tempTable}", "${DBDATAS.Observations.table}" WHERE "${DBDATAS.Observations.table}"."datastream_id" = ${csvColumn.datastream} AND "${DBDATAS.Observations.table}"."featureofinterest_id" = ${csvColumn.featureOfInterest} AND "${DBDATAS.Observations.table}"."phenomenonTime" = ${sqlRequest.dateSql} AND "${DBDATAS.Observations.table}"."resultTime" = ${sqlRequest.dateSql} AND "${DBDATAS.Observations.table}"."_resultnumber" = ${valueSql})`;
-
-                        scriptSql.push(
-                            `${index == 0 ? "WITH" : ","} updated${index + 1} as (INSERT into "${
-                                DBDATAS.Observations.table
-                            }" ("datastream_id", "featureofinterest_id", "phenomenonTime","resultTime", "_resultnumber") SELECT ${csvColumn.datastream}, ${
-                                csvColumn.featureOfInterest
-                            },  ${sqlRequest.dateSql}, ${sqlRequest.dateSql},${valueSql} FROM "${paramsFile.tempTable}"${whereNotIn} returning id)`
-                        );
+                        scriptSql.push(`${index == 0 ? "WITH" : ","} updated${index + 1} as (INSERT into "${ DBDATAS.Observations.table }" ("datastream_id", "featureofinterest_id", "phenomenonTime","resultTime", "_resultnumber") SELECT ${csvColumn.datastream}, ${ csvColumn.featureOfInterest },  ${sqlRequest.dateSql}, ${sqlRequest.dateSql},${valueSql} FROM "${paramsFile.tempTable}" ON CONFLICT DO NOTHING returning id)`);
                         scriptSqlResult.push(index == 0 ? " SELECT id FROM updated1" : ` UNION SELECT id FROM updated${index + 1}`);
+
                     });
                     scriptSql.push(scriptSqlResult.join(""));
 
                     const mySql = scriptSql.join("");
                     Logs.result("query", mySql);
+                    
                     const res = await client.query(mySql).catch((err: Error) => {
                         cleanup(false, err);
                     });

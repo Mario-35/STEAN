@@ -11,7 +11,6 @@ import { IentityColumn, IentityRelation } from ".";
 export interface Ientity {
     readonly name: string; // Entity Name
     readonly lora: boolean; // Is extend of SensorThings standard
-    readonly multiDatastream: boolean; // Is extend of SensorThings standard
     readonly clone?: string;
     readonly singular: string;
     readonly table: string;

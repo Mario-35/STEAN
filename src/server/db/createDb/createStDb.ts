@@ -1,5 +1,5 @@
 /**
- * createSTDatabase.
+ * createSTDB.
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
@@ -7,15 +7,15 @@
  */
 
 import knex from "knex";
- import { createTable, testConnection } from ".";
+ import { createTable, testConnection } from "../helpers";
  import { CONFIGURATION } from "../../configuration";
  import { asyncForEach, isTest } from "../../helpers";
  import { Logs } from "../../logger";
  import { DBDATAS, _RIGHTS } from "../constants";
- import { datasDemo } from "../createDBDatas/datasDemo";
- import { triggers } from "../createDBDatas/triggers";
+ import { testsDatas } from "./testsDatas";
+ import { triggers } from "./triggers";
  
- export const createSTDatabase = async(configName: string): Promise<{ [key: string]: string }> => {
+ export const createSTDB = async(configName: string): Promise<{ [key: string]: string }> => {
       Logs.head("createDatabase", "createDatabase");
       // init result
      const returnValue: { [key: string]: string } = { "Start create Database": CONFIGURATION.list[configName].pg_database };
@@ -107,7 +107,7 @@ import knex from "knex";
         });
     });
  
-    if (isTest()) await asyncForEach(datasDemo(), async (sql: string) => {
+    if (isTest()) await asyncForEach(testsDatas(), async (sql: string) => {
         returnValue["Feed datas"] = await connDb
         .raw(sql.split("\n").join(""))
         .then(() => "✔")

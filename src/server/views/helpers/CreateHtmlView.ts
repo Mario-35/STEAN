@@ -8,7 +8,6 @@
 
 import koa from "koa";
 import { CONFIGURATION } from "../../configuration";
-import { showconfigCtx } from "../../helpers";
 import { Iuser } from "../../types";
 import { addCssFile } from "../css";
 
@@ -25,7 +24,6 @@ export class CreateHtmlView {
 
     constructor(ctx: koa.Context) {
         this.ctx = ctx;
-        showconfigCtx(ctx);
     }
 
     private css = (name: string): string => {

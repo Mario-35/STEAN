@@ -8,23 +8,15 @@
 
 /* eslint-disable quotes */
 
-import { Knex } from "knex";
 import { Eentities, Erelations } from "../enums";
-import { getEntityName, returnFormats } from "../helpers";
-import { PgVisitor } from "../odata";
 import { Ientity } from "../types";
 
-export const isSingular = (input: string): boolean => { const entityName = getEntityName(input); return entityName ? (DBDATAS[entityName].singular == input) : false; };
-export const isGraph = (input: PgVisitor) => [returnFormats.graph, returnFormats.graphDatas].includes(input.resultFormat) ? true : undefined;
-export const isCsvOrArray = (input: PgVisitor) => [returnFormats.dataArray, returnFormats.csv].includes(input.resultFormat) ? true : undefined;
-export const isObservation = (input: Ientity | string) => (typeof input === "string") ? input === DBDATAS.Observations.name : input.name === DBDATAS.Observations.name;
-export const getDBDateNow = async (conn: Knex | Knex.Transaction): Promise<string> => { const tempQuery = await conn.raw("select current_timestamp;"); return tempQuery["rows"][0]["current_timestamp"]; };
-export const columnList = (input: Ientity) => Object.keys(input.columns).filter((word) => !word.includes("_"));
+export const _ENTITIES = Object.values(Eentities);
 export const _RIGHTS = 'SUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION NOBYPASSRLS CONNECTION LIMIT -1';
 export const _DATEFORMAT = 'YYYY-MM-DD"T"HH24:MI:SSZ';
 export const _DATEFORMATNOTIMEZONE = 'YYYY-MM-DD HH24:MI:SS';
 export const _DATEFORMATWITHIMEZONE = 'YYYY-MM-DD HH:MI:SSTZH:TZM';
-export const observationTypes = {
+export const _OBSERVATIONTYPES = {
     "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_CategoryObservation": "_resulttext",
     "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_CountObservation": "_resultint",
     "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement": "_resultnumber",
@@ -33,19 +25,15 @@ export const observationTypes = {
     "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_TruthObservation": "_resultBoolean",
     "http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation": "_resulttexts"
 };
-
-
 const makeIDAlias = (table: string) => `"${table}"."id" AS "@iot.id"`;
 
-
-const dbs: { [key in Eentities]: Ientity } = {
+const dbDatas: { [key in Eentities]: Ientity } = {
     Things: {
         name: "Things",
         singular: "Thing",
         table: "thing",
         order: 10,
         lora: false,
-        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -120,7 +108,6 @@ const dbs: { [key in Eentities]: Ientity } = {
         table: "featureofinterest",
         order: 4,
         lora: false,
-        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -191,7 +178,6 @@ const dbs: { [key in Eentities]: Ientity } = {
         table: "location",
         order: 6,
         lora: false,
-        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -283,7 +269,6 @@ const dbs: { [key in Eentities]: Ientity } = {
         table: "historical_location",
         order: 5,
         lora: false,
-        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -337,7 +322,6 @@ const dbs: { [key in Eentities]: Ientity } = {
         table: "location_historical_location",
         order: -1,
         lora: false,
-        multiDatastream: false,
         columns: {
             location_id: {
                 create: "BIGINT NOT NULL"
@@ -366,7 +350,6 @@ const dbs: { [key in Eentities]: Ientity } = {
         table: "observedproperty",
         order: 8,
         lora: false,
-        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -429,7 +412,6 @@ const dbs: { [key in Eentities]: Ientity } = {
         table: "sensor",
         order: 9,
         lora: false,
-        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -508,7 +490,6 @@ const dbs: { [key in Eentities]: Ientity } = {
         table: "datastream",
         order: 1,
         lora: false,
-        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -527,7 +508,7 @@ const dbs: { [key in Eentities]: Ientity } = {
                 create: "text NOT NULL DEFAULT 'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement'::text",
                 type : "list",
                 verify: {
-                    list: Object.keys(observationTypes),
+                    list: Object.keys(_OBSERVATIONTYPES),
                     default: "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement"
                 }
             },
@@ -640,7 +621,6 @@ const dbs: { [key in Eentities]: Ientity } = {
         table: "multidatastream",
         order: 2,
         lora: false,
-        multiDatastream: true,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -663,7 +643,7 @@ const dbs: { [key in Eentities]: Ientity } = {
                 create: "text NOT NULL DEFAULT 'http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation'::text",
                 type : "list",
                 verify: {
-                    list: Object.keys(observationTypes),
+                    list: Object.keys(_OBSERVATIONTYPES),
                     default: "http://www.opengis.net/def/observation-type/ogc-om/2.0/om_complex-observation"
                 }
             },
@@ -777,7 +757,6 @@ const dbs: { [key in Eentities]: Ientity } = {
         table: "multi_datastream_observedproperty",
         order: -1,
         lora: false,
-        multiDatastream: true,
         columns: {
             multidatastream_id: {
                 create: "BIGINT NOT NULL"
@@ -807,7 +786,6 @@ const dbs: { [key in Eentities]: Ientity } = {
         table: "observation",
         order: 7,
         lora: false,
-        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -900,13 +878,18 @@ const dbs: { [key in Eentities]: Ientity } = {
         },
         constraints: {
             observation_pkey: 'PRIMARY KEY ("id")',
-            observation_unik_resultnumber: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id", "featureofinterest_id", "_resultnumber")',
-            observation_unik_resultnumbers: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id", "featureofinterest_id", "_resultnumbers")',
-            observation_unik_resultjson: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id", "featureofinterest_id", "_resultjson")',
-            observation_unik_resulttext: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id", "featureofinterest_id", "_resulttext")',
-            observation_unik_resulttexts: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id", "featureofinterest_id", "_resulttexts")',
-            observation_unik_resultint: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id", "featureofinterest_id", "_resultint")',
-            // observation_unik_result: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id", "featureofinterest_id", "result")',
+            observation_unik_datastream_resultnumber: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id", "featureofinterest_id", "_resultnumber")',
+            observation_unik_datastream_resultnumbers: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id","featureofinterest_id", "_resultnumbers")',
+            observation_unik_datastream_resultjson: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id","featureofinterest_id", "_resultjson")',
+            observation_unik_datastream_resulttext: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id","featureofinterest_id", "_resulttext")',
+            observation_unik_datastream_resulttexts: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id","featureofinterest_id", "_resulttexts")',
+            observation_unik_datastream_resultint: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id","featureofinterest_id", "_resultint")',
+            observation_unik_multidatastream_resultnumber: 'UNIQUE ("phenomenonTime", "resultTime", "multidatastream_id", "featureofinterest_id", "_resultnumber")',
+            observation_unik_multidatastream_resultnumbers: 'UNIQUE ("phenomenonTime", "resultTime", "multidatastream_id","featureofinterest_id", "_resultnumbers")',
+            observation_unik_multidatastream_resultjson: 'UNIQUE ("phenomenonTime", "resultTime", "multidatastream_id","featureofinterest_id", "_resultjson")',
+            observation_unik_multidatastream_resulttext: 'UNIQUE ("phenomenonTime", "resultTime", "multidatastream_id","featureofinterest_id", "_resulttext")',
+            observation_unik_multidatastream_resulttexts: 'UNIQUE ("phenomenonTime", "resultTime", "multidatastream_id","featureofinterest_id", "_resulttexts")',
+            observation_unik_multidatastream_resultint: 'UNIQUE ("phenomenonTime", "resultTime", "multidatastream_id","featureofinterest_id", "_resultint")',
             observation_multidatastream_id_fkey: 'FOREIGN KEY ("multidatastream_id") REFERENCES "multidatastream"("id") ON UPDATE CASCADE ON DELETE CASCADE',
             observation_featureofinterest_id_fkey: 'FOREIGN KEY ("featureofinterest_id") REFERENCES "featureofinterest"("id") ON UPDATE CASCADE ON DELETE CASCADE'
         },
@@ -959,7 +942,6 @@ const dbs: { [key in Eentities]: Ientity } = {
         table: "historical_observation",
         order: -1,
         lora: false,
-        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -1007,7 +989,6 @@ const dbs: { [key in Eentities]: Ientity } = {
         table: "thing_location",
         order: -1,
         lora: false,
-        multiDatastream: false,
         columns: {
             thing_id: {
                 create: "BIGINT NOT NULL"
@@ -1035,7 +1016,6 @@ const dbs: { [key in Eentities]: Ientity } = {
         table: "decoder",
         order: 12,
         lora: true,
-        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -1100,7 +1080,6 @@ const dbs: { [key in Eentities]: Ientity } = {
         table: "lora",
         order: 11,
         lora: true,
-        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -1190,7 +1169,6 @@ const dbs: { [key in Eentities]: Ientity } = {
         order: 21,
         admin: true,
         lora: true,
-        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY"
@@ -1236,7 +1214,6 @@ const dbs: { [key in Eentities]: Ientity } = {
         order: 22,
         admin: true,
         lora: true,
-        multiDatastream: false,
         columns: {
             id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -1302,7 +1279,6 @@ const dbs: { [key in Eentities]: Ientity } = {
         order: 20,
         admin: true,
         lora: true,
-        multiDatastream: false,
         columns: {
             name: {
                 create: "TEXT GENERATED ALWAYS AS IDENTITY"
@@ -1321,7 +1297,6 @@ const dbs: { [key in Eentities]: Ientity } = {
         table: "",
         order: 0,
         lora: false,
-        multiDatastream: false,
         columns: {},
         admin: false,
         relations: {},
@@ -1335,7 +1310,6 @@ const dbs: { [key in Eentities]: Ientity } = {
         table: "",
         order: 0,
         lora: false,
-        multiDatastream: false,
         columns: {},
         admin: false,
         relations: {},
@@ -1343,9 +1317,6 @@ const dbs: { [key in Eentities]: Ientity } = {
         indexes: {}
     }    
 };
-export const countId = (table: string) =>`SELECT count(id) FROM ${table}`;
-export const _Entities = Object.values(Eentities);
-export const DBDATAS = Object.freeze(dbs);
+export const DBDATAS = Object.freeze(dbDatas);
 export const _DBADMIN = Object.fromEntries(Object.entries(DBDATAS).filter(([k,v]) => v.admin === true));
-export const _DBLIST = (list: string[]) => Object.fromEntries(Object.entries(DBDATAS).filter(([k,v]) => list.includes(k)));
  

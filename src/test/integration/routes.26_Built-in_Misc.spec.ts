@@ -105,9 +105,9 @@ describe("Odata BuiltInMisc", () => {
                 res.type.should.equal("application/json");
                 res.body["@iot.count"].should.eql("6045");
                 res.body.value.length.should.eql(6045);
-                res.body["value"][0]["@iot.id"].should.eql(61);
+                res.body["value"][0]["@iot.id"].should.eql(73);
                 res.body["value"][0]["phenomenonTime"].should.eql('2000-05-02T02:00:00');
-                res.body["value"][1]["@iot.id"].should.eql(62);
+                res.body["value"][1]["@iot.id"].should.eql(74);
                 res.body["value"][1]["phenomenonTime"].should.eql('2000-05-03T02:00:00');
                 res.body["value"][5]["@iot.id"].should.eql(0);
                 res.body["value"][5]["phenomenonTime"].should.eql('2000-05-07T02:00:00');

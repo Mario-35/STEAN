@@ -1,45 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import util from "util";
-import { _debug } from "../constants";
+import { TIMESTAMP, _debug } from "../constants";
+import fs from "fs";
+import Koa from "koa";
+import { EColor } from "../enums";
 
 
 export class Logger {
-    private col = {
-        Reset : "\x1b[0m",
-        Bright : "\x1b[1m",
-        Dim : "\x1b[2m",
-        Underscore : "\x1b[4m",
-        Blink : "\x1b[5m",
-        Reverse : "\x1b[7m",
-        Hidden : "\x1b[8m",
-        FgBlack : "\x1b[30m",
-        FgRed : "\x1b[31m",
-        FgGreen : "\x1b[32m",
-        FgYellow : "\x1b[33m",
-        FgBlue : "\x1b[34m",
-        FgMagenta : "\x1b[35m",
-        FgCyan : "\x1b[36m",
-        FgWhite : "\x1b[37m",
-        FgMario : "\x1b[39m",
-        FgGray : "\x1b[90m",
-        BgBlack : "\x1b[40m",
-        BgRed : "\x1b[41m",
-        BgGreen : "\x1b[42m",
-        BgYellow : "\x1b[43m",
-        BgBlue : "\x1b[44m",
-        BgMagenta : "\x1b[45m",
-        BgCyan : "\x1b[46m",
-        BgWhite : "\x1b[47m",
-        BgGray : "\x1b[100m",
-    };
     private debugFile = false;
+    col(col: number) {
+        return `\x1b[${col}m`;
+    }
 
     line(nb: number) {
         return '='.repeat(nb);
     }
 
     separator(title: string, nb: number) {
-        return `${this.col.FgGreen} ${this.line(nb)} ${this.col.FgYellow} ${title} ${this.col.FgGreen} ${this.line(nb)}${this.col.Reset}`;
+        return `${this.col(EColor.FgGreen)} ${this.line(nb)} ${this.col(EColor.FgYellow)} ${title} ${this.col(EColor.FgGreen)} ${this.line(nb)}${this.col(EColor.Reset)}`;
     }
 
      show(input: string) {
@@ -52,60 +30,75 @@ export class Logger {
     }
 
      booting(cle: string, value: string | number) {
-         this.show(`${this.col.FgYellow} ${this.line(12)} ${this.col.FgCyan} ${cle} ${this.col.FgWhite} ${this.logAll(value, this.debugFile)} ${this.col.FgYellow} ${this.line(12)}${this.col.Reset}`);
+         this.show(`${this.col(EColor.FgYellow)} ${this.line(12)} ${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgWhite)} ${this.logAll(value, this.debugFile)} ${this.col(EColor.FgYellow)} ${this.line(12)}${this.col(EColor.Reset)}`);
      }
  
      head(cle: string, infos?: any ) {
          this.show(infos 
-             ? `${this.col.FgGreen} ${this.line(4)} ${this.col.FgCyan} ${cle} ${this.col.FgWhite} ${this.logAll(infos, this.debugFile)} ${this.col.FgGreen} ${this.line(4)}${this.col.Reset}`
+             ? `${this.col(EColor.FgGreen)} ${this.line(4)} ${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgWhite)} ${this.logAll(infos, this.debugFile)} ${this.col(EColor.FgGreen)} ${this.line(4)}${this.col(EColor.Reset)}`
              : this.separator(cle, 4)
              );
      }
 
+     keys(title: string, input: {[key: string]: string}) {
+        this.head(title);
+        Object.keys(input).forEach((cle: string) => {this.debug(`  ${cle}`, input[cle] ); });
+     }
+
     query(sql: unknown ) {
         this.show(this.separator("Query", 30));
-        this.show(`${this.col.FgCyan} ${this.logAll(sql)}${this.col.Reset}`);
+        this.show(`${this.col(EColor.FgCyan)} ${this.logAll(sql)}${this.col(EColor.Reset)}`);
     }
 
     infos(cle: string, input: unknown ) {
         this.show(this.separator(cle, 30));
-        this.show(`${this.col.FgYellow} ${this.logAll(input, true)}${this.col.Reset}`);
+        this.show(`${this.col(EColor.FgYellow)} ${this.logAll(input, true)}${this.col(EColor.Reset)}`);
     }
 
     debug(cle: string, infos?: any ) {
-        this.show(`${this.col.FgGreen} ${cle} ${this.col.FgWhite} : ${this.col.FgCyan} ${this.logAll(infos, this.debugFile)}${this.col.Reset}`);
+        this.show(`${this.col(EColor.FgGreen)} ${cle} ${this.col(EColor.FgWhite)} : ${this.col(EColor.FgCyan)} ${this.logAll(infos, this.debugFile)}${this.col(EColor.Reset)}`);
     }
 
     result(cle: string, infos?: any ) {
-        this.show(`${this.col.FgGreen}     >>${this.col.FgBlack} ${cle} ${this.col.FgMario} : ${this.col.FgCyan} ${this.logAll(infos, this.debugFile)}${this.col.Reset}`);
+        this.show(`${this.col(EColor.FgGreen)}     >>${this.col(EColor.FgBlack)} ${cle} ${this.col(EColor.FgMario)} : ${this.col(EColor.FgCyan)} ${this.logAll(infos, this.debugFile)}${this.col(EColor.Reset)}`);
     }
 
     infoSystem(cle: string, infos?: any ) {
-        this.show(`${this.col.FgCyan} ${cle} ${this.col.FgBlue} : ${this.col.FgWhite} ${this.logAll(infos, this.debugFile)}${this.col.Reset}`);
+        this.show(`${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgBlue)} : ${this.col(EColor.FgWhite)} ${this.logAll(infos, this.debugFile)}${this.col(EColor.Reset)}`);
     }
 
     error(cle: unknown, infos?: any ) {
         this.show( infos 
-            ? `${this.col.FgRed} ${cle} ${this.col.FgBlue} : ${this.col.FgYellow} ${this.logAll(infos, this.debugFile)}${this.col.Reset}`
-            : `${this.col.FgRed} Error ${this.col.FgBlue} : ${this.col.FgYellow} ${this.logAll(cle)}${this.col.Reset}`);
+            ? `${this.col(EColor.FgRed)} ${cle} ${this.col(EColor.FgBlue)} : ${this.col(EColor.FgYellow)} ${this.logAll(infos, this.debugFile)}${this.col(EColor.Reset)}`
+            : `${this.col(EColor.FgRed)} Error ${this.col(EColor.FgBlue)} : ${this.col(EColor.FgYellow)} ${this.logAll(cle)}${this.col(EColor.Reset)}`);
     }
     
     env( testDebug: boolean, cle: string, infos?: any ) {
-        this.show(`${this.col.FgCyan} ${cle} ${this.col.FgBlue} : ${this.col.FgYellow} ${this.logAll(infos, this.debugFile)}${this.col.Reset}`);
+        this.show(`${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgBlue)} : ${this.col(EColor.FgYellow)} ${this.logAll(infos, this.debugFile)}${this.col(EColor.Reset)}`);
     }
     class(cle: string, infos?: any ) {
         this.show(infos 
-            ? `${this.col.FgRed} ${this.line(4)} ${this.col.FgCyan} ${cle} ${this.col.FgYellow} ${this.logAll(infos, this.debugFile)} ${this.col.FgRed} ${this.line(4)}${this.col.Reset}`
-            : `${this.col.FgRed} ${this.line(4)} ${this.col.FgCyan} ${cle} ${this.col.FgRed} ${this.line(4)}${this.col.Reset}`);
+            ? `${this.col(EColor.FgRed)} ${this.line(4)} ${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgYellow)} ${this.logAll(infos, this.debugFile)} ${this.col(EColor.FgRed)} ${this.line(4)}${this.col(EColor.Reset)}`
+            : `${this.col(EColor.FgRed)} ${this.line(4)} ${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgRed)} ${this.line(4)}${this.col(EColor.Reset)}`);
     }
     override(cle: string, infos?: any ) {
         this.show(infos 
-            ? `${this.col.FgRed} ${this.line(4)} ${this.col.FgGreen} ${cle} [OVERRIDE]${this.col.FgYellow} ${this.logAll(infos, this.debugFile)} ${this.col.FgRed} ${this.line(4)}${this.col.Reset}`
-            : `${this.col.FgRed} ${this.line(4)} ${this.col.FgCyan} ${cle} ${this.col.FgRed} ${this.line(4)}${this.col.Reset}`);
+            ? `${this.col(EColor.FgRed)} ${this.line(4)} ${this.col(EColor.FgGreen)} ${cle} [OVERRIDE]${this.col(EColor.FgYellow)} ${this.logAll(infos, this.debugFile)} ${this.col(EColor.FgRed)} ${this.line(4)}${this.col(EColor.Reset)}`
+            : `${this.col(EColor.FgRed)} ${this.line(4)} ${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgRed)} ${this.line(4)}${this.col(EColor.Reset)}`);
     }
 
     logQuery(input: any, full?: boolean) {
         this.show((full && full == true) ? this.logAll(input) : input);
+    }
+
+    writeError(ctx: Koa.Context | undefined, ...data: any[]) {   
+        const errFile = fs.createWriteStream("errorFile.md", { flags: 'a' }); 
+        if(ctx) {
+            errFile.write(`# ${TIMESTAMP()} : ${ctx.request.url}\n`);    
+            errFile.write(util.inspect(ctx.request.body, { showHidden: false, depth: null, colors: false }) + '\n');        
+            errFile.write(`${this.line(30)}\n`);        
+        } else errFile.write(`# ${this.line(10)} ${TIMESTAMP()} ${this.line(10)}\n`);
+        errFile.write(util.format.apply(null, data) + '\n');        
     }
 }
 

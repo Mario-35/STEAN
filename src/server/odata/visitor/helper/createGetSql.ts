@@ -10,10 +10,10 @@ import { createQueryString } from ".";
 import { PgVisitor } from "../PgVisitor";
 
  export function createGetSql(main: PgVisitor): string {   
-    main.includes.forEach((includesItem) => {
-        if (includesItem.navigationProperty.includes("/")) {                
-            const names = includesItem.navigationProperty.split("/");
-            includesItem.navigationProperty = names[0];
+    main.includes.forEach((include) => {
+        if (include.navigationProperty.includes("/")) {                
+            const names = include.navigationProperty.split("/");
+            include.navigationProperty = names[0];
             const visitor = new PgVisitor({...main.options});
             if (visitor) {
                 visitor.entity =names[0];
@@ -21,7 +21,7 @@ import { PgVisitor } from "../PgVisitor";
                 visitor.where = "1 = 1";
                 visitor.orderby = "";
                 visitor.navigationProperty = names[1];
-                includesItem.includes.push(visitor);
+                include.includes.push(visitor);
             }
         }
     });  

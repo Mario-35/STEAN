@@ -8,7 +8,7 @@
 
 import koa from "koa";
 import { Knex } from "knex";
-import { isGraph, _DBLIST } from "../constants";
+import { createDbList, isGraph } from "../helpers";
 import { getEntityName, isNull, removeQuotes, returnFormats } from "../../helpers/index";
 import { Logs } from "../../logger";
 import { Ientity, IreturnResult } from "../../types";
@@ -30,7 +30,7 @@ export class Common {
         if (knexInstance) Common.dbContext = knexInstance;
         this.nextLinkBase = removeKeyFromUrl(`${this.ctx._odata.options.rootBase}${this.ctx.href.split(`${ctx._version}/`)[1]}`, ["top", "skip"]);
         this.linkBase = `${this.ctx._odata.options.rootBase}${this.constructor.name}`; 
-        this.DBST = _DBLIST(CONFIGURATION.list[this.ctx._configName].dbEntities);
+        this.DBST = createDbList(CONFIGURATION.list[this.ctx._configName].dbEntities);
     }
 
     // only for override

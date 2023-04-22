@@ -1,12 +1,12 @@
 /**
- * createAdminDataBase.
+ * createAdminDB.
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
 
-import { createTable } from ".";
+import { createTable } from "../helpers";
 import { CONFIGURATION } from "../../configuration";
 import { asyncForEach } from "../../helpers";
 import { Logs } from "../../logger";
@@ -14,8 +14,8 @@ import { _DBADMIN, _RIGHTS } from "../constants";
 // import { Iuser } from "../interfaces";
 
  
- export const createAdminDataBase = async(configName: string): Promise<{ [key: string]: string }> => {
-    Logs.head("createAdminDataBase", "createDatabase");
+ export const createAdminDB = async(configName: string): Promise<{ [key: string]: string }> => {
+    Logs.head("createAdminDB", "createDatabase");
 
     // init result
     const config = CONFIGURATION.list[configName];

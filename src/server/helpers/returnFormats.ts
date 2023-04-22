@@ -16,7 +16,8 @@ import { addJsFile } from "../views/js";
 import util from "util";
 import { removeQuotes } from ".";
 import { PgVisitor } from "../odata";
-import { countId, DBDATAS, isGraph } from "../db/constants";
+import { countId, isGraph } from "../db/helpers";
+import { DBDATAS } from "../db/constants";
 import { Eformats } from "../enums";
 
 export const queryAsJson = (input: {

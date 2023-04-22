@@ -8,11 +8,10 @@
 
 import Koa from "koa";
 import { decodeToken } from "../authentication";
-import { CONFIGURATION } from "../configuration";
 import { setDebug, _debug } from "../constants";
 import { EuserRights } from "../enums";
 import { configCtx, setConfigToCtx } from "../helpers";
-import { writeToLog } from "../logger";
+import { Logs, writeToLog } from "../logger";
 
 export const isAdmin = (ctx: Koa.Context):boolean => ctx._configName === "admin";
 export const canDo = (ctx: Koa.Context, what: EuserRights):boolean => ctx._user.PDCUAS[what];
@@ -35,14 +34,12 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
             password: "",
             PDCUAS: [false, false, false, false, false, false]
         };
-        if (_debug === true) console.log(configCtx(ctx));
+        if (_debug === true) Logs.keys("configCtx", configCtx(ctx));
         await next().then(async (res: object) => {            
             await writeToLog(ctx);
         });
      // eslint-disable-next-line @typescript-eslint/no-explicit-any        
-    } catch (error: any) {     
-        CONFIGURATION.writeError(ctx.request, error);
-         
+    } catch (error: any) {              
         if (error.message && error.message.includes("|")) {
             const temp = error.message.split("|");
             error.statusCode = +temp[0];

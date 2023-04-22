@@ -14,44 +14,33 @@ import koa from "koa";
  * @returns string or undefined
  */
 
-import { Logs } from "../logger";
-import { _debug } from "../constants";
-
-export const configCtx = (ctx: koa.Context): object => {
+export const configCtx = (ctx: koa.Context): {[key: string]: string} => {
     return {
-        "_linkBase": `${ctx._linkBase}`,
-        "_configName": `${ctx._configName}`,
-        "_rootName": `${ctx._rootName}`,
-        "_version": `${ctx._version}`,
-        "method": `${ctx.method}`,
-        "url": `${ctx.url}`,
-        "originalUrl": `${ctx.originalUrl}`,
-        "origin": `${ctx.origin}`,
-        "href": `${ctx.href}`,
-        "path": `${ctx.path}`,
-        "querystring": `${ctx.querystring}`,
-        "host": `${ctx.host}`,
-        "hostname": `${ctx.hostname}`,
-        "fresh": `${ctx.fresh}`,
-        "stale": `${ctx.stale}`,
-        "socket": `${ctx.socket}`,
-        "protocol": `${ctx.protocol}`,
-        "secure": `${ctx.secure}`,
-        "ip": `${ctx.ip}`,
-        "ips": `${ctx.ips}`,
-        "subdomains": `${ctx.subdomains}`,
-        "is()": `${ctx.is()}`,
-        "accepts()": `${ctx.accepts()}`,
-        "acceptsEncodings()": `${ctx.acceptsEncodings()}`,
-        "acceptsCharsets()": `${ctx.acceptsCharsets()}`,
-        "acceptsLanguages()": `${ctx.acceptsLanguages()}`
+        "_linkBase": `"${ctx._linkBase}"`,
+        "_configName": `"${ctx._configName}"`,
+        "_rootName": `"${ctx._rootName}"`,
+        "_version": `"${ctx._version}"`,
+        "method": `"${ctx.method}"`,
+        "url": `"${ctx.url}"`,
+        "originalUrl": `"${ctx.originalUrl}"`,
+        "origin": `"${ctx.origin}"`,
+        "href": `"${ctx.href}"`,
+        "path": `"${ctx.path}"`,
+        "querystring": `"${ctx.querystring}"`,
+        "host": `"${ctx.host}"`,
+        "hostname": `"${ctx.hostname}"`,
+        "fresh": `"${ctx.fresh}"`,
+        "stale": `"${ctx.stale}"`,
+        "socket": `"${ctx.socket}"`,
+        "protocol": `"${ctx.protocol}"`,
+        "secure": `"${ctx.secure}"`,
+        "ip": `"${ctx.ip}"`,
+        "ips": `"${ctx.ips}"`,
+        "subdomains": `"${ctx.subdomains}"`,
+        "is()": `"${ctx.is()}"`,
+        "accepts()": `"${ctx.accepts()}"`,
+        "acceptsEncodings()": `"${ctx.acceptsEncodings()}"`,
+        "acceptsCharsets()": `"${ctx.acceptsCharsets()}"`,
+        "acceptsLanguages()": `"${ctx.acceptsLanguages()}"`
     };
-};
-
-export const showconfigCtx = (ctx: koa.Context, force?: boolean): void => {
-    if (_debug) Logs.logAll(ctx.request);
-    const temp = configCtx(ctx);
-    if (force) {
-        Logs.logAll(temp);
-    } else Logs.infos("configCtx", temp);
 };

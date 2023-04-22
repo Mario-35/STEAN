@@ -6,7 +6,7 @@
  *
  */
 
-export { createDatabase } from "./createDatabase";
+export { createDatabase } from "../createDb";
 export { createGraph } from "./createGraph";
 export { createTable } from "./createTable";
 export { extractMessageError } from "./extractMessageError";
@@ -17,3 +17,11 @@ export { removeKeyFromUrl } from "./removeKeyFromUrl";
 export { testConnection } from "./testConnection";
 export { verifyId } from "./verifyId";
 export { parseSql } from "./parseSql";
+export { countId } from "./countId";
+export { isGraph } from "./isGraph";
+export { isCsvOrArray } from "./isCsvOrArray";
+export { isObservation } from "./isObservation";
+export { getDBDateNow } from "./getDBDateNow";
+export { columnList } from "./columnList";
+export { isSingular } from "./isSingular";
+export { createDbList } from "./createDbList";

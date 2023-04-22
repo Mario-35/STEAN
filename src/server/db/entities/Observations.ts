@@ -9,7 +9,7 @@
 import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
-import { getDBDateNow } from "../constants";
+import { getDBDateNow } from "../helpers";
 import { Logs } from "../../logger";
 import { IreturnResult } from "../../types";
 import { getBigIntFromString } from "../../helpers";

@@ -53,7 +53,7 @@ describe("Odata BuiltInDates [9.3.3.5.2]", () => {
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(10);
-                res.body["value"][0]["@iot.id"].should.eql(56);
+                res.body["value"][0]["@iot.id"].should.eql(68);
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
@@ -153,7 +153,7 @@ describe("Odata BuiltInDates [9.3.3.5.2]", () => {
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
-                res.body["value"][0]["@iot.id"].should.eql(56);
+                res.body["value"][0]["@iot.id"].should.eql(68);
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });

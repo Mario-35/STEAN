@@ -21,7 +21,7 @@ export { getBigIntFromString } from "./getBigIntFromString";
 export { getEntityName } from "./getEntityName";
 export { hidePasswordInJson } from "./hidePasswordInJson";
 export { setConfigToCtx } from "./setConfigToCtx";
-export { showconfigCtx, configCtx } from "./showconfigCtx";
+export { configCtx } from "./showconfigCtx";
 export { returnFormats } from "./returnFormats";
 export { upload } from "./upload";
 export { notNull, isNull } from "./notNull";

@@ -94,7 +94,8 @@ describe("CSV Import", function () {
             .field("nb", "1")
             .attach("file", "./src/test/integration/files/simple.csv")
             .set("Cookie", `${keyTokenName}=${token}`)
-            .end(function (err, res) {
+            .end(function (err, res)
+             {
                 if (err) console.log(err);
                 else {
                     res.should.have.status(201);
@@ -122,7 +123,7 @@ describe("CSV Import", function () {
             .field("nb", "1")
             .attach("file", "./src/test/integration/files/simple.csv")
             .set("Cookie", `${keyTokenName}=${token}`)
-            .end((err: Error, res: any) => {
+            .end((err: Error, res: any) => {                
                 if (err) console.log(err);
                 else {
                     res.should.have.status(201);
@@ -204,8 +205,7 @@ describe("CSV Import", function () {
                 }
                 should.not.exist(err);
                 docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);
-                generateApiDoc(docs, "Import.js");
-                
+                generateApiDoc(docs, "Import.js");                
                 done();
             });
     });

@@ -9,14 +9,13 @@
 import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
-import { observationTypes, _DATEFORMATNOTIMEZONE} from "../constants";
+import { _OBSERVATIONTYPES, _DATEFORMATNOTIMEZONE} from "../constants";
 import { Logs } from "../../logger";
 import { IcsvColumn, IcsvFile, Ientity, IreturnResult } from "../../types";
 import { importCsv, verifyId } from "../helpers";
 import { asyncForEach } from "../../helpers";
 import { messages, messagesReplace } from "../../messages/";
 import { queryAsJson } from "../../helpers/returnFormats";
-import { CONFIGURATION } from "../../configuration";
 // import { EstreamType } from "../../enums";
 
 export class CreateObservations extends Common {
@@ -66,13 +65,13 @@ export class CreateObservations extends Common {
             }
           }
         
-        createListColumnsValues(type: "COLUMNS" | "VALUES", input: string[], observationType?: string): string[] {
+    createListColumnsValues(type: "COLUMNS" | "VALUES", input: string[], observationType?: string): string[] {
             const res:string[] = [];
             const separateur = type === "COLUMNS" ? '"' : "'";            
             for (let elem of input) {
                 switch (elem) {
                     case "result":
-                        if (observationType) elem = observationTypes[observationType];            
+                        if (observationType) elem = _OBSERVATIONTYPES[observationType];            
                         break;
                     case "FeatureOfInterest/id":
                         elem = "featureofinterest_id";           
@@ -188,7 +187,7 @@ export class CreateObservations extends Common {
                                     returnValue.push(`delete id ==> ${res["rows"][0].id}`);
                                     total += 1;
                                 }).catch((error) => {
-                                    CONFIGURATION.writeError(undefined, error);                      
+                                    Logs.writeError(undefined, error);                      
                                 });                                    
                             }
                         }

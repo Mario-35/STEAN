@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DBDATAS, isGraph, isObservation } from "../../db/constants";
+import { DBDATAS } from "../../db/constants";
+import { isGraph, isObservation } from "../../db/helpers";
 import { getEntityName, removeQuotes, returnFormats } from "../../helpers";
 import { IconfigFile, IreturnFormat } from "../../types";
 import { Token } from "../parser/lexer";
@@ -96,13 +97,10 @@ export class PgVisitor {
         // TODO REMOVE AFTER ALL 
         
         if (this.entity.toUpperCase() === "LORA") this.setEntity("Loras");
-        if (this.entity && !this.config.dbEntities.includes(this.entity)) ctx.throw(404, { detail: messages.errors.invalidPath + this.entity.trim() }); 
         if (this.parentEntity) {
-            if (!this.config.dbEntities.includes(this.parentEntity)) ctx.throw(404, { detail: messages.errors.invalidPath + this.entity.trim() }); 
-            // if (!DBDATAS[this.parentEntity].relations[this.entity]) ctx.throw(40, { detail: messages.errors.invalidPath + this.entity.trim() }); 
-            if (!DBDATAS[this.parentEntity].relations[this.entity]) ctx.throw(404, { detail: messages.errors.invalidPath + this.entity.trim() }); 
+            if (!DBDATAS[this.parentEntity].relations[this.entity]) ctx.throw(40, { detail: messages.errors.invalidPath + this.entity.trim() }); 
         } else if (!DBDATAS[this.entity]) ctx.throw(404, { detail: messages.errors.invalidPath + this.entity.trim() }); 
-
+    
     };
 
     VisitRessources(node: Token, context?: any) {

@@ -7,7 +7,7 @@
  */
 
 import fs from "fs";
-import { API_VERSION, APP_NAME, APP_VERSION, NODE_ENV, setDebug } from "../constants";
+import { API_VERSION, APP_NAME, APP_VERSION, NODE_ENV, setDebug, TIMESTAMP } from "../constants";
 import { Logs } from "../logger";
 import { asyncForEach, decrypt, encrypt, hidePasswordInJson, isTest } from "../helpers";
 import util from "util";
@@ -53,24 +53,9 @@ class Configuration {
         this.logToFile(this.list["admin"]["logFile"]);
         Logs.booting("active error to file", "errorFile.md");
         const errFile = fs.createWriteStream("errorFile.md", { flags: 'w' });
-        errFile.write(`## Start : ${this.timeStamp()} \n`);
+        errFile.write(`## Start : ${TIMESTAMP()} \n`);
     }
 
-    timeStamp(): string {
-        const d = new Date();
-        return d.toLocaleTimeString();
-    }
-
-    writeError(req: Koa.Request | undefined, ...data: any[]) {        
-        const errFile = fs.createWriteStream("errorFile.md", { flags: 'a' });
-        errFile.write(`# ${this.timeStamp()} : \n`); 
-        if(req) {
-            errFile.write(`## ${req.url} : \n`);        
-            errFile.write(util.format.apply(null, req.body) + '\n');        
-        }
-        errFile.write(`==================================\n`);        
-        errFile.write(util.format.apply(null, data) + '\n');        
-    }
 
     logToFile(file: string) {        
         const active = file && file.length > 0 ? true: false;
@@ -179,12 +164,13 @@ class Configuration {
             logFile: input["log"] ? input["log"] : "",
             dbEntities: goodName === "admin" 
                                         ? Object.keys(_DBADMIN)
-                                        : Object.keys(Object.fromEntries(Object.entries(DBDATAS).filter(([k,v]) => v.admin === false && v.lora === false && v.multiDatastream === false))),
+                                        : Object.keys(Object.fromEntries(Object.entries(DBDATAS).filter(([k,v]) => v.admin === false && v.lora === false))),
             
         };
         if (Object.values(returnValue).includes("ERROR")) throw new TypeError(`${messages.errors.configFile} [${util.inspect(returnValue, { showHidden: false, depth: null })}]`);
-        if (returnValue.multiDatastream === true) returnValue.dbEntities = this.add_items_to_array_at_position(returnValue.dbEntities ,returnValue.dbEntities.indexOf("Observations"), Object.keys(Object.fromEntries(Object.entries(DBDATAS).filter(([k,v]) => v.admin === false && v.multiDatastream === true))));
         if (returnValue.lora === true) returnValue.dbEntities = returnValue.dbEntities.concat(Object.keys(Object.fromEntries(Object.entries(DBDATAS).filter(([k,v]) => v.admin === false && v.lora === true))));
+console.log(returnValue);
+
         return returnValue;
     }
 
@@ -314,7 +300,7 @@ class Configuration {
         const connect = async (): Promise<boolean> => {
                 try {
                     await pool.query('SELECT 1');
-                     Logs.result(messagesReplace(messages.infos.dbOnline, [options.database || "none"]), this.timeStamp());
+                     Logs.result(messagesReplace(messages.infos.dbOnline, [options.database || "none"]), TIMESTAMP());
                     await pool.end();
                     return true;
                 }   
