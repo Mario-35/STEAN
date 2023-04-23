@@ -125,9 +125,10 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             ctx.redirect(`${ctx._rootName}login`);
             return;
 
-        case "METRICS":            
+        case "METRICS": 
+            const query = ctx.request.url.split("query=")[1];   
             ctx.type = returnFormats.json.type;
-            ctx.body = getMetrics();            
+            ctx.body = await getMetrics(query);         
             return;
 
         case "QUERY":
