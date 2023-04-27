@@ -6,7 +6,7 @@
  *
  */
 
-import { DBDATAS } from "../../../db/constants";
+import { _DBDATAS } from "../../../db/constants";
 import { columnList, isCsvOrArray, isGraph, isObservation } from "../../../db/helpers";
 import { getEntityName, goodName, removeQuotes } from "../../../helpers";
 import { Ientity } from "../../../types";
@@ -15,7 +15,7 @@ import { PgVisitor } from "../PgVisitor";
 export function getColumnsList(tableName: string, main: PgVisitor, element: PgVisitor): string[] | undefined {
     const temp = getEntityName(tableName.trim());
     if (!temp) return;
-    const tempEntity:Ientity = DBDATAS[temp];
+    const tempEntity:Ientity = _DBDATAS[temp];
     const ResultgroupBy:string [] = [];
     const csvOrArray = isCsvOrArray(main);
     const returnValue: string[] = isGraph(main)
@@ -71,7 +71,7 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
         });
         else {
             if (!isSelect) element.groupBy = cols.filter(e => tempEntity.columns[removeQuotes(e)].create != "").map(e => `"${tempEntity.table}"."${e}"`);
-                else if (![DBDATAS.MultiDatastreams.name, DBDATAS.Datastreams.name].includes(tableName)) {
+                else if (![_DBDATAS.MultiDatastreams.name, _DBDATAS.Datastreams.name].includes(tableName)) {
                     element.groupBy = cols.filter(e => tempEntity.columns[removeQuotes(e)].create != "").map(e => `"${tempEntity.table}".${e}`);
                     element.groupBy.push(`"${tempEntity.table}"."id"`);
                 }

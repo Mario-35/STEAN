@@ -136,7 +136,6 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
                         });
                 });
             };
-
             ctx._datas = await getDatas();
             const odataVisitor = await createOdata(ctx); 
             if (odataVisitor) ctx._odata = odataVisitor;
@@ -205,15 +204,12 @@ protectedRoutes.delete("/(.*)", async (ctx) => {
         if (ctx._odata) {
             Logs.head("DELETE");
             const objectAccess = new apiAccess(ctx);
-            if (ctx._odata.id) {
-                const returnValue: IreturnResult | undefined | void = await objectAccess.delete(ctx._odata.id);
-                if (returnValue && returnValue.id && returnValue.id > 0) {
-                    returnFormats.json.type;
-                    ctx.status = 204;
-                }
-            } else {
-                ctx.throw(400, { detail: messages.errors.idRequired });
-            }
+            if (!ctx._odata.id) ctx.throw(400, { detail: messages.errors.idRequired });
+            const returnValue = await objectAccess.delete(ctx._odata.id);
+            if (returnValue && returnValue.id && returnValue.id > 0) {
+                returnFormats.json.type;
+                ctx.status = 204;
+            } else ctx.throw(404, { code: 404, detail: messages.errors.noId + ctx._odata.id });
         } else {
             ctx.throw(404);
         }

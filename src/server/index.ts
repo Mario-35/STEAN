@@ -38,9 +38,6 @@ declare module "koa" {
     }
 }
 
-// Add log To File
-
-
 // new koa server https://koajs.com/
 export const app = new Koa();
 

@@ -20,6 +20,7 @@ import { messages, messagesReplace } from "../../messages/";
 // import { db } from "..";
 import * as entities from "../entities/index";
 import { returnFormats } from "../../helpers";
+import { QUOTEDCOMA } from "../../constants";
 
 
 interface convert {
@@ -34,7 +35,7 @@ export class CreateFile extends Common {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     testValue(inputValue: any): convert | undefined {
         if (inputValue != null && inputValue !== "" && !isNaN(Number(inputValue.toString()))) return { key: "_resultnumber", value: inputValue.toString() };
-        else if (typeof inputValue == "object") return { key: "_resultnumbers", value: `{"${Object.values(inputValue).join('","')}"}` };
+        else if (typeof inputValue == "object") return { key: "_resultnumbers", value: `{"${Object.values(inputValue).join(QUOTEDCOMA)}"}` };
     }
 
     importCsvFileInDatastream = async (ctx: koa.Context, knex: Knex | Knex.Transaction, paramsFile: IcsvFile): Promise<IreturnResult | undefined> => {
@@ -166,7 +167,7 @@ export class CreateFile extends Common {
                 filename: extras["file"],
                 columns: myColumns,
                 header:  ", HEADER" ,
-                dataStreamId: BigInt("0") // only for interface
+                stream: [] // only for interface
             };
             const temp = await this.importCsvFileInDatastream(this.ctx, Common.dbContext, paramsFile);
             return this.createReturnResult({

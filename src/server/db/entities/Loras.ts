@@ -10,11 +10,12 @@ import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
 import { getBigIntFromString, notNull, removeQuotes } from "../../helpers/index";
-import { _DATEFORMATNOTIMEZONE } from "../constants";
-import { _DOUBLEQUOTE, _QUOTEDCOMA, _VOIDTABLE } from "../../constants";
+import { DOUBLEQUOTE, QUOTEDCOMA, VOIDTABLE } from "../../constants";
 import { Logs } from "../../logger";
 import { IreturnResult } from "../../types";
 import { messages, messagesReplace } from "../../messages/";
+import { CONFIGURATION } from "../../configuration";
+import { EdatesType } from "../../enums";
 
 export class Loras extends Common {
     synonym: object = {};
@@ -54,7 +55,7 @@ export class Loras extends Common {
 
     createListQuery(input: string[], columnListString: string): string {
         const tempList = columnListString.split("COLUMN");
-        return tempList[0].concat(_DOUBLEQUOTE, input.join(`"${tempList[1]}${tempList[0]}"`), _DOUBLEQUOTE, tempList[1]);
+        return tempList[0].concat(DOUBLEQUOTE, input.join(`"${tempList[1]}${tempList[0]}"`), DOUBLEQUOTE, tempList[1]);
     }
 
     async add(dataInput: object, silent?: boolean): Promise<IreturnResult | undefined> {
@@ -196,17 +197,7 @@ export class Loras extends Common {
             }
     
             const getFeatureOfInterest = getBigIntFromString(dataInput["FeatureOfInterest"]);
-
-            const searchFOI = await Common.dbContext.raw(
-                getFeatureOfInterest
-                    ? `select coalesce((select "id" from "featureofinterest" where "id" = ${getFeatureOfInterest}), ${getFeatureOfInterest}) AS id `
-                    : `SELECT id FROM ${this.DBST.FeaturesOfInterest.table} WHERE id = (SELECT _default_foi FROM "${this.DBST.Locations.table}" WHERE id = (SELECT location_id FROM ${this.DBST.ThingsLocations.table} WHERE thing_id = (SELECT thing_id FROM ${this.DBST.MultiDatastreams.table} WHERE id =${multiDatastream.id})))`
-            );
-    
-            if (searchFOI["rows"].length < 1) {
-                if (silent) return this.createReturnResult({ body: messages.errors.noFoi });
-                else this.ctx.throw(400, { code: 400, detail: messages.errors.noFoi });
-            }
+            
             const temp = listOfSortedValues;
             if (temp && typeof temp == "object") {
                 const tempLength = Object.keys(temp).length;
@@ -220,10 +211,13 @@ export class Loras extends Common {
                }
     
             const insertObject = {
-                "featureofinterest_id": "(select featureofinterest1.id from featureofinterest1)",
+                "featureofinterest_id":
+                getFeatureOfInterest
+                        ? `select coalesce((select "id" from "featureofinterest" where "id" = ${getFeatureOfInterest}), ${getFeatureOfInterest})`
+                        : `(select multidatastream1._default_foi from multidatastream1)`,
                 "multidatastream_id": "(select multidatastream1.id from multidatastream1)",
-                "phenomenonTime": `to_timestamp('${dataInput["timestamp"]}','${_DATEFORMATNOTIMEZONE}')::timestamp`,
-                "resultTime": `to_timestamp('${dataInput["timestamp"]}','${_DATEFORMATNOTIMEZONE}')::timestamp`,
+                "phenomenonTime": `to_timestamp('${dataInput["timestamp"]}','${EdatesType.dateWithOutTimeZone}')::timestamp`,
+                "resultTime": `to_timestamp('${dataInput["timestamp"]}','${EdatesType.dateWithOutTimeZone}')::timestamp`,
                 "_resultnumbers": `array ${removeQuotes(JSON.stringify(Object.values(listOfSortedValues)))}`
             };
     
@@ -240,19 +234,14 @@ export class Loras extends Common {
                         const tmp = JSON.stringify(elem);
                         return tmp == "null" ? tmp : `${tmp}`;
                     })
-                    .join(",")}}'::float4[]`
+                    .join(",")}}'::${CONFIGURATION.list[this.ctx._configName].highPrecision ? 'float8' : 'float4'}[]`
             );
 
-            const sql = `WITH "${_VOIDTABLE}" as (select srid FROM "${_VOIDTABLE}" LIMIT 1)
-                , featureofinterest1 AS (SELECT id FROM "${this.DBST.FeaturesOfInterest.table}"
-                                         WHERE id = (SELECT _default_foi FROM "${this.DBST.Locations.table}" 
-                                         WHERE id = (SELECT location_id FROM "${this.DBST.ThingsLocations.table}" 
-                                         WHERE thing_id = (SELECT thing_id FROM "${this.DBST.MultiDatastreams.table}" 
-                                         WHERE id =${multiDatastream.id}))))
-                , multidatastream1 AS (SELECT id, thing_id, ${searchMulti} LIMIT 1)
-                , myValues ( "${Object.keys(insertObject).join(_QUOTEDCOMA)}") AS (values (${Object.values(insertObject).join()}))
+            const sql = `WITH "${VOIDTABLE}" as (select srid FROM "${VOIDTABLE}" LIMIT 1)
+                , multidatastream1 AS (SELECT id, thing_id, _default_foi, ${searchMulti} LIMIT 1)
+                , myValues ( "${Object.keys(insertObject).join(QUOTEDCOMA)}") AS (values (${Object.values(insertObject).join()}))
                 , searchDuplicate as (SELECT * FROM "${this.DBST.Observations.table}" WHERE ${searchDuplicate})
-                , observation1 AS (INSERT INTO  "${this.DBST.Observations.table}" ("${Object.keys(insertObject).join(_QUOTEDCOMA)}") SELECT * FROM myValues
+                , observation1 AS (INSERT INTO  "${this.DBST.Observations.table}" ("${Object.keys(insertObject).join(QUOTEDCOMA)}") SELECT * FROM myValues
                                 WHERE NOT EXISTS (SELECT * FROM searchDuplicate)
                                 AND (SELECT id FROM multidatastream1) IS NOT NULL
                                 RETURNING *, _resultnumbers AS result)
@@ -263,30 +252,7 @@ export class Loras extends Common {
                     Object.keys(insertObject),
                     "(SELECT observation1.COLUMN FROM observation1), "
                 )} (SELECT multidatastream1.id FROM multidatastream1) AS multidatastream, (SELECT multidatastream1.thing_id FROM multidatastream1) AS thing)
-                 SELECT coalesce(json_agg(t), '[]') AS result FROM result1 AS t`;            
-    
-            // const sql = `WITH "${_VOIDTABLE}" as (select srid FROM "${_VOIDTABLE}" LIMIT 1)
-            //     , featureofinterest1 AS (SELECT id FROM "${this.DBST.FeaturesOfInterest.table}"
-            //                              WHERE id = (SELECT _default_foi FROM "${this.DBST.Locations.table}" 
-            //                              WHERE id = (SELECT location_id FROM "${this.DBST.ThingsLocations.table}" 
-            //                              WHERE thing_id = (SELECT thing_id FROM "${this.DBST.MultiDatastreams.table}" 
-            //                              WHERE id =${multiDatastream.id}))))
-            //     , multidatastream1 AS (SELECT id, thing_id, ${searchMulti} LIMIT 1)
-            //     , myValues ( "${Object.keys(insertObject).join(_QUOTEDCOMA)}") AS (values (${Object.values(insertObject).join()}))
-            //     , searchDuplicate as (SELECT * FROM "${this.DBST.Observations.table}" WHERE ${searchDuplicate})
-            //     , observation1 AS (INSERT INTO  "${this.DBST.Observations.table}" ("${Object.keys(insertObject).join(_QUOTEDCOMA)}") SELECT * FROM myValues
-            //                     WHERE NOT EXISTS (SELECT * FROM searchDuplicate)
-            //                     AND (SELECT id FROM multidatastream1) IS NOT NULL
-            //                     RETURNING *, _resultnumbers AS result)
-            //     , result1 AS ((SELECT observation1.id FROM observation1)
-            //     , (select observation1._resultnumber from  observation1) AS result
-            //     , (SELECT multidatastream1."keys" FROM multidatastream1)
-            //     , (SELECT searchDuplicate.id AS duplicate FROM  searchDuplicate)
-            //     , ${this.createListQuery(
-            //         Object.keys(insertObject),
-            //         "(SELECT observation1.COLUMN FROM observation1), "
-            //     )} (SELECT multidatastream1.id FROM multidatastream1) AS multidatastream, (SELECT multidatastream1.thing_id FROM multidatastream1) AS thing)
-            //      SELECT coalesce(json_agg(t), '[]') AS result FROM result1 AS t`;
+                 SELECT coalesce(json_agg(t), '[]') AS result FROM result1 AS t`;
     
             this.logQuery(sql);
             return await Common.dbContext
@@ -348,10 +314,10 @@ export class Loras extends Common {
             }
             
            const insertObject = {
-               "featureofinterest_id": "(select featureofinterest1.id from featureofinterest1)",
+               "featureofinterest_id": "(select datastream1._default_foi from datastream1)",
                "datastream_id": "(select datastream1.id from datastream1)",
-               "phenomenonTime": `to_timestamp('${dataInput["date"]}','${_DATEFORMATNOTIMEZONE}')::timestamp`,
-               "resultTime": `to_timestamp('${dataInput["date"]}}','${_DATEFORMATNOTIMEZONE}')::timestamp`,
+               "phenomenonTime": `to_timestamp('${dataInput["date"]}','${EdatesType.dateWithOutTimeZone}')::timestamp`,
+               "resultTime": `to_timestamp('${dataInput["date"]}}','${EdatesType.dateWithOutTimeZone}')::timestamp`,
                "_resultnumber": `${value}`
            };
            let searchDuplicate = "";
@@ -366,16 +332,11 @@ export class Loras extends Common {
                );
                Logs.debug("searchDuplicate", searchDuplicate);
    
-           const sql = `WITH "${_VOIDTABLE}" as (select srid FROM "${_VOIDTABLE}" LIMIT 1)
-               , featureofinterest1 AS (SELECT id FROM "${this.DBST.FeaturesOfInterest.table}"
-                                        WHERE id = (SELECT _default_foi FROM "${this.DBST.Locations.table}" 
-                                        WHERE id = (SELECT location_id FROM "${this.DBST.ThingsLocations.table}" 
-                                        WHERE thing_id = (SELECT thing_id FROM "${this.DBST.Datastreams.table}" 
-                                        WHERE id =${datastream.id}))))
+           const sql = `WITH "${VOIDTABLE}" as (select srid FROM "${VOIDTABLE}" LIMIT 1)
                , datastream1 AS (SELECT id, thing_id FROM "${this.DBST.Datastreams.table}" WHERE id =${datastream.id})
-               , myValues ( "${Object.keys(insertObject).join(_QUOTEDCOMA)}") AS (values (${Object.values(insertObject).join()}))
+               , myValues ( "${Object.keys(insertObject).join(QUOTEDCOMA)}") AS (values (${Object.values(insertObject).join()}))
                , searchDuplicate as (SELECT * FROM "${this.DBST.Observations.table}" WHERE ${searchDuplicate})
-               , observation1 AS (INSERT INTO  "${this.DBST.Observations.table}" ("${Object.keys(insertObject).join(_QUOTEDCOMA)}") SELECT * FROM myValues
+               , observation1 AS (INSERT INTO  "${this.DBST.Observations.table}" ("${Object.keys(insertObject).join(QUOTEDCOMA)}") SELECT * FROM myValues
                                 WHERE NOT EXISTS (SELECT * FROM searchDuplicate)
                                AND (select id from datastream1) IS NOT NULL
                                RETURNING *)

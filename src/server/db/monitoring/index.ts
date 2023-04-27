@@ -1,7 +1,18 @@
+/**
+ * monitoring Index.
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+
 import { db } from "..";
 import { APP_NAME } from "../../constants";
+import { asyncForEach } from "../../helpers";
+import { Logs } from "../../logger";
 
-export const getMetrics = async (name: string): Promise<string[] | string> => {
+export const getMetrics = async (name: string): Promise<string[] | {[key: string] : any}> => {
+    Logs.head("getMetrics");
     const sqlTemp = await db["admin"].raw(`SELECT split_part(split_part((SELECT version()), ',', 1), ' ', 2) as version`);
     const dbVersion = sqlTemp["rows"][0]["version"];
     const username = 'postgres';    
@@ -11,14 +22,14 @@ export const getMetrics = async (name: string): Promise<string[] | string> => {
     const lto = 3 * 1000;
     const metrics = {
         versionFull: 'select version()',
-        version: `SELECT split_part(split_part(split_part((SELECT version()), ',', 1), ' ', 2), '.', 1) as version`,
+        version: `SELECT split_part(split_part((SELECT version()), ',', 1), ' ', 2) as version`,
         get_extensions: `SELECT extname||'-'||extversion FROM pg_extension`,
         get_databases: 'SELECT datname FROM pg_database WHERE NOT datistemplate AND datallowconn',
         get_uptime : 'SELECT pg_postmaster_start_time()',
         get_schemas : `SELECT nspname FROM pg_namespace WHERE nspname !~ '^pg_' AND nspname <> 'information_schema'`,
         get_json_cols : `SELECT c.relname||'.'||a.attname FROM pg_attribute a JOIN pg_class c ON (a.attrelid=c.relfilenode) WHERE a.atttypid = 114`,
-        get_partitionned_tables: `SELECT p.oid, quote_ident(pn.nspname) || '.' || quote_ident(p.relname)," quote_ident(cn.nspname) || '.' || quote_ident(c.relname), ${dbVersion > 11 ? "pg_get_constraintdef(con.oid)" : "con.consrc"}, CASE WHEN t.oid IS NOT NULL THEN 'Trigger' WHEN r.oid IS NOT NULL THEN 'Rule' ELSE 'Unknown' END, count(*) OVER (PARTITION BY p.oid) FROM pg_inherits i JOIN pg_class p ON p.oid = i.inhparent JOIN pg_namespace pn ON pn.oid = p.relnamespace JOIN pg_class c ON c.oid = i.inhrelid JOIN pg_namespace cn ON cn.oid = p.relnamespace JOIN pg_constraint con ON con.conrelid= c.oid AND con.contype = 'c' LEFT JOIN pg_trigger t ON t.tgrelid = p.oid LEFT JOIN pg_rewrite r ON r.ev_class = p.oid `,
-        get_partitionned_implementation: `SELECT DISTINCT CASE WHEN pro.oid IS NOT NULL THEN pro.prosrc WHEN r.oid IS NOT NULL THEN pg_get_ruledef(r.oid) ELSE 'Unknown' END FROM pg_inherits i JOIN pg_class p ON p.oid = i.inhparent JOIN pg_namespace pn ON pn.oid = p.relnamespace LEFT JOIN pg_trigger t ON t.tgrelid = p.oid LEFT JOIN pg_proc pro ON pro.oid = t.tgfoid LEFT JOIN pg_rewrite r ON r.ev_class = p.oid WHERE p.oid = $oi`,
+        get_partitionned_tables: `SELECT p.oid, quote_ident(pn.nspname) || '.' || quote_ident(p.relname), quote_ident(cn.nspname) || '.' || quote_ident(c.relname), ${dbVersion > 11 ? "pg_get_constraintdef(con.oid)" : "con.consrc"}, CASE WHEN t.oid IS NOT NULL THEN 'Trigger' WHEN r.oid IS NOT NULL THEN 'Rule' ELSE 'Unknown' END, count(*) OVER (PARTITION BY p.oid) FROM pg_inherits i JOIN pg_class p ON p.oid = i.inhparent JOIN pg_namespace pn ON pn.oid = p.relnamespace JOIN pg_class c ON c.oid = i.inhrelid JOIN pg_namespace cn ON cn.oid = p.relnamespace JOIN pg_constraint con ON con.conrelid= c.oid AND con.contype = 'c' LEFT JOIN pg_trigger t ON t.tgrelid = p.oid LEFT JOIN pg_rewrite r ON r.ev_class = p.oid `,
+        get_partitionned_implementation: `SELECT DISTINCT CASE WHEN pro.oid IS NOT NULL THEN pro.prosrc WHEN r.oid IS NOT NULL THEN pg_get_ruledef(r.oid) ELSE 'Unknown' END FROM pg_inherits i JOIN pg_class p ON p.oid = i.inhparent JOIN pg_namespace pn ON pn.oid = p.relnamespace LEFT JOIN pg_trigger t ON t.tgrelid = p.oid LEFT JOIN pg_proc pro ON pro.oid = t.tgfoid LEFT JOIN pg_rewrite r ON r.ev_class = p.oid WHERE p.oid = r.oid`,
         has_pg_buffercache: `SELECT proname FROM pg_proc WHERE proname = 'pg_buffercache_pages';`,
         has_pgstatstatements: `SELECT n.nspname||'.'||p.proname FROM pg_proc p, pg_namespace n, pg_settings s WHERE p.proname='pg_stat_statements' AND p.pronamespace=n.oid AND s.name='shared_preload_libraries' AND s.setting LIKE '%pg_stat_statements%'`,
         is_superuser : `SELECT 1 FROM pg_user WHERE usename='${username}' AND usesuper`,
@@ -61,9 +72,16 @@ export const getMetrics = async (name: string): Promise<string[] | string> => {
         dump_pgstatarchiver: `SELECT date_trunc('seconds', now()), archived_count, last_archived_wal, last_archived_time, failed_count, last_failed_wal, last_failed_time, stats_reset FROM pg_stat_archiver`,
         dump_preparedxactstats: `SELECT date_trunc('seconds', now()), database, count(*) AS num_prepared, max(coalesce(extract('epoch' FROM date_trunc('second', current_timestamp-prepared)), 0)) oldest FROM pg_prepared_xacts GROUP BY database`,
         dump_statisticsext: `SELECT date_trunc('seconds', now()), current_database(), cn.nspname AS schemaname, c.relname AS tablename, sn.nspname AS stat_schemaname, s.stxname AS stat_name, pg_get_userbyid(s.stxowner) AS stat_owner, (SELECT array_agg(a.attname ORDER BY a.attnum) AS array_agg FROM unnest(s.stxkeys) k(k) JOIN pg_attribute a ON a.attrelid = s.stxrelid AND a.attnum = k.k) AS attnames, s.stxkind AS kinds FROM pg_statistic_ext s JOIN pg_class c ON c.oid = s.stxrelid LEFT JOIN pg_namespace cn ON cn.oid = c.relnamespace LEFT JOIN pg_namespace sn ON sn.oid = s.stxnamespace WHERE NOT (EXISTS (SELECT 1 FROM unnest(s.stxkeys) k(k) JOIN pg_attribute a ON a.attrelid = s.stxrelid AND a.attnum = k.k WHERE NOT has_column_privilege(c.oid, a.attnum, 'select'::text))) AND (c.relrowsecurity = false OR NOT row_security_active(c.oid))`,
+        
     };
-
-    if (name.trim() === "all") return Object.keys(metrics);
-    const tempResult = await db["admin"].raw(metrics[name]);
-    return tempResult["rows"];
+    if (name.trim() === "keys") return Object.keys(metrics);
+    const res:{[key: string] : any} = {};
+    await asyncForEach(name.trim() === "all" ? Object.keys(metrics) : name.trim().includes(",") ? name.split(",") : [name], async (operation: string) => {
+        if (metrics[operation]) await db["admin"].raw(metrics[operation]).then((result) => {
+            res[operation] = result["rows"];
+        }).catch((err) => {
+            console.log(err);
+        });
+    }); 
+    return res;
 };

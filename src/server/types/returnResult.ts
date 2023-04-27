@@ -10,6 +10,6 @@ export interface IreturnResult {
     id: bigint | undefined;
     nextLink: string | undefined;
     prevLink: string | undefined;
-    body: Object | string | undefined;
+    body: JSON | string | undefined;
     total: bigint | undefined;
 }

@@ -63,9 +63,8 @@
             ) RETURNING *), 
             location1 AS (
                 INSERT INTO "location" 
-                ("_default_foi", "description", "encodingType", "location", "name") 
+                ("description", "encodingType", "location", "name") 
                 values (
-                    2, 
                     '${Object.keys(geoPos)[nb]}', 
                     'application/vnd.geo+json', 
                     '{"type":"Point","coordinates":["${positions[nb][0]}","${positions[nb][1]}"]}', 
@@ -89,9 +88,8 @@
     ) RETURNING *), 
     location1 AS (
         INSERT INTO "location" 
-        ("_default_foi", "description", "encodingType", "location", "name") 
+        ("description", "encodingType", "location", "name") 
         values (
-            2, 
             '${Object.keys(geoPos)[nb]}', 
             'application/vnd.geo+json', 
             '{"type":"Point","coordinates":["${positions[nb][0]}","${positions[nb][1]}"]}', 
@@ -117,9 +115,10 @@
  const datastream = (nb: number) =>
      `WITH datastream AS (
         INSERT INTO "datastream" 
-        ("description", "name", "observedproperty_id", "sensor_id", "thing_id", "unitOfMeasurement") 
+        ("description", "_default_foi","name", "observedproperty_id", "sensor_id", "thing_id", "unitOfMeasurement") 
         values (
-            'Air quality Number ${ numberStr[nb] }', 
+            'Air quality Number ${ numberStr[nb] }',
+            1, 
             'air_quality_readings${nb + 1}', 
             ${ ["3, 1, 4", "2, 1, 5", "2, 3, 5", "4, 3, 1", "3, 2, 2", "1, 3, 4", "1, 3, 1", "8, 5, 6", "8, 5, 6", "8, 5, 6"][nb] }, 
             '{"symbol":"μg/m³","name":"PM 2.5 Particulates (ug/m3)","definition":"http://unitsofmeasure.org/ucum.html"}'
@@ -129,6 +128,7 @@
         INSERT INTO "multidatastream" 
         (
             "name", 
+            "_default_foi",
             "description", 
             "sensor_id", 
             "thing_id", 
@@ -136,6 +136,7 @@
             "unitOfMeasurements") 
         values (
             'air_quality_readings${nb + 1}', 
+            2,
             'Air quality Number ${ numberStr[nb] }', 
             ${["3, 12", "1, 12", "3, 10", "3, 14", "3, 13", "4, 13", "1, 10", "5, 15", "5, 15", "5, 15"][nb]}, 
             '{"Measurement", "Measurement", "Measurement"}', 
@@ -216,11 +217,11 @@
      `WITH "log_request" as (select srid FROM "spatial_ref_sys" LIMIT 1), featureofinterest1 AS (select coalesce((select "id" from "featureofinterest" where "id" = 3), 3) AS id), multidatastream1 AS (select coalesce((select "id" from "multidatastream" where "id" = 10), 10) AS id), observation AS (INSERT INTO "observation" ("featureofinterest_id", "multidatastream_id", "phenomenonTime", "resultTime", "_resultnumbers") values ((select featureofinterest1.id from featureofinterest1), (select multidatastream1.id from multidatastream1), '2016-11-18T05:15:15.790Z', '2016-11-18T13:30:30.790Z', '{"45","50","55"}')RETURNING *, _resultnumber AS result)SELECT * FROM observation;`,
      `WITH "log_request" as (select srid FROM "spatial_ref_sys" LIMIT 1), featureofinterest1 AS (select coalesce((select "id" from "featureofinterest" where "id" = 4), 4) AS id), multidatastream1 AS (select coalesce((select "id" from "multidatastream" where "id" = 10), 10) AS id), observation AS (INSERT INTO "observation" ("featureofinterest_id", "multidatastream_id", "phenomenonTime", "resultTime", "_resultnumbers") values ((select featureofinterest1.id from featureofinterest1), (select multidatastream1.id from multidatastream1), '2016-11-18T02:15:15.790Z', '2016-11-18T15:30:30.790Z', '{"45","50","55"}')RETURNING *, _resultnumber AS result)SELECT * FROM observation;`,
      `WITH "log_request" as (select srid FROM "spatial_ref_sys" LIMIT 1), featureofinterest1 AS (select coalesce((select "id" from "featureofinterest" where "id" = 1), 1) AS id), multidatastream1 AS (select coalesce((select "id" from "multidatastream" where "id" = 10), 10) AS id), observation AS (INSERT INTO "observation" ("featureofinterest_id", "multidatastream_id", "phenomenonTime", "resultTime", "_resultnumbers") values ((select featureofinterest1.id from featureofinterest1), (select multidatastream1.id from multidatastream1), '2016-11-18T07:15:15.790Z', '2016-11-18T17:30:30.790Z', '{"45","50","55"}')RETURNING *, _resultnumber AS result)SELECT * FROM observation;`,
-     `WITH "log_request" as (select srid FROM "spatial_ref_sys" LIMIT 1), thing1 AS (select coalesce((select "id" from "thing" where "id" = 5), 5) AS id), featureofinterest1 AS (select coalesce((select "id" from "featureofinterest" where "id" = 4), 4) AS id), location AS (INSERT INTO "location" ("_default_foi", "description", "encodingType", "location", "name") values ((select featureofinterest1.id from featureofinterest1), '${Object.keys(geoPos)[6]}', 'application/vnd.geo+json', '{"type":"Point","coordinates":["${positions[6][0]}","${positions[6][1]}"]}', 'My Location 6')RETURNING *), thing_location AS (INSERT INTO "thing_location" ("location_id", "thing_id") values ((select location.id from location), (select thing1.id from thing1))RETURNING thing_id)SELECT * FROM location;`,
-     `WITH "log_request" as (select srid FROM "spatial_ref_sys" LIMIT 1), thing1 AS (select coalesce((select "id" from "thing" where "id" = 5), 5) AS id), featureofinterest1 AS (select coalesce((select "id" from "featureofinterest" where "id" = 1), 1) AS id), location AS (INSERT INTO "location" ("_default_foi", "description", "encodingType", "location", "name") values ((select featureofinterest1.id from featureofinterest1), '${Object.keys(geoPos)[7]}', 'application/vnd.geo+json', '{"type":"Point","coordinates":["${positions[7][0]}","${positions[7][1]}"]}', 'My Location 7')RETURNING *), thing_location AS (INSERT INTO "thing_location" ("location_id", "thing_id") values ((select location.id from location), (select thing1.id from thing1))RETURNING thing_id)SELECT * FROM location;`,
-     `WITH "log_request" as (select srid FROM "spatial_ref_sys" LIMIT 1), thing1 AS (select coalesce((select "id" from "thing" where "id" = 5), 5) AS id), featureofinterest1 AS (select coalesce((select "id" from "featureofinterest" where "id" = 3), 3) AS id), location AS (INSERT INTO "location" ("_default_foi", "description", "encodingType", "location", "name") values ((select featureofinterest1.id from featureofinterest1), '${Object.keys(geoPos)[8]}', 'application/vnd.geo+json', '{"type":"Point","coordinates":["${positions[8][0]}","${positions[8][1]}"]}', 'My Location 8')RETURNING *), thing_location AS (INSERT INTO "thing_location" ("location_id", "thing_id") values ((select location.id from location), (select thing1.id from thing1))RETURNING thing_id)SELECT * FROM location;`,
-     `WITH "log_request" as (select srid FROM "spatial_ref_sys" LIMIT 1), thing1 AS (select coalesce((select "id" from "thing" where "id" = 5), 5) AS id), featureofinterest1 AS (select coalesce((select "id" from "featureofinterest" where "id" = 4), 4) AS id), location AS (INSERT INTO "location" ("_default_foi", "description", "encodingType", "location", "name") values ((select featureofinterest1.id from featureofinterest1), '${Object.keys(geoPos)[9]}', 'application/vnd.geo+json', '{"type":"Point","coordinates":["${positions[9][0]}","${positions[9][1]}"]}', 'My Location 9')RETURNING *), thing_location AS (INSERT INTO "thing_location" ("location_id", "thing_id") values ((select location.id from location), (select thing1.id from thing1))RETURNING thing_id)SELECT * FROM location;`,
-     `WITH "log_request" as (select srid FROM "spatial_ref_sys" LIMIT 1), thing1 AS (select coalesce((select "id" from "thing" where "id" = 5), 5) AS id), featureofinterest1 AS (select coalesce((select "id" from "featureofinterest" where "id" = 1), 1) AS id), location AS (INSERT INTO "location" ("_default_foi", "description", "encodingType", "location", "name") values ((select featureofinterest1.id from featureofinterest1), '${Object.keys(geoPos)[10]}', 'application/vnd.geo+json', '{"type":"Point","coordinates":["${positions[10][0]}","${positions[10][1]}"]}', 'My Location 10')RETURNING *), thing_location AS (INSERT INTO "thing_location" ("location_id", "thing_id") values ((select location.id from location), (select thing1.id from thing1))RETURNING thing_id)SELECT * FROM location;`,
+     `WITH "log_request" as (select srid FROM "spatial_ref_sys" LIMIT 1), thing1 AS (select coalesce((select "id" from "thing" where "id" = 5), 5) AS id), featureofinterest1 AS (select coalesce((select "id" from "featureofinterest" where "id" = 4), 4) AS id), location AS (INSERT INTO "location" ("description", "encodingType", "location", "name") values ('${Object.keys(geoPos)[6]}', 'application/vnd.geo+json', '{"type":"Point","coordinates":["${positions[6][0]}","${positions[6][1]}"]}', 'My Location 6')RETURNING *), thing_location AS (INSERT INTO "thing_location" ("location_id", "thing_id") values ((select location.id from location), (select thing1.id from thing1))RETURNING thing_id)SELECT * FROM location;`,
+     `WITH "log_request" as (select srid FROM "spatial_ref_sys" LIMIT 1), thing1 AS (select coalesce((select "id" from "thing" where "id" = 5), 5) AS id), featureofinterest1 AS (select coalesce((select "id" from "featureofinterest" where "id" = 1), 1) AS id), location AS (INSERT INTO "location" ("description", "encodingType", "location", "name") values ('${Object.keys(geoPos)[7]}', 'application/vnd.geo+json', '{"type":"Point","coordinates":["${positions[7][0]}","${positions[7][1]}"]}', 'My Location 7')RETURNING *), thing_location AS (INSERT INTO "thing_location" ("location_id", "thing_id") values ((select location.id from location), (select thing1.id from thing1))RETURNING thing_id)SELECT * FROM location;`,
+     `WITH "log_request" as (select srid FROM "spatial_ref_sys" LIMIT 1), thing1 AS (select coalesce((select "id" from "thing" where "id" = 5), 5) AS id), featureofinterest1 AS (select coalesce((select "id" from "featureofinterest" where "id" = 3), 3) AS id), location AS (INSERT INTO "location" ("description", "encodingType", "location", "name") values ('${Object.keys(geoPos)[8]}', 'application/vnd.geo+json', '{"type":"Point","coordinates":["${positions[8][0]}","${positions[8][1]}"]}', 'My Location 8')RETURNING *), thing_location AS (INSERT INTO "thing_location" ("location_id", "thing_id") values ((select location.id from location), (select thing1.id from thing1))RETURNING thing_id)SELECT * FROM location;`,
+     `WITH "log_request" as (select srid FROM "spatial_ref_sys" LIMIT 1), thing1 AS (select coalesce((select "id" from "thing" where "id" = 5), 5) AS id), featureofinterest1 AS (select coalesce((select "id" from "featureofinterest" where "id" = 4), 4) AS id), location AS (INSERT INTO "location" ("description", "encodingType", "location", "name") values ('${Object.keys(geoPos)[9]}', 'application/vnd.geo+json', '{"type":"Point","coordinates":["${positions[9][0]}","${positions[9][1]}"]}', 'My Location 9')RETURNING *), thing_location AS (INSERT INTO "thing_location" ("location_id", "thing_id") values ((select location.id from location), (select thing1.id from thing1))RETURNING thing_id)SELECT * FROM location;`,
+     `WITH "log_request" as (select srid FROM "spatial_ref_sys" LIMIT 1), thing1 AS (select coalesce((select "id" from "thing" where "id" = 5), 5) AS id), featureofinterest1 AS (select coalesce((select "id" from "featureofinterest" where "id" = 1), 1) AS id), location AS (INSERT INTO "location" ("description", "encodingType", "location", "name") values ('${Object.keys(geoPos)[10]}', 'application/vnd.geo+json', '{"type":"Point","coordinates":["${positions[10][0]}","${positions[10][1]}"]}', 'My Location 10')RETURNING *), thing_location AS (INSERT INTO "thing_location" ("location_id", "thing_id") values ((select location.id from location), (select thing1.id from thing1))RETURNING thing_id)SELECT * FROM location;`,
      `WITH historical_location AS (INSERT INTO "historical_location" ("thing_id", "time") values (2, '2014-12-11T14:59:59.00+08:00') RETURNING *)SELECT * FROM historical_location;`,
      `WITH historical_location AS (INSERT INTO "historical_location" ("thing_id", "time") values (2, '2014-12-21T12:59:59.00+08:00') RETURNING *)SELECT * FROM historical_location;`,
      `WITH historical_location AS (INSERT INTO "historical_location" ("thing_id", "time") values (7, '2014-12-21T16:59:59.00+08:00') RETURNING *)SELECT * FROM historical_location;`,

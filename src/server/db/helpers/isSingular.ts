@@ -7,6 +7,6 @@
  */
 
 import { getEntityName } from "../../helpers";
-import { DBDATAS } from "../constants";
+import { _DBDATAS } from "../constants";
 
-export const isSingular = (input: string): boolean => { const entityName = getEntityName(input); return entityName ? (DBDATAS[entityName].singular == input) : false; };
+export const isSingular = (input: string): boolean => { const entityName = getEntityName(input); return entityName ? (_DBDATAS[entityName].singular == input) : false; };

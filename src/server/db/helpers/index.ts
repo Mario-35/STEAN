@@ -7,16 +7,13 @@
  */
 
 export { createDatabase } from "../createDb";
-export { createGraph } from "./createGraph";
+export { createDbGraph } from "./createDbGraph";
 export { createTable } from "./createTable";
-export { extractMessageError } from "./extractMessageError";
 export { importCsv, createColumnHeaderName } from "./importCsv";
-export { knexQueryToSql } from "./knexQueryToSql";
-export { recordToKeyValue } from "./recordToKeyValue";
+export { knexQueryToSqlString } from "./knexQueryToSqlString";
 export { removeKeyFromUrl } from "./removeKeyFromUrl";
 export { testConnection } from "./testConnection";
 export { verifyId } from "./verifyId";
-export { parseSql } from "./parseSql";
 export { countId } from "./countId";
 export { isGraph } from "./isGraph";
 export { isCsvOrArray } from "./isCsvOrArray";

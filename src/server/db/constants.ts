@@ -8,24 +8,13 @@
 
 /* eslint-disable quotes */
 
-import { Eentities, Erelations } from "../enums";
+import { EdatesType, Eentities, EobservationType, Erelations } from "../enums";
 import { Ientity } from "../types";
+const makeIDAlias = (table: string) => `"${table}"."id" AS "@iot.id"`;
 
 export const _ENTITIES = Object.values(Eentities);
 export const _RIGHTS = 'SUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION NOBYPASSRLS CONNECTION LIMIT -1';
-export const _DATEFORMAT = 'YYYY-MM-DD"T"HH24:MI:SSZ';
-export const _DATEFORMATNOTIMEZONE = 'YYYY-MM-DD HH24:MI:SS';
-export const _DATEFORMATWITHIMEZONE = 'YYYY-MM-DD HH:MI:SSTZH:TZM';
-export const _OBSERVATIONTYPES = {
-    "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_CategoryObservation": "_resulttext",
-    "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_CountObservation": "_resultint",
-    "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement": "_resultnumber",
-    "http://www.opengis.net/def/observation-type/ogc-om/2.0/om_complex-observation 	array of": "_resultnumbers",
-    "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Observation": "any",
-    "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_TruthObservation": "_resultBoolean",
-    "http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation": "_resulttexts"
-};
-const makeIDAlias = (table: string) => `"${table}"."id" AS "@iot.id"`;
+export type _STREAM = "Datastream" | "MultiDatastream" | undefined;
 
 const dbDatas: { [key in Eentities]: Ientity } = {
     Things: {
@@ -204,9 +193,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                 type : "json",
                 test: "encodingType"
             },
-            _default_foi: {
-                create: "BIGINT"
-            },
             geom: {
                 // Not in Sensor 1.1
                 create: "geometry NULL",
@@ -244,19 +230,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                 tableName: "location_historical_location",
                 relationKey: "location_id",
                 // entityColumn: "location_id",
-                entityColumn: "id",
-                tableKey: "id"
-            },
-            FeatureOfInterest: {
-                type: Erelations.belongsTo,
-                expand: `"featureofinterest"."id" = "location"."_default_foi"`,
-                // link: "err: 404 : Path is not valid.",
-                link: `"featureofinterest"."id" = (select "location"."_default_foi" from "location" where "location"."id" = $ID)`,
-
-                entityName: "FeaturesOfInterest",
-                tableName: "featureofinterest",
-                // hide all relations start with "_"²
-                relationKey: "_default_foi",
                 entityColumn: "id",
                 tableKey: "id"
             }
@@ -508,7 +481,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                 create: "text NOT NULL DEFAULT 'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement'::text",
                 type : "list",
                 verify: {
-                    list: Object.keys(_OBSERVATIONTYPES),
+                    list: Object.keys(EobservationType),
                     default: "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement"
                 }
             },
@@ -522,12 +495,12 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             },
             phenomenonTime: {
                 create: "",
-                alias: `CONCAT(\n\t\tto_char((SELECT min("observation"."phenomenonTime") from "observation" where "observation"."datastream_id" = "datastream"."id"),\n\t\t'${_DATEFORMAT}'),\n\t\t'/',\n\t\tto_char((SELECT max("observation"."phenomenonTime") from "observation" where "observation"."datastream_id" = "datastream"."id"),\n\t\t'${_DATEFORMAT}')\n\t) AS "phenomenonTime"`,
+                alias: `CONCAT(\n\t\tto_char((SELECT min("observation"."phenomenonTime") from "observation" where "observation"."datastream_id" = "datastream"."id"),\n\t\t'${EdatesType.date}'),\n\t\t'/',\n\t\tto_char((SELECT max("observation"."phenomenonTime") from "observation" where "observation"."datastream_id" = "datastream"."id"),\n\t\t'${EdatesType.date}')\n\t) AS "phenomenonTime"`,
                 type : "text"              
             },
             resultTime: {
                 create: "",
-                alias: `CONCAT(\n\t\tto_char((SELECT min("observation"."resultTime") from "observation" where "observation"."datastream_id" = "datastream"."id"),\n\t\t'${_DATEFORMAT}'),\n\t\t'/',\n\t\tto_char((SELECT max("observation"."resultTime") from "observation" where "observation"."datastream_id" = "datastream"."id"),\n\t\t'${_DATEFORMAT}')\n\t) AS "resultTime"`,
+                alias: `CONCAT(\n\t\tto_char((SELECT min("observation"."resultTime") from "observation" where "observation"."datastream_id" = "datastream"."id"),\n\t\t'${EdatesType.date}'),\n\t\t'/',\n\t\tto_char((SELECT max("observation"."resultTime") from "observation" where "observation"."datastream_id" = "datastream"."id"),\n\t\t'${EdatesType.date}')\n\t) AS "resultTime"`,
                 type : "text"
             },
             thing_id: {
@@ -545,6 +518,9 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             properties: {
                 create: "jsonb NULL",
                 type : "json"
+            },
+            _default_foi: {
+                create: "BIGINT"
             }
         },
         admin: false,
@@ -640,10 +616,10 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                    type : "json"
             },
             observationType: {
-                create: "text NOT NULL DEFAULT 'http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation'::text",
+                create: "text NOT NULL DEFAULT 'http://www.opengis.net/def/observation-type/ogc-om/2.0/om_complex-observation'::text",
                 type : "list",
                 verify: {
-                    list: Object.keys(_OBSERVATIONTYPES),
+                    list: Object.keys(EobservationType),
                     default: "http://www.opengis.net/def/observation-type/ogc-om/2.0/om_complex-observation"
                 }
             },
@@ -657,12 +633,12 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             },
             phenomenonTime: {
                 create: "",
-                alias: `CONCAT(to_char((SELECT min("observation"."phenomenonTime") from "observation" where "observation"."multidatastream_id" = "multidatastream"."id"),'${_DATEFORMAT}'),'/', to_char((SELECT max("observation"."phenomenonTime") from "observation" where "observation"."multidatastream_id" = "multidatastream"."id"),'${_DATEFORMAT}')) AS "phenomenonTime"`,
+                alias: `CONCAT(to_char((SELECT min("observation"."phenomenonTime") from "observation" where "observation"."multidatastream_id" = "multidatastream"."id"),'${EdatesType.date}'),'/', to_char((SELECT max("observation"."phenomenonTime") from "observation" where "observation"."multidatastream_id" = "multidatastream"."id"),'${EdatesType.date}')) AS "phenomenonTime"`,
                 type : "text"
             },
             resultTime: {
                 create: "",
-                alias: `CONCAT(to_char((SELECT min("observation"."resultTime") from "observation" where "observation"."multidatastream_id" = "multidatastream"."id"),'${_DATEFORMAT}'),'/', to_char((SELECT max("observation"."resultTime") from "observation" where "observation"."multidatastream_id" = "multidatastream"."id"),'${_DATEFORMAT}')) AS "resultTime"`,
+                alias: `CONCAT(to_char((SELECT min("observation"."resultTime") from "observation" where "observation"."multidatastream_id" = "multidatastream"."id"),'${EdatesType.date}'),'/', to_char((SELECT max("observation"."resultTime") from "observation" where "observation"."multidatastream_id" = "multidatastream"."id"),'${EdatesType.date}')) AS "resultTime"`,
                 type : "text"
             },
             thing_id: {
@@ -677,10 +653,8 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                 create: "jsonb NULL",
                 type : "json"
             },
-            _keys: {
-                create: "",
-                alias: `(select jsonb_agg(tmp.elements -> 'name') as keys from ( select jsonb_array_elements("unitOfMeasurements") as elements) as tmp)`,
-                type : "text"               
+            _default_foi: {
+                create: "BIGINT"
             }
         },
     admin: false,
@@ -1132,7 +1106,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             Datastream: {
                 type: Erelations.belongsTo,
                 expand: `"datastream"."id" = "lora"."datastream_id"`,
-                link: `"datastream"."id" (SELECT "lora"."datastream_id" FROM "lara" WHERE "lora"."id" = $ID)`,
+                link: `"datastream"."id" = (SELECT "lora"."datastream_id" FROM "lora" WHERE "lora"."id" = $ID)`,
                 entityName: "Datastreams",
                 tableName: "lora",
                 relationKey: "id",
@@ -1317,6 +1291,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         indexes: {}
     }    
 };
-export const DBDATAS = Object.freeze(dbDatas);
-export const _DBADMIN = Object.fromEntries(Object.entries(DBDATAS).filter(([k,v]) => v.admin === true));
+
+export const _DBDATAS = Object.freeze(dbDatas);
+export const _DBADMIN = Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === true));
  

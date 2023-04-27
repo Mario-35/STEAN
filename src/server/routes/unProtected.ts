@@ -8,7 +8,7 @@
 
 import Router from "koa-router";
 import { apiAccess, userAccess } from "../db/dataAccess";
-import { DBDATAS } from "../db/constants";
+import { _DBDATAS } from "../db/constants";
 import { configCtx, returnFormats } from "../helpers";
 import fs from "fs";
 import { db } from "../db";
@@ -38,11 +38,11 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             const expectedResponse: object[] = [];
             if (isAdmin(ctx) && !adminWithSuperAdminAccess) ctx.throw(401);
             CONFIGURATION.list[ctx._configName].dbEntities
-                .filter((elem: string) => isAdmin(ctx) ?DBDATAS[elem].admin === true : DBDATAS[elem].order > 0)
-                .sort((a, b) => (DBDATAS[a].order > DBDATAS[b].order ? 1 : -1))
+                .filter((elem: string) => isAdmin(ctx) ?_DBDATAS[elem].admin === true : _DBDATAS[elem].order > 0)
+                .sort((a, b) => (_DBDATAS[a].order > _DBDATAS[b].order ? 1 : -1))
                 .forEach((value: string) => {
                 expectedResponse.push({
-                    name: DBDATAS[value].name,
+                    name: _DBDATAS[value].name,
                     url: `${ctx._linkBase}/${ctx._version}/${value}`
                 });
             }); 
@@ -125,7 +125,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             ctx.redirect(`${ctx._rootName}login`);
             return;
 
-        case "METRICS": 
+        case "METRICS":
             const query = ctx.request.url.split("query=")[1];   
             ctx.type = returnFormats.json.type;
             ctx.body = await getMetrics(query);         

@@ -11,7 +11,6 @@ import { Common } from "../entities/common";
 import koa from "koa";
 import { Logs } from "../../logger";
 import { IreturnResult } from "../../types";
-import { recordToKeyValue } from "../helpers";
 import { getEntityName } from "../../helpers";
 import { db } from "..";
 import { messages } from "../../messages";
@@ -47,12 +46,12 @@ export class apiAccess {
 
     async add(): Promise<IreturnResult | undefined> {
         Logs.class(this.constructor.name, "add");        
-        if (this.myEntity) return await this.myEntity.add(JSON.parse(JSON.stringify(this.ctx.request.body)));
+        if (this.myEntity) return await this.myEntity.add(this.ctx.request.body);
     }
 
     async update(idInput: bigint | string): Promise<IreturnResult | undefined> {
         Logs.class(this.constructor.name, "update");
-        if (this.myEntity) return await this.myEntity.update(idInput, recordToKeyValue(this.ctx.request.body));
+        if (this.myEntity) return await this.myEntity.update(idInput, this.ctx.request.body);
     }
 
     async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {

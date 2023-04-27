@@ -13,7 +13,7 @@ import { IApiDoc, IApiInput, prepareToApiDoc, generateApiDoc, identification, ke
 
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
-import { DBDATAS } from "../../server/db/constants";
+import { _DBDATAS } from "../../server/db/constants";
 import { getBigIntFromString } from "../../server/helpers";
 
 chai.use(chaiHttp);
@@ -32,8 +32,8 @@ const simple = {
     "nan": true,
     "columns": {
         "1": {
-            "datastream": "1",
-            "featureOfInterest": "1"
+            "Datastream": "1",
+            "FeaturesOfInterest": "1"
         }
     }
 };
@@ -43,12 +43,12 @@ const multi = {
     "nan": true,
     "columns": {
         "1": {
-            "datastream": "1",
-            "featureOfInterest": "1"
+            "Datastream": "1",
+            "FeaturesOfInterest": "1"
         },
         "2": {
-            "datastream": "4",
-            "featureOfInterest": "1"
+            "Datastream": "4",
+            "FeaturesOfInterest": "2"
         }
     }
 };
@@ -163,7 +163,7 @@ describe("CSV Import", function () {
                         const temp = getBigIntFromString(element);
                         if (temp) ids.push(temp);
                     });
-                    dbTest(DBDATAS.Observations.table)
+                    dbTest(_DBDATAS.Observations.table)
                         .whereIn("id", ids)
                         .orderBy("id")
                         .then((test) => {
@@ -172,7 +172,7 @@ describe("CSV Import", function () {
                             test[0].featureofinterest_id.should.eql("1");
                             test[5]._resultnumber.should.eql(20.1);
                             test[5].datastream_id.should.eql("4");
-                            test[5].featureofinterest_id.should.eql("1");
+                            test[5].featureofinterest_id.should.eql("2");
                             addToApiDoc({ ...infos, result: limitResult(res) });
                             done();
                         })

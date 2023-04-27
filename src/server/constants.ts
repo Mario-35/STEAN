@@ -12,9 +12,9 @@ export const APP_NAME = process.env.npm_package_name || '_STEAN';
 export const APP_VERSION = process.env.npm_package_version || '0';
 export const APP_KEY = fs.readFileSync(__dirname + "/configuration/.key", "utf8") || "zLwX893Mtt9Rc0TKvlInDXuZTFj9rxDV";
 export let _debug = true;
-export const _VOIDTABLE = "spatial_ref_sys";
-export const _DOUBLEQUOTE = '"';
-export const _QUOTEDCOMA = '",\n"';
+export const VOIDTABLE = "spatial_ref_sys";
+export const DOUBLEQUOTE = '"';
+export const QUOTEDCOMA = '",\n"';
 export const API_VERSION = "v1.0";
 export const NODE_ENV = process.env.NODE_ENV ? process.env.NODE_ENV : "production";
 export const TIMESTAMP = (): string => {

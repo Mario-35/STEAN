@@ -1,5 +1,5 @@
 /**
- * knexQueryToSql.
+ * knexQueryToSqlString.
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
@@ -14,7 +14,7 @@
 
 import { Knex } from "knex";
 
-export const knexQueryToSql = (query: Knex.QueryBuilder): string => {
+export const knexQueryToSqlString = (query: Knex.QueryBuilder): string => {
     const tempSqlNative = query.toSQL().toNative();
     let sql = tempSqlNative.sql;
 

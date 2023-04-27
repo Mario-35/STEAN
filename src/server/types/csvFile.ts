@@ -6,12 +6,12 @@
  *
  */
 
-import { IcsvColumn } from ".";
+import { IcsvColumn, IstreamInfos } from ".";
 
 export interface IcsvFile {
     filename: string;
     tempTable: string;
-    dataStreamId: bigint;
+    stream: IstreamInfos[];
     columns: IcsvColumn[];
     header: string;
 }

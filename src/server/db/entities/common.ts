@@ -9,12 +9,12 @@
 import koa from "koa";
 import { Knex } from "knex";
 import { createDbList, isGraph } from "../helpers";
-import { getEntityName, isNull, removeQuotes, returnFormats } from "../../helpers/index";
+import { getEntityName, isNull, returnFormats } from "../../helpers/index";
 import { Logs } from "../../logger";
 import { Ientity, IreturnResult } from "../../types";
-import { createGraph, extractMessageError, knexQueryToSql, removeKeyFromUrl, verifyId } from "../helpers";
+import { createDbGraph, knexQueryToSqlString, removeKeyFromUrl, verifyId } from "../helpers";
 import { CONFIGURATION } from "../../configuration";
-import { IGraphDatas } from "../helpers/createGraph";
+import { IGraphDatas } from "../helpers/createDbGraph";
 import { messages } from "../../messages/";
 
 export class Common {
@@ -40,7 +40,7 @@ export class Common {
 
     // Log full Query
     logQuery(input: Knex.QueryBuilder | string): void {
-        const queryString = typeof input === "string" ? input : knexQueryToSql(input);
+        const queryString = typeof input === "string" ? input : knexQueryToSqlString(input);
         Logs.query(`\n${queryString}`);
     }
 
@@ -79,14 +79,10 @@ export class Common {
         Logs.debug("formatResult", this.ctx._odata.resultFormat);
         if (isGraph(this.ctx._odata)) {            
             const entityName = getEntityName(this.ctx._odata.parentEntity ? this.ctx._odata.parentEntity : this.ctx._odata.entity);            
-            let tempTitle = "No Title";
-            if (entityName && this.DBST[entityName].columns["name"])
-            await Common.dbContext(this.DBST[entityName].table)
-                        .select("name")
-                        .where({id: this.ctx._odata.parentEntity ? this.ctx._odata.parentId: this.ctx._odata.id})
-                        .limit(1)
-                        .then((res: object) => tempTitle = res[0].name);
-            const temp = createGraph(input, tempTitle);
+            const tempTitle = (entityName && this.DBST[entityName].columns["name"]) 
+                                ? await Common.dbContext.raw(`SELECT "name" FROM "${this.DBST[entityName].table}" WHERE id = ${this.ctx._odata.parentEntity ? this.ctx._odata.parentId: this.ctx._odata.id} LIMIT 1`).then((res: object) => res["rows"][0].name)
+                                : "No Title";
+            const temp = createDbGraph(input, tempTitle);
             return temp ? temp : JSON.parse('');
         }
         return input;
@@ -94,15 +90,16 @@ export class Common {
 
     async getAll(): Promise<IreturnResult | undefined> {
         Logs.class(this.constructor.name, `getAll in ${this.ctx._odata.resultFormat} format`);
-
+        // create query
         const sql = this.ctx._odata.asGetSql();
 
         if (isNull(sql)) return;
+
         this.logQuery(sql);
 
-        
         if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ body: sql });
 
+        // build return result
         return await Common.dbContext
             .raw(sql)
             .then(async (res: object) => {   
@@ -120,14 +117,10 @@ export class Common {
             })
             .catch((err: Error) => this.ctx.throw(400, { code: 400,detail: err.message }));
     }
-    
-    onlyValue(input: string | object): string {        
-        return (typeof input === "object") ? JSON.stringify(input) : removeQuotes(input);
-    }
 
     async getSingle(idInput: bigint | string): Promise<IreturnResult | undefined> {
         Logs.class(this.constructor.name, `getSingle [${idInput}]`);
-
+        // create query
         const sql = this.ctx._odata.asGetSql();
 
         if (isNull(sql)) return;
@@ -136,6 +129,7 @@ export class Common {
         
         if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ body: sql });
         
+        // build return result
         return await Common.dbContext
         .raw(sql)
         .then((res: object) => {
@@ -155,20 +149,19 @@ export class Common {
             .catch((err: Error) => this.ctx.throw(400, { code: 400, detail: err.message }));
     }
 
-    async add(dataInput: object | undefined): Promise<IreturnResult | undefined> {
-        
+    async add(dataInput: object | undefined): Promise<IreturnResult | undefined> {        
         Logs.class(this.constructor.name, "add");
         
         dataInput = this.formatDataInput(dataInput);
         
         if (!dataInput) return;
-        
+        // create query
         const sql = this.ctx._odata.asPostSql(dataInput, Common.dbContext);
 
         this.logQuery(sql);
 
         if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ body: sql });
-
+        // build return result
         return await Common.dbContext
             .raw(sql)
             .then((res: object) => {                     
@@ -189,22 +182,22 @@ export class Common {
     async update(idInput: bigint | string, dataInput: object | undefined): Promise<IreturnResult | undefined> {
         Logs.class(this.constructor.name, "update");
 
-        if (!dataInput) this.ctx.throw(400, { code: 400, detail: messages.errors.noDataSend + "update" });
+        // if (!dataInput) this.ctx.throw(400, { code: 400, detail: messages.errors.noDataSend + "update" });
 
         const testIfId = await verifyId(Common.dbContext, BigInt(idInput), this.DBST[this.constructor.name].table);
 
         if (testIfId === false) this.ctx.throw(404, { code: 404, detail: messages.errors.noId + idInput });
 
         dataInput = this.formatDataInput(dataInput);
-
-        if (!dataInput) this.ctx.throw(400, { code: 400, detail: messages.errors.noDataSend + "update" });
-
+        if (!dataInput) return;
+        // create query
         const sql = this.ctx._odata.asPatchSql(dataInput, Common.dbContext);
 
         this.logQuery(sql);
 
         if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ body: sql });
 
+        // build return result
         return await Common.dbContext
             .raw(sql)
             .then((res: object) => {
@@ -220,18 +213,11 @@ export class Common {
 
     async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {
         Logs.class(this.constructor.name, "delete");
-
-        if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ id: BigInt(idInput), body: `DELETE FROM "${this.DBST[this.constructor.name].table}" WHERE id= ${idInput}` });
-
-        const testIfId = await verifyId(Common.dbContext, BigInt(idInput), this.DBST[this.constructor.name].table);
-        if (testIfId === false) this.ctx.throw(404, { code: 404, detail: messages.errors.noId + idInput });
-
-        try {
-            const query: Knex.QueryBuilder = Common.dbContext(this.DBST[this.constructor.name].table).del().where({ id: idInput });
-            const returnValue = await query;
-            return this.createReturnResult({ id: BigInt(returnValue) });
-        } catch (err: any) {
-            this.ctx.throw(400, { code: 400, detail: extractMessageError(err.message) });
-        }
-    }
+        // create query
+        const sql = `DELETE FROM "${this.DBST[this.constructor.name].table}" WHERE id = ${idInput} RETURNING id`;
+        // build return result
+        return this.createReturnResult((this.ctx._odata.resultFormat === returnFormats.sql)  
+                ? { id: BigInt(idInput), body: sql }
+                : { id:  await Common.dbContext.raw(sql).then((res) => BigInt(res["rows"][0].id)).catch(() => BigInt(0))});
+     }
 }

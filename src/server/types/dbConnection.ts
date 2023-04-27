@@ -14,6 +14,3 @@ export interface IdbConnection {
     port: number | undefined;
     retry: number;
 }
-
-
-

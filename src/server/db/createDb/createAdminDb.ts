@@ -11,10 +11,8 @@ import { CONFIGURATION } from "../../configuration";
 import { asyncForEach } from "../../helpers";
 import { Logs } from "../../logger";
 import { _DBADMIN, _RIGHTS } from "../constants";
-// import { Iuser } from "../interfaces";
-
  
- export const createAdminDB = async(configName: string): Promise<{ [key: string]: string }> => {
+export const createAdminDB = async(configName: string): Promise<{ [key: string]: string }> => {
     Logs.head("createAdminDB", "createDatabase");
 
     // init result

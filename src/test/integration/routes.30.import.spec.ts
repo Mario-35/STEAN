@@ -13,7 +13,7 @@ import { IApiDoc, IApiInput, prepareToApiDoc, identification, keyTokenName, limi
 
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
-import { DBDATAS } from "../../server/db/constants";
+import { _DBDATAS } from "../../server/db/constants";
 
 chai.use(chaiHttp);
 
@@ -74,7 +74,7 @@ describe("CSV Import", function () {
                     res.body["@iot.id"].should.eql(14);
                     // res.body["observationType"].should.eql('http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation');
 
-                    dbTest(DBDATAS.Observations.table)
+                    dbTest(_DBDATAS.Observations.table)
                         .where("datastream_id", 14)
                         .orderBy("id")
                         .then((test) => {
@@ -110,7 +110,7 @@ describe("CSV Import", function () {
                     should.not.exist(err);
                     res.should.have.status(201);
                     res.body["@iot.id"].should.eql(14);
-                    dbTest(DBDATAS.Observations.table)
+                    dbTest(_DBDATAS.Observations.table)
                         .where("datastream_id", 14)
                         .orderBy("id")
                         .then((test) => {

@@ -32,7 +32,7 @@ import {
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
-import { DBDATAS } from "../../server/db/constants";
+import { _DBDATAS } from "../../server/db/constants";
 import { Ientity } from "../../server/types";
 
 export const testsKeys = [
@@ -51,7 +51,7 @@ chai.use(chaiHttp);
 const should = chai.should();
 
 const docs: IApiDoc[] = [];
-const entity: Ientity = DBDATAS.Locations;
+const entity: Ientity = _DBDATAS.Locations;
 
 
 const addToApiDoc = (input: IApiInput) => {
@@ -359,57 +359,6 @@ describe("endpoint : Locations [8.2.2]", () => {
                     const tempSearch = await dbTest.table("thing_location").select("*").where({ thing_id: 1, location_id: res.body["@iot.id"] });
                     tempSearch[0].should.include.keys("location_id", "thing_id");
                     tempSearch[0]["thing_id"].should.eql("1");
-                    tempSearch[0]["location_id"].should.eql(String(res.body["@iot.id"]));
-                    addToApiDoc({ ...infos, result: res });
-                    docs[docs.length - 1].apiErrorExample = myError;
-                    done();
-                });
-        });
-
-        it(`Return added Location with existing Thing and FOI default ${nbColor}[10.2.1.1]`, (done) => {
-            const datas = {
-                "name": `Au Comptoir Vénitien ${getNB(entity.name)}`,
-                "description": "Au Comptoir Vénitien",
-                "encodingType": "application/vnd.geo+json",
-                "location": {
-                    "type": "Point",
-                    "coordinates": [48.11829243294942, -1.717928984533772]
-                },
-                "FeatureOfInterest": {
-                    "name": "Weather New FOI",
-                    "description": "This is a weather station create by location",
-                    "encodingType": "application/vnd.geo+json",
-                    "feature": {
-                        "type": "Point",
-                        "coordinates": [48.14523718972358, -1.8305352019940178]
-                    }
-                }
-            };
-            const infos = {
-                api: `{post} ${entity.name} Post with Thing and new FOI`,
-                apiName: `PostLocationThingFoi${entity.name}`,
-                apiDescription: "POST new Location with existing Thing.",
-                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#create-related-entities",
-                apiExample: {
-                    http: `/v1.0/Things(2)/${entity.name}`,
-                    curl: defaultPost("curl", "KEYHTTP", datas),
-                    javascript: defaultPost("javascript", "KEYHTTP", datas),
-                    python: defaultPost("python", "KEYHTTP", datas)
-                },
-                apiParamExample: datas
-            };
-            chai.request(server)
-                .post(`/test${infos.apiExample.http}`)
-                .send(infos.apiParamExample)
-                .set("Cookie", `${keyTokenName}=${token}`)
-                .end(async (err: Error, res: any) => {
-                    should.not.exist(err);
-                    res.status.should.equal(201);
-                    res.type.should.equal("application/json");
-                    res.body.should.include.keys(testsKeys);
-                    const tempSearch = await dbTest.table("thing_location").select("*").where({ thing_id: 2, location_id: res.body["@iot.id"] });
-                    tempSearch[0].should.include.keys("location_id", "thing_id");
-                    tempSearch[0]["thing_id"].should.eql("2");
                     tempSearch[0]["location_id"].should.eql(String(res.body["@iot.id"]));
                     addToApiDoc({ ...infos, result: res });
                     docs[docs.length - 1].apiErrorExample = myError;

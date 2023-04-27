@@ -6,7 +6,7 @@
  *
  */
 
-import { DBDATAS } from "../constants";
+import { _DBDATAS } from "../constants";
 
 
-export const createDbList = (list: string[]) => Object.fromEntries(Object.entries(DBDATAS).filter(([k,v]) => list.includes(k)));
+export const createDbList = (list: string[]) => Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => list.includes(k)));

@@ -20,7 +20,7 @@ import pg from "pg";
 import update from "./update.json";
 import { messages, messagesReplace } from "../messages";
 import { IconfigFile, IdbConnection, Iuser } from "../types";
-import { DBDATAS, _DBADMIN } from "../db/constants";
+import { _DBDATAS, _DBADMIN } from "../db/constants";
 
 
 // class to create configs environements
@@ -160,17 +160,16 @@ class Configuration {
             alias: input["alias"] ? String(input["alias"]).split(",") : [],
             retry: input["retry"] ? +input["retry"] : 2,
             lora: input["lora"] ? input["lora"] : false,
+            highPrecision: input["highPrecision"] ? input["highPrecision"] : false,
             multiDatastream: input["multiDatastream"] ? input["multiDatastream"] : false,
             logFile: input["log"] ? input["log"] : "",
             dbEntities: goodName === "admin" 
                                         ? Object.keys(_DBADMIN)
-                                        : Object.keys(Object.fromEntries(Object.entries(DBDATAS).filter(([k,v]) => v.admin === false && v.lora === false))),
+                                        : Object.keys(Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === false && v.lora === false))),
             
         };
         if (Object.values(returnValue).includes("ERROR")) throw new TypeError(`${messages.errors.configFile} [${util.inspect(returnValue, { showHidden: false, depth: null })}]`);
-        if (returnValue.lora === true) returnValue.dbEntities = returnValue.dbEntities.concat(Object.keys(Object.fromEntries(Object.entries(DBDATAS).filter(([k,v]) => v.admin === false && v.lora === true))));
-console.log(returnValue);
-
+        if (returnValue.lora === true) returnValue.dbEntities = returnValue.dbEntities.concat(Object.keys(Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === false && v.lora === true))));
         return returnValue;
     }
 

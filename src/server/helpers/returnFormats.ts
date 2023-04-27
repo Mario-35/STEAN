@@ -17,7 +17,7 @@ import util from "util";
 import { removeQuotes } from ".";
 import { PgVisitor } from "../odata";
 import { countId, isGraph } from "../db/helpers";
-import { DBDATAS } from "../db/constants";
+import { _DBDATAS } from "../db/constants";
 import { Eformats } from "../enums";
 
 export const queryAsJson = (input: {
@@ -42,7 +42,7 @@ const defaultForwat = (input: PgVisitor): string => input.sql;
 const generateFields = (input: PgVisitor): string[] => {
   let fields:string[] = [];
   if (isGraph(input)) {    
-    const table = DBDATAS[input.parentEntity ? input.parentEntity: input.getEntity()].table;
+    const table = _DBDATAS[input.parentEntity ? input.parentEntity: input.getEntity()].table;
     fields = [`(select ${table}."description" from ${table} where ${table}."id" = ${input.parentId ? input.parentId: input.id}) AS title, `];
   } 
   return fields;
@@ -55,7 +55,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
     generateSql(input: PgVisitor) {      
     return (input.interval) 
       ? queryInterval(input)
-      : queryAsJson({query: input.sql, singular: false, count: true, mario: input.count === true ? countId(DBDATAS[input.entity].table) : undefined, fields: generateFields(input)});
+      : queryAsJson({query: input.sql, singular: false, count: true, mario: input.count === true ? countId(_DBDATAS[input.entity].table) : undefined, fields: generateFields(input)});
     },
   }, // IMPORTANT TO HAVE THIS BEFORE GRAPH
   graphDatas: {

@@ -16,6 +16,7 @@ export { IentityRelation } from "./entityRelation";
 export { IdbConnection } from "./dbConnection";
 export { Ientity } from "./entity";
 export { IpgQuery } from "./pgQuery";
+export { IstreamInfos } from "./streamInfos";
 export { Iuser } from "./user";
 export { Iquery } from "./query";
 export { IuserToken } from "./userToken";

@@ -297,14 +297,12 @@ export const infos = {
             description: "The description about the Location.",
             encodingType: "The encoding type of the Location property. Its value is GeoJSON.",
             location: "The location type is defined by encodingType.",
-            _default_foi: "BIGINT",
             geom: "json",
             properties: definitions.properties
         },
         relations: {
             Things: "Multiple Things MAY locate at the same Location. A Thing MAY not have a Location.",
             HistoricalLocations: "A Location can have zero-to-many HistoricalLocations. One HistoricalLocation SHALL have one or many Locations.",
-            FeatureOfInterest: "id"
         }
     },
 

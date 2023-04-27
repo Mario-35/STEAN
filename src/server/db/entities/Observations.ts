@@ -14,6 +14,7 @@ import { Logs } from "../../logger";
 import { IreturnResult } from "../../types";
 import { getBigIntFromString } from "../../helpers";
 import { messages, messagesReplace } from "../../messages";
+import { QUOTEDCOMA } from "../../constants";
 
 export class Observations extends Common {
     constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
@@ -52,13 +53,13 @@ export class Observations extends Common {
                     multiDatastream["keys"].forEach((element: string) => {
                         tempNumbers.push(upperResults[element.toUpperCase()]);
                     });
-                    dataInput["_resultnumbers"] = `{"${tempNumbers.join('","')}"}`;
+                    dataInput["_resultnumbers"] = `{"${tempNumbers.join(QUOTEDCOMA)}"}`;
                 delete dataInput["result"];
             }
         } else if (dataInput["result"]) {
             const inputValue = dataInput["result"];
             if (inputValue != null && inputValue !== "" && !isNaN(Number(inputValue.toString()))) dataInput["_resultnumber"] = inputValue.toString();
-            else if (typeof inputValue == "object") dataInput["_resultnumbers"] = `{"${Object.values(inputValue).join('","')}"}`;
+            else if (typeof inputValue == "object") dataInput["_resultnumbers"] = `{"${Object.values(inputValue).join(QUOTEDCOMA)}"}`;
             delete dataInput["result"];
         }        
         return dataInput;

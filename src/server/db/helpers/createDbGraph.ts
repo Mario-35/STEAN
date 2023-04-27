@@ -1,5 +1,5 @@
 /**
- * createGraph.
+ * createDbGraph.
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
@@ -18,17 +18,15 @@ export interface IGraphDatas {
     dates: string[];
 }
 
-export const createGraph = (input: JSON, mainTitle: string): IGraphDatas | undefined => {
-    Logs.class("createGraph");
+export const createDbGraph = (input: JSON, mainTitle: string): IGraphDatas | undefined => {
+    Logs.class("createDbGraph");
     if (input)
         try {
             const multi = typeof input[0]["result"] === "object" && input[0]["result"] != null;
             const keys = multi ? Object.keys(input[0]["result"]) : ["result"];
             const values: { [key: string]: [number | null] } = {};
-
             // create blank value to avoid undefined error
             keys.forEach((elem: string) => (values[elem] = [null]));
-
             const returnResult: IGraphDatas = {
                 title: mainTitle,
                 keys: keys,

@@ -6,8 +6,9 @@
  *
  */
 
+import { IstreamInfos } from "./streamInfos";
+
 export interface IcsvColumn {
     column: string;
-    datastream: string;
-    featureOfInterest: string;
+    stream: IstreamInfos;
 }

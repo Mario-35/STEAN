@@ -13,7 +13,7 @@ import { IcsvColumn, IcsvFile } from "../../types";
 import readline from "readline";
 import { Knex } from "knex";
 import koa from "koa";
-import { DBDATAS } from "../constants";
+import { _DBDATAS } from "../constants";
 
 /**
  *
@@ -142,11 +142,10 @@ export const importCsv = async (ctx: koa.Context, knex: Knex | Knex.Transaction,
                     Logs.debug("COPY TO ", paramsFile.tempTable);
                     const scriptSql: string[] = [];
                     const scriptSqlResult: string[] = [];
-
-                    Object.keys(paramsFile.columns).forEach(async (myColumn: string, index: number) => {
+                    Object.keys(paramsFile.columns).forEach(async (myColumn: string, index: number) => {                        
                         const csvColumn: IcsvColumn = paramsFile.columns[myColumn];
                         const valueSql = `CASE "${paramsFile.tempTable}".value${csvColumn.column} WHEN '---' THEN NULL ELSE cast(REPLACE(value${csvColumn.column},',','.') as float) END`;
-                        scriptSql.push(`${index == 0 ? "WITH" : ","} updated${index + 1} as (INSERT into "${ DBDATAS.Observations.table }" ("datastream_id", "featureofinterest_id", "phenomenonTime","resultTime", "_resultnumber") SELECT ${csvColumn.datastream}, ${ csvColumn.featureOfInterest },  ${sqlRequest.dateSql}, ${sqlRequest.dateSql},${valueSql} FROM "${paramsFile.tempTable}" ON CONFLICT DO NOTHING returning id)`);
+                        scriptSql.push(`${index == 0 ? "WITH" : ","} updated${index + 1} as (INSERT into "${ _DBDATAS.Observations.table }" ("${csvColumn.stream.type?.toLowerCase()}_id", "featureofinterest_id", "phenomenonTime","resultTime", "_resultnumber") SELECT ${csvColumn.stream.id}, ${ csvColumn.stream.FoId},  ${sqlRequest.dateSql}, ${sqlRequest.dateSql},${valueSql} FROM "${paramsFile.tempTable}" ON CONFLICT DO NOTHING returning id)`);
                         scriptSqlResult.push(index == 0 ? " SELECT id FROM updated1" : ` UNION SELECT id FROM updated${index + 1}`);
 
                     });

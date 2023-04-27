@@ -1,7 +1,6 @@
 
 {
-    "database": [
-        "CREATE EXTENSION IF NOT EXISTS tablefunc;"
+    "database": [""
     ]
 }
 

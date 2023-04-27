@@ -6,12 +6,12 @@ import { CONFIGURATION } from "../configuration";
 import { PgVisitor } from "./visitor/PgVisitor";
 import { SqlOptions } from "./parser/sqlOptions";
 import { db } from "../db";
-import { DBDATAS } from "../db/constants";
+import { _DBDATAS } from "../db/constants";
 export { PgVisitor } from "./visitor/PgVisitor";
 
 const doSomeWarkAfterAst = async (input: PgVisitor, ctx: koa.Context) => {    
     if ( input.splitResult && input.splitResult[0].toUpperCase() == "ALL" && input.parentId && <bigint>input.parentId > 0) {
-        const temp = await db[ctx._configName].raw(`select jsonb_agg(tmp.units -> 'name') as keys from ( select jsonb_array_elements("unitOfMeasurements") as units from ${DBDATAS.MultiDatastreams.table} where id = ${input.parentId} ) as tmp`);
+        const temp = await db[ctx._configName].raw(`select jsonb_agg(tmp.units -> 'name') as keys from ( select jsonb_array_elements("unitOfMeasurements") as units from ${_DBDATAS.MultiDatastreams.table} where id = ${input.parentId} ) as tmp`);
         input.splitResult = temp.rows[0]["keys"];
     }   
 };

@@ -6,7 +6,7 @@
  *
  */
 
-import { DBDATAS } from "../db/constants";
+import { _DBDATAS } from "../db/constants";
 
 /**
  *
@@ -21,8 +21,8 @@ export function getEntityName(search: string): string | undefined {
         .trim();
 
     return testString
-        ? DBDATAS.hasOwnProperty(testString)
+        ? _DBDATAS.hasOwnProperty(testString)
             ? testString
-            : Object.keys(DBDATAS).filter((elem: string) => DBDATAS[elem].table == testString.toLowerCase() || DBDATAS[elem].singular == testString)[0]
+            : Object.keys(_DBDATAS).filter((elem: string) => _DBDATAS[elem].table == testString.toLowerCase() || _DBDATAS[elem].singular == testString)[0]
         : undefined;
 }
