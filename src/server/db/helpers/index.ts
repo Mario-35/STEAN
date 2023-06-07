@@ -21,4 +21,5 @@ export { isObservation } from "./isObservation";
 export { getDBDateNow } from "./getDBDateNow";
 export { columnList } from "./columnList";
 export { isSingular } from "./isSingular";
+export { getStreamInfos } from "./getStreamInfos";
 export { createDbList } from "./createDbList";

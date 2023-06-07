@@ -5,7 +5,7 @@
   submit.onclick = () => wait(true);
 
   preview.onclick = () => {
-    updateWinJsonResult(jsonDatas.innerText, "Preview datas");
+    updateWinJsonResult(datas.innerText, "Preview datas");
   };
 
   logout.onclick = () => {
@@ -30,7 +30,7 @@
   };
 
   addImport.onclick = () => {
-    jsonDatas.innerText = JSON.stringify({
+    datas.innerText = JSON.stringify({
       "header": true,
       "nan": true,
       "duplicates": true,
@@ -79,26 +79,26 @@
       if(_PARAMS._DATAS[entity.value].columns[e].type)
         switch (_PARAMS._DATAS[entity.value].columns[e].type.split(":")[0]) {
           case "json":
-            result[e]= {}
+            result[e]= {};
             break;
           case "relation":
-            result[e.split("_id")[0]]= {"@iot.id": -1}
+            result[e.split("_id")[0]]= {"@iot.id": -1};
             break;
           case "text":
-            result[e]= ""
+            result[e]= "";
             break;
         
           default:
             break;
         } else console.log(e);
     });
-    beautifyDatas(getElement("jsonDatas"), result, "json") ;
-  }
+    beautifyDatas(getElement("datas"), result, "json") ;
+  };
 
   btnClear.onclick = () => {
-    jsonDatas.innerText = "";
+    datas.innerText = "";
     buttonGo();
-  }
+  };
 
   go.onclick = async (e) => {
     wait(true);    
@@ -147,7 +147,7 @@
             headers: {
               "Content-Type": "application/json",
             },
-            body: jsonDatas.innerText ,
+            body: datas.innerText ,
           });
             const value = await response.text();
             if (response.status == 401) {
@@ -161,7 +161,7 @@
             headers: {
               "Content-Type": "application/json",
             },
-            body: jsonDatas.innerText,
+            body: datas.innerText,
           });
           const value = await response.json();
           if (response.status == 401) {
@@ -177,7 +177,7 @@
         // |                                   DELETE                                    |
         // ===============================================================================
         try {
-          if (nb.value && Number(nb.value) > 0 || (entity.value == "Loras" && nb.value != "")) {
+          if (nb.value && Number(nb.value) > 0 || (entity.value === "Loras" && nb.value !== "")) {
             let response = await fetch(url, {
               method: "DELETE",
               headers: {
@@ -218,11 +218,11 @@
         buttonGo();
       }
     }
-  };
+  }
 
   function dblClickLink(element) {
       if (canGo === true) go.onclick(element);
-  };
+  }
 
   nb.addEventListener("change", () => {
     updateForm();
@@ -231,7 +231,7 @@
   queryExpand.addEventListener("change", () => {
     const test = !queryExpand.value.startsWith(_NONE);
     toggleShowHide(querySubExpand, test);
-    if (test) populateMultiSelect("querySubExpand",  Object.keys( _PARAMS._DATAS [queryExpand.value].relations)[subentity.value], null, _NONE);
+    if (test) populateMultiSelect("querySubExpand", Object.keys( _PARAMS._DATAS [queryExpand.value].relations)[subentity.value], null, _NONE);
   });
 
   entity.addEventListener("change", () => {
@@ -241,8 +241,8 @@
       if ((entity.value.includes("createDB") && _PARAMS.user.canCreateDb == true) || importFile) method.value = "POST";
       else if (entity.value === "createDB") method.value = "POST";
       else {
-        if (relations) populateSelect(subentity, relations, relations.includes(_PARAMS.subentity) ? _PARAMS.subentity :  _NONE, true);
-        populateSelect(method, entity.value == "Loras" ? ["GET","POST"]  : _PARAMS.methods ,"GET"); 
+        if (relations) populateSelect(subentity, relations, relations.includes(_PARAMS.subentity) ? _PARAMS.subentity : _NONE, true);
+        populateSelect(method, entity.value == "Loras" ? ["GET","POST"] : _PARAMS.methods ,"GET"); 
       }
     }
     refresh();    
@@ -314,15 +314,15 @@
     if (plus) {
       addToResultList("-->", plus);
     }
-  };
+  }
   
   btnLoraLogs.onclick = async (e) => {
     if (e) e.preventDefault();
     wait(true);
     let url = `${optHost.value}/${optVersion.value}/`;
     if(replayId.value.startsWith("where")) {
-      const encoded = btoa(`select * from "log_request" ${replayId.value}`)
-      url +=  `Sql?$query=${encoded}`;
+      const encoded = btoa(`select * from "log_request" ${replayId.value}`);
+      url += `Sql?$query=${encoded}`;
       const jsonObj = await getFetchDatas(url, "json");
       wait(false);
       updateWinResult("rien");
@@ -345,8 +345,8 @@
         }
       }); 
     } else {
-      url +=  `Logs?$filter=method eq 'POST'`;
-      if(replayId.value != "")  url += ` and datas/deveui eq '${replayId.value}'`;
+      url += `Logs?$filter=method eq 'POST'`;
+      if(replayId.value != "") url += ` and datas/deveui eq '${replayId.value}'`;
       url += ` and code eq 404 and code eq 400 and entityid eq null`;
       url += `&$orderby=date desc&$top=200000`;
       url = addDebug(url);
@@ -369,4 +369,10 @@
         }
       }        
     }
+  };
+
+  function prepareForm() {
+    const text = jsonDatas.innerText.replace(/[^\x00-\x7F]/g, '');
+    datas.innerText = text;
+    document.getElementById("actionForm").requestSubmit();
   }

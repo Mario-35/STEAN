@@ -52,6 +52,7 @@ addToApiDoc({
 
 describe("endpoint : index", () => {
     describe("GET /v1.0/ [9.2.1]", () => {
+
         it("should return json", (done) => {
             const infos = {
                 api: "{get}  resource path",
@@ -94,6 +95,50 @@ describe("endpoint : index", () => {
                     docs.push(prepareToApiDoc({ ...infos, result: res }, "SensorThings"));
                     generateApiDoc(docs, "apiSensorThings.js");
 
+                    done();
+                });
+        });        
+
+        it("should return json", (done) => {
+            const infos = {
+                api: "{get}  resource path",
+                apiName: "rootSensorThings",
+                apiDescription: `Access to all resources begins at the base resource path.`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#resource-path",
+                apiExample: { http: "/v1.0/" },
+                apiSuccess: [
+                    "{relation} Datastreams Get all datastreams.",
+                    "{relation} MultiDatastreams Get all multidatastreams.",
+                    "{relation} FeaturesOfInterest Get all features of interest.",
+                    "{relation} HistoricalLocation Get all historical locations.",
+                    "{relation} Locations Get all locations.",
+                    "{relation} Observations Get all observations.",
+                    "{relation} ObservedProperties Get all observed property.",
+                    "{relation} Sensors Get all sensors.",
+                    "{relation} Things Get all things.",
+                    "{relation} Loras Get all loras.",
+                    "{relation} Decoders Get all decoders."
+                ]
+            };
+
+            chai.request(server)
+                .get(`/test/${infos.apiExample.http}`)
+                .end((err, res) => {
+                    should.not.exist(err);
+                    res.status.should.eql(200);
+                    res.type.should.eql("application/json");
+                    res.body.value[0].url.should.contain("/Datastreams");
+                    res.body.value[1].url.should.contain("/MultiDatastreams");
+                    res.body.value[2].url.should.contain("/FeaturesOfInterest");
+                    res.body.value[3].url.should.contain("/HistoricalLocation");
+                    res.body.value[4].url.should.contain("/Locations");
+                    res.body.value[5].url.should.contain("/Observations");
+                    res.body.value[6].url.should.contain("/ObservedProperties");
+                    res.body.value[7].url.should.contain("/Sensors");
+                    res.body.value[8].url.should.contain("/Things");
+                    res.body.value[9].url.should.contain("/Loras");
+                    res.body.value[10].url.should.contain("/Decoders");
+                    docs.push(prepareToApiDoc({ ...infos, result: res }, "SensorThings"));
                     done();
                 });
         });

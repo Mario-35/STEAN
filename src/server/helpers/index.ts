@@ -8,7 +8,7 @@
 
 import koa from "koa";
 
-export const goodName = (input: string): string => input.replace(/[ ]+/g, "").toLowerCase();
+export const goodNameForPostgres = (input: string): string => input.replace(/[ ]+/g, "").toLowerCase();
 export const removeQuotes = (input: string): string => input.replace(/['"]+/g, "");
 export const isTest = () => process.env.NODE_ENV?.trim() === "test" || false;
 export const getUserId = (ctx: koa.Context): number => ctx.state.user && ctx.state.user.id ? ctx.state.user.id : -1;
@@ -20,6 +20,8 @@ export { cleanStringComma } from "./cleanStringComma";
 export { getBigIntFromString } from "./getBigIntFromString";
 export { getEntityName } from "./getEntityName";
 export { hidePasswordInJson } from "./hidePasswordInJson";
+export { getUrlId } from "./getUrlId";
+export { getUrlKey } from "./getUrlKey";
 export { setConfigToCtx } from "./setConfigToCtx";
 export { configCtx } from "./showconfigCtx";
 export { returnFormats } from "./returnFormats";

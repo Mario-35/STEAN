@@ -93,7 +93,7 @@ const connDb = knex({
         .then(() => "✔")
         .catch((err: Error) => err.message);
 
-    await asyncForEach(CONFIGURATION.list[configName].dbEntities, async (keyName: string) => {
+    await asyncForEach(CONFIGURATION.dbEntities[configName], async (keyName: string) => {
         await createTable(connDb, _DBDATAS[keyName], undefined);
     });
 

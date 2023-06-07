@@ -11,8 +11,6 @@
 import { EdatesType, Eentities, EobservationType, Erelations } from "../enums";
 import { Ientity } from "../types";
 const makeIDAlias = (table: string) => `"${table}"."id" AS "@iot.id"`;
-
-export const _ENTITIES = Object.values(Eentities);
 export const _RIGHTS = 'SUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION NOBYPASSRLS CONNECTION LIMIT -1';
 export type _STREAM = "Datastream" | "MultiDatastream" | undefined;
 
@@ -47,6 +45,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             thing_unik_name: 'UNIQUE ("name")',
         },
         admin: false,
+        canPost: false,
         relations: {
             Locations: {
                 type: Erelations.belongsToMany,
@@ -128,6 +127,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             }
         },
         admin: false,
+        canPost: false,
         relations: {
             Observations: {
                 type: Erelations.hasMany,
@@ -209,6 +209,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             location_unik_name: 'UNIQUE ("name")',
         },
         admin: false,
+        canPost: false,
         relations: {
             Things: {
                 type: Erelations.belongsToMany,
@@ -262,6 +263,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             historical_location_thing_id: 'ON public."historical_location" USING btree ("thing_id")'
         },
         admin: false,
+        canPost: false,
         relations: {
             // TODO NOT GOOD
             Things: {
@@ -314,6 +316,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             location_historical_location_location_id: 'ON public."location_historical_location" USING btree ("location_id")'
         },
         admin: false,
+        canPost: false,
         relations: {}
     },
 
@@ -352,6 +355,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             observedproperty_unik_name: 'UNIQUE ("name")',
         },
         admin: false,
+        canPost: false,
         relations: {
             Datastreams: {
                 type: Erelations.hasMany,
@@ -422,6 +426,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             sensor_unik_name: 'UNIQUE ("name")',
         },
         admin: false,
+        canPost: false,
         relations: {
             Datastreams: {
                 type: Erelations.hasMany,
@@ -524,6 +529,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             }
         },
         admin: false,
+        canPost: false,
         relations: {
             Thing: {
                 type: Erelations.belongsTo,
@@ -658,6 +664,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             }
         },
     admin: false,
+        canPost: false,
         relations: {
             Thing: {
                 type: Erelations.belongsTo,
@@ -740,6 +747,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             }
         },
         admin: false,
+        canPost: false,
         relations: {},
         constraints: {
             multi_datastream_observedproperty_pkey: 'PRIMARY KEY ("multidatastream_id", "observedproperty_id")',
@@ -873,6 +881,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             observation_featureofinterest_id: 'ON public."observation" USING btree ("featureofinterest_id")'
         },
         admin: false,
+        canPost: false,
         relations: {
             Datastream: {
                 type: Erelations.belongsTo,
@@ -942,6 +951,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             HistoricalObservations_observation_id: 'ON public."historical_observation" USING btree ("observation_id")'
         },
         admin: false,
+        canPost: false,
         relations: {
             Observations: {
                 type: Erelations.belongsTo,
@@ -972,6 +982,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             }
         },
         admin: false,
+        canPost: false,
         relations: {},
         constraints: {
             thing_location_pkey: 'PRIMARY KEY ("thing_id", "location_id")',
@@ -1034,6 +1045,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             decoder_unik_name: 'UNIQUE ("name")',
         },
         admin: false,
+        canPost: false,
         relations: {
             Loras: {
                 type: Erelations.hasMany,
@@ -1102,6 +1114,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             decoder_id: 'ON public."lora" USING btree ("decoder_id")'
         },
         admin: false,
+        canPost: false,
         relations: {
             Datastream: {
                 type: Erelations.belongsTo,
@@ -1142,6 +1155,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         table: "user",
         order: 21,
         admin: true,
+        canPost: true,
         lora: true,
         columns: {
             id: {
@@ -1187,6 +1201,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         table: "log_request",
         order: 22,
         admin: true,
+        canPost: true,
         lora: true,
         columns: {
             id: {
@@ -1252,16 +1267,90 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         table: "config",
         order: 20,
         admin: true,
-        lora: true,
+        canPost: true,
+        lora: false,
         columns: {
             name: {
-                create: "TEXT GENERATED ALWAYS AS IDENTITY"
+                create: "TEXT UNIQUE NOT NULL",
+                type : "text"
             },
-            properties: {
-                create: "jsonb NULL",
-                type : "json"
+            key: {
+                create: "text",
+                type : "text"
+            },
+            pghost: {
+                create: "text NOT NULL",
+                type : "text"
+            },
+            pgport: {
+                create: "int",
+                type : "number"
+            },
+            port: {
+                create: "int",
+                type : "number"
+            },
+            pguser: {
+                create: "text NOT NULL",
+                type : "text"
+            },
+            pgpassword: {
+                create: "text NOT NULL",
+                type : "text"
+            },
+            apiVersion: {
+                create: "text NOT NULL",
+                type : "text"
+            },
+            dateformat: {
+                create: "text NOT NULL",
+                type : "text"
+            },
+            webSite: {
+                create: "text NOT NULL",
+                type : "text"
+            },
+            nbpage: {
+                create: "int",
+                type : "number"
+            },
+            retry: {
+                create: "int",
+                type : "number"
+            },
+            createUser: {
+                create: "bool NOT NULL DEFAULT TRUE",
+                type : "boolean"
+            },
+            forceHttps: {
+                create: "bool NOT NULL DEFAULT FALSE",
+                type : "boolean"
+            },
+            alias: {
+                create: "text NOT NULL",
+                type : "text"
+            },
+            lora: {
+                create: "bool NOT NULL DEFAULT FALSE",
+                type : "boolean"
+            },
+            multiDatastream: {
+                create: "bool NOT NULL DEFAULT TRUE",
+                type : "boolean"
+            },
+            highPrecision: {
+                create: "bool NOT NULL DEFAULT FALSE",
+                type : "boolean"
+            },
+            logFile: {
+                create: "text NOT NULL",
+                type : "text"
             }
         },
+        constraints: {
+            config_pkey: 'PRIMARY KEY ("name")',
+        },
+        indexes: {},
         relations: {}
     },
     
@@ -1273,6 +1362,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         lora: false,
         columns: {},
         admin: false,
+        canPost: true,
         relations: {},
         constraints: {},
         indexes: {}
@@ -1286,6 +1376,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         lora: false,
         columns: {},
         admin: false,
+        canPost: true,
         relations: {},
         constraints: {},
         indexes: {}

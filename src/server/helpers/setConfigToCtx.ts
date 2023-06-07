@@ -88,7 +88,7 @@ export const setConfigToCtx = (ctx: koa.Context): void => {
             .split("/")
             .filter((value: string) => value.match(/v{1}\d\.\d/g))[0] || API_VERSION;
 
-    const temp = CONFIGURATION.getConfigNameFromContext(ctx);
+    const temp = CONFIGURATION.getFromContext(ctx);
 
     if (!temp) throw new Error("No config name found");    
     if (CONFIGURATION.isInConfig(temp) === false) throw new Error(`${temp} Not present in config File`);    

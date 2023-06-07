@@ -10,7 +10,7 @@
 
 import { Logs } from "../../logger";
 import util from "util";
-import { cleanUrl } from "../../helpers";
+import { cleanUrl, removeQuotes } from "../../helpers";
 import { addCssFile, listaddCssFiles } from "../css";
 import { addJsFile, listaddJsFiles } from "../js";
 import { APP_VERSION } from "../../constants";
@@ -18,13 +18,25 @@ import { Iquery } from "../../types";
 
 const fileWithOutMin = (input: string): string => input.replace(".min",'');
 
-export const commonHtml = (input: string, params: Iquery, ): string => {
+export const commonHtml = (input: string, params: Iquery): string => {
     Logs.head("commonHtml");
-    Logs.debug("params", params);
-    const result: string[] = input.replace(/\r\n/g,'\n').split('\n').map((e:string) => e.trim()); 
+    Logs.debug("params", params); 
+    const result: string[] = input
+                                .replace(/<link /g,'\n<link ')
+                                .replace(/<script /g,'\n<script ')
+                                .replace(/<\/script>/g,'</script>\n')
+                                .replace(/\r\n/g,'\n')
+                                .split('\n')
+                                .map((e:string) => e.trim())  
+                                .filter(e => e.trim() != "");
+    
     const replaceInResult = (searhText: string, content: string) => {
-        const index = result.indexOf(searhText);
+        let index = result.indexOf(searhText);
         if (index > 0) result[index] = content;
+        else {
+            index = result.indexOf(removeQuotes(searhText));
+            if (index > 0) result[index] = content;
+        }
     };
 
     const action = `${params.host}/${params.version}/CreateObservations`;    
@@ -34,6 +46,9 @@ export const commonHtml = (input: string, params: Iquery, ): string => {
     if (params.user.canPost) {
         params.methods.push("POST");
         params.methods.push("PATCH");
+    } else {
+        delete params._DATAS["CreateObservations"];
+        delete params._DATAS["CreateFile"];
     }
 
     if (params.user.canDelete) params.methods.push("DELETE");
@@ -57,14 +72,12 @@ export const commonHtml = (input: string, params: Iquery, ): string => {
         });
     }
 
-    listaddCssFiles().forEach((item: string) => {   
-        const itemSearch = `<link rel="stylesheet" href="${fileWithOutMin(item)}">`;
-        replaceInResult(itemSearch, `<style>${addCssFile(item)}</style>`);
+    listaddCssFiles().forEach((item: string) => {
+        replaceInResult(`<link rel="stylesheet" href="${fileWithOutMin(item)}">`, `<style>${addCssFile(item)}</style>`);
     });
     
     listaddJsFiles().forEach((item: string) => {   
-        const itemSearch = `<script src="${fileWithOutMin(item)}"></script>`;
-        replaceInResult(itemSearch, `<script>${addJsFile(item)}</script>`);
+        replaceInResult(`<script src="${fileWithOutMin(item)}"></script>`, `<script>${addJsFile(item)}</script>`);
     });
 
     return result.join("").replace("_PARAMS={}", "_PARAMS=" + util.inspect(params, { showHidden: false, depth: null }))

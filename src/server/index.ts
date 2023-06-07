@@ -16,7 +16,6 @@ import cors from "@koa/cors";
 import { asyncForEach, isTest } from "./helpers";
 import serve from "koa-static";
 import path from "path";
-import compress from "koa-compress";
 import { HELMET_CONFIG, APP_KEY, APP_VERSION, NODE_ENV, APP_NAME } from "./constants";
 import { CONFIGURATION } from "./configuration";
 import { PgVisitor } from "./odata";
@@ -61,9 +60,6 @@ app.use(json());
 // add cors capabilities to KOA server
 app.use(cors());
 
-// minify and compress HTML https://github.com/koajs/compress
-app.use(compress());
-
 // free routes
 app.use(unProtectedRoutes.routes());
 
@@ -84,7 +80,7 @@ export const server = isTest()
         Logs.booting(messages.infos.serverListening, CONFIGURATION.list["test"].port);
       })
     : asyncForEach(
-        // Start listening ALL in config file        
+        // Start listening ALL entries in config file        
           Object.keys(CONFIGURATION.list),
           async (key: string) => {  
             try {

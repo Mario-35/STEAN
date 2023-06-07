@@ -13,7 +13,7 @@ import { Logs } from "../../logger";
 
 export const getMetrics = async (name: string): Promise<string[] | {[key: string] : any}> => {
     Logs.head("getMetrics");
-    const sqlTemp = await db["admin"].raw(`SELECT split_part(split_part((SELECT version()), ',', 1), ' ', 2) as version`);
+    const sqlTemp = await db.admin.raw(`SELECT split_part(split_part((SELECT version()), ',', 1), ' ', 2) as version`);
     const dbVersion = sqlTemp["rows"][0]["version"];
     const username = 'postgres';    
     const minVersion = (major: number, minor: number): boolean => ( Number(`${major}.${minor}`) >= dbVersion) ? false : true;
@@ -77,7 +77,7 @@ export const getMetrics = async (name: string): Promise<string[] | {[key: string
     if (name.trim() === "keys") return Object.keys(metrics);
     const res:{[key: string] : any} = {};
     await asyncForEach(name.trim() === "all" ? Object.keys(metrics) : name.trim().includes(",") ? name.split(",") : [name], async (operation: string) => {
-        if (metrics[operation]) await db["admin"].raw(metrics[operation]).then((result) => {
+        if (metrics[operation]) await db.admin.raw(metrics[operation]).then((result) => {
             res[operation] = result["rows"];
         }).catch((err) => {
             console.log(err);

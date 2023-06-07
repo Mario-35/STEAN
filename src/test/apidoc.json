@@ -8,6 +8,7 @@
   "order": [
     "SensorThings",
     "InfosSensorThings",
+    "configSensorThings",
     "rootSensorThings",
     "Token",
     "InfosToken",

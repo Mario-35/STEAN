@@ -8,7 +8,7 @@
 
 import { _DBDATAS } from "../../../db/constants";
 import { columnList, isCsvOrArray, isGraph, isObservation } from "../../../db/helpers";
-import { getEntityName, goodName, removeQuotes } from "../../../helpers";
+import { getEntityName, goodNameForPostgres, removeQuotes } from "../../../helpers";
 import { Ientity } from "../../../types";
 import { PgVisitor } from "../PgVisitor";
 
@@ -63,7 +63,7 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
         if (main.interval && !isGraph(main)) returnValue.push(`timestamp_ceil("resultTime", interval '${main.interval}') AS srcdate`);
 
         if (element.splitResult) element.splitResult.forEach((elem: string) => {
-            const alias: string = goodName(element.splitResult && element.splitResult.length === 1 ? "result" : elem);
+            const alias: string = goodNameForPostgres(element.splitResult && element.splitResult.length === 1 ? "result" : elem);
             returnValue.push( `"_resultnumbers"[(select position from  multidatastream, jsonb_array_elements("multidatastream"."unitOfMeasurements") with ordinality arr(elem, position) where id = "multidatastream_id" and elem->>'name' = '${elem}')] as "${alias}"` );  
             main.addToArrayNames(alias);
             Object.keys(tempEntity.columns).filter((word) => word.includes("_")).forEach(e => ResultgroupBy.push(`"${tempEntity.table}"."${e}"`));

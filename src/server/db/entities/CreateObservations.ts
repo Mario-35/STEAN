@@ -9,15 +9,15 @@
 import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
-import { _STREAM} from "../constants";
 import { Logs } from "../../logger";
 import { IcsvColumn, IcsvFile, IreturnResult, IstreamInfos } from "../../types";
-import { importCsv } from "../helpers";
-import { asyncForEach, getEntityName } from "../../helpers";
+import { getStreamInfos, importCsv } from "../helpers";
+import { asyncForEach } from "../../helpers";
 import { messages, messagesReplace } from "../../messages/";
-import { queryAsJson } from "../../helpers/returnFormats";
 import { QUOTEDCOMA } from "../../constants";
 import { EdatesType, EobservationType } from "../../enums";
+import util from "util";
+
 
 export class CreateObservations extends Common {
     constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
@@ -26,29 +26,6 @@ export class CreateObservations extends Common {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     // get stream ID
 
-
-    async getStreamInfos(input: JSON): Promise<IstreamInfos | undefined> {
-        Logs.class(this.constructor.name, "getStreamInfos");
-        const stream: _STREAM = input["Datastream"] ? "Datastream" : input["MultiDatastream"] ? "MultiDatastream" : undefined;
-        if(!stream) return undefined;
-        const streamEntity = getEntityName(stream);
-        if(!streamEntity) return undefined;
-        const foiId: bigint | undefined = input["FeaturesOfInterest"] ? input["FeaturesOfInterest"] : undefined;       
-        const searchKey = input[this.DBST[streamEntity].name] || input[this.DBST[streamEntity].singular];
-        const streamId: string | undefined = isNaN(searchKey) ? searchKey["@iot.id"] : searchKey;
-        if (streamId) {
-            const query = `SELECT "id", "observationType", "_default_foi" FROM "${this.DBST[streamEntity].table}" WHERE id = ${BigInt(streamId)} LIMIT 1`;
-            return await Common.dbContext.raw(queryAsJson({query: query, singular: true, count: false}))
-            .then((res: object) => {
-                const temp = res["rows"][0].results;                    
-                return {type: stream, id: temp["id"], observationType: temp["observationType"], FoId: foiId ? foiId : temp["_default_foi"]};
-            })
-            .catch((error) => {                
-                Logs.error(error);
-                return undefined;
-            });
-            }
-        }
 
     dateTZ(value: string) {
         //Create Date object from ISO string
@@ -115,16 +92,14 @@ export class CreateObservations extends Common {
             await asyncForEach(    
                 Object.keys(datasJson["columns"]),
                   async (key: string) => {  
-                    const tempStreamInfos = await this.getStreamInfos(datasJson["columns"][key] as JSON);
+                    const tempStreamInfos = await getStreamInfos(Common.dbContext, datasJson["columns"][key] as JSON);
                     if(tempStreamInfos) {
                         streamInfos.push(tempStreamInfos);                     
                         myColumns.push({
                             column: key,
                             stream: tempStreamInfos
                         });
-                    }
-
-
+                    } else this.ctx.throw(404, messagesReplace(messages.errors.noValidStream, [util.inspect(datasJson["columns"][key], { showHidden: false, depth: null, colors: false })]));
                   }
               );
               
@@ -144,7 +119,7 @@ export class CreateObservations extends Common {
 
             Logs.debug("importCsv", "OK");
         } else { /// classic Create
-            const dataStreamId = await this.getStreamInfos(dataInput);
+            const dataStreamId = await getStreamInfos(Common.dbContext, dataInput);
             if (!dataStreamId) this.ctx.throw(404, { code: 404, detail: messages.errors.noStream}); 
             else {
                 await asyncForEach(dataInput["dataArray"], async (elem: string[]) => {
@@ -191,4 +166,4 @@ export class CreateObservations extends Common {
         this.ctx.throw(400, { code: 400 });
         return;
     }
-    }
+}

@@ -9,6 +9,7 @@
     "loginOk" : "Login succeeded",
 	"offLine": "Offline",
 	"serverListening": "Server listening on port",
+	"foundConfig": "Found configuration table",
 	"tryCreate": "Try create $1",
     "constructor": "Constructor",
     "classConstructor" : "class $1 override $2",

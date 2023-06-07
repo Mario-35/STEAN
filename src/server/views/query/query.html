@@ -2,8 +2,8 @@
 <html lang="fr">
 
     <head>
-        <script src="constant.js"></script>        
-        <link rel="stylesheet" href="query.css">
+        <script src="constant.js"></script><link rel=stylesheet href=query.css>   
+
         <link rel="stylesheet" href="grid.css">
         <link rel="stylesheet" href="spinner.css">
         <link rel="stylesheet" href="jsonViewer.css">
@@ -28,8 +28,7 @@
         <div id="spinner" class="loading">Loading&#8230;</div>
         <div id="container">
             <div id="first">
-                <form name="import" class="pro-form" id="actionForm" enctype="multipart/form-data" action=""
-                    method="POST">
+                <form name="import" class="pro-form" id="actionForm" enctype="multipart/form-data" action="" onsubmit="prepareForm()" method="POST">
 
                     <!-- START ACCORDION -->
                     <div class="tabs">
@@ -389,12 +388,14 @@
                         <div class="row assist">
                             <input class="fullWidth options" id="queryOptions" type="text" name="queryOptions">
                         </div>
+                        <!-- DATAS HIDE  -->
+                        <textarea spellcheck="false" class="blakkAll shj-lang-json" id="datas" name="datas" placeholder="Input json..." rows="6"></textarea>
+                        <hr>
+                        <!-- JSON DATAS -->
+                        <div id="jsonDatasContainer" onpaste="jsonDatasPasteEvent(event)" ondrop="jsonDatasPasteEvent(event)"> 
+                            <div contenteditable spellcheck="false" id="jsonDatas" class='blakkAll shj-lang-json'></div>
+                        </div>
                     </div>
-<hr>
-                     <!-- JSON DATAS -->
-                     <div id="jsonDatasContainer" onpaste="jsonDatasPasteEvent(event)" ondrop="jsonDatasPasteEvent(event)"> 
-                         <div contenteditable spellcheck="false" id="jsonDatas" class='blakkAll shj-lang-json'></div>
-                     </div>
                 </form>
                 <div class="rowButtons">
                     <!-- BUTTONS ICONS -->

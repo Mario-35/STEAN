@@ -14,14 +14,13 @@ import { configCtx, setConfigToCtx } from "../helpers";
 import { Logs, writeToLog } from "../logger";
 
 export const isAdmin = (ctx: Koa.Context):boolean => ctx._configName === "admin";
-export const canDo = (ctx: Koa.Context, what: EuserRights):boolean => ctx._user.PDCUAS[what];
+export const isAllowedTo = (ctx: Koa.Context, what: EuserRights):boolean => ctx._user.PDCUAS[what];
 
 
 export { protectedRoutes } from "./protected";
 export { unProtectedRoutes } from "./unProtected";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const routerHandle = async (ctx: Koa.Context, next: any) => {
-    
     try {
         setDebug(ctx.request.url.includes("$debug=true"));
         ctx._addToLog = false;
@@ -35,7 +34,7 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
             PDCUAS: [false, false, false, false, false, false]
         };
         if (_debug === true) Logs.keys("configCtx", configCtx(ctx));
-        await next().then(async (res: object) => {            
+        await next().then(async () => {            
             await writeToLog(ctx);
         });
      // eslint-disable-next-line @typescript-eslint/no-explicit-any        

@@ -9,7 +9,6 @@
 export interface IconfigFile {
     name: string; // item of the config file
     key?: string; // key for crypto
-    crypt?: string;
     pg_host: string;
     pg_port: number;
     port: number;
@@ -20,7 +19,6 @@ export interface IconfigFile {
     date_format: string;
     webSite: string;
     nb_page: number;
-    lineLimit: number;
     retry: number;
     createUser?: boolean;
     forceHttps: boolean;
@@ -28,7 +26,6 @@ export interface IconfigFile {
     lora: boolean;
     multiDatastream: boolean;
     highPrecision: boolean;
-    logFile: string;
-    dbEntities: string[];
+    logFile: string;    
 }
 

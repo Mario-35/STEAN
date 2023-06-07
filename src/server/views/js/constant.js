@@ -17,7 +17,6 @@ const _SELECTED = "selected";
 
 // load file json
 let importFile = false;
-
 var jsonObj = {};
 var listOptions = {};
 var canGo = false;

@@ -13,10 +13,10 @@ import { Logs } from "../../logger";
 import { IreturnResult } from "../../types";
 import { CONFIGURATION } from "../../configuration";
 import { hidePasswordInJson } from "../../helpers";
-import { db } from "..";
 import { messages } from "../../messages/";
 import { EuserRights } from "../../enums";
 import { _DBADMIN } from "../constants";
+import { db } from "..";
 
  
  export class Users extends Common {
@@ -27,7 +27,7 @@ import { _DBADMIN } from "../constants";
      async getAll(): Promise<IreturnResult | undefined> {
         Logs.class(this.constructor.name, `getAll in ${this.ctx._odata.resultFormat} format`);
         if (this.ctx._user?.PDCUAS[EuserRights.SuperAdmin] === true || this.ctx._user?.PDCUAS[EuserRights.Admin] === true) {
-            const temp = await db["admin"]
+            const temp = await db.admin
                 .table("user")
                 .select(Object.keys(_DBADMIN.Users.columns))
                 .orderBy("id");

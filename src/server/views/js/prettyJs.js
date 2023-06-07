@@ -37,7 +37,6 @@ function pp() {
 */
 
 
-
 function js_beautify(js_source_text, options) {
 
   options = options ? options : {};
@@ -1197,7 +1196,7 @@ function js_beautify(js_source_text, options) {
 
 pp.prototype.js = function(text) {
     return js_beautify(text);
-}
+};
 
 // ----------------------- JSON section ----------------------------------------------------
 
@@ -1215,7 +1214,7 @@ pp.prototype.json = function(text) {
 // ----------------------- SQL section ----------------------------------------------------
 
 function isSubquery(str, parenthesisLevel) {
-  return  parenthesisLevel - (str.replace(/\(/g,'').length - str.replace(/\)/g,'').length );
+  return parenthesisLevel - (str.replace(/\(/g,'').length - str.replace(/\)/g,'').length );
 }
 
 function split_sql(str, tab) {
@@ -1294,21 +1293,21 @@ pp.prototype.sql = function(text) {
 
         parenthesisLevel = isSubquery(ar[ix], parenthesisLevel);
 
-        if( /\s{0,}\s{0,}SELECT\s{0,}/.exec(ar[ix]))  {
+        if( /\s{0,}\s{0,}SELECT\s{0,}/.exec(ar[ix])) {
             ar[ix] = ar[ix].replace(/\,/g,",\n"+tab+tab+"");
         }
 
-        if( /\s{0,}\(\s{0,}SELECT\s{0,}/.exec(ar[ix]))  {
+        if( /\s{0,}\(\s{0,}SELECT\s{0,}/.exec(ar[ix])) {
             deep++;
             str += this.shift[deep]+ar[ix];
         } else
-        if( /\'/.exec(ar[ix]) )  {
+        if( /\'/.exec(ar[ix]) ) {
             if(parenthesisLevel<1 && deep) {
                 deep--;
             }
             str += ar[ix];
         }
-        else  {
+        else {
             str += this.shift[deep]+ar[ix];
             if(parenthesisLevel<1 && deep) {
                 deep--;

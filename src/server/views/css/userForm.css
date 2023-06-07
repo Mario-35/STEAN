@@ -125,7 +125,7 @@ a {
 
 .login-form .group .input:disabled {
     color: rgba(255, 255, 255, 0.815);
-    background: rgb(61, 58, 58);
+    background: rgb(64, 86, 143);
 }
 
 .login-form .group .inputId {

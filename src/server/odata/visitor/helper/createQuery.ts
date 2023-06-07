@@ -52,7 +52,6 @@ export function createpgQuery(main: PgVisitor, element: PgVisitor): IpgQuery | u
 
                 
                 // relations.filter((rel: string) => main.config.dbEntities.includes(_DBDATAS[realEntityName].relations[rel].entityName)).forEach((rel: string) => { 
-                // relationsList(realEntityName, main.config.dbEntities).forEach((rel: string) => {                    
                 relations.forEach((rel: string) => {                    
                     if (rel[0] == "(") select.push(rel);
                     else if (element.showRelations == true && main.onlyRef == false) {

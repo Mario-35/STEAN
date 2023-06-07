@@ -9,35 +9,36 @@
 import Router from "koa-router";
 import { apiAccess, userAccess } from "../db/dataAccess";
 import { _DBDATAS } from "../db/constants";
-import { configCtx, returnFormats } from "../helpers";
+import { configCtx, getUrlId, getUrlKey, returnFormats } from "../helpers";
 import fs from "fs";
 import { db } from "../db";
 import { Logs } from "../logger";
 import { IreturnResult } from "../types";
 import { EuserRights } from "../enums";
 import { API_VERSION } from "../constants";
-import { queryHtmlPage } from "../views/query";
+import { createQueryHtml } from "../views/query";
 import { CreateHtmlView, createIqueryFromContext, } from "../views/helpers/";
 import { testRoutes } from "./helpers";
 import { DefaultState, Context } from "koa";
 import { createDatabase } from "../db/helpers";
 import { createOdata } from "../odata";
 import { messages } from "../messages";
-import { isAdmin, canDo } from ".";
+import { isAdmin, isAllowedTo } from ".";
 import { getMetrics } from "../db/monitoring";
 import { CONFIGURATION } from "../configuration";
-import { ensureAuthenticated, getAuthenticatedUser } from "../authentication";
+import { decodeToken, ensureAuthenticated, getAuthenticatedUser } from "../authentication";
+import { createAdminHtml } from "../views/admin";
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 
 // ALl others
 unProtectedRoutes.get("/(.*)", async (ctx) => {
-    const adminWithSuperAdminAccess = isAdmin(ctx) ? canDo(ctx, EuserRights.SuperAdmin) ? true : false : true;
+    const adminWithSuperAdminAccess = isAdmin(ctx) ? isAllowedTo(ctx, EuserRights.SuperAdmin) ? true : false : true;
 
     switch (testRoutes(ctx.path).toUpperCase()) {
         case ctx._version.toUpperCase():
             const expectedResponse: object[] = [];
             if (isAdmin(ctx) && !adminWithSuperAdminAccess) ctx.throw(401);
-            CONFIGURATION.list[ctx._configName].dbEntities
+            CONFIGURATION.dbEntities[ctx._configName]
                 .filter((elem: string) => isAdmin(ctx) ?_DBDATAS[elem].admin === true : _DBDATAS[elem].order > 0)
                 .sort((a, b) => (_DBDATAS[a].order > _DBDATAS[b].order ? 1 : -1))
                 .forEach((value: string) => {
@@ -85,10 +86,13 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             return;
 
         case "SQL":
-            const sql = atob(ctx.request.url.split("query=")[1]);   
-            const resultSql = sql.includes("log_request") ? await db["admin"].raw(sql) : await db[ctx._configName].raw(sql);
-            ctx.status = 201;
-            ctx.body = resultSql.rows;
+            let sql = getUrlKey(ctx.request.url, "query");   
+            if (sql) {
+                sql = atob(sql);
+                const resultSql = sql.includes("log_request") ? await db.admin.raw(sql) : await db[ctx._configName].raw(sql);
+                ctx.status = 201;
+                ctx.body = resultSql.rows;
+            }
             return;
 
         case "LOGIN":
@@ -126,37 +130,67 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             return;
 
         case "METRICS":
-            const query = ctx.request.url.split("query=")[1];   
-            ctx.type = returnFormats.json.type;
-            ctx.body = await getMetrics(query);         
-            return;
-
-        case "QUERY":
-            if(!adminWithSuperAdminAccess) ctx.redirect(`${ctx._rootName}login`);
-            const temp = await createIqueryFromContext(ctx);
-            ctx.set("script-src", "self");
-            ctx.set("Content-Security-Policy", "self");
-            ctx.type = returnFormats.html.type;
-            ctx.body = queryHtmlPage(temp);
-            return;
-
-        case "USER":
-            // Only to get user Infos
-            const id = ctx.url.toUpperCase().match(/[0-9]/g)?.join("");
-            if (id && ctx.request["token"]?.PDCUAS[EuserRights.SuperAdmin] === true) {
-                const user = await userAccess.getSingle(id);
-                const createHtml = new CreateHtmlView(ctx);
-                ctx.type = returnFormats.html.type;
-                ctx.body = createHtml.edit({ body: user });
+            const query = getUrlKey(ctx.href, "query");                         
+            if (query) {
+                ctx.type = returnFormats.json.type;
+                ctx.body = await getMetrics(query);         
             }
             return;
 
-        case "CREATEDB":
-            Logs.head("GET createDB");
-            const returnValue = await createDatabase("test");
+        case "EDITCONFIG":
+            const createHtml = new CreateHtmlView(ctx);
+            const configQuery = getUrlKey(ctx.href, "name");                
+            ctx.type = returnFormats.html.type;
+            ctx.body = createHtml.config({ config: configQuery ? configQuery : ctx._configName });
+            return;               
+            case "ADDCONFIG":
+                const createAddHtml = new CreateHtmlView(ctx);            
+                ctx.type = returnFormats.html.type;
+                ctx.body = createAddHtml.config({ config: undefined});
+                return;               
+            
+            case "QUERY":
+                if(!adminWithSuperAdminAccess) ctx.redirect(`${ctx._rootName}login`);
+                const temp = await createIqueryFromContext(ctx);
+                ctx.set("script-src", "self");
+                ctx.set("Content-Security-Policy", "self");
+                ctx.type = returnFormats.html.type;
+                ctx.body = createQueryHtml(temp);
+                return;
+                
+                case "ADMIN":
+                    if (ensureAuthenticated(ctx)) {     
+                        ctx.set("script-src", "self");
+                ctx.set("Content-Security-Policy", "self");
+                ctx.type = returnFormats.html.type;
+                ctx.body = await createAdminHtml(ctx, true);
+            } else ctx.redirect(`${ctx._rootName}login`);
+            return;            
+            
+            // case "EDITUSER":
+            //     const createUserEitHtml = new CreateHtmlView(ctx);
+            //     const userEditQuery = getUrlKey(ctx.href, "name");                
+            //     ctx.type = returnFormats.html.type;
+            //     ctx.body = createUserEitHtml.config({ config: userEditQuery ? userEditQuery : ctx._configName });
+            //     return;     
 
-            if (returnValue) {
-                ctx.status = 201;
+            case "USER":
+                // Only to get user Infos
+                const id = getUrlId(ctx.url.toUpperCase());                
+                if (id && decodeToken(ctx)?.PDCUAS[EuserRights.SuperAdmin] === true) {                    
+                    const user = await userAccess.getSingle(id);                    
+                    const createHtml = new CreateHtmlView(ctx);
+                    ctx.type = returnFormats.html.type;
+                    ctx.body = createHtml.userEdit({ body: user });
+                } else ctx.throw(401);
+                return;
+                
+                case "CREATEDB":
+                    Logs.head("GET createDB");
+                    const returnValue = await createDatabase("test");
+                    
+                    if (returnValue) {
+                        ctx.status = 201;
                 ctx.body = returnValue;
             } else {
                 ctx.status = 400;

@@ -32,7 +32,6 @@ export class CreateHtmlView {
                 return addCssFile("userForm.css");
             default:
                 return addCssFile("query.css");
-
         }
     };
 
@@ -54,6 +53,115 @@ export class CreateHtmlView {
         return returnValue.join();
     };
 
+    addSubmitButton(label: string ) {
+      return `<div class="group"> <input type="submit" class="button" value="${label}"> </div>`;
+    }
+
+    addButton(action: string, label: string ) {
+      return `<div class="group"> <a href="${action}" class="button" >${label}</a> </div>`;
+    }
+
+    addCheckBox(input: {
+      id: string, 
+      checked: boolean, 
+      label?: string
+    }) {
+      return `<div class="group"> <input id="${input.id}" type="checkbox" class="check" ${input.checked === true ? 'checked' : ''}> <label for="${input.id}"><span class="icon"></span> ${input.label ? input.label : input.id}</label> </div>`;
+    }
+    
+    addTextInput(input: {
+      id: string, 
+      label: string, 
+      value: any, 
+      alert?: string, 
+      name?: string, 
+      toolType?: string,
+      password?: boolean
+    }) {
+    return `<div class="group">
+    <label for="${input.id}" class="label">${input.label}</label>
+    ${ input.toolType ? `<div class='tooltip help'>
+      <span>?</span>
+      <div class='content'>
+        <b></b>
+        <p>${input.toolType}</p>
+      </div>
+      </div>` : ``
+    }
+    <input id="${input.id}" name="${input.name ? input.name : input.id}" type="${input.password ? input.password == true ? 'password' : 'text' : 'text' }" class="input" value="${input.value}">
+    ${input.alert ? input.alert : ''}
+  </div>`;
+  }
+
+    public config = (datas: { config: string | undefined ; body?: any; why?: {[key: string]: string} }): string => {
+      try {
+        const conf = datas.config ? CONFIGURATION.list[datas.config] : CONFIGURATION.createBlankConfig(this.ctx._configName);        
+        const alert = (name: string): string => {
+            return datas.why && datas.why[name] ? `<div class="alert">${datas.why[name]}</div>` : "";
+        };
+          return `<!DOCTYPE html>
+          <html>
+          ${this.head("Login", "user")}    
+          <body>
+              <div class="login-wrap">
+                <div class="login-html">
+                  <input id="tab-1" type="radio" name="tab" class="sign-in" checked>
+                  <label for="tab-1" class="tab">Configuration</label>
+                  <input id="tab-2" type="radio" name="tab" class="sign-up">
+                  <label for="tab-2" class="tab">Database</label>
+                  <div class="login-form">
+                    <form action="${this.ctx._linkBase}/${this.ctx._version}/config" method="post">
+                      <div class="sign-in-htm">
+                        <div class="group">
+                          <label for="user" class="label">config name</label>
+                          <input id="configname" name="configname" type="text" class="input" value="${conf.name}" ${datas.config ? 'disabled' : ''}>
+                        </div>
+                        <table>
+                          <tbody>
+                          <tr>
+                            <td> ${this.addCheckBox({id: "lora", checked: conf.lora})} </td>
+                            <td> ${this.addCheckBox({id: "highPrecision", checked: conf.highPrecision})} </td>
+                          </tr>
+                          <tr>
+                            <td> ${this.addCheckBox({id: "multiDatastream", checked: conf.multiDatastream})} </td>
+                            <td> ${this.addCheckBox({id: "forceHttps", checked: conf.forceHttps})} </td>  
+                          </tr>
+                            <tr>
+                              <td> ${this.addTextInput({id: "port", label: "Port", value: conf.port})} </td>
+                              <td> ${this.addTextInput({id: "nbPage", label: "lines per page", value: conf.nb_page})} </td>
+                            </tr>
+                            <tr>
+                              <td> ${this.addTextInput({id: "apiVersion", label: "Api version", value: conf.apiVersion})} </td>
+                              <td> ${this.addTextInput({id: "logFile", label: "Logger File", value: conf.logFile})} </td>
+                            </tr>
+                          </tbody>
+                        </table>  
+                        <div class="group">
+                        <input type="submit" class="button" value="${datas.config ? 'Update' : 'Add this config'}">
+                        <div class="hr"></div>
+                        </div>
+                      </div>
+                      <div class="sign-up-htm">
+                        ${this.addTextInput({id: "host", label: "Host", value: conf.pg_host, alert: alert("host"), toolType: "PostgreSql database host"})}
+                        ${this.addTextInput({id: "username", label: "User name", value: conf.pg_user, alert: alert("username"), toolType: "PostgreSql database username"})}
+                        ${this.addTextInput({id: "password", label: "Password", value: conf.pg_password, alert: alert("dassword"), toolType: "PostgreSql database Password"})}
+                        ${this.addTextInput({id: "database", label: "Database", value: conf.pg_database, alert: alert("database"), toolType: "PostgreSql database"})}
+                        ${this.addTextInput({id: "port", label: "Port", value: conf.pg_port, alert: alert("port"), toolType: "PostgreSql database Port"})}
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+  
+  
+          </body>                  
+        </html>`;
+      } catch (error) {
+        return "Config bad";
+      }
+
+    };
+
     public login = (datas: { login: boolean; body?: any; why?: {[key: string]: string} }): string => {
         const alert = (name: string): string => {
             return datas.why && datas.why[name] ? `<div class="alert">${datas.why[name]}</div>` : "";
@@ -73,26 +181,12 @@ export class CreateHtmlView {
                           <div class="login-form">
                             <form action="${this.ctx._linkBase}/${this.ctx._version}/login" method="post">
                               <div class="sign-in-htm">
-                                <div class="group">
-                                  <label for="user" class="label">Username</label>
-                                  <input id="user" name="username" type="text" class="input">
-                                </div>
-                                <div class="group">
-                                  <label for="pass" class="label">Password</label>
-                                  <input id="pass" name="password" type="password" class="input" data-type="password">
-                                </div>
-                                <div class="group">
-                                  <input id="check" type="checkbox" class="check" checked>
-                                  <label for="check"><span class="icon"></span> Keep me Signed in</label>
-                                </div>
-                                <div class="group">
-                                  <input type="submit" class="button" value="Sign In">
-                                </div>
+                                ${this.addTextInput({id: "user", name: "username", label: "Username", value: ""})}
+                                ${this.addTextInput({id: "pass", name: "password", label: "Password", value: "", password: true})}
+                                ${this.addCheckBox({id: "check", checked: true, label: "Keep me Signed in"})}
+                                ${this.addSubmitButton("Sign In")}
                                 <div class="hr"></div>
-                                <div class="group">
-                                  <a href="${this.ctx._linkBase}/${this.ctx._version}/Query" class="button" >Return to Query</a> 
-                                </div>
-                                
+                                ${this.addButton(`${this.ctx._linkBase}/${this.ctx._version}/Query`, "Return to Query")}
                                 <div class="foot-lnk">
                                   <a href="#forgot">Forgot Password?</a>
                                 </div>
@@ -101,96 +195,25 @@ export class CreateHtmlView {
                   
                             <form action="/register" method="post">
                               <div class="sign-up-htm">
-                                <div class="group">
-                                  <label for="user" class="label">Username</label>
-                                  <div class='tooltip help'>
-                                    <span>?</span>
-                                    <div class='content'>
-                                      <b></b>
-                                      <p>Name must be at least 2 words</p>
-                                    </div>
-                                  </div>
-                                  <input id="regusername" type="text" name="username" class="input" value="${
-                                      datas.body && datas.body.username ? datas.body.username : ""
-                                  }">
-                                  ${alert("username")}
-                                </div>
-                                <div class="group">
-                                  <label for="pass" class="label">Password</label>
-                                  <div class='tooltip help'>
-                                    <span>?</span>
-                                    <div class='content'>
-                                      <b></b>
-                                      <p>At least one number, one lowercase and one uppercase letter, at least six characters that are letters, numbers or the
-                                      underscore</p>
-                                    </div>
-                                  </div>
-                                  <input id="regpass" type="password" name="password" class="input" data-type="password" value="${
-                                      datas.body && datas.body.password ? datas.body.password : ""
-                                  }">
-                                  ${alert("password")}
-                                </div>
-                                <div class="group">
-                                  <label for="pass" class="label">Repeat Password</label>
-                                  <div class='tooltip help'>
-                                    <span>?</span>
-                                    <div class='content'>
-                                      <b></b>
-                                      <p>Same as password</p>
-                                    </div>
-                                  </div>
-                                  <input id="regrepeat" type="password" name="repeat" class="input" data-type="password" value="${
-                                      datas.body && datas.body.repeat ? datas.body.repeat : ""
-                                  }">
-                                  ${alert("repeat")}
-                                </div>
-                                <div class="group">
-                                  <label for="pass" class="label">Email Address</label>
-                                  <div class='tooltip help'>
-                                    <span>?</span>
-                                    <div class='content'>
-                                      <b></b>
-                                      <p>A valid email address</p>
-                                    </div>
-                                  </div>
-                                  <input id="regmail" type="text" name="email" class="input" value="${datas.body && datas.body.email ? datas.body.email : ""}">
-                                  ${alert("email")}
-                                </div>
-                  
-                                <div class="group">
-                                  <input type="submit" class="button" value="Sign Up">
-                                </div>
-                                <div class="hr"></div>
-                                
+                                ${this.addTextInput({id: "regusername", name: "username", label: "Username", value: datas.body && datas.body.username ? datas.body.username : "", alert: alert("username"), toolType: "Name must be at least 2 words"})}
+                                ${this.addTextInput({id: "regpass", name: "password", label: "Password", password: true, value: datas.body && datas.body.password ? datas.body.password : "", alert: alert("password"), toolType: "At least one number, one lowercase and one uppercase letter, at least six characters that are letters, numbers or the underscore"})}
+                                ${this.addTextInput({id: "regrepeat", name: "repeat", label: "Repeat password", password: true, value: "", alert: alert("repeat"), toolType: "Same as password"})}
+                                ${this.addTextInput({id: "regmail", name: "email", label: "Email address", value: datas.body && datas.body.email ? datas.body.email : "", alert: alert("email"), toolType: "A valid email address"})}
+                                ${this.addSubmitButton("Sign UP")}
+                                <div class="hr"></div>                                
                                 <div class="foot-lnk">
-                                  <label for="tab-1">Already Member?</a>
+                                  <label for="tab-1">Already Member ?</a>
                                 </div>
                               </div>
                             </form>
-                          </div>
                         </div>
                       </div>
-
-
+                    </div>
                   </body>                  
                 </html>`;
     };
 
-    private CheckedUsers = (user: any): string[] => {
-        const temp: string[] = [];
-
-        Object.keys(user).forEach((element: string) => {
-            if (Object.keys(this.userHeader).includes(element)) {
-                temp.push('<div class="group">');
-                temp.push(`<input type="checkbox" id="${element}" name="${element}"${user[element] == true ? "checked" : ""}>`);
-                temp.push(`<label for="canPost">${this.userHeader[element]}</label>`);
-                temp.push("</div>");
-            }
-        });
-        return temp;
-    };
-
-    public edit = (datas: { body?: any; why?: {[key: string]: string} }): string => {
+    public userEdit = (datas: { body?: any; why?: {[key: string]: string} }): string => {
         const user = datas.body;
         const alert = (name: string): string => (datas.why && datas.why[name] ? `<div class="alert">${datas.why[name]}</div>` : "");
         return `<!DOCTYPE html>
@@ -201,37 +224,28 @@ export class CreateHtmlView {
                         <div class="login-html">
                           <div class="login-form">
                             <form action="/user" method="post">
-                                  <input id="id" name="id" type="hidden" class="input"value="${user.id}">
-
-                                <div class="group">
-                                  <label for="user" class="label">Username</label>
-                                  <input id="user" name="username" type="text" class="input"value="${user.username ? user.username : ""}">
-                                </div>
-                                <div class="group">
-                                  <label for="pass" class="label">Email Address</label>
-                                  <div class='tooltip help'>
-                                    <span>?</span>
-                                    <div class='content'>
-                                      <b></b>
-                                      <p>A valid email address</p>
-                                    </div>
-                                  </div>
-                                  <input id="regmail" type="text" name="email" class="input" value="${user.email ? user.email : ""}">
-                                  ${alert("email")}
-                                </div>
-
-                                <div class="group">
-                                  <label for="database" class="label">Database</label>
-                                  <input id="database" name="database" type="text" class="input"value="${user.database ? user.database : ""}">
-                                </div>
-
-                                ${this.CheckedUsers(user).join("")}
+                                <input id="id" name="id" type="hidden" class="input"value="${user.id}">
+                                ${this.addTextInput({id: "user", name: "username", label: "Username", value: user.username ? user.username : ""})}
+                                ${this.addTextInput({id: "regmail", name: "email", label: "Email address", value: datas.body && datas.body.email ? datas.body.email : "", alert: alert("email"), toolType: "A valid email address"})}
+                                ${this.addTextInput({id: "database", name: "database", label: "Database", value: user.database ? user.database : ""})}
+                                <table>
+                                <tbody>
+                                <tr>
+                                  <td>${this.addCheckBox({id: "canPost", checked: user.canPost})}</td>
+                                  <td>${this.addCheckBox({id: "canDelete", checked: user.canDelete})}</td>
+                                </tr>
+                                <tr>
+                                  <td>${this.addCheckBox({id: "canCreateUser", checked: user.canCreateUser})}</td>
+                                  <td>${this.addCheckBox({id: "canCreateDb", checked: user.canCreateDb})}</td>
+                                </tr>
+                                <tr>
+                                  <td>${this.addCheckBox({id: "admin", checked: user.admin})}</td>
+                                  <td>${this.addCheckBox({id: "superAdmin", checked: user.superAdmin})}</td>
+                                </tr>
+                                </tbody>
+                                </table>
                                 <div class="group">
                                   <input type="submit" class="button" value="Update infos">
-                                </div>
-                                <div class="hr"></div>
-                                <div class="foot-lnk">
-                                  <a href="#forgot">Recreate Password?</a>
                                 </div>
                             </form>
                           </div>
@@ -242,7 +256,7 @@ export class CreateHtmlView {
     };
 
     public status = (user: Iuser): string => {
-      const config = CONFIGURATION.getConfigNameFromDatabase(user.database);  
+      const config = CONFIGURATION.getFromDatabase(user.database);  
         return `<!DOCTYPE html> <html> ${this.head(
             "Status",
             "user"

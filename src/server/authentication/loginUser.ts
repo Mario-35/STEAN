@@ -15,7 +15,7 @@ import { Iuser } from "../types";
 
 export const loginUser = async (ctx: koa.Context): Promise<Iuser | undefined> => {
     if (ctx.request.body["username"] && ctx.request.body["password"]) {
-        return await db["admin"]
+        return await db.admin
             .table(_DBADMIN.Users.table)
             .where("username", ctx.request.body["username"])
             .first()

@@ -160,11 +160,10 @@ export class CreateFile extends Common {
     async add(dataInput: object): Promise<IreturnResult | undefined> {
         Logs.head(messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));        
         if (this.ctx._datas) {
-            const extras = this.ctx._datas;
             const myColumns: IcsvColumn[] = [];
             const paramsFile: IcsvFile = {
                 tempTable: `temp${Date.now().toString()}`,
-                filename: extras["file"],
+                filename: this.ctx._datas["file"],
                 columns: myColumns,
                 header:  ", HEADER" ,
                 stream: [] // only for interface

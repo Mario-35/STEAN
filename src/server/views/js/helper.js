@@ -59,7 +59,7 @@ async function getFetchDatas(url, format) {
 
 function LoadDatas(source, lang) {
   try {
-    const element = getElement(jsonDatas);
+    const element = getElement(datas);
     if (element) highlightElement(source, lang);
   } catch (err) {
     notifyError("Error", err);

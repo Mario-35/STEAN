@@ -17,7 +17,7 @@ import { createDbList } from "../../db/helpers";
 import { Iquery } from "../../types";
 
 export const createIqueryFromContext = async (ctx: koa.Context): Promise<Iquery> => {
-    const user = await getAuthenticatedUser(ctx);    
+    const user = await getAuthenticatedUser(ctx); 
     return {
         id: "",
         methods: ["GET"],
@@ -47,7 +47,7 @@ export const createIqueryFromContext = async (ctx: koa.Context): Promise<Iquery>
             ? _DBADMIN 
             : user && (user.admin === true || user.superAdmin === true) 
                 ? _DBDATAS 
-                : createDbList(CONFIGURATION.list[ctx._configName].dbEntities)
+                : createDbList(CONFIGURATION.dbEntities[ctx._configName])
 
     };
 };

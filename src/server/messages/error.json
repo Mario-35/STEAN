@@ -32,6 +32,7 @@
 	"observationExist": "Observation already exist",
 	"payloadIsMalformed": "Payload is malformed",
 	"sizeListKeys": "Size of list of results ($1) is not equal to size of keys ($2)",
+	"noValidStream": "no valid stream found for ($1)",
 	"sizeListKeysObservedProperties": "Size of list of ObservedProperties ($1) is not equal to size of multiObservationDataTypes ($2)",
 	"sizeListKeysUnitOfMeasurements": "Size of list of unitOfMeasurements ($1) is not equal to size of multiObservationDataTypes ($2)",
 	"sizeResultUnitOfMeasurements": "Size of list of results ($1) is not equal to size of unitOfMeasurements ($2)",

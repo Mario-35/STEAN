@@ -17,17 +17,18 @@ import { IreturnResult, Iuser } from "../types";
 import { DefaultState, Context } from "koa";
 import { CreateHtmlView } from "../views/helpers/CreateHtmlView";
 import { createIqueryFromContext } from "../views/helpers/";
-import { queryHtmlPage } from "../views/query";
+import { createQueryHtml } from "../views/query";
 import { createOdata } from "../odata";
-import { db } from "../db";
 import { messages } from "../messages";
-import { canDo } from ".";
+import { isAllowedTo } from ".";
 import { EuserRights } from "../enums";
 import { loginUser } from "../authentication";
+import { db } from "../db";
 
 export const protectedRoutes = new Router<DefaultState, Context>();
 
 protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
+
     switch (testRoutes(ctx.path).toUpperCase()) {
         case "LOGIN":
             if (ctx.request["token"]) ctx.redirect(`${ctx._rootName}status`);
@@ -55,7 +56,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
             if (isObject && body["username"].trim() === "") {
                 why["username"] = messages.errors.emptyUsername;
             } else {
-                const user = await db["admin"].table("user").select("username").where({ username: ctx.request.body["username"] }).first();
+                const user = await db.admin.table("user").select("username").where({ username: ctx.request.body["username"] }).first();
                 if (user) why["username"] = messages.errors.alreadyPresent;
             }
             // Email
@@ -104,7 +105,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
                 ctx.redirect(`${ctx._rootName}error`);
             }
             return;
-
+    
     }
 
     if ((ctx._user && ctx._user.id > 0) || ctx.request.url.includes("/Lora")) {
@@ -136,7 +137,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
                         });
                 });
             };
-            ctx._datas = await getDatas();
+            ctx._datas = await getDatas();    
             const odataVisitor = await createOdata(ctx); 
             if (odataVisitor) ctx._odata = odataVisitor;
             if (ctx._odata) {
@@ -148,7 +149,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
                     if (ctx._datas["source"] == "query") {
                         const temp = await createIqueryFromContext(ctx);
                         ctx.type = "html";
-                        ctx.body = queryHtmlPage({
+                        ctx.body = createQueryHtml({
                             ...temp,
                             results: JSON.stringify({ added: returnValue.total, value: returnValue.body })
                         });
@@ -172,7 +173,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
 
 protectedRoutes.patch("/(.*)", async (ctx) => {
     ctx._addToLog = true;
-    if (canDo(ctx, EuserRights.Post) === true && Object.keys(ctx.request.body).length > 0) {
+    if (isAllowedTo(ctx, EuserRights.Post) === true && Object.keys(ctx.request.body).length > 0) {
         const odataVisitor = await createOdata(ctx); 
         if (odataVisitor) ctx._odata = odataVisitor;
         if (ctx._odata) {
@@ -198,7 +199,7 @@ protectedRoutes.patch("/(.*)", async (ctx) => {
 
 protectedRoutes.delete("/(.*)", async (ctx) => {
     ctx._addToLog = true;
-    if (canDo(ctx, EuserRights.Delete) === true) {
+    if (isAllowedTo(ctx, EuserRights.Delete) === true) {
         const odataVisitor = await createOdata(ctx); 
         if (odataVisitor) ctx._odata = odataVisitor;
         if (ctx._odata) {

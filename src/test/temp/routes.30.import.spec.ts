@@ -51,6 +51,45 @@ describe("CSV Import", function () {
             });
     });
 
+    // it("should return 12 observations added from csv file", (done) => {
+    //     const infos = {
+    //         api: `{post} CreateObservations with simple csv attached file`,
+    //         apiName: "PostImportSimple",
+    //         apiDescription: "Import simple csv file",
+    //         apiExample: { http: "/v1.0/CreateObservations" },
+    //         apiParamExample: {
+    //             "header": false,
+    //             "nan": true,
+    //             "columns": {
+    //                 "1": {
+    //                     "datastream": "1",
+    //                     "featureOfInterest": "1"
+    //                 }
+    //             }
+    //         }
+    //     };
+    //     chai.request(server)
+    //         .post(`/test${infos.apiExample.http}`)
+    //         .field("Content-Type", "multipart/form-data")
+    //         .field("datas", JSON.stringify(infos.apiParamExample))
+    //         .field("method", "POST")
+    //         .field("nb", "1")
+    //         .attach("file", "./src/test/integration/files/simple.csv")
+    //         .set("Cookie", `${keyTokenName}=${token}`)
+    //         .end(function (err, res) {
+    //             console.log(res.body);
+                
+    //             if (err) console.log(err);
+    //             else {
+    //                 res.should.have.status(201);
+    //                 res.body.length.should.eql(12);
+    //             }
+    //             should.not.exist(err);
+    //             addToApiDoc({ ...infos, result: res });
+    //             done();
+    //         });
+    // });
+
     it("should return 25 observations added from csv file", (done) => {
         const infos = {
             api: `{post} CreateFile with multi csv attached file`,

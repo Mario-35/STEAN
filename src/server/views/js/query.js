@@ -76,10 +76,9 @@ function wait(on) {
     populateSelect(queryResultFormat, tempOptions, getDefaultValue(queryResultFormat, tempOptions));
     EnabledOrDisabled([queryProperty], (nb.value != ""));
     EnabledOrDisabled([onlyValue], (!queryProperty.value.startsWith(_NONE) && nb.value != ""));
-    getElement("actionForm").action = `${optHost.value}/${optVersion.value}/${isObservation() ? "CreateObservations" : `${entity.value}(${nb.value})/CreateFile` }`;
+    getElement("actionForm").action = `${optHost.value}/${optVersion.value}/${entity.value}${entity.value === "CreateObservations" ? "" : `${entity.value}(${nb.value})/CreateFile` }`;
     if (getIfChecked("checkDebug")) getElement("actionForm").action += "?$debug=true";
   }
-
 
 
   function refresh() {
@@ -132,7 +131,7 @@ function wait(on) {
       hide(go);
       show(addImport);     
       show(submit);      
-      // toggleShowHide(submit, jsonDatas.last_string_content.match("columns") != null);      
+      // toggleShowHide(submit, datas.last_string_content.match("columns") != null);      
     } else {
       show(go);
       canShowQueryButton();
@@ -205,6 +204,7 @@ async function editDataClicked(id, _PARAMS) {
 
   function init() {
     header("==== Init ====");
+    // hide(datas);
     if (isDebug) console.log(_PARAMS);
     new SplitterBar(container, first, two);
     wait(false);
@@ -224,7 +224,7 @@ async function editDataClicked(id, _PARAMS) {
 
     optVersion.value = _PARAMS.version;
     optHost.value = _PARAMS.host;
-    if(_PARAMS.datas) jsonDatas.json_value = _PARAMS.datas;
+    if(_PARAMS.datas) datas.json_value = _PARAMS.datas;
     queryOptions.value = _PARAMS.options;
 
     decodeOptions();

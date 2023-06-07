@@ -45,7 +45,7 @@ export class apiAccess {
     }
 
     async add(): Promise<IreturnResult | undefined> {
-        Logs.class(this.constructor.name, "add");        
+        Logs.class(this.constructor.name, "add");
         if (this.myEntity) return await this.myEntity.add(this.ctx.request.body);
     }
 

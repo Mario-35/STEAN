@@ -12,7 +12,7 @@
       // return true if some works are done (for init to not delete value)
       let decode = false;
 
-      const  myOptions =  (input.includes('?')) ? input.split('?')[1] : input;
+      const myOptions = (input.includes('?')) ? input.split('?')[1] : input;
       // process options
       myOptions.split('&').forEach((element) => {
         const temp = element.split('=');
@@ -64,7 +64,7 @@
     } catch (error) {
         return false;
     } 
-  };
+  }
 
   function decodeUrl(input) {
     header("decodeUrl", input);
@@ -142,7 +142,7 @@
     } catch (error) {
         return false;
     } 
-  };
+  }
 
   createUrl = () => {
     header("createUrl");
@@ -187,8 +187,8 @@
       } 
     }  
   
-    if (jsonDatas.innerText  != "") {
-      const datasEncoded = encodeURIComponent(jsonDatas.innerText );
+    if (datas.innerText != "") {
+      const datasEncoded = encodeURIComponent(datas.innerText );
       queryLink = queryLink + `&datas=${datasEncoded}`;
     }
   
@@ -198,7 +198,7 @@
     if (intervalOption.value != "" && isObservation() ) addInOption("interval",intervalOption.value);
     if (!["","0"].includes(skipOption.value)) addInOption("skip",skipOption.value);
     if (!["","0"].includes(topOption.value)) addInOption("top",topOption.value);
-    if (!queryExpand.value.startsWith(_NONE))  addInOption("expand", getMultiSelect(queryExpand));
+    if (!queryExpand.value.startsWith(_NONE)) addInOption("expand", getMultiSelect(queryExpand));
     addInOption("orderby",getOrderBy());
     addInOption("select",getMultiSelect(querySelect));
 
@@ -228,7 +228,7 @@
           }
         }
         });
-      listOr.push(listAnd.join(" and "))
+      listOr.push(listAnd.join(" and "));
     });
     
     const where = listOr.join(" or ");

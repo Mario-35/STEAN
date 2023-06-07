@@ -149,7 +149,7 @@ export class PgVisitor {
     }
 
     protected VisitRessourcesKeyPropertyValue(node: Token, context: any) {
-        this.id = this.options.loraId ? this.options.loraId : node.value == "Edm.SByte" ? BigInt(node.raw) : node.raw;  
+        this.id = this.options.loraId ? this.options.loraId : this.options.name ? this.options.name : node.value == "Edm.SByte" ? BigInt(node.raw) : node.raw;  
         this.where = this.options.loraId ? `"lora"."deveui" = '${this.options.loraId}'` : `id = ${this.id}`;              
     }
     

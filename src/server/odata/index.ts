@@ -18,7 +18,7 @@ const doSomeWarkAfterAst = async (input: PgVisitor, ctx: koa.Context) => {
 
 export const createOdata = async (ctx: koa.Context):Promise<PgVisitor | undefined> => {
     const blankUrl = `$top=${CONFIGURATION.list[ctx._configName].nb_page ? +CONFIGURATION.list[ctx._configName].nb_page : 200}`;
-    const options: SqlOptions = {loraId: undefined, rootBase: ctx._rootName, onlyValue: false, onlyRef: false, method: ctx.method};
+    const options: SqlOptions = {loraId: undefined, rootBase: ctx._rootName, onlyValue: false, onlyRef: false, method: ctx.method, name: ""};
 
     let urlSrc = ctx.href.normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(ctx._version)[1];
 
@@ -26,6 +26,12 @@ export const createOdata = async (ctx: koa.Context):Promise<PgVisitor | undefine
         urlSrc = urlSrc.replace(`&${input}`, "");
         urlSrc = urlSrc.replace(input, "");
     };    
+
+    if (urlSrc.includes("/Configs(")) {
+        const nameConfig = urlSrc.split("/Configs(").join("").split(")")[0];   
+        options.name = nameConfig;
+        urlSrc = urlSrc.replace(nameConfig, "1");        
+    }
 
     if (urlSrc.includes("/Loras(")) {
         const idLora = urlSrc.split("/Loras(").join("").split(")")[0];      

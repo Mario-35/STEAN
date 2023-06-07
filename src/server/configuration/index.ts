@@ -15,7 +15,7 @@ import Koa from "koa";
 import { app } from "..";
 import { db } from "../db";
 import knex, { Knex } from "knex";
-import { createDatabase } from "../db/helpers";
+import { createDatabase, createTable } from "../db/helpers";
 import pg from "pg";
 import update from "./update.json";
 import { messages, messagesReplace } from "../messages";
@@ -25,9 +25,8 @@ import { _DBDATAS, _DBADMIN } from "../db/constants";
 
 // class to create configs environements
 class Configuration {
-    public list: {
-        [key: string]: IconfigFile;
-    } = {};
+    public list: { [key: string]: IconfigFile; } = {};
+    public dbEntities: { [key: string]: string[]; } = {};
     static filePath: fs.PathOrFileDescriptor;
     static jsonConfiguration: JSON;
     static ports: number[] = [];
@@ -37,7 +36,7 @@ class Configuration {
         Configuration.filePath = file;    
         const fileTemp = fs.readFileSync(file, "utf8");    
         Configuration.jsonConfiguration = JSON.parse(fileTemp);
-        const input = Configuration.jsonConfiguration.hasOwnProperty(NODE_ENV) ? Configuration.jsonConfiguration[NODE_ENV] : Configuration.jsonConfiguration;   
+        const input = Configuration.jsonConfiguration.hasOwnProperty(NODE_ENV) ? Configuration.jsonConfiguration[NODE_ENV] : Configuration.jsonConfiguration;  
         Object.keys(input).forEach((element: string) => (this.list[element] = this.format(input[element], element)));
         this.postgresConnection = knex({
             client: "pg",
@@ -54,9 +53,43 @@ class Configuration {
         Logs.booting("active error to file", "errorFile.md");
         const errFile = fs.createWriteStream("errorFile.md", { flags: 'w' });
         errFile.write(`## Start : ${TIMESTAMP()} \n`);
+        this.tableConfig(); 
     }
 
+    async tableConfig() {
+        const conn = knex({
+            client: "pg",
+            connection: {
+                host: this.list["admin"].pg_host,
+                user: this.list["admin"].pg_user,
+                password: this.list["admin"].pg_password,
+                database: "admin",
+            },
+            pool: { min: 0, max: 7 },
+            debug: false
+        });
+        await conn.raw(`Select name from config`)
+        .then((res: any) => {
+            Logs.booting(messages.infos.foundConfig, "ok");
+        })
+        .catch(async (err: Error) => {
+            console.log(err);
 
+            if (err["code"] === "42P01") {
+                Logs.booting(messages.infos.foundConfig, "create Table");
+                await createTable(conn, _DBADMIN.Configs, undefined).then((e: any)=> {
+                    Logs.booting("create Table","OK");
+
+                }
+                ).catch((err: Error) => {
+                    console.log(err);
+                    
+                });
+            }
+        });
+        
+    }
+    
     logToFile(file: string) {        
         const active = file && file.length > 0 ? true: false;
         if (active) Logs.head("active Logs to file", file);
@@ -89,27 +122,27 @@ class Configuration {
             admin: false
         };
          Logs.class(messages.infos.updateUser, user.username);   
-        await db["admin"].table("user").count().where({username: user.username}).then(async (res: object) => {
+        await db.admin.table("user").count().where({username: user.username}).then(async (res: object) => {
             // recreate if exist because if you change key encrypt have to change  
             if (res[0].count == 1) {
-                 Logs.booting(messages.infos.updateUser, `${user.username} for ${connectName}`);
-                await db["admin"].table("user").update(user).where({username: user.username});
+                Logs.booting(messages.infos.updateUser, `${user.username} for ${connectName}`);
+                await db.admin.table("user").update(user).where({username: user.username});
             } else {
                  Logs.booting(messages.infos.createAdminUser, `${user.username} for ${connectName}`);
-                await db["admin"].table("user").insert(user);
+                await db.admin.table("user").insert(user);
             }
         }).catch((err: Error) => {
             Logs.error(err);
         });
     }
 
-    getConfigNameFromDatabase(input: string): string | undefined {  
+    getFromDatabase(input: string): string | undefined {  
         const aliasName = Object.keys(this.list).filter((configName: string) => this.list[configName].pg_database === input)[0];         
         if (aliasName) return aliasName;
         throw new Error(`No configuration found for ${input} name`);
     }
 
-    getConfigNameFromContext(ctx: Koa.Context): string | undefined {
+    getFromContext(ctx: Koa.Context): string | undefined {
         const port = ctx.req.socket.localPort;
         if (port) {
             const databaseName = isTest() ? ["test"] : Object.keys(this.list).filter((word) => (word != "test" && this.list[word].port) == port);
@@ -136,15 +169,13 @@ class Configuration {
     isInConfig(key: string):boolean {
         return Object.keys(this.list).includes(key.trim().toLowerCase()) ;  
     }
-    add_items_to_array_at_position(array: string[], index: number, new_items: string[]) {
-        return [...array.slice(0, index), ...new_items, ...array.slice(index)];
-    }
+
     format(input: object, name?: string): IconfigFile {
         // If config encrypted
         Object.keys(input).forEach((elem: string) => {input[elem] = decrypt(input[elem]);});
-        const goodName = name ? name : decrypt(input["pg_database"]) || "ERROR";
+        const goodDbName = name ? name : decrypt(input["pg_database"]) || "ERROR";
         const returnValue: IconfigFile = {
-            name: goodName,
+            name: goodDbName,
             port: input["port"] ? +input["port"] : -1,
             pg_host: input["pg_host"] || "ERROR",
             pg_port: input["pg_port"] ? +input["pg_port"] : 5432,
@@ -155,22 +186,44 @@ class Configuration {
             date_format: input["date_format"] || "DD/MM/YYYY hh:mi:ss",
             webSite: input["webSite"] || "no web site",
             nb_page: input["nb_page"] ? +input["nb_page"] : 200,
-            lineLimit: input["lineLimit"] ? +input["lineLimit"] : 2000,
             forceHttps: input["forceHttps"] ? input["forceHttps"] : false,
             alias: input["alias"] ? String(input["alias"]).split(",") : [],
             retry: input["retry"] ? +input["retry"] : 2,
             lora: input["lora"] ? input["lora"] : false,
             highPrecision: input["highPrecision"] ? input["highPrecision"] : false,
             multiDatastream: input["multiDatastream"] ? input["multiDatastream"] : false,
-            logFile: input["log"] ? input["log"] : "",
-            dbEntities: goodName === "admin" 
-                                        ? Object.keys(_DBADMIN)
-                                        : Object.keys(Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === false && v.lora === false))),
+            logFile: input["log"] ? input["log"] : ""
             
         };
+        this.dbEntities[goodDbName] = goodDbName === "admin" 
+                                    ? Object.keys(_DBADMIN)
+                                    : Object.keys(Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === false && v.lora === false)));
         if (Object.values(returnValue).includes("ERROR")) throw new TypeError(`${messages.errors.configFile} [${util.inspect(returnValue, { showHidden: false, depth: null })}]`);
-        if (returnValue.lora === true) returnValue.dbEntities = returnValue.dbEntities.concat(Object.keys(Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === false && v.lora === true))));
+        if (returnValue.lora === true) this.dbEntities[goodDbName] = this.dbEntities[goodDbName].concat(Object.keys(Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === false && v.lora === true))));
         return returnValue;
+    }
+
+    createBlankConfig(base: string): IconfigFile {
+        return {
+            name: "name",
+            port: this.list[base].port,
+            pg_host: "host",
+            pg_port: 5432,
+            pg_user: "user",
+            pg_password: "password",
+            pg_database: "database",
+            apiVersion: this.list[base].apiVersion,
+            date_format: "DD/MM/YYYY hh:mi:ss",
+            webSite: "no web site",
+            nb_page: 200,
+            forceHttps: false,
+            alias: [],
+            retry: this.list[base].retry,
+            lora: false,
+            highPrecision: false,
+            multiDatastream: false,
+            logFile: ""      
+        };
     }
 
     // add new config and create database if not exist
@@ -236,8 +289,8 @@ class Configuration {
                       if (Configuration.ports.includes(port)) Logs.result(`\x1b[35m[${key}]\x1b[32m ${messages.infos.addPort}`, port);
                       else app.listen(port, () => {
                         Configuration.ports.push(port);
-                               Logs.result(`\x1b[33m[${key}]\x1b[32m ${messages.infos.ListenPort}`, port);
-                          });
+                        Logs.result(`\x1b[33m[${key}]\x1b[32m ${messages.infos.ListenPort}`, port);
+                    });
                   }
                   return res;
                   

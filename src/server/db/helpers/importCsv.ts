@@ -132,6 +132,8 @@ export const importCsv = async (ctx: koa.Context, knex: Knex | Knex.Transaction,
                     });
 
                 const fileStream = fs.createReadStream(paramsFile.filename);
+                const dateImport = new Date().toLocaleString();
+                const fileImport = paramsFile.filename.split('/').reverse()[0];
 
                 fileStream.on("error", (err: Error) => {
                     Logs.error("fileStream error", err);
@@ -145,7 +147,7 @@ export const importCsv = async (ctx: koa.Context, knex: Knex | Knex.Transaction,
                     Object.keys(paramsFile.columns).forEach(async (myColumn: string, index: number) => {                        
                         const csvColumn: IcsvColumn = paramsFile.columns[myColumn];
                         const valueSql = `CASE "${paramsFile.tempTable}".value${csvColumn.column} WHEN '---' THEN NULL ELSE cast(REPLACE(value${csvColumn.column},',','.') as float) END`;
-                        scriptSql.push(`${index == 0 ? "WITH" : ","} updated${index + 1} as (INSERT into "${ _DBDATAS.Observations.table }" ("${csvColumn.stream.type?.toLowerCase()}_id", "featureofinterest_id", "phenomenonTime","resultTime", "_resultnumber") SELECT ${csvColumn.stream.id}, ${ csvColumn.stream.FoId},  ${sqlRequest.dateSql}, ${sqlRequest.dateSql},${valueSql} FROM "${paramsFile.tempTable}" ON CONFLICT DO NOTHING returning id)`);
+                        scriptSql.push(`${index == 0 ? "WITH" : ","} updated${index + 1} as (INSERT into "${ _DBDATAS.Observations.table }" ("${csvColumn.stream.type?.toLowerCase()}_id", "featureofinterest_id", "phenomenonTime","resultTime", "_resultnumber", "resultQuality") SELECT ${csvColumn.stream.id}, ${ csvColumn.stream.FoId},  ${sqlRequest.dateSql}, ${sqlRequest.dateSql},${valueSql}, '{"import": "${fileImport}","date": "${dateImport}"}'  FROM "${paramsFile.tempTable}" ON CONFLICT DO NOTHING returning id)`);
                         scriptSqlResult.push(index == 0 ? " SELECT id FROM updated1" : ` UNION SELECT id FROM updated${index + 1}`);
 
                     });

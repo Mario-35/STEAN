@@ -13,7 +13,7 @@ import { Logs } from "../../logger";
 import { Iquery } from "../../types";
 import { commonHtml } from "../helpers";
 
-export const queryHtmlPage = (params: Iquery): string => {
-    Logs.head("queryHtmlPage");
+export const createQueryHtml = (params: Iquery): string => {
+    Logs.head("createQueryHtml");
     return commonHtml(fs.readFileSync(__dirname + "/query.html").toString(), params);
 };
