@@ -7,6 +7,6 @@
  */
 
 import { Ientity } from "../../types";
-import { _DBDATAS } from "../constants";
+import { _DB } from "../constants";
 
-export const isObservation = (input: Ientity | string) => (typeof input === "string") ? input === _DBDATAS.Observations.name : input.name === _DBDATAS.Observations.name;
+export const isObservation = (input: Ientity | string) => (typeof input === "string") ? input === _DB.Observations.name : input.name === _DB.Observations.name;

@@ -11,7 +11,7 @@ import { getEntityName } from "../../helpers";
 import { queryAsJson } from "../../helpers/returnFormats";
 import { Logs } from "../../logger";
 import { IstreamInfos } from "../../types";
-import { _DBDATAS, _STREAM } from "../constants";
+import { _DB, _STREAM } from "../constants";
 
 export const getStreamInfos = async (conn: Knex | Knex.Transaction, input: JSON): Promise<IstreamInfos | undefined> => {
     Logs.head("getStreamInfos");
@@ -20,10 +20,10 @@ export const getStreamInfos = async (conn: Knex | Knex.Transaction, input: JSON)
     const streamEntity = getEntityName(stream);
     if(!streamEntity) return undefined;
     const foiId: bigint | undefined = input["FeaturesOfInterest"] ? input["FeaturesOfInterest"] : undefined;       
-    const searchKey = input[_DBDATAS[streamEntity].name] || input[_DBDATAS[streamEntity].singular];
+    const searchKey = input[_DB[streamEntity].name] || input[_DB[streamEntity].singular];
     const streamId: string | undefined = isNaN(searchKey) ? searchKey["@iot.id"] : searchKey;
     if (streamId) {
-        const query = `SELECT "id", "observationType", "_default_foi" FROM "${_DBDATAS[streamEntity].table}" WHERE id = ${BigInt(streamId)} LIMIT 1`;
+        const query = `SELECT "id", "observationType", "_default_foi" FROM "${_DB[streamEntity].table}" WHERE id = ${BigInt(streamId)} LIMIT 1`;
         return await conn.raw(queryAsJson({query: query, singular: true, count: false}))
         .then((res: object) => {
             const temp = res["rows"][0].results;                    

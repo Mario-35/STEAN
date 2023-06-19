@@ -5,7 +5,7 @@
   submit.onclick = () => wait(true);
 
   preview.onclick = () => {
-    updateWinJsonResult(datas.innerText, "Preview datas");
+    updateWinJsonResult(jsonDatas.innerText, "Preview datas");
   };
 
   logout.onclick = () => {
@@ -147,7 +147,7 @@
             headers: {
               "Content-Type": "application/json",
             },
-            body: datas.innerText ,
+            body: jsonDatas.innerText ,
           });
             const value = await response.text();
             if (response.status == 401) {
@@ -161,7 +161,7 @@
             headers: {
               "Content-Type": "application/json",
             },
-            body: datas.innerText,
+            body: jsonDatas.innerText,
           });
           const value = await response.json();
           if (response.status == 401) {

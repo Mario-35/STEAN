@@ -1,9 +1,9 @@
 import fs from "fs";
 import path from "path";
 import { Ientity } from "../../server/types";
-const conf = require("../../server/configuration/config.json");
+const conf = require("../../server/configuration/test.json");
 const apidocJson = require("../apidoc.json");
-export const identification = { "username": conf["test"]["test"].pg_user, "password": conf["test"]["test"].pg_password };
+export const identification = { "username": conf["test"].pg_user, "password": conf["test"].pg_password };
 
 let nb = 0;
 export function getNB(message: string): string {nb +=1; return `${message} ${String(nb)}`;} 

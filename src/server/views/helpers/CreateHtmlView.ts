@@ -256,7 +256,7 @@ export class CreateHtmlView {
     };
 
     public status = (user: Iuser): string => {
-      const config = CONFIGURATION.getFromDatabase(user.database);  
+      const config = CONFIGURATION.getConfigNameFromDatabase(user.database);  
         return `<!DOCTYPE html> <html> ${this.head(
             "Status",
             "user"

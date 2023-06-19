@@ -8,7 +8,9 @@
 
 /* eslint-disable quotes */
 
-import { EdatesType, Eentities, EobservationType, Erelations } from "../enums";
+import koa from "koa";
+import { CONFIGURATION } from "../configuration";
+import { apiType, EdatesType, Eentities, EobservationType, Erelations } from "../enums";
 import { Ientity } from "../types";
 const makeIDAlias = (table: string) => `"${table}"."id" AS "@iot.id"`;
 export const _RIGHTS = 'SUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION NOBYPASSRLS CONNECTION LIMIT -1';
@@ -20,6 +22,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "Thing",
         table: "thing",
         order: 10,
+        essai:[apiType.base],
         lora: false,
         columns: {
             id: {
@@ -44,7 +47,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             thing_pkey: 'PRIMARY KEY ("id")',
             thing_unik_name: 'UNIQUE ("name")',
         },
-        admin: false,
         canPost: false,
         relations: {
             Locations: {
@@ -95,6 +97,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "FeatureOfInterest",
         table: "featureofinterest",
         order: 4,
+        essai:[apiType.base],
         lora: false,
         columns: {
             id: {
@@ -126,7 +129,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                 type : "json"
             }
         },
-        admin: false,
         canPost: false,
         relations: {
             Observations: {
@@ -166,6 +168,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "Location",
         table: "location",
         order: 6,
+        essai:[apiType.base],
         lora: false,
         columns: {
             id: {
@@ -208,7 +211,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             location_pkey: 'PRIMARY KEY ("id")',
             location_unik_name: 'UNIQUE ("name")',
         },
-        admin: false,
         canPost: false,
         relations: {
             Things: {
@@ -242,6 +244,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "HistoricalLocation",
         table: "historical_location",
         order: 5,
+        essai:[apiType.base],
         lora: false,
         columns: {
             id: {
@@ -262,7 +265,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         indexes: {
             historical_location_thing_id: 'ON public."historical_location" USING btree ("thing_id")'
         },
-        admin: false,
         canPost: false,
         relations: {
             // TODO NOT GOOD
@@ -296,6 +298,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "locationHistoricalLocation",
         table: "location_historical_location",
         order: -1,
+        essai:[apiType.base],
         lora: false,
         columns: {
             location_id: {
@@ -315,7 +318,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             location_historical_location_historical_location_id: 'ON public."location_historical_location" USING btree ("historical_location_id")',
             location_historical_location_location_id: 'ON public."location_historical_location" USING btree ("location_id")'
         },
-        admin: false,
         canPost: false,
         relations: {}
     },
@@ -325,6 +327,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "ObservedProperty",
         table: "observedproperty",
         order: 8,
+        essai:[apiType.base],
         lora: false,
         columns: {
             id: {
@@ -354,7 +357,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             observedproperty_pkey: 'PRIMARY KEY ("id")',
             observedproperty_unik_name: 'UNIQUE ("name")',
         },
-        admin: false,
         canPost: false,
         relations: {
             Datastreams: {
@@ -388,6 +390,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "Sensor",
         table: "sensor",
         order: 9,
+        essai:[apiType.base],
         lora: false,
         columns: {
             id: {
@@ -425,7 +428,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             sensor_pkey: 'PRIMARY KEY ("id")',
             sensor_unik_name: 'UNIQUE ("name")',
         },
-        admin: false,
         canPost: false,
         relations: {
             Datastreams: {
@@ -467,6 +469,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "Datastream",
         table: "datastream",
         order: 1,
+        essai:[apiType.base],
         lora: false,
         columns: {
             id: {
@@ -528,7 +531,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                 create: "BIGINT"
             }
         },
-        admin: false,
         canPost: false,
         relations: {
             Thing: {
@@ -602,6 +604,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "MultiDatastream",
         table: "multidatastream",
         order: 2,
+        essai:[apiType.base],
         lora: false,
         columns: {
             id: {
@@ -663,7 +666,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                 create: "BIGINT"
             }
         },
-    admin: false,
         canPost: false,
         relations: {
             Thing: {
@@ -737,6 +739,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "MultiDatastreamObservedProperty",
         table: "multi_datastream_observedproperty",
         order: -1,
+        essai:[apiType.base],
         lora: false,
         columns: {
             multidatastream_id: {
@@ -746,7 +749,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                 create: "BIGINT NOT NULL"
             }
         },
-        admin: false,
         canPost: false,
         relations: {},
         constraints: {
@@ -767,6 +769,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "Observation",
         table: "observation",
         order: 7,
+        essai:[apiType.base],
         lora: false,
         columns: {
             id: {
@@ -872,6 +875,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             observation_unik_multidatastream_resulttext: 'UNIQUE ("phenomenonTime", "resultTime", "multidatastream_id","featureofinterest_id", "_resulttext")',
             observation_unik_multidatastream_resulttexts: 'UNIQUE ("phenomenonTime", "resultTime", "multidatastream_id","featureofinterest_id", "_resulttexts")',
             observation_unik_multidatastream_resultint: 'UNIQUE ("phenomenonTime", "resultTime", "multidatastream_id","featureofinterest_id", "_resultint")',
+            observation_datastream_id_fkey: 'FOREIGN KEY ("datastream_id") REFERENCES "datastream"("id") ON UPDATE CASCADE ON DELETE CASCADE',
             observation_multidatastream_id_fkey: 'FOREIGN KEY ("multidatastream_id") REFERENCES "multidatastream"("id") ON UPDATE CASCADE ON DELETE CASCADE',
             observation_featureofinterest_id_fkey: 'FOREIGN KEY ("featureofinterest_id") REFERENCES "featureofinterest"("id") ON UPDATE CASCADE ON DELETE CASCADE'
         },
@@ -880,7 +884,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             observation_multidatastream_id: 'ON public."observation" USING btree ("multidatastream_id")',
             observation_featureofinterest_id: 'ON public."observation" USING btree ("featureofinterest_id")'
         },
-        admin: false,
         canPost: false,
         relations: {
             Datastream: {
@@ -924,6 +927,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "HistoricalObservation",
         table: "historical_observation",
         order: -1,
+        essai:[apiType.base],
         lora: false,
         columns: {
             id: {
@@ -950,7 +954,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         indexes: {
             HistoricalObservations_observation_id: 'ON public."historical_observation" USING btree ("observation_id")'
         },
-        admin: false,
         canPost: false,
         relations: {
             Observations: {
@@ -972,6 +975,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "ThingLocation",
         table: "thing_location",
         order: -1,
+        essai:[apiType.base],
         lora: false,
         columns: {
             thing_id: {
@@ -981,7 +985,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                 create: "BIGINT NOT NULL"
             }
         },
-        admin: false,
         canPost: false,
         relations: {},
         constraints: {
@@ -1000,6 +1003,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "Decoder",
         table: "decoder",
         order: 12,
+        essai:[apiType.lora],
         lora: true,
         columns: {
             id: {
@@ -1044,7 +1048,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             decoder_pkey: 'PRIMARY KEY ("id")',
             decoder_unik_name: 'UNIQUE ("name")',
         },
-        admin: false,
         canPost: false,
         relations: {
             Loras: {
@@ -1065,6 +1068,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "Lora",
         table: "lora",
         order: 11,
+        essai:[apiType.lora],
         lora: true,
         columns: {
             id: {
@@ -1113,7 +1117,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             lora_multidatastream_id: 'ON public."lora" USING btree ("multidatastream_id")',
             decoder_id: 'ON public."lora" USING btree ("decoder_id")'
         },
-        admin: false,
         canPost: false,
         relations: {
             Datastream: {
@@ -1154,8 +1157,8 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "User",
         table: "user",
         order: 21,
-        admin: true,
         canPost: true,
+        essai:[apiType.admin],
         lora: true,
         columns: {
             id: {
@@ -1200,8 +1203,8 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "Log_request",
         table: "log_request",
         order: 22,
-        admin: true,
         canPost: true,
+        essai:[apiType.logged, apiType.admin],
         lora: true,
         columns: {
             id: {
@@ -1266,8 +1269,8 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "Config",
         table: "config",
         order: 20,
-        admin: true,
         canPost: true,
+        essai:[apiType.logged, apiType.admin],
         lora: false,
         columns: {
             name: {
@@ -1359,9 +1362,9 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "CreateObservation",
         table: "",
         order: 0,
+        essai:[apiType.logged],
         lora: false,
         columns: {},
-        admin: false,
         canPost: true,
         relations: {},
         constraints: {},
@@ -1373,9 +1376,9 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "CreateFile",
         table: "",
         order: 0,
+        essai:[apiType.logged],
         lora: false,
         columns: {},
-        admin: false,
         canPost: true,
         relations: {},
         constraints: {},
@@ -1383,6 +1386,9 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     }    
 };
 
-export const _DBDATAS = Object.freeze(dbDatas);
-export const _DBADMIN = Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === true));
+export const _DB = Object.freeze(dbDatas);
+export const _DBFILTERED = (input: koa.Context | string[]) => Array.isArray(input) 
+    ? Object.fromEntries(Object.entries(_DB).filter(([k,v]) => input.includes(k)))
+    : Object.fromEntries(Object.entries(_DB).filter(([k,v]) => CONFIGURATION.list[input._configName].entities.includes(k) || _DB[k].essai.includes(apiType.logged) && input._user.id > 0));
+export const _DBADMIN = Object.fromEntries(Object.entries(_DB).filter(([k,v]) => v.essai.includes(apiType.admin)));
  

@@ -26,6 +26,7 @@ export interface IconfigFile {
     lora: boolean;
     multiDatastream: boolean;
     highPrecision: boolean;
-    logFile: string;    
+    logFile: string;
+    entities: string[];
 }
 

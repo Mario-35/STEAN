@@ -1,6 +1,7 @@
 "use strict";
 const minify = require("@node-minify/core");
 const cleanCSS = require("@node-minify/clean-css");
+const htmlMinifier = require('@node-minify/html-minifier');
 var UglifyJS = require("uglify-js");
 
 var globby = require("globby");
@@ -12,16 +13,15 @@ var mkdirp = require("mkdirp");
 var archiver = require("archiver");
 var crypto = require("crypto");
 
-const dataDemo = `"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.datasDemo=void 0;const datasDemo=()=>[];exports.datasDemo=datasDemo;`;
 const encrypt = (text, key) => {
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv("aes-256-ctr", String(key), iv);
   const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
   return `${iv.toString("hex")}.${encrypted.toString("hex")}`;
-}
+};
 
 function isEmpty(str) {
-  if (typeof str != "string" || str.trim() == "") {
+  if (typeof str !== "string" || str.trim() === "") {
     return true;
   }
   return false;
@@ -38,10 +38,10 @@ function isEmpty(str) {
 
 function deleteFileSync(path) {
   try {
-    fs.unlinkSync(path)
+    fs.unlinkSync(path);
     //file removed
   } catch(err) {
-    console.error(err)
+    console.error(err);
   }
 }
 
@@ -96,9 +96,9 @@ function writeFile(filePath, code, silent) {
   })
   .catch(function (err) {
     console.log(`\x1b[31m Error \x1b[34m : \x1b[33m ${err}\x1b[0m`);
-    return
+    return;
   });
-  if (silent && silent === true) return
+  if (silent && silent === true) return;
   messageWrite(filePath);
 } 
 
@@ -147,13 +147,15 @@ function ugly (dirPath, options) {
     minify({
       compressor: options.compressor,
       content: originalCode,
-      options: options,options,
+      options: options,
     }).then(function(min) {
+    console.log(`\x1b[32m ${fileName} \x1b[36m minify to ==> \x1b[35m "${newName}" \x1b[0m`);
+
       writeFile(newName, min, true);
     }).catch(function(e) {
       console.log(`\x1b[31m Error \x1b[34m : \x1b[33m ${e}\x1b[0m`);
 
-    })
+    });
   });
 }
 
@@ -171,18 +173,17 @@ function uglyJs (dirPath) {
       booleans: true,
       unused: true,
       if_return: true,
-      join_vars: true,
-      drop_console: true
+      join_vars: true
     }
   };
   // minify each file individually
   files.forEach(function (fileName) {
-    console.log(`minify : ${fileName}`);
-    if (fileName.includes(".zobi.")) {
+    if (!fileName.includes(".min.")) {
       const newName = path.join(dirPath, path.dirname(fileName), path.basename(fileName, path.extname(fileName))) + ".js";
-      const originalCode = fileName.includes("datasDemo.js") ? dataDemo : readFile(path.join(dirPath, fileName));
+      const originalCode = readFile(path.join(dirPath, fileName));
       const temp = UglifyJS.minify(originalCode, options);
       if (temp.error) console.log(`\x1b[31m Error \x1b[34m : \x1b[33m ${temp.error}\x1b[0m`);
+      else console.log(`\x1b[32m ${fileName} \x1b[36m minify to ==> \x1b[35m "${newName}" \x1b[0m`);
       writeFile(newName, temp.code, true);
     }
   });
@@ -200,9 +201,8 @@ console.log(`\x1b[32m =========================== \x1b[36m Start ${mode} \x1b[32
 deleteFileSync("./dist.zip");
 
 copyFolderRecursiveSync("./src/apidoc", "build/");
-copyFolderRecursiveSync("./src/server/views/js", "build/views");
-copyFolderRecursiveSync( "./src/server/views/css", "build/views" );
-copyFileSync( "./src/server/views/query/query.html", "build/views/query/" );
+copyFolderRecursiveSync("./src/server/views/js", "build/views/");
+copyFolderRecursiveSync( "./src/server/views/css", "build/views/" );
 copyFileSync( "./src/server/routes/favicon.ico", "build/routes/" );
 
 const packageJson = require("./package.json");
@@ -213,6 +213,7 @@ delete packageJson.apidoc;
 fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
     encoding: "utf-8"
 },function (err) {
+  console.log(err);
   messageWrite("package.json");
   if (!mode.includes("dev")) {  
     ugly("./build/", {
@@ -231,14 +232,17 @@ fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
   
   try {
     try {
-      const temp =  fs.readFileSync(path.join("./src/server/config/", "config.json"), "utf-8");
-      const key =  fs.readFileSync(path.join("./src/server/config/", ".key"), "utf-8");
+      const temp = fs.readFileSync(path.join("./src/server/configuration/", "config.json"), "utf-8");
+      const key = fs.readFileSync(path.join("./src/server/configuration/", ".key"), "utf-8");
+      const queryHtml = fs.readFileSync(path.join("./src/server/views/query/", "query.html"), "utf-8");
+      const adminHtml = fs.readFileSync(path.join("./src/server/views/admin/", "admin.html"), "utf-8");
       const input = JSON.parse(temp);
       const what = "development";
       Object.keys(input[what]).forEach(e => {
         Object.keys(input[what][e]).forEach(r => {
-          input[what][e][r] = encrypt(String(input[what][e][r]), key);
-        })
+          input[what][e][r] = String(input[what][e][r]);
+          // input[what][e][r] = encrypt(String(input[what][e][r]), key);
+        });
       });
       const conf = mode.includes("docker") ? {
         "admin": {
@@ -257,13 +261,30 @@ fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
             "pg_database": "sensorthings",
             "apiVersion": "v1.0",
             "date_format": "DD/MM/YYYY hh:mm:ss",
-            "webSiteDoc": "https://api.geosas.fr/sensorthings/",
+            "webSite": "https://api.geosas.fr/sensorthings/",
             "retry": 10,
         }
     }: input[what];
-      writeFile("build/config/config.json", JSON.stringify(conf, null, 2));
-      writeFile("build/config/.key", key);
-    }  catch (error) {
+      writeFile("./build/configuration/config.json", JSON.stringify(conf, null, 2));
+      writeFile("./build/configuration/.key", key);
+      minify({
+        compressor: htmlMinifier,
+        content: queryHtml.replace("@version@", packageJson.version)
+      }).then(function (min) {
+         console.log(`\x1b[32m query.html \x1b[36m minify to ==> \x1b[35m query.html \x1b[0m`);
+        writeFile("./build/views/query/query.html", min);
+      });
+      minify({
+        compressor: htmlMinifier,
+        content: adminHtml.replace("@version@", packageJson.version)
+      }).then(function (min) {
+         console.log(`\x1b[32m admin.html \x1b[36m minify to ==> \x1b[35m admin.html \x1b[0m`);
+        writeFile("./build/views/admin/admin.html", min);
+      });
+
+
+    } catch (error) {
+      console.log(error);
       console.log("\x1b[31m No configuration file \x1b[34m : \x1b[37m found\x1b[0m");
     }
   } catch (error) {
@@ -271,11 +292,9 @@ fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
     console.log("\x1b[31m configuration \x1b[34m : \x1b[37m not write\x1b[0m");
   }
     
-  writeFile("build/db/createDBDatas/datasDemo.js", dataDemo);
-
   if (!mode.includes("docker")) zipDirectory("./build", "dist.zip").then(function (e) {
     console.log(`\x1b[32m ./build \x1b[36m zip to ==> \x1b[35m "dist.zip" \x1b[0m`);
   }); 
   
-})
+});
 

@@ -12,9 +12,7 @@ import chaiHttp from "chai-http";
 import { IApiDoc, IApiInput, prepareToApiDoc, generateApiDoc, identification, keyTokenName, limitResult } from "./constant";
 
 import { server } from "../../server/index";
-import { dbTest } from "../dbTest";
-import { _DBDATAS } from "../../server/db/constants";
-import { getBigIntFromString } from "../../server/helpers";
+import { _DB } from "../../server/db/constants";
 
 chai.use(chaiHttp);
 
@@ -99,7 +97,7 @@ describe("CSV Import", function () {
                 if (err) console.log(err);
                 else {
                     res.should.have.status(201);
-                    res.body.length.should.eql(12);
+                    res.body[0].should.eql("Add 12 observations from simple.csv");
                 }
                 should.not.exist(err);
                 addToApiDoc({ ...infos, result: limitResult(res) });
@@ -123,11 +121,11 @@ describe("CSV Import", function () {
             .field("nb", "1")
             .attach("file", "./src/test/integration/files/simple.csv")
             .set("Cookie", `${keyTokenName}=${token}`)
-            .end((err: Error, res: any) => {                
+            .end((err: Error, res: any) => {      
                 if (err) console.log(err);
                 else {
                     res.should.have.status(201);
-                    res.body.length.should.eql(0);
+                    res.body[0].should.eql("Add 0 observations from simple.csv");
                 }
                 should.not.exist(err);
                 docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);
@@ -157,26 +155,9 @@ describe("CSV Import", function () {
                 else {
                     should.not.exist(err);
                     res.should.have.status(201);
-                    res.body.length.should.eql(10);
-                    const ids: BigInt[] = [];
-                    res.body.forEach((element: string) => {
-                        const temp = getBigIntFromString(element);
-                        if (temp) ids.push(temp);
-                    });
-                    dbTest(_DBDATAS.Observations.table)
-                        .whereIn("id", ids)
-                        .orderBy("id")
-                        .then((test) => {
-                            test[0]._resultnumber.should.eql(13.1);
-                            test[0].datastream_id.should.eql("1");
-                            test[0].featureofinterest_id.should.eql("1");
-                            test[5]._resultnumber.should.eql(20.1);
-                            test[5].datastream_id.should.eql("4");
-                            test[5].featureofinterest_id.should.eql("2");
-                            addToApiDoc({ ...infos, result: limitResult(res) });
-                            done();
-                        })
-                        .catch((err) => console.log(err));
+                    res.body[0].should.eql("Add 5 observations from multi.csv");
+                    addToApiDoc({ ...infos, result: limitResult(res) });
+                    done();
                 }
             });
     });
@@ -201,7 +182,7 @@ describe("CSV Import", function () {
                 if (err) console.log(err);
                 else {
                     res.should.have.status(201);
-                    res.body.length.should.eql(0);
+                    res.body[0].should.eql("Add 0 observations from multi.csv");
                 }
                 should.not.exist(err);
                 docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);

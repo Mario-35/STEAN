@@ -32,7 +32,7 @@ import {
 } from "./constant";
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
-import { _DBDATAS } from "../../server/db/constants";
+import { _DB } from "../../server/db/constants";
 import { Ientity } from "../../server/types";
 
 export const testsKeys = [
@@ -51,7 +51,7 @@ chai.use(chaiHttp);
 const should = chai.should();
 
 const docs: IApiDoc[] = [];
-const entity: Ientity = _DBDATAS.Locations;
+const entity: Ientity = _DB.Locations;
 
 
 const addToApiDoc = (input: IApiInput) => {

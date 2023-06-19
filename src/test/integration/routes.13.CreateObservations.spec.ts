@@ -13,12 +13,15 @@ import chaiHttp from "chai-http";
 import { IApiDoc, IApiInput, prepareToApiDoc, generateApiDoc, identification, keyTokenName, defaultPost, limitResult, blank } from "./constant";
 
 import { server } from "../../server/index";
+import { Ientity } from "../../server/types";
+import { _DB } from "../../server/db/constants";
 
 chai.use(chaiHttp);
 
 const should = chai.should();
 
 const docs: IApiDoc[] = [];
+const entity: Ientity = _DB.CreateObservations;
 
 
 const addToApiDoc = (input: IApiInput) => {
@@ -98,7 +101,7 @@ const muliDatasObs = (multiDatastream: number) => {
     };
 };
 
-describe("endpoint : Create Observations [13.2]", () => {
+describe(`endpoint : ${entity.name} [13.2]`, () => {
     let token = "";
 
     before((done) => {
@@ -334,8 +337,7 @@ describe("endpoint : Create Observations [13.2]", () => {
             res.body[0].should.eql("Duplicate (2017-01-13T10:20:00.000Z,591,592,593,2017-01-13T10:20:00.000Z,1)");
             res.body[1].should.include("delete id ==>");
             addToApiDoc({ ...infos, result: limitResult(res) });
-            generateApiDoc(docs, "CreateObservations.js");
-
+            generateApiDoc(docs, `apiDoc${entity.name}.js`);
             done();
         });
     });

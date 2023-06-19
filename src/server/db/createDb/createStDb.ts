@@ -6,12 +6,11 @@
  *
  */
 
-import knex from "knex";
 import { createTable, testConnection } from "../helpers";
 import { CONFIGURATION } from "../../configuration";
 import { asyncForEach, isTest } from "../../helpers";
 import { Logs } from "../../logger";
-import { _DBDATAS, _RIGHTS } from "../constants";
+import { _DB, _RIGHTS } from "../constants";
 import { testsDatas } from "./testsDatas";
 import { triggers } from "./triggers";
  
@@ -70,17 +69,7 @@ export const createSTDB = async(configName: string): Promise<{ [key: string]: st
             Logs.error(err);
         });
 
-const connDb = knex({
-    client: "pg",
-    connection: {
-        host: CONFIGURATION.list["admin"].pg_host,
-        user: CONFIGURATION.list["admin"].pg_user,
-        password: CONFIGURATION.list["admin"].pg_password,
-        database: CONFIGURATION.list[configName].pg_database
-    },
-    pool: { min: 0, max: 7 },
-    debug: false
-});
+        const connDb = CONFIGURATION.createAdimnTableForDatabase(CONFIGURATION.list[configName].pg_database);
 
     // create postgis
     returnValue[`Create postgis`] = await connDb
@@ -93,8 +82,8 @@ const connDb = knex({
         .then(() => "✔")
         .catch((err: Error) => err.message);
 
-    await asyncForEach(CONFIGURATION.dbEntities[configName], async (keyName: string) => {
-        await createTable(connDb, _DBDATAS[keyName], undefined);
+    await asyncForEach(CONFIGURATION.list[configName].entities, async (keyName: string) => {
+        await createTable(connDb, _DB[keyName], undefined);
     });
 
     await asyncForEach(triggers, async (sql: string) => {

@@ -15,7 +15,7 @@ import { Logs } from "../../../logger";
 import { Ientity } from "../../../types";
 import { EoperationType } from "../../../enums/";
 import { PgVisitor } from "../PgVisitor";
-import { _DBDATAS } from "../../../db/constants";
+import { _DB } from "../../../db/constants";
 
 export function createPostSql(datas: object, knexInstance: Knex | Knex.Transaction, main: PgVisitor): string {
     let sqlResult = "";
@@ -28,8 +28,8 @@ export function createPostSql(datas: object, knexInstance: Knex | Knex.Transacti
         };
     } = {};
     const tempEntity = main.getEntity();
-    const postEntity: Ientity = _DBDATAS[tempEntity == "CreateFile" ? "Datastreams" : tempEntity];
-    const postParentEntity: Ientity | undefined = main.parentEntity ? _DBDATAS[main.parentEntity ] : undefined;
+    const postEntity: Ientity = _DB[tempEntity == "CreateFile" ? "Datastreams" : tempEntity];
+    const postParentEntity: Ientity | undefined = main.parentEntity ? _DB[main.parentEntity ] : undefined;
     const names: { [key: string]: string } = {
         [postEntity.table]: postEntity.table
     };
@@ -283,7 +283,7 @@ export function createPostSql(datas: object, knexInstance: Knex | Knex.Transacti
         const subBlock = (key: string, value: object) => {
             const entityNameSearch = getEntityName(key);
             if (entityNameSearch) {
-                const newEntity = _DBDATAS[entityNameSearch];
+                const newEntity = _DB[entityNameSearch];
                 const name = createName(newEntity.table);
                 names[newEntity.table] = name;
                 const test = start(value, newEntity, entity);
@@ -324,7 +324,7 @@ export function createPostSql(datas: object, knexInstance: Knex | Knex.Transacti
     if (main.parentEntity) {
         const entityName = getEntityName(main.parentEntity);
         Logs.debug("Found entity : ", entityName);
-        const callEntity = entityName ? _DBDATAS[entityName] : undefined;
+        const callEntity = entityName ? _DB[entityName] : undefined;
         const id: bigint | undefined =
         typeof main.parentId== "string" ? getBigIntFromString(main.parentId) : main.parentId;
         if (entityName && callEntity && id && id > 0) {

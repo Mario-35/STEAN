@@ -28,7 +28,6 @@ import { db } from "../db";
 export const protectedRoutes = new Router<DefaultState, Context>();
 
 protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
-
     switch (testRoutes(ctx.path).toUpperCase()) {
         case "LOGIN":
             if (ctx.request["token"]) ctx.redirect(`${ctx._rootName}status`);
@@ -105,7 +104,6 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
                 ctx.redirect(`${ctx._rootName}error`);
             }
             return;
-    
     }
 
     if ((ctx._user && ctx._user.id > 0) || ctx.request.url.includes("/Lora")) {

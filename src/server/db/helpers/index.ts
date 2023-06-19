@@ -9,7 +9,7 @@
 export { createDatabase } from "../createDb";
 export { createDbGraph } from "./createDbGraph";
 export { createTable } from "./createTable";
-export { importCsv, createColumnHeaderName } from "./importCsv";
+export { streamCsvFileInPostgreSql, createColumnHeaderName } from "./streamCsvFileInPostgreSql";
 export { knexQueryToSqlString } from "./knexQueryToSqlString";
 export { removeKeyFromUrl } from "./removeKeyFromUrl";
 export { testConnection } from "./testConnection";
@@ -22,4 +22,3 @@ export { getDBDateNow } from "./getDBDateNow";
 export { columnList } from "./columnList";
 export { isSingular } from "./isSingular";
 export { getStreamInfos } from "./getStreamInfos";
-export { createDbList } from "./createDbList";

@@ -426,7 +426,7 @@ describe("Odata", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(2);
+                res.body.value.length.should.eql(26);
                 res.body.should.include.keys("@iot.count", "value");
                 done();
             });
@@ -466,7 +466,7 @@ describe("Odata", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(1);
+                res.body.value.length.should.eql(25);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 done();

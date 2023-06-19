@@ -277,7 +277,7 @@ describe("Odata BuiltInDates [9.3.3.5.2]", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(52);
+                res.body.value.length.should.eql(76);
                 res.body["value"][0]["@iot.id"].should.eql(56);
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 done();

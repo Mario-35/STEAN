@@ -9,36 +9,39 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, IApiInput, prepareToApiDoc, identification, keyTokenName, limitResult } from "./constant";
+import { IApiDoc, IApiInput, prepareToApiDoc, identification, keyTokenName, limitResult, generateApiDoc } from "./constant";
 
 import { server } from "../../server/index";
 import { dbTest } from "../dbTest";
-import { _DBDATAS } from "../../server/db/constants";
+import { _DB } from "../../server/db/constants";
+import { Ientity } from "../../server/types";
 
 chai.use(chaiHttp);
 
 const should = chai.should();
 
 const docs: IApiDoc[] = [];
+const entity: Ientity = _DB.CreateFile;
 
 
 const addToApiDoc = (input: IApiInput) => {
-    docs.push(prepareToApiDoc(input, "resultFile"));
+    docs.push(prepareToApiDoc(input, "CreateFile"));
 };
 
 addToApiDoc({
     api: `{infos} /Import Infos.`,
-    apiName: "InfosResultFile",
+    apiName: "InfosCreateFile",
     apiDescription: `<hr>
     <div class="text">
       <p>
-      You can import a csv file in observations. with one or multiple columns
+      You can import a csv file as an observations.
+      with one or multiple columns
       </p>
     </div>`,
     result: ""
 });
 
-describe("CSV Import", function () {
+describe(`CSV ${entity.name}`, function () {
     this.timeout(5000);
     let token = "";
     before((done) => {        
@@ -51,49 +54,10 @@ describe("CSV Import", function () {
             });
     });
 
-    // it("should return 12 observations added from csv file", (done) => {
-    //     const infos = {
-    //         api: `{post} CreateObservations with simple csv attached file`,
-    //         apiName: "PostImportSimple",
-    //         apiDescription: "Import simple csv file",
-    //         apiExample: { http: "/v1.0/CreateObservations" },
-    //         apiParamExample: {
-    //             "header": false,
-    //             "nan": true,
-    //             "columns": {
-    //                 "1": {
-    //                     "datastream": "1",
-    //                     "featureOfInterest": "1"
-    //                 }
-    //             }
-    //         }
-    //     };
-    //     chai.request(server)
-    //         .post(`/test${infos.apiExample.http}`)
-    //         .field("Content-Type", "multipart/form-data")
-    //         .field("datas", JSON.stringify(infos.apiParamExample))
-    //         .field("method", "POST")
-    //         .field("nb", "1")
-    //         .attach("file", "./src/test/integration/files/simple.csv")
-    //         .set("Cookie", `${keyTokenName}=${token}`)
-    //         .end(function (err, res) {
-    //             console.log(res.body);
-                
-    //             if (err) console.log(err);
-    //             else {
-    //                 res.should.have.status(201);
-    //                 res.body.length.should.eql(12);
-    //             }
-    //             should.not.exist(err);
-    //             addToApiDoc({ ...infos, result: res });
-    //             done();
-    //         });
-    // });
-
-    it("should return 25 observations added from csv file", (done) => {
+    it("Should return The Datastreams create to ingest csv file", (done) => {
         const infos = {
-            api: `{post} CreateFile with multi csv attached file`,
-            apiName: "PostImportCreateFile",
+            api: `{post} CreateFile with csv attached file`,
+            apiName: "CreateFilePost",
             apiDescription: "Import csv file",
             apiExample: { http: "/v1.0/Things(22)/CreateFile" }
         };
@@ -113,7 +77,7 @@ describe("CSV Import", function () {
                     res.body["@iot.id"].should.eql(14);
                     // res.body["observationType"].should.eql('http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation');
 
-                    dbTest(_DBDATAS.Observations.table)
+                    dbTest(_DB.Observations.table)
                         .where("datastream_id", 14)
                         .orderBy("id")
                         .then((test) => {
@@ -128,10 +92,10 @@ describe("CSV Import", function () {
             });
     });
 
-    it("should return 24 observations added from csv file", (done) => {
+    it("Should return The Datastreams updated for file", (done) => {
         const infos = {
-            api: `{post} CreateFile with multi csv attached file [duplicate]`,
-            apiName: "PostImportCreateFileDuplicate",
+            api: `{post} CreateFile with same csv attached file [duplicate]`,
+            apiName: "CreateFilePostDuplicate",
             apiDescription: "Import csv file [duplicate]",
             apiExample: { http: "/v1.0/Things(22)/CreateFile" },
         };
@@ -149,18 +113,20 @@ describe("CSV Import", function () {
                     should.not.exist(err);
                     res.should.have.status(201);
                     res.body["@iot.id"].should.eql(14);
-                    dbTest(_DBDATAS.Observations.table)
+                    dbTest(_DB.Observations.table)
                         .where("datastream_id", 14)
                         .orderBy("id")
                         .then((test) => {
                             test.length.should.eql(24);
                             test[0]["_resultjson"]["annee"].should.eql('2020');
                             addToApiDoc({ ...infos, result: limitResult(res) });
+                            generateApiDoc(docs, `apiDoc${entity.name}.js`);
                             done();
                         })
                         .catch((err) => console.log(err));
                 }
             });
+            
     });
 
 });

@@ -88,6 +88,9 @@ export class Configs extends Common {
 
      async add(dataInput: object | undefined): Promise<IreturnResult | undefined> {
          Logs.override(messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));    
+         console.log("============>");
+         console.log(dataInput);
+         
          if (!dataInput) return;
          return this.createReturnResult({ body: await CONFIGURATION.add(dataInput), });
     }

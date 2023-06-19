@@ -8,7 +8,7 @@
 
 import koa from "koa";
 import { Knex } from "knex";
-import { createDbList, isGraph } from "../helpers";
+import { isGraph } from "../helpers";
 import { getEntityName, isNull, returnFormats } from "../../helpers/index";
 import { Logs } from "../../logger";
 import { Ientity, IreturnResult } from "../../types";
@@ -16,6 +16,7 @@ import { createDbGraph, knexQueryToSqlString, removeKeyFromUrl, verifyId } from 
 import { CONFIGURATION } from "../../configuration";
 import { IGraphDatas } from "../helpers/createDbGraph";
 import { messages } from "../../messages/";
+import { _DBFILTERED } from "../constants";
 
 export class Common {
     readonly ctx: koa.Context;
@@ -30,7 +31,7 @@ export class Common {
         if (knexInstance) Common.dbContext = knexInstance;
         this.nextLinkBase = removeKeyFromUrl(`${this.ctx._odata.options.rootBase}${this.ctx.href.split(`${ctx._version}/`)[1]}`, ["top", "skip"]);
         this.linkBase = `${this.ctx._odata.options.rootBase}${this.constructor.name}`; 
-        this.DBST = createDbList(CONFIGURATION.dbEntities[this.ctx._configName]);
+        this.DBST = _DBFILTERED(this.ctx);
     }
 
     // only for override

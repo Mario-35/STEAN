@@ -12,6 +12,7 @@ import querystring from "querystring";
 import cookieModule from "cookie";
 import cookieParser from "cookie-parser";
 import { APP_KEY, API_VERSION } from "../constants";
+import { messages, messagesReplace } from "../messages";
 
 /**
  *
@@ -28,7 +29,7 @@ const bearerToken = (ctx: koa.Context) => {
     const cookie = true;
 
     if (cookie && !APP_KEY) {
-        throw new Error("[koa-bearer-token]: You must provide a secret token to cookie attribute, or disable signed property");
+        throw new Error(messages.errors.koaBearerToken);
     }
 
     const { body, header, query } = ctx.request;
@@ -73,7 +74,7 @@ const bearerToken = (ctx: koa.Context) => {
     // in more than one place in a single request.
     if (count > 1) {
         ctx.throw(400, "token_invalid", {
-            message: `token MUST NOT be provided in more than one place`
+            message: messages.errors.tokenInvalid
         });
     }
 
@@ -88,10 +89,10 @@ export const setConfigToCtx = (ctx: koa.Context): void => {
             .split("/")
             .filter((value: string) => value.match(/v{1}\d\.\d/g))[0] || API_VERSION;
 
-    const temp = CONFIGURATION.getFromContext(ctx);
+    const temp = CONFIGURATION.getConfigNameFromContext(ctx);
 
-    if (!temp) throw new Error("No config name found");    
-    if (CONFIGURATION.isInConfig(temp) === false) throw new Error(`${temp} Not present in config File`);    
+    if (!temp) throw new Error(messages.errors.noConfigName);    
+    if (!CONFIGURATION.list[temp]) throw new Error(messagesReplace(messages.errors.notPresentInConfigName, [temp]));    
 
     ctx._configName = temp.trim().toLowerCase();
 

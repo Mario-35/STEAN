@@ -15,81 +15,58 @@ import Koa from "koa";
 import { app } from "..";
 import { db } from "../db";
 import knex, { Knex } from "knex";
-import { createDatabase, createTable } from "../db/helpers";
+import { createDatabase } from "../db/helpers";
 import pg from "pg";
 import update from "./update.json";
 import { messages, messagesReplace } from "../messages";
 import { IconfigFile, IdbConnection, Iuser } from "../types";
-import { _DBDATAS, _DBADMIN } from "../db/constants";
+import { _DB } from "../db/constants";
+import { apiType } from "../enums";
 
 
 // class to create configs environements
 class Configuration {
+    static connections: { [key: string]: Knex<any, unknown[]> } = {};
     public list: { [key: string]: IconfigFile; } = {};
-    public dbEntities: { [key: string]: string[]; } = {};
     static filePath: fs.PathOrFileDescriptor;
     static jsonConfiguration: JSON;
     static ports: number[] = [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public postgresConnection: Knex<any, unknown[]>;
     constructor(file: fs.PathOrFileDescriptor) {   
         Configuration.filePath = file;    
         const fileTemp = fs.readFileSync(file, "utf8");    
         Configuration.jsonConfiguration = JSON.parse(fileTemp);
-        const input = Configuration.jsonConfiguration.hasOwnProperty(NODE_ENV) ? Configuration.jsonConfiguration[NODE_ENV] : Configuration.jsonConfiguration;  
-        Object.keys(input).forEach((element: string) => (this.list[element] = this.format(input[element], element)));
-        this.postgresConnection = knex({
-            client: "pg",
-            connection: {
-                host: this.list["admin"].pg_host,
-                user: this.list["admin"].pg_user,
-                password: this.list["admin"].pg_password,
-                database: "postgres",
-            },
-            pool: { min: 0, max: 7 },
-            debug: false
+        Object.keys(Configuration.jsonConfiguration).forEach((element: string) => {
+            this.list[element] = this.format(Configuration.jsonConfiguration[element], element);
+            const tempConnection = this.getKnexConnection(element);
+            if (tempConnection) Configuration.connections[element] = tempConnection;
         });
+        Configuration.connections["postgres"] = this.createAdimnTableForDatabase("postgres");
+        Configuration.connections["admin"] = this.createAdimnTableForDatabase("admin");
         this.logToFile(this.list["admin"]["logFile"]);
         Logs.booting("active error to file", "errorFile.md");
         const errFile = fs.createWriteStream("errorFile.md", { flags: 'w' });
         errFile.write(`## Start : ${TIMESTAMP()} \n`);
-        this.tableConfig(); 
     }
 
-    async tableConfig() {
-        const conn = knex({
+    getConnections () {
+        return Configuration.connections;
+    }    
+
+    createAdimnTableForDatabase(database: string) {        
+        return knex({
             client: "pg",
             connection: {
                 host: this.list["admin"].pg_host,
                 user: this.list["admin"].pg_user,
                 password: this.list["admin"].pg_password,
-                database: "admin",
+                database: database,
             },
             pool: { min: 0, max: 7 },
             debug: false
         });
-        await conn.raw(`Select name from config`)
-        .then((res: any) => {
-            Logs.booting(messages.infos.foundConfig, "ok");
-        })
-        .catch(async (err: Error) => {
-            console.log(err);
-
-            if (err["code"] === "42P01") {
-                Logs.booting(messages.infos.foundConfig, "create Table");
-                await createTable(conn, _DBADMIN.Configs, undefined).then((e: any)=> {
-                    Logs.booting("create Table","OK");
-
-                }
-                ).catch((err: Error) => {
-                    console.log(err);
-                    
-                });
-            }
-        });
-        
     }
-    
+
     logToFile(file: string) {        
         const active = file && file.length > 0 ? true: false;
         if (active) Logs.head("active Logs to file", file);
@@ -136,13 +113,13 @@ class Configuration {
         });
     }
 
-    getFromDatabase(input: string): string | undefined {  
+    getConfigNameFromDatabase(input: string): string | undefined {  
         const aliasName = Object.keys(this.list).filter((configName: string) => this.list[configName].pg_database === input)[0];         
         if (aliasName) return aliasName;
         throw new Error(`No configuration found for ${input} name`);
     }
 
-    getFromContext(ctx: Koa.Context): string | undefined {
+    getConfigNameFromContext(ctx: Koa.Context): string | undefined {
         const port = ctx.req.socket.localPort;
         if (port) {
             const databaseName = isTest() ? ["test"] : Object.keys(this.list).filter((word) => (word != "test" && this.list[word].port) == port);
@@ -161,19 +138,12 @@ class Configuration {
         throw new Error(port ? `No configuration found for ${port} port or name missing` :`name missing`);
     }
 
-    // return config(s)
-    getConfigs() {
-        return this.list;
-    }
-
-    isInConfig(key: string):boolean {
-        return Object.keys(this.list).includes(key.trim().toLowerCase()) ;  
-    }
-
     format(input: object, name?: string): IconfigFile {
         // If config encrypted
         Object.keys(input).forEach((elem: string) => {input[elem] = decrypt(input[elem]);});
         const goodDbName = name ? name : decrypt(input["pg_database"]) || "ERROR";
+        const multi = input["multiDatastream"] ? input["multiDatastream"] : false;
+        const lora = input["lora"] ? input["lora"] : false;
         const returnValue: IconfigFile = {
             name: goodDbName,
             port: input["port"] ? +input["port"] : -1,
@@ -191,16 +161,19 @@ class Configuration {
             retry: input["retry"] ? +input["retry"] : 2,
             lora: input["lora"] ? input["lora"] : false,
             highPrecision: input["highPrecision"] ? input["highPrecision"] : false,
-            multiDatastream: input["multiDatastream"] ? input["multiDatastream"] : false,
-            logFile: input["log"] ? input["log"] : ""
-            
+            multiDatastream: multi,
+            logFile: input["log"] ? input["log"] : "",
+            entities: this.createBlankEntities(multi, lora)
         };
-        this.dbEntities[goodDbName] = goodDbName === "admin" 
-                                    ? Object.keys(_DBADMIN)
-                                    : Object.keys(Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === false && v.lora === false)));
         if (Object.values(returnValue).includes("ERROR")) throw new TypeError(`${messages.errors.configFile} [${util.inspect(returnValue, { showHidden: false, depth: null })}]`);
-        if (returnValue.lora === true) this.dbEntities[goodDbName] = this.dbEntities[goodDbName].concat(Object.keys(Object.fromEntries(Object.entries(_DBDATAS).filter(([k,v]) => v.admin === false && v.lora === true))));
         return returnValue;
+    }
+
+    createBlankEntities(multi: boolean, lora: boolean) {
+        return Object.keys(_DB).filter(e => _DB[e].essai.includes(apiType.base)
+        || (_DB[e].essai.includes(apiType.multiDatastream) && multi === true)
+        || (_DB[e].essai.includes(apiType.lora) && lora === true)
+    );
     }
 
     createBlankConfig(base: string): IconfigFile {
@@ -222,7 +195,8 @@ class Configuration {
             lora: false,
             highPrecision: false,
             multiDatastream: false,
-            logFile: ""      
+            logFile: "",      
+            entities: this.createBlankEntities(true, false)
         };
     }
 
@@ -312,8 +286,10 @@ class Configuration {
          return await tempConnection
              .raw("select 1+1 as result")
              .then(async () => {
-                  Logs.result(messages.infos.dbOnline, this.list[connectName].pg_database);
-                 if (update) {
+                const listTempTables = await tempConnection.raw("SELECT array_agg(table_name) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'temp%';");
+                const tables = listTempTables.rows[0].array_agg;
+                if (tables) Logs.result(`delete temp tables ==> \x1b[33m${connectName}\x1b[32m`, await tempConnection.raw(`DROP TABLE ${tables.slice(0, -1).slice(1).split(',')}`).then(() => "✔").catch((err: Error) => err.message));
+                if (update) {
                     const list = update["database"];
                     await asyncForEach(list, async (operation: string) => {
                          Logs.result(`configuration ==> \x1b[33m${connectName}\x1b[32m`, await tempConnection.raw(operation).then(() => "✔").catch((err: Error) => err.message));
@@ -371,4 +347,5 @@ class Configuration {
     }
 }
 
-export const CONFIGURATION = new Configuration(__dirname + "/config.json");
+export const CONFIGURATION = new Configuration(__dirname + `/${NODE_ENV}.json`);
+

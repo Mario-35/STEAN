@@ -10,11 +10,10 @@
 
 import koa from "koa";
 import { getAuthenticatedUser } from "../../authentication";
-import { CONFIGURATION } from "../../configuration";
-import { _DBDATAS } from "../../db/constants";
+import { _DB, _DBFILTERED } from "../../db/constants";
 import { _DBADMIN } from "../../db/constants";
-import { createDbList } from "../../db/helpers";
 import { Iquery } from "../../types";
+
 
 export const createIqueryFromContext = async (ctx: koa.Context): Promise<Iquery> => {
     const user = await getAuthenticatedUser(ctx); 
@@ -46,8 +45,8 @@ export const createIqueryFromContext = async (ctx: koa.Context): Promise<Iquery>
         _DATAS: ctx._configName === 'admin' === true 
             ? _DBADMIN 
             : user && (user.admin === true || user.superAdmin === true) 
-                ? _DBDATAS 
-                : createDbList(CONFIGURATION.dbEntities[ctx._configName])
+                ? _DB
+                : _DBFILTERED(ctx)
 
     };
 };

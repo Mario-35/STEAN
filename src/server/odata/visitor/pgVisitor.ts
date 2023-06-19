@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { _DBDATAS } from "../../db/constants";
+import { _DB } from "../../db/constants";
 import { isGraph, isObservation } from "../../db/helpers";
 import { getEntityName, removeQuotes, returnFormats } from "../../helpers";
 import { IconfigFile, IreturnFormat } from "../../types";
@@ -98,8 +98,8 @@ export class PgVisitor {
         
         if (this.entity.toUpperCase() === "LORA") this.setEntity("Loras");
         if (this.parentEntity) {
-            if (!_DBDATAS[this.parentEntity].relations[this.entity]) ctx.throw(40, { detail: messages.errors.invalidPath + this.entity.trim() }); 
-        } else if (!_DBDATAS[this.entity]) ctx.throw(404, { detail: messages.errors.invalidPath + this.entity.trim() }); 
+            if (!_DB[this.parentEntity].relations[this.entity]) ctx.throw(40, { detail: messages.errors.invalidPath + this.entity.trim() }); 
+        } else if (!_DB[this.entity]) ctx.throw(404, { detail: messages.errors.invalidPath + this.entity.trim() }); 
     
     };
 
@@ -160,7 +160,7 @@ export class PgVisitor {
     protected VisitRessourcesPropertyPath(node: Token, context: any) {
         let tempNode = node;        
         if (node.type == "PropertyPath") {
-            if (_DBDATAS[this.entity].relations[node.value.path.raw]) {
+            if (_DB[this.entity].relations[node.value.path.raw]) {
                 this.parentId = this.id;
                 this.id = BigInt(0);
                 if (node.value.navigation && node.value.navigation.type == 'CollectionNavigation') {
@@ -174,14 +174,14 @@ export class PgVisitor {
                         }                    
                     }
                 // const inOrEqual = BigInt(this.id) > 0 ? "=" : "in";
-                const tmpLink = _DBDATAS[this.entity].relations[node.value.path.raw].link.split("$ID").join(<string>this.parentId);
+                const tmpLink = _DB[this.entity].relations[node.value.path.raw].link.split("$ID").join(<string>this.parentId);
                 const tmpLinkSplit = tmpLink.split("in (");
                 if (BigInt(this.id) > 0) {
                     this.where = `${tmpLinkSplit[0]} = (SELECT id FROM (${tmpLinkSplit[1]} as l WHERE id = ${this.id})`;
                 } else this.where = tmpLink;
                 this.parentEntity = this.entity;
                 this.entity = node.value.path.raw;
-            } else if (_DBDATAS[this.entity].columns[node.value.path.raw]) {
+            } else if (_DB[this.entity].columns[node.value.path.raw]) {
                     this.select = node.value.path.raw; 
                     this.showRelations = false;
             } else this.entity = node.value.path.raw;
@@ -235,7 +235,7 @@ export class PgVisitor {
         if (this.entity === "Logs" && ctx._configName !== "admin") this.where += `${this.where.trim() == "" ? "" : " AND "} (database = '${CONFIGURATION.list[ctx._configName].alias.join("' OR database ='")}')`;
 
         if (this.select.length > 0) {
-            const cols = [...Object.keys(_DBDATAS[this.entity].columns), ...Object.keys(_DBDATAS[this.entity].relations)];
+            const cols = [...Object.keys(_DB[this.entity].columns), ...Object.keys(_DB[this.entity].relations)];
             
             this.select.split(",").filter((e:string) => e.trim() != "").forEach((element:string) => {
                 const test = removeQuotes(element);   
@@ -251,7 +251,7 @@ export class PgVisitor {
             const elems = elem.split("/");
             elems.unshift(this.entity);     
             if (elems[0]) {            
-                if (!Object.keys(_DBDATAS[elems[0]].relations).includes(elems[1]) ) ctx.throw(400, { detail:`Invalid expand path ${elems[1]} for ${elems[0]}` });  
+                if (!Object.keys(_DB[elems[0]].relations).includes(elems[1]) ) ctx.throw(400, { detail:`Invalid expand path ${elems[1]} for ${elems[0]}` });  
             } else ctx.throw(400, { detail: messages.errors.invalidEntity + elems[0] });  
         });    
         
@@ -455,7 +455,7 @@ export class PgVisitor {
     protected VisitPropertyPathExpression(node: Token, context: any) {
         if (node.value.current && node.value.next) {
             // deterwine if its column AND JSON
-            if (_DBDATAS[this.entity].columns[node.value.current.raw] && _DBDATAS[this.entity].columns[node.value.current.raw].create.startsWith("json") && node.value.next.raw[0]=="/") {
+            if (_DB[this.entity].columns[node.value.current.raw] && _DB[this.entity].columns[node.value.current.raw].create.startsWith("json") && node.value.next.raw[0]=="/") {
                 this.where += `"${node.value.current.raw}"->>'${node.value.next.raw.slice(1)}'`;
             } else {
                 this.Visit(node.value.current, context);
@@ -505,27 +505,27 @@ export class PgVisitor {
         node.value.name = node.value.name === "result" ? "_resultnumber" : node.value.name;
         context.identifier = node.value.name;
         if (this.entity != "" && context.target) 
-            if (Object.keys(_DBDATAS[this.entity].columns).includes(node.value.name)) {
+            if (Object.keys(_DB[this.entity].columns).includes(node.value.name)) {
                 
                 if (context.relation) {                      
-                    if (Object.keys(_DBDATAS[this.entity].relations).includes(context.relation)) {
+                    if (Object.keys(_DB[this.entity].relations).includes(context.relation)) {
                         if (!context.key) {
-                            context.key = _DBDATAS[this.entity].relations[context.relation].entityColumn;
+                            context.key = _DB[this.entity].relations[context.relation].entityColumn;
                             this[context.target] += `"${context.key}"`;
                         }
                         return;
                     }
                 }  
                 
-            } else if (Object.keys(_DBDATAS[this.entity].relations).includes(node.value.name)) {
+            } else if (Object.keys(_DB[this.entity].relations).includes(node.value.name)) {
                 
                 const relation = getEntityName(node.value.name);
                 if (relation) {
                     context.relation = node.value.name;
-                    context.table = _DBDATAS[relation].table;
+                    context.table = _DB[relation].table;
                     if (!context.key) {
-                        context.key = _DBDATAS[this.entity].relations[context.relation].entityColumn;
-                        this[context.target] = `"${_DBDATAS[this.entity].relations[context.relation].entityColumn}"`;
+                        context.key = _DB[this.entity].relations[context.relation].entityColumn;
+                        this[context.target] = `"${_DB[this.entity].relations[context.relation].entityColumn}"`;
                     }
                     return;
                 }      
@@ -577,20 +577,20 @@ export class PgVisitor {
         let test:string | undefined = undefined;
         if (column.includes("/")) {
             const temp = column.split("/");
-            if (_DBDATAS[this.entity].relations.hasOwnProperty(temp[0])) {
-                const rel = _DBDATAS[this.entity].relations[temp[0]];
+            if (_DB[this.entity].relations.hasOwnProperty(temp[0])) {
+                const rel = _DB[this.entity].relations[temp[0]];
                 column = `(SELECT "${temp[1]}" FROM "${rel.tableName}" WHERE ${rel.expand} AND length("${temp[1]}"::text) > 2)`;
-                test = _DBDATAS[rel.entityName].columns[temp[1]].test;
+                test = _DB[rel.entityName].columns[temp[1]].test;
                 if (test) test = `(SELECT "${test}" FROM "${rel.tableName}" WHERE ${rel.expand})`;
             }
-        } else if (!_DBDATAS[this.entity].columns.hasOwnProperty(column)) {
-            if (_DBDATAS[this.entity].relations.hasOwnProperty(column)) {
-                const rel = _DBDATAS[this.entity].relations[column];
+        } else if (!_DB[this.entity].columns.hasOwnProperty(column)) {
+            if (_DB[this.entity].relations.hasOwnProperty(column)) {
+                const rel = _DB[this.entity].relations[column];
                 column = `(SELECT "${rel.entityColumn}" FROM "${rel.tableName}" WHERE ${rel.expand} AND length("${rel.entityColumn}"::text) > 2)`;
-                test = _DBDATAS[rel.entityName].columns[rel.entityColumn].test;                
+                test = _DB[rel.entityName].columns[rel.entityColumn].test;                
             } else throw new Error(`Invalid column ${column}`); 
         } else {
-            test = `"${_DBDATAS[this.entity].columns[column].test}"`;
+            test = `"${_DB[this.entity].columns[column].test}"`;
             column = `"${column}"`;
         }
         if (test) column = `CASE 
@@ -608,12 +608,12 @@ export class PgVisitor {
             let temp = decodeURIComponent(Literal.convert(params[index].value, params[index].raw));
             temp = temp === "result" ? "_resultnumber" : temp;
 
-            return (_DBDATAS[this.entity].columns[temp]) ? `"${temp}"` : `'${temp}'`;
+            return (_DB[this.entity].columns[temp]) ? `"${temp}"` : `'${temp}'`;
         };
 
         const geoColumnOrData = (index: number, srid: boolean): string => {
             const temp = decodeURIComponent(Literal.convert(params[index].value, params[index].raw)).replace("geography", "");
-            return (_DBDATAS[this.entity].columns[temp]) ? temp : `${srid === true ? 'SRID=4326;' : '' }${removeQuotes(temp)}`;
+            return (_DB[this.entity].columns[temp]) ? temp : `${srid === true ? 'SRID=4326;' : '' }${removeQuotes(temp)}`;
         };
 
         const cleanData = (index: number): string => params[index].value == 'Edm.String' ? removeQuotes(Literal.convert(params[index].value, params[index].raw)) : Literal.convert(params[index].value, params[index].raw);

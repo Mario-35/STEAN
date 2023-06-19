@@ -46,10 +46,11 @@ export const commonHtml = (input: string, params: Iquery): string => {
     if (params.user.canPost) {
         params.methods.push("POST");
         params.methods.push("PATCH");
-    } else {
-        delete params._DATAS["CreateObservations"];
-        delete params._DATAS["CreateFile"];
-    }
+    } 
+    // else {
+    //     delete params._DATAS["CreateObservations"];
+    //     delete params._DATAS["CreateFile"];
+    // }
 
     if (params.user.canDelete) params.methods.push("DELETE");
 

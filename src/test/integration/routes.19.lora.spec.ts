@@ -12,7 +12,7 @@
  import chaiHttp from "chai-http";
  import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, identification, keyTokenName, defaultPost, getNB, limitResult, apiInfos, showHide, nbColor, nbColorTitle } from "./constant";
  import { server } from "../../server/index";
- import { _DBDATAS } from "../../server/db/constants";
+ import { _DB } from "../../server/db/constants";
  import { Ientity } from "../../server/types";
  
  const testsKeys = [
@@ -32,8 +32,8 @@
  const should = chai.should();
  
  const docs: IApiDoc[] = [];
- const entity: Ientity = _DBDATAS.Loras;
- // const entityObs: Ientity = _DBDATAS.Observations;
+ const entity: Ientity = _DB.Loras;
+ // const entityObs: Ientity = _DB.Observations;
  let firstLoraID = "";
  let firstLoraDEVEUI = "";
  

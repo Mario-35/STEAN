@@ -11,7 +11,7 @@ import koa from "koa";
 import { Common } from "./common";
 import { Logs } from "../../logger";
 import { IcsvColumn, IcsvFile, IreturnResult, IstreamInfos } from "../../types";
-import { getStreamInfos, importCsv } from "../helpers";
+import { getStreamInfos, streamCsvFileInPostgreSql } from "../helpers";
 import { asyncForEach } from "../../helpers";
 import { messages, messagesReplace } from "../../messages/";
 import { QUOTEDCOMA } from "../../constants";
@@ -27,7 +27,7 @@ export class CreateObservations extends Common {
     // get stream ID
 
 
-    dateTZ(value: string) {
+    dateToDateWithTimeZone(value: string) {
         //Create Date object from ISO string
         const date = new Date(value);
         //Get ms for date
@@ -56,7 +56,7 @@ export class CreateObservations extends Common {
                         elem = "featureofinterest_id";           
                         break;
                 }                
-                res.push(isNaN(+elem) ? typeof elem === "string" ? elem.endsWith("Z") ? `TO_TIMESTAMP('${this.dateTZ(elem)}', '${EdatesType.dateWithOutTimeZone}')::TIMESTAMP`: `${separateur}${elem}${separateur}` : `${separateur}{${elem}}${separateur}` : elem);
+                res.push(isNaN(+elem) ? typeof elem === "string" ? elem.endsWith("Z") ? `TO_TIMESTAMP('${this.dateToDateWithTimeZone(elem)}', '${EdatesType.dateWithOutTimeZone}')::TIMESTAMP`: `${separateur}${elem}${separateur}` : `${separateur}{${elem}}${separateur}` : elem);
             }    
             return res;
     }
@@ -75,7 +75,6 @@ export class CreateObservations extends Common {
     
     async getSingle(idInput: bigint | string): Promise<IreturnResult | undefined> {
         this.ctx.throw(400, { code: 400 });
-        return;
     }
     
     async add(dataInput: JSON): Promise<IreturnResult | undefined> {
@@ -112,12 +111,22 @@ export class CreateObservations extends Common {
                 stream: streamInfos
             };
 
-            await importCsv(this.ctx, Common.dbContext, paramsFile).then((res) => {
-                total = res.length;
-                res.forEach((element: string) => returnValue.push(this.linkBase.replace("CreateObservations", "Observations") + "(" + element + ")"));
-            });
+            await streamCsvFileInPostgreSql(this.ctx, Common.dbContext, paramsFile).then(async (res) => {
+                Logs.debug("streamCsvFileInPostgreSql", "OK");
+                if(res) {
+                    Logs.result("query", res);
+                    // Execute query
+                    const result = await Common.dbContext.raw(res);
+                    // All is done create results return                
+                    Logs.debug("SQL Executing", "Ok");
+                    returnValue.push(`Add ${result && result["rows"] ? +result["rows"][0]["inserted"] : -1} observations from ${paramsFile.filename.split('/').reverse()[0]}`);
+                    total = result && result["rows"] ? +result["rows"][0]["total"] : -1;
 
-            Logs.debug("importCsv", "OK");
+                }
+
+            }).catch((e: any) => {
+                console.log(e);                
+            });
         } else { /// classic Create
             const dataStreamId = await getStreamInfos(Common.dbContext, dataInput);
             if (!dataStreamId) this.ctx.throw(404, { code: 404, detail: messages.errors.noStream}); 
@@ -159,11 +168,9 @@ export class CreateObservations extends Common {
 
     async update(idInput: bigint | string, dataInput: object | undefined): Promise<IreturnResult | undefined> {
         this.ctx.throw(400, { code: 400 });
-        return;
     }
     
     async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {
         this.ctx.throw(400, { code: 400 });
-        return;
     }
 }
