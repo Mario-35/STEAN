@@ -34,6 +34,23 @@ export class Common {
         this.DBST = _DBFILTERED(this.ctx);
     }
 
+    getKeyValue(input: object, key: string): string | undefined {
+        let result: string | undefined = undefined;
+        if (input[key]) {
+            result = input[key]["@iot.id"] ? input[key]["@iot.id"] : input[key];
+            delete input[key];
+        }
+        return result;
+    }
+
+    getKeysValue(input: object, keys: string[]): string | undefined {
+        keys.forEach(key => {
+            const temp = this.getKeyValue(input, key);
+            if (temp) return temp;
+        });
+        return undefined;
+    }
+
     // only for override
     formatDataInput(input: object | undefined): object | undefined {
         return input;

@@ -204,7 +204,7 @@ async function editDataClicked(id, _PARAMS) {
 
   function init() {
     header("==== Init ====");
-    // hide(datas);
+    hide(datas);
     if (isDebug) console.log(_PARAMS);
     new SplitterBar(container, first, two);
     wait(false);

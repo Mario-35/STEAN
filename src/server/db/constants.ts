@@ -142,18 +142,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                 relationKey: "featureofinterest_id",
                 entityColumn: "id",
                 tableKey: "id"
-            },
-            Locations: {
-                type: Erelations.belongsTo,
-                expand: `"location"."id" in (select "location"."id" from "location" where "location"."_default_foi" = "featureofinterest"."id")`,
-                link: "err: 404 : Not a valid Path.",
-
-                entityName: "Locations",
-                tableName: "location",
-                // hide all relations start with "_"
-                relationKey: "_default_foi",
-                entityColumn: "id",
-                tableKey: "id"
             }
         },
         constraints: {
@@ -528,7 +516,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                 type : "json"
             },
             _default_foi: {
-                create: "BIGINT"
+                create: "BIGINT NOT NULL DEFAULT 1",
             }
         },
         canPost: false,
@@ -663,7 +651,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                 type : "json"
             },
             _default_foi: {
-                create: "BIGINT"
+                create: "BIGINT NOT NULL DEFAULT 1",
             }
         },
         canPost: false,

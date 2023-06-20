@@ -8,6 +8,8 @@
     hide createObservation an createFile when user can't post
     Add filename and date in resultQuality observations when import csv file
     admin for config and user WIP
+    Optimize when import huge csv file
+    Add foi default at datastream or multiDatastream create
 
 # version 1.5.0
     Add standard in configuration

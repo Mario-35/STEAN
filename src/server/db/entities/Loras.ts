@@ -136,12 +136,12 @@ export class Loras extends Common {
                                         FROM "${this.DBST.Loras.table}" 
                                         WHERE "${this.DBST.Loras.table}"."deveui" = '${dataInput["deveui"]}')`;
 
-        const tempSql = await Common.dbContext.raw(`SELECT id, thing_id, ${searchMulti}`);
+        const tempSql = await Common.dbContext.raw(`SELECT id, _default_foi, thing_id, ${searchMulti}`);
         const multiDatastream = tempSql.rows[0];
         let datastream = undefined;
         
         if (!multiDatastream) {
-            const tempSql = await Common.dbContext.raw(`SELECT id, thing_id FROM "${this.DBST.Datastreams.table}" WHERE "${this.DBST.Datastreams.table}".id = (SELECT "${this.DBST.Loras.table}"."datastream_id" FROM "${this.DBST.Loras.table}" WHERE "${this.DBST.Loras.table}"."deveui" = '${dataInput["deveui"]}')`);
+            const tempSql = await Common.dbContext.raw(`SELECT id, _default_foi, thing_id FROM "${this.DBST.Datastreams.table}" WHERE "${this.DBST.Datastreams.table}".id = (SELECT "${this.DBST.Loras.table}"."datastream_id" FROM "${this.DBST.Loras.table}" WHERE "${this.DBST.Loras.table}"."deveui" = '${dataInput["deveui"]}')`);
             datastream = tempSql.rows[0];
            if (!datastream) {
                const errorMessage = messages.errors.noStreamDeveui + dataInput["deveui"];
@@ -333,7 +333,7 @@ export class Loras extends Common {
                Logs.debug("searchDuplicate", searchDuplicate);
    
            const sql = `WITH "${VOIDTABLE}" as (select srid FROM "${VOIDTABLE}" LIMIT 1)
-               , datastream1 AS (SELECT id, thing_id FROM "${this.DBST.Datastreams.table}" WHERE id =${datastream.id})
+               , datastream1 AS (SELECT id, _default_foi, thing_id FROM "${this.DBST.Datastreams.table}" WHERE id =${datastream.id})
                , myValues ( "${Object.keys(insertObject).join(QUOTEDCOMA)}") AS (values (${Object.values(insertObject).join()}))
                , searchDuplicate as (SELECT * FROM "${this.DBST.Observations.table}" WHERE ${searchDuplicate})
                , observation1 AS (INSERT INTO  "${this.DBST.Observations.table}" ("${Object.keys(insertObject).join(QUOTEDCOMA)}") SELECT * FROM myValues

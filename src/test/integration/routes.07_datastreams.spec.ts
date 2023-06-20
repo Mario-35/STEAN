@@ -451,6 +451,47 @@ describe("endpoint : Datastream", () => {
                 });
         });
 
+        it(`Return added ${entity.name} with default FOI`, (done) => {
+            const datas = {
+                "unitOfMeasurement": {
+                    "symbol": "μg/m³",
+                    "name": "PM 2.5 Particulates (ug/m3)",
+                    "definition": "http://unitsofmeasure.org/ucum.html"
+                },
+                "description": "Air quality readings with default",
+                "name": "Air quality readings with default FOI",
+                "Thing": { "@iot.id": 1 },
+                "ObservedProperty": { "@iot.id": 1 },
+                "Sensor": { "@iot.id": 1 },
+                "FeaturesOfInterest": { "@iot.id": 2 }
+            };
+            const infos = {
+                api: `{post} ${entity.name} Post with default FOI`,
+                apiName: `Post${entity.name}FOI`,
+                apiDescription: `Post a new ${entity.name} with default FOI`,
+                apiReference: "",
+                apiExample: {
+                    http: `/v1.0/${entity.name}`,
+                    curl: defaultPost("curl", "KEYHTTP", datas),
+                    javascript: defaultPost("javascript", "KEYHTTP", datas),
+                    python: defaultPost("python", "KEYHTTP", datas)
+                },
+                apiParamExample: datas
+            };
+            chai.request(server)
+                .post(`/test${infos.apiExample.http}`)
+                .send(infos.apiParamExample)
+                .set("Cookie", `${keyTokenName}=${token}`)
+                .end((err: Error, res: any) => {
+                    should.not.exist(err);
+                    res.status.should.equal(201);
+                    res.type.should.equal("application/json");
+                    res.body.should.include.keys(testsKeys);
+                    addToApiDoc({ ...infos, result: limitResult(res) });
+                    done();
+                });
+        });
+
         it(`Return Error if the payload is malformed ${nbColor}[10.2.2]`, (done) => {
             chai.request(server)
                 .post("/test/v1.0/Datastreams")

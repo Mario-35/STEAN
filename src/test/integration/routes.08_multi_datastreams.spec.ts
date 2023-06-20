@@ -603,6 +603,70 @@ describe("endpoint : MultiDatastream", () => {
                     done();
                 });
         });
+
+        it(`Return added ${entity.name} with default FOI`, (done) => {
+            const datas = {
+                description: "Air quality readings",
+                name: `Air quality readings ${getNB(entity.name)}`,
+                Thing: {
+                    "@iot.id": 2
+                },
+                Sensor: {
+                    "@iot.id": 1
+                },
+                multiObservationDataTypes: ["Measurement", "Measurement"],
+                unitOfMeasurements: [
+                    {
+                        symbol: "%",
+                        name: `${getNB("humidity")}`,
+                        definition: "http://unitsofmeasure.org/ucum.html"
+                    },
+                    {
+                        name: `${getNB("Temperature")}`,
+                        symbol: "°",
+                        definition: "http://unitsofmeasure.org/blank.html"
+                    }
+                ],
+                ObservedProperties: [
+                    {
+                        name: `${getNB("humidity")}`,
+                        definition: "humidity",
+                        description: "valeur en pourcentage du taux d'humidity de l'air"
+                    },
+                    {
+                        name: `${getNB("Temperature")}`,
+                        definition: "Temperature",
+                        description: "valeur en degré de la Temperature de l'air"
+                    }
+                ],
+                "FeaturesOfInterest": { "@iot.id": 2 }
+            };
+            const infos = {
+                api: `{post} ${entity.name} Post with default FOI`,
+                apiName: `Post${entity.name}FOI`,
+                apiDescription: `Post a new ${entity.name} with default FOI`,
+                apiReference: "",
+                apiExample: {
+                    http: `/v1.0/${entity.name}`,
+                    curl: defaultPost("curl", "KEYHTTP", datas),
+                    javascript: defaultPost("javascript", "KEYHTTP", datas),
+                    python: defaultPost("python", "KEYHTTP", datas)
+                },
+                apiParamExample: datas
+            };
+            chai.request(server)
+                .post(`/test${infos.apiExample.http}`)
+                .send(infos.apiParamExample)
+                .set("Cookie", `${keyTokenName}=${token}`)
+                .end((err: Error, res: any) => {
+                    should.not.exist(err);
+                    res.status.should.equal(201);
+                    res.type.should.equal("application/json");
+                    res.body.should.include.keys(testsKeys);
+                    addToApiDoc({ ...infos, result: limitResult(res) });
+                    done();
+                });
+        });
     });
 
     describe(`{patch} ${entity.name} ${nbColorTitle}[10.3]`, () => {

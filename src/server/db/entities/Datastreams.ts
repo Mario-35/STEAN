@@ -20,6 +20,8 @@ export class Datastreams extends Common {
     formatDataInput(input: object | undefined): object | undefined {
         Logs.override("formatDataInput");  
         if(input) {            
+            const temp = this.getKeysValue(input, ["FeaturesOfInterest", "foi"]);            
+            if (temp) input["_default_foi"] = temp;
             if (input["observationType"]) {
                 if (!this.DBST.Datastreams.columns["observationType"].verify?.list.includes(input["observationType"]))
                  this.ctx.throw(400, { code: 400, detail: messages.errors["observationType"]});

@@ -74,11 +74,11 @@ describe(`CSV ${entity.name}`, function () {
                 else {
                     should.not.exist(err);
                     res.should.have.status(201);
-                    res.body["@iot.id"].should.eql(14);
+                    res.body["@iot.id"].should.eql(15);
                     // res.body["observationType"].should.eql('http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation');
 
                     dbTest(_DB.Observations.table)
-                        .where("datastream_id", 14)
+                        .where("datastream_id", 15)
                         .orderBy("id")
                         .then((test) => {
                             test.length.should.eql(25);                            
@@ -112,9 +112,9 @@ describe(`CSV ${entity.name}`, function () {
                 else {
                     should.not.exist(err);
                     res.should.have.status(201);
-                    res.body["@iot.id"].should.eql(14);
+                    res.body["@iot.id"].should.eql(15);
                     dbTest(_DB.Observations.table)
-                        .where("datastream_id", 14)
+                        .where("datastream_id", 15)
                         .orderBy("id")
                         .then((test) => {
                             test.length.should.eql(24);
