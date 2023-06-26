@@ -6,21 +6,22 @@
  *
  */
 
-import { db } from "..";
 import { Iuser } from "../../types";
 import { encrypt } from "../../helpers";
 import { _DBADMIN } from "../constants";
+import { serverConfig } from "../../configuration";
+import { ADMIN } from "../../constants";
 
 export const userAccess = {
     getAll: async () => {
-        return await db["admin"]
+        return await serverConfig.db(ADMIN)
             .table("user")
             .select(Object.keys(_DBADMIN.Users.columns).filter((word) => word.toLowerCase() != "password"))
             .orderBy("id");
     },
 
     getSingle: async (id: string) => {
-        return await db["admin"]
+        return await serverConfig.db(ADMIN)
             .table("user")
             .select("*")
             .first()
@@ -28,7 +29,7 @@ export const userAccess = {
     },
 
     add: async (data: Iuser) => {
-        return await db["admin"]
+        return await serverConfig.db(ADMIN)
             .table("user")
             .insert({
                 username: data.username,
@@ -46,7 +47,7 @@ export const userAccess = {
     },
 
     update: async (data: Iuser): Promise<Iuser | any> => {
-        return await db["admin"]
+        return await serverConfig.db(ADMIN)
             .table("user")
             .update({
                 username: data.username,

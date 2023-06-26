@@ -29,8 +29,8 @@ interface convert {
 }
 
 export class CreateFile extends Common {
-    constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
-        super(ctx, knexInstance);
+    constructor(ctx: koa.Context) {
+         super(ctx);
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     testValue(inputValue: any): convert | undefined {

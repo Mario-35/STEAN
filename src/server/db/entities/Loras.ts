@@ -14,13 +14,13 @@ import { DOUBLEQUOTE, QUOTEDCOMA, VOIDTABLE } from "../../constants";
 import { Logs } from "../../logger";
 import { IreturnResult } from "../../types";
 import { messages, messagesReplace } from "../../messages/";
-import { CONFIGURATION } from "../../configuration";
+import { serverConfig } from "../../configuration";
 import { EdatesType } from "../../enums";
 
 export class Loras extends Common {
     synonym: object = {};
-    constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
-        super(ctx, knexInstance);
+    constructor(ctx: koa.Context) {
+         super(ctx);
     }
     async prepareInputResult(dataInput: object): Promise<object> {
         Logs.class(this.constructor.name, "prepareInputResult"); 
@@ -234,7 +234,7 @@ export class Loras extends Common {
                         const tmp = JSON.stringify(elem);
                         return tmp == "null" ? tmp : `${tmp}`;
                     })
-                    .join(",")}}'::${CONFIGURATION.list[this.ctx._configName].highPrecision ? 'float8' : 'float4'}[]`
+                    .join(",")}}'::${serverConfig.configs[this.ctx._configName].highPrecision ? 'float8' : 'float4'}[]`
             );
 
             const sql = `WITH "${VOIDTABLE}" as (select srid FROM "${VOIDTABLE}" LIMIT 1)

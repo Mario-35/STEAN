@@ -9,7 +9,7 @@
 /* eslint-disable quotes */
 
 import koa from "koa";
-import { CONFIGURATION } from "../configuration";
+import { serverConfig } from "../configuration";
 import { apiType, EdatesType, Eentities, EobservationType, Erelations } from "../enums";
 import { Ientity } from "../types";
 const makeIDAlias = (table: string) => `"${table}"."id" AS "@iot.id"`;
@@ -1377,6 +1377,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
 export const _DB = Object.freeze(dbDatas);
 export const _DBFILTERED = (input: koa.Context | string[]) => Array.isArray(input) 
     ? Object.fromEntries(Object.entries(_DB).filter(([k,v]) => input.includes(k)))
-    : Object.fromEntries(Object.entries(_DB).filter(([k,v]) => CONFIGURATION.list[input._configName].entities.includes(k) || _DB[k].essai.includes(apiType.logged) && input._user.id > 0));
+    : Object.fromEntries(Object.entries(_DB).filter(([k,v]) => serverConfig.configs[input._configName].entities.includes(k) || _DB[k].essai.includes(apiType.logged) && input._user.id > 0));
 export const _DBADMIN = Object.fromEntries(Object.entries(_DB).filter(([k,v]) => v.essai.includes(apiType.admin)));
  

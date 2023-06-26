@@ -6,7 +6,6 @@
  *
  */
 
-import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
 import { getDBDateNow } from "../helpers";
@@ -17,8 +16,8 @@ import { messages, messagesReplace } from "../../messages";
 import { QUOTEDCOMA } from "../../constants";
 
 export class Observations extends Common {
-    constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
-        super(ctx, knexInstance);
+    constructor(ctx: koa.Context) {
+         super(ctx);
     }
 
     async prepareInputResult(dataInput: object): Promise<object> {

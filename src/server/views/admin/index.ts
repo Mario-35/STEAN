@@ -9,12 +9,12 @@
 /* eslint-disable quotes */
 import Koa from "koa";
 import fs from "fs";
-import { CONFIGURATION } from "../../configuration";
-import { db } from "../../db";
+import { serverConfig } from "../../configuration";
 import { Logs } from "../../logger";
 import { addCssFile, listaddCssFiles } from "../css";
 import { addJsFile, listaddJsFiles } from "../js";
 import { fileWithOutMin } from "../helpers";
+import { ADMIN } from "../../constants";
 
 export const createAdminHtml = async (ctx: Koa.Context, list: boolean): Promise<string> => {
     
@@ -30,7 +30,7 @@ export const createAdminHtml = async (ctx: Koa.Context, list: boolean): Promise<
     const tempConfig: string[] = [];
     const tempUser: string[] = [];
     if (list === false) {
-        const datas = await db.admin.raw("SELECT DISTINCT name FROM config ORDER BY name");
+        const datas = await serverConfig.db(ADMIN).raw("SELECT DISTINCT name FROM config ORDER BY name");
         if (datas.rows.length > 0) {
             datas.rows.forEach((elem: string) => {
                 tempConfig.push(`
@@ -44,7 +44,7 @@ export const createAdminHtml = async (ctx: Koa.Context, list: boolean): Promise<
             });
         } 
     } else {
-        const datas = Object.keys(CONFIGURATION.list);
+        const datas = Object.keys(serverConfig.configs);
         datas.forEach((elem: string) => {
             tempConfig.push(`
             <tr>
@@ -62,7 +62,7 @@ export const createAdminHtml = async (ctx: Koa.Context, list: boolean): Promise<
     }
     replaceInResult("DATASCONFIG", tempConfig.join(""));
     
-    const users = await db.admin.raw('SELECT * FROM "user"');
+    const users = await serverConfig.db(ADMIN).raw('SELECT * FROM "user"');
     users.rows.forEach((elem: string) => {
         tempUser.push(`
         <tr>

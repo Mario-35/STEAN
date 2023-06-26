@@ -6,11 +6,12 @@
  *
  */
 
+
 export interface IdbConnection {
-    host: string | undefined;
-    user: string | undefined;
-    password: string | undefined;
-    database: string | undefined;
-    port: number | undefined;
+    host: string;
+    user: string;
+    password: string;
+    database: string;
+    port: number;
     retry: number;
 }

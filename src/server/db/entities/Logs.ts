@@ -5,16 +5,15 @@
  * @author mario.adam@inrae.fr
  *
  */
-
-import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
-import { CONFIGURATION } from "../../configuration";
+import { serverConfig } from "../../configuration";
+import { ADMIN } from "../../constants";
  
 export class Logs extends Common {
-    constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {         
-        super(ctx, knexInstance);
-        Common.dbContext = CONFIGURATION.getKnexConnection("admin");    
+    constructor(ctx: koa.Context) {         
+         super(ctx);
+        Common.dbContext = serverConfig.db(ADMIN);    
     }
 }
  

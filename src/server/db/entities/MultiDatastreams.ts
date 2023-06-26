@@ -6,7 +6,6 @@
  *
  */
 
-import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
 import { messages, messagesReplace } from "../../messages/";
@@ -14,8 +13,8 @@ import { Logs } from "../../logger";
 
 
 export class MultiDatastreams extends Common {
-    constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
-        super(ctx, knexInstance);
+    constructor(ctx: koa.Context) {
+         super(ctx);
     }
 
     formatDataInput(input: object | undefined): object | undefined {

@@ -8,14 +8,15 @@
 
 import koa from "koa";
 import { createToken } from ".";
-import { db } from "../db";
+import { serverConfig } from "../configuration";
+import { ADMIN } from "../constants";
 import { _DBADMIN } from "../db/constants";
 import { decrypt } from "../helpers";
 import { Iuser } from "../types";
 
 export const loginUser = async (ctx: koa.Context): Promise<Iuser | undefined> => {
     if (ctx.request.body["username"] && ctx.request.body["password"]) {
-        return await db.admin
+        return await serverConfig.db(ADMIN)
             .table(_DBADMIN.Users.table)
             .where("username", ctx.request.body["username"])
             .first()

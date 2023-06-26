@@ -13,7 +13,7 @@ import { getEntityName, isNull, returnFormats } from "../../helpers/index";
 import { Logs } from "../../logger";
 import { Ientity, IreturnResult } from "../../types";
 import { createDbGraph, knexQueryToSqlString, removeKeyFromUrl, verifyId } from "../helpers";
-import { CONFIGURATION } from "../../configuration";
+import { serverConfig } from "../../configuration";
 import { IGraphDatas } from "../helpers/createDbGraph";
 import { messages } from "../../messages/";
 import { _DBFILTERED } from "../constants";
@@ -25,10 +25,10 @@ export class Common {
     public linkBase: string;
     public DBST: { [key: string]: Ientity; };
 
-    constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
+    constructor(ctx: koa.Context) {
         Logs.class(this.constructor.name, messages.infos.constructor);
         this.ctx = ctx;
-        if (knexInstance) Common.dbContext = knexInstance;
+        Common.dbContext = serverConfig.db(ctx._configName);
         this.nextLinkBase = removeKeyFromUrl(`${this.ctx._odata.options.rootBase}${this.ctx.href.split(`${ctx._version}/`)[1]}`, ["top", "skip"]);
         this.linkBase = `${this.ctx._odata.options.rootBase}${this.constructor.name}`; 
         this.DBST = _DBFILTERED(this.ctx);
@@ -80,7 +80,7 @@ export class Common {
     // create the nextLink
     nextLink = (resLength: number): string | undefined => {
         if (this.ctx._odata.limit < 1) return;       
-        const max: number = this.ctx._odata.limit > 0 ? +this.ctx._odata.limit : +CONFIGURATION.list[this.ctx._configName].nb_page;
+        const max: number = this.ctx._odata.limit > 0 ? +this.ctx._odata.limit : +serverConfig.configs[this.ctx._configName].nb_page;
         if (resLength >= max) return `${encodeURI(this.nextLinkBase)}${this.nextLinkBase.includes("?") ? "&" : "?"}$top=${this.ctx._odata.limit}&$skip=${this.ctx._odata.skip + this.ctx._odata.limit}`;
     };
     
@@ -88,7 +88,7 @@ export class Common {
     prevLink = (resLength: number): string | undefined => {
         if (this.ctx._odata.limit < 1) return;
         const prev = this.ctx._odata.skip - this.ctx._odata.limit;
-        if ((CONFIGURATION.list[this.ctx._configName].nb_page && resLength >= +CONFIGURATION.list[this.ctx._configName].nb_page || this.ctx._odata.limit) && prev >= 0)
+        if ((serverConfig.configs[this.ctx._configName].nb_page && resLength >= +serverConfig.configs[this.ctx._configName].nb_page || this.ctx._odata.limit) && prev >= 0)
             return `${encodeURI(this.nextLinkBase)}${this.nextLinkBase.includes("?") ? "&" : "?"}$top=${this.ctx._odata.limit}&$skip=${prev}`;
     };
 

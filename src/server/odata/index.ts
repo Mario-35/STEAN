@@ -2,22 +2,21 @@ import { query, resourcePath } from "./parser/parser";
 import { Token } from "./parser/lexer";
 import koa from "koa";
 import { cleanUrl } from "../helpers";
-import { CONFIGURATION } from "../configuration";
+import { serverConfig } from "../configuration";
 import { PgVisitor } from "./visitor/PgVisitor";
 import { SqlOptions } from "./parser/sqlOptions";
-import { db } from "../db";
 import { _DB } from "../db/constants";
 export { PgVisitor } from "./visitor/PgVisitor";
 
 const doSomeWarkAfterAst = async (input: PgVisitor, ctx: koa.Context) => {    
     if ( input.splitResult && input.splitResult[0].toUpperCase() == "ALL" && input.parentId && <bigint>input.parentId > 0) {
-        const temp = await db[ctx._configName].raw(`select jsonb_agg(tmp.units -> 'name') as keys from ( select jsonb_array_elements("unitOfMeasurements") as units from ${_DB.MultiDatastreams.table} where id = ${input.parentId} ) as tmp`);
+        const temp = await serverConfig.db(ctx._configName).raw(`select jsonb_agg(tmp.units -> 'name') as keys from ( select jsonb_array_elements("unitOfMeasurements") as units from ${_DB.MultiDatastreams.table} where id = ${input.parentId} ) as tmp`);
         input.splitResult = temp.rows[0]["keys"];
     }   
 };
 
 export const createOdata = async (ctx: koa.Context):Promise<PgVisitor | undefined> => {
-    const blankUrl = `$top=${CONFIGURATION.list[ctx._configName].nb_page ? +CONFIGURATION.list[ctx._configName].nb_page : 200}`;
+    const blankUrl = `$top=${serverConfig.configs[ctx._configName].nb_page ? +serverConfig.configs[ctx._configName].nb_page : 200}`;
     const options: SqlOptions = {loraId: undefined, rootBase: ctx._rootName, onlyValue: false, onlyRef: false, method: ctx.method, name: ""};
 
     let urlSrc = ctx.href.normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(ctx._version)[1];

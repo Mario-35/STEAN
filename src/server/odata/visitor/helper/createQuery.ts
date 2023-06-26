@@ -8,7 +8,7 @@
 
 import { createSql, getColumnsList } from ".";
 import { _DB } from "../../../db/constants";
-import { isObservation, isSingular } from "../../../db/helpers";
+import { isSingular } from "../../../db/helpers";
 import { getEntityName } from "../../../helpers";
 import { queryAsJson } from "../../../helpers/returnFormats";
 import { Logs } from "../../../logger";
@@ -65,7 +65,8 @@ export function createpgQuery(main: PgVisitor, element: PgVisitor): IpgQuery | u
                     from: _DB[realEntityName].table , 
                     where: element.where, 
                     groupBy: element.groupBy.join(",\n\t"),
-                    orderby: isObservation(realEntityName) === true ? `${element.orderby},"observation"."phenomenonTime", "observation"."id"` : `${element.orderby}, "id"`,
+                    // orderby: isObservation(realEntityName) === true ? `${element.orderby},"observation"."phenomenonTime", "observation"."id"` : `${element.orderby}, "id"`,
+                    orderby: element.orderby,
                     skip: element.skip,
                     limit: element.limit
                 };

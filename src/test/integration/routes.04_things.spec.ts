@@ -103,7 +103,7 @@ describe("endpoint : Thing [8.2.1]", () => {
 
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err, res) => {
+                .end((err, res) => {                    
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -333,10 +333,10 @@ describe("endpoint : Thing [8.2.1]", () => {
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
                     res.body["@iot.count"].should.eql("2");
-                    res.body.value[0]["@iot.id"].should.eql(1);
-                    res.body.value[0]["@iot.selfLink"].should.contain("HistoricalLocations(1)");
-                    res.body.value[0]["Things@iot.navigationLink"].should.contain("/HistoricalLocations(1)/Things");
-                    res.body.value[0]["Locations@iot.navigationLink"].should.contain("HistoricalLocations(1)/Locations");
+                    const id = res.body.value[0]["@iot.id"];
+                    res.body.value[0]["@iot.selfLink"].should.contain(`HistoricalLocations(${id})`);
+                    res.body.value[0]["Things@iot.navigationLink"].should.contain(`/HistoricalLocations(${id})/Things`);
+                    res.body.value[0]["Locations@iot.navigationLink"].should.contain(`HistoricalLocations(${id})/Locations`);
                     done();
                 });
         });
@@ -354,7 +354,6 @@ describe("endpoint : Thing [8.2.1]", () => {
                     res.body.value[0]["Sensor@iot.navigationLink"].should.contain(`/Datastreams(${id})/Sensor`);
                     res.body.value[0]["ObservedProperty@iot.navigationLink"].should.contain(`/Datastreams(${id})/ObservedProperty`);
                     res.body.value[0]["Observations@iot.navigationLink"].should.contain(`/Datastreams(${id})/Observations`);
-
                     done();
                 });
         });
@@ -366,14 +365,12 @@ describe("endpoint : Thing [8.2.1]", () => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
-                    res.body["@iot.count"].should.eql("2");
-                    res.body.value[0]["@iot.id"].should.eql(1);
-                    res.body.value[0]["@iot.selfLink"].should.contain("MultiDatastreams(1)");
-                    res.body.value[0]["Thing@iot.navigationLink"].should.contain("/MultiDatastreams(1)/Thing");
-                    res.body.value[0]["Sensor@iot.navigationLink"].should.contain("/MultiDatastreams(1)/Sensor");
-                    res.body.value[0]["ObservedProperties@iot.navigationLink"].should.contain("/MultiDatastreams(1)/ObservedProperties");
-                    res.body.value[0]["Observations@iot.navigationLink"].should.contain("/MultiDatastreams(1)/Observations");
-
+                    const id = res.body["@iot.count"];
+                    res.body.value[0]["@iot.selfLink"].should.contain(`MultiDatastreams(${id})`);
+                    res.body.value[0]["Thing@iot.navigationLink"].should.contain(`/MultiDatastreams(${id})/Thing`);
+                    res.body.value[0]["Sensor@iot.navigationLink"].should.contain(`/MultiDatastreams(${id})/Sensor`);
+                    res.body.value[0]["ObservedProperties@iot.navigationLink"].should.contain(`/MultiDatastreams(${id})/ObservedProperties`);
+                    res.body.value[0]["Observations@iot.navigationLink"].should.contain(`/MultiDatastreams(${id})/Observations`);
                     done();
                 });
         });
@@ -480,10 +477,8 @@ describe("endpoint : Thing [8.2.1]", () => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
-                    res.body.Locations[0]["@iot.id"].should.eql(1);
-                    res.body.Locations[0]["@iot.selfLink"].should.contain("Locations(1)");
-                    res.body.Locations[0].HistoricalLocations[0]["@iot.id"].should.eql(1);
-                    res.body.Locations[0].HistoricalLocations[0]["@iot.selfLink"].should.contain("HistoricalLocations(1)");
+                    res.body.Locations[0]["@iot.selfLink"].should.contain(`Locations(${res.body.Locations[0]["@iot.id"]})`);
+                    res.body.Locations[0].HistoricalLocations[0]["@iot.selfLink"].should.contain(`HistoricalLocations(${res.body.Locations[0].HistoricalLocations[0]["@iot.id"]})`);
                     addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
@@ -520,7 +515,6 @@ describe("endpoint : Thing [8.2.1]", () => {
                     res.body[name][0]["Sensor@iot.navigationLink"].should.contain(`/Datastreams(${id})/Sensor`);
                     res.body[name][0]["ObservedProperty@iot.navigationLink"].should.contain(`/Datastreams(${id})/ObservedProperty`);
                     res.body[name][0]["Observations@iot.navigationLink"].should.contain(`/Datastreams(${id})/Observations`);
-
                     done();
                 });
         });
@@ -544,13 +538,12 @@ describe("endpoint : Thing [8.2.1]", () => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
-                    res.body.MultiDatastreams[0]["@iot.id"].should.eql(1);
-                    res.body.MultiDatastreams[0]["@iot.selfLink"].should.contain("MultiDatastreams(1)");
-                    res.body.MultiDatastreams[0]["Thing@iot.navigationLink"].should.contain("/MultiDatastreams(1)/Thing");
-                    res.body.MultiDatastreams[0]["Sensor@iot.navigationLink"].should.contain("/MultiDatastreams(1)/Sensor");
-                    res.body.MultiDatastreams[0]["ObservedProperties@iot.navigationLink"].should.contain("/MultiDatastreams(1)/ObservedProperties");
-                    res.body.MultiDatastreams[0]["Observations@iot.navigationLink"].should.contain("/MultiDatastreams(1)/Observations");
-
+                    const id = res.body.MultiDatastreams[0]["@iot.id"];
+                    res.body.MultiDatastreams[0]["@iot.selfLink"].should.contain(`MultiDatastreams(${id})`);
+                    res.body.MultiDatastreams[0]["Thing@iot.navigationLink"].should.contain(`/MultiDatastreams(${id})/Thing`);
+                    res.body.MultiDatastreams[0]["Sensor@iot.navigationLink"].should.contain(`/MultiDatastreams(${id})/Sensor`);
+                    res.body.MultiDatastreams[0]["ObservedProperties@iot.navigationLink"].should.contain(`/MultiDatastreams(${id})/ObservedProperties`);
+                    res.body.MultiDatastreams[0]["Observations@iot.navigationLink"].should.contain(`/MultiDatastreams(${id})/Observations`);
                     done();
                 });
         });
@@ -588,7 +581,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                 apiDescription: `Get nested resources of all Things..${apiInfos["9.2.8"]}`,
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-nested-resource-path",
                 apiExample: {
-                    http: `/v1.0/${entity.name}(2)/Datastreams(5)`,
+                    http: `/test/v1.0/${entity.name}(2)/Datastreams(5)`,
                     curl: defaultGet("curl", "KEYHTTP"),
                     javascript: defaultGet("javascript", "KEYHTTP"),
                     python: defaultGet("python", "KEYHTTP")

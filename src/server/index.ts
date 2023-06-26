@@ -13,15 +13,15 @@ import helmet from "koa-helmet";
 import json from "koa-json";
 import { protectedRoutes, routerHandle, unProtectedRoutes } from "./routes/";
 import cors from "@koa/cors";
-import { asyncForEach, isTest } from "./helpers";
+import { isTest } from "./helpers";
 import serve from "koa-static";
 import path from "path";
-import { HELMET_CONFIG, APP_KEY, APP_VERSION, NODE_ENV, APP_NAME } from "./constants";
-import { CONFIGURATION } from "./configuration";
+import { HELMET_CONFIG, APP_KEY, TEST, ADMIN } from "./constants";
+import { serverConfig } from "./configuration";
 import { PgVisitor } from "./odata";
+import { IuserToken } from "./types";
 import { messages } from "./messages";
 import { Logs } from "./logger";
-import { IuserToken } from "./types";
 
 // Extend koa context (no ts test on it)
 declare module "koa" {
@@ -71,22 +71,10 @@ app.use((ctx, next) => {
 // authenticated routes
 app.use(protectedRoutes.routes());
 
-Logs.booting(`START ${APP_NAME} version : ${APP_VERSION}`, `${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()}`);
-Logs.booting("mode", NODE_ENV);
-
+// export const server = serverConfig.start();
 export const server = isTest()
-    // Start listening Test
-    ? app.listen(CONFIGURATION.list["test"].port, async () => {
-        Logs.booting(messages.infos.serverListening, CONFIGURATION.list["test"].port);
-      })
-    : asyncForEach(
-        // Start listening ALL entries in config file        
-          Object.keys(CONFIGURATION.list),
-          async (key: string) => {  
-            try {
-                await CONFIGURATION.addToServer(app, key);
-            } catch (error) {
-                console.log(error);                
-            }          
-          }
-      );
+    ? app.listen(serverConfig.configs[TEST].port, async () => {   
+        serverConfig.addToServer[ADMIN];     
+        Logs.booting(messages.infos.serverListening, serverConfig.configs[TEST].port);
+        serverConfig.createKnexConnectionFromConfigName(TEST);
+    }) : serverConfig.start();

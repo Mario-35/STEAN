@@ -6,15 +6,14 @@
  *
  */
 
-import { Knex } from "knex";
 import koa from "koa";
 import { Logs } from "../../logger";
 import { messages } from "../../messages";
 import { Common } from "./common";
 
 export class Datastreams extends Common {
-    constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
-        super(ctx, knexInstance);
+    constructor(ctx: koa.Context) {
+         super(ctx);
     }
 
     formatDataInput(input: object | undefined): object | undefined {

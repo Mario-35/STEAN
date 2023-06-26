@@ -11,7 +11,7 @@ import koa from "koa";
 import { Logs } from "../../logger";
 import { createGetSql, createPostSql, oDatatoDate } from "./helper";
 import { Knex } from "knex";
-import { CONFIGURATION } from "../../configuration";
+import { serverConfig } from "../../configuration";
 import { messages } from "../../messages/";
 
 export class PgVisitor {
@@ -83,8 +83,8 @@ export class PgVisitor {
     
     init(ctx: koa.Context, node: Token) {
         Logs.head("INIT PgVisitor");
-        this.limit = +CONFIGURATION.list[ctx._configName].nb_page || 200;
-        this.config = CONFIGURATION.list[ctx._configName];
+        this.limit = +serverConfig.configs[ctx._configName].nb_page || 200;
+        this.config = serverConfig.configs[ctx._configName];
         
         const temp = this.VisitRessources(node);
         Logs.infos("PgVisitor", temp);
@@ -232,7 +232,7 @@ export class PgVisitor {
 
     verifyQuery = (ctx: koa.Context): void => {
         Logs.head("verifyQuery");
-        if (this.entity === "Logs" && ctx._configName !== "admin") this.where += `${this.where.trim() == "" ? "" : " AND "} (database = '${CONFIGURATION.list[ctx._configName].alias.join("' OR database ='")}')`;
+        if (this.entity === "Logs" && ctx._configName !== "admin") this.where += `${this.where.trim() == "" ? "" : " AND "} (database = '${serverConfig.configs[ctx._configName].alias.join("' OR database ='")}')`;
 
         if (this.select.length > 0) {
             const cols = [...Object.keys(_DB[this.entity].columns), ...Object.keys(_DB[this.entity].relations)];

@@ -100,5 +100,12 @@ export class Logger {
         } else errFile.write(`# ${this.line(10)} ${TIMESTAMP()} ${this.line(10)}\n`);
         errFile.write(util.format.apply(null, data) + '\n');        
     }
+
+    start(cle: string) {
+        this.show(`${this.col(EColor.FgRed)} ${this.line(24)} ${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgWhite)} ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()} ${this.col(EColor.FgRed)} ${this.line(24)}${this.col(EColor.Reset)}`);
+    }
+    end(cle: string) {
+        this.show(`${this.col(EColor.FgGreen)} ${this.line(24)} ${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgWhite)} ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()} ${this.col(EColor.FgGreen)} ${this.line(24)}${this.col(EColor.Reset)}`);
+    }
 }
 

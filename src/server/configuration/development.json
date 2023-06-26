@@ -2,6 +2,7 @@
 {
     "admin": {
         "key": "my qui ses scions",
+        "port": 8029,
         "pg_host": "localhost",
         "pg_user": "postgres",
         "pg_password": "mario29",
@@ -13,7 +14,7 @@
         "pg_host": "localhost",
         "pg_user": "sensorapi",
         "pg_password": "mario29",
-        "pg_database": "test",
+        "pg_database": "mario",
         "apiVersion": "v1.0",
         "date_format": "DD/MM/YYYY hh:mm:ss",
         "webSiteDoc": "https://api.geosas.fr/test/",
@@ -31,28 +32,6 @@
         "date_format": "DD/MM/YYYY hh:mm:ss",
         "webSiteDoc": "https://api.geosas.fr/test/",
         "multiDatastream": true
-    },
-    "nwee": {
-        "name": "nwee",
-        "port": 8029,
-        "pg_host": "localhost",
-        "pg_port": 5432,
-        "pg_user": "sensorapi",
-        "pg_password": "mario29",
-        "pg_database": "nwee",
-        "apiVersion": "v1.0",
-        "date_format": "DD/MM/YYYY hh:mm:ss",
-        "webSite": "no web site",
-        "nb_page": 200,
-        "forceHttps": false,
-        "alias": [
-            ""
-        ],
-        "retry": 2,
-        "lora": false,
-        "highPrecision": false,
-        "multiDatastream": true,
-        "logFile": ""
     }
 }
 

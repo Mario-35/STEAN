@@ -11,24 +11,21 @@ import { apiAccess, userAccess } from "../db/dataAccess";
 import { _DB } from "../db/constants";
 import { getUrlId, getUrlKey, returnFormats } from "../helpers";
 import fs from "fs";
-import { db } from "../db";
 import { Logs } from "../logger";
 import { IreturnResult } from "../types";
 import { EuserRights } from "../enums";
-import { API_VERSION } from "../constants";
+import { ADMIN, API_VERSION, _ready } from "../constants";
 import { createQueryHtml } from "../views/query";
 import { CreateHtmlView, createIqueryFromContext, } from "../views/helpers/";
 import { testRoutes } from "./helpers";
 import { DefaultState, Context } from "koa";
-import { createDatabase } from "../db/helpers";
 import { createOdata } from "../odata";
 import { messages } from "../messages";
 import { isAdmin, isAllowedTo } from ".";
 import { getMetrics } from "../db/monitoring";
 import { decodeToken, ensureAuthenticated, getAuthenticatedUser } from "../authentication";
 import { createAdminHtml } from "../views/admin";
-import { app } from "..";
-import { CONFIGURATION } from "../configuration";
+import { serverConfig } from "../configuration";
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 
 // ALl others
@@ -38,8 +35,8 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
     switch (testRoutes(ctx.path).toUpperCase()) {
         case ctx._version.toUpperCase():
             const expectedResponse: object[] = [];
-            if (isAdmin(ctx) && !adminWithSuperAdminAccess) ctx.throw(401);
-            CONFIGURATION.list[ctx._configName].entities
+            if (isAdmin(ctx) && !adminWithSuperAdminAccess) ctx.throw(401);            
+            serverConfig.configs[ctx._configName].entities
                 .filter((elem: string) => _DB[elem].order > 0)
                 .sort((a, b) => (_DB[a].order > _DB[b].order ? 1 : -1))
                 .forEach((value: string) => {
@@ -51,7 +48,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             ctx.type = returnFormats.json.type;
             ctx.body = {
                 value: expectedResponse.filter((elem) => Object.keys(elem).length)
-            };
+            };          
             break;
 
         case "FAVICON.ICO":
@@ -63,12 +60,6 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             } catch (e) {
                 if (e instanceof Error) Logs.error(e.message);
             }
-            return;
-
-        case "TEST":
-            console.log("ok");
-            console.log(app.off);
-            
             return;
 
         case "ERROR":
@@ -96,7 +87,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             let sql = getUrlKey(ctx.request.url, "query");   
             if (sql) {
                 sql = atob(sql);
-                const resultSql = sql.includes("log_request") ? await db.admin.raw(sql) : await db[ctx._configName].raw(sql);
+                const resultSql = sql.includes("log_request") ? await serverConfig.db(ADMIN).raw(sql) : await serverConfig.db(ctx._configName).raw(sql);
                 ctx.status = 201;
                 ctx.body = resultSql.rows;
             }
@@ -117,7 +108,15 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
                 ctx.body = await userAccess.getAll();
             }
             return;
-
+        case "READY":
+            const moi = {};
+            Object.keys(serverConfig.configs).flatMap(e => moi[e] = serverConfig.configs[e].db ? true : false);           
+            ctx.type = returnFormats.json.type;
+            ctx.body = {
+                status : _ready,
+                databases: moi
+            };
+            return;
         case "STATUS":
             if (ensureAuthenticated(ctx)) {
                 const user = await getAuthenticatedUser(ctx);
@@ -186,7 +185,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         case "CREATEDB":
             // create DB test 
             Logs.head("GET createDB");
-            const returnValue = await createDatabase("test");                    
+            const returnValue = await serverConfig.createDBTest();                    
             if (returnValue) {
                 ctx.status = 201;
                 ctx.body = returnValue;
@@ -195,8 +194,19 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
                 ctx.redirect(`${ctx._rootName}error`);
             }
             return;
-            case "RESTART":
-                process.exit(-1);
+
+        case "REMOVEDBTEST":
+            // create DB test 
+            Logs.head("GET remove DB test");
+            const returnDel = await serverConfig.removeTests();                 
+            if (returnDel) {
+                ctx.status = 204;
+                ctx.body = returnDel;
+            } else {
+                ctx.status = 400;
+                ctx.redirect(`${ctx._rootName}error`);
+            }
+            return;
     } // END Switch
 
     // API REQUEST

@@ -6,11 +6,10 @@
  *
  */
 
-import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
 export class HistoricalLocations extends Common {
-    constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
-        super(ctx, knexInstance);
+    constructor(ctx: koa.Context) {
+         super(ctx);
     }
 }

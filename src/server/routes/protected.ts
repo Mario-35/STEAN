@@ -23,7 +23,8 @@ import { messages } from "../messages";
 import { isAllowedTo } from ".";
 import { EuserRights } from "../enums";
 import { loginUser } from "../authentication";
-import { db } from "../db";
+import { serverConfig } from "../configuration";
+import { ADMIN } from "../constants";
 
 export const protectedRoutes = new Router<DefaultState, Context>();
 
@@ -55,7 +56,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
             if (isObject && body["username"].trim() === "") {
                 why["username"] = messages.errors.emptyUsername;
             } else {
-                const user = await db.admin.table("user").select("username").where({ username: ctx.request.body["username"] }).first();
+                const user = await serverConfig.db(ADMIN).table("user").select("username").where({ username: ctx.request.body["username"] }).first();
                 if (user) why["username"] = messages.errors.alreadyPresent;
             }
             // Email

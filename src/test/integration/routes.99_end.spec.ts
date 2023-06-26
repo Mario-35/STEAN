@@ -1,19 +1,28 @@
-/**
- * TDD for cases API.
- *
- * @copyright 2020-present Inrae
- * @author mario.adam@inrae.fr
- *
- */
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 process.env.NODE_ENV = "test";
 
+import chai from "chai";
+import chaiHttp from "chai-http";
 
-// import { db } from "../../server/db";
+chai.use(chaiHttp);
+
+import { server } from "../../server/index";
+
+const should = chai.should();
+
 
 describe("Delete test Database", function () {
-    it("Destroy", async (done) => {
-        // await getConnection("admin"].raw("DROP DATABASE test");
-        done();
+    it("Delete test Database", (done) => {
+        chai.request(server)
+        .get("/test/v1.0/removedbtest")
+        .end((err: Error, res: any) => {                 
+                if (err) {
+                    console.log(res.body);                    
+                    console.error(err);
+                }
+                should.not.exist(err);
+                res.status.should.equal(204);
+                done();
+            });
     });
 });

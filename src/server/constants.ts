@@ -7,7 +7,9 @@
  */
 
 import fs from "fs";
-
+export let _ready = false;
+export const TEST = "test";
+export const ADMIN = "admin";
 export const APP_NAME = process.env.npm_package_name || '_STEAN';
 export const APP_VERSION = process.env.npm_package_version || '0';
 export const APP_KEY = fs.readFileSync(__dirname + "/configuration/.key", "utf8") || "zLwX893Mtt9Rc0TKvlInDXuZTFj9rxDV";
@@ -29,4 +31,8 @@ export const HELMET_CONFIG = Object.freeze({
 
 export function setDebug(input: boolean) {
     _debug = input;
+}
+
+export function setReady(input: boolean) {
+    _ready = input;
 }

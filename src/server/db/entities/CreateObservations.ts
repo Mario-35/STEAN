@@ -6,7 +6,6 @@
 *
 */
 
-import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
 import { Logs } from "../../logger";
@@ -20,8 +19,8 @@ import util from "util";
 
 
 export class CreateObservations extends Common {
-    constructor(ctx: koa.Context, knexInstance?: Knex | Knex.Transaction) {
-        super(ctx, knexInstance);
+    constructor(ctx: koa.Context) {
+         super(ctx);
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     // get stream ID

@@ -189,11 +189,11 @@ describe("endpoint : MultiDatastream", () => {
                     res.body.value[0].should.include.keys(testsKeys);
                     res.body["@iot.count"].should.eql("3");
                     res.body.value.length.should.eql(3);
-                    res.body.value[0]["@iot.id"].should.eql(8);
-                    res.body.value[0]["@iot.selfLink"].should.contain("/MultiDatastreams(8)");
-                    res.body.value[0]["Sensor@iot.navigationLink"].should.contain("/MultiDatastreams(8)/Sensor");
-                    res.body.value[0]["ObservedProperties@iot.navigationLink"].should.contain("/MultiDatastreams(8)/ObservedProperties");
-                    res.body.value[0]["Observations@iot.navigationLink"].should.contain("/MultiDatastreams(8)/Observations");
+                    const id = res.body.value[0]["@iot.id"];
+                    res.body.value[0]["@iot.selfLink"].should.contain(`/MultiDatastreams(${id})`);
+                    res.body.value[0]["Sensor@iot.navigationLink"].should.contain(`/MultiDatastreams(${id})/Sensor`);
+                    res.body.value[0]["ObservedProperties@iot.navigationLink"].should.contain(`/MultiDatastreams(${id})/ObservedProperties`);
+                    res.body.value[0]["Observations@iot.navigationLink"].should.contain(`/MultiDatastreams(${id})/Observations`);
                     addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });

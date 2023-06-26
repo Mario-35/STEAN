@@ -1,6 +1,7 @@
 {
 	"ListenPort": "Listening on port",
-	"addPort": "Add on port",
+	"addPort": "Add listening on port",
+	"dbExist": "Test database exist",
 	"connectName": "connection name",
 	"create": "Create",
 	"db": "dataBase",

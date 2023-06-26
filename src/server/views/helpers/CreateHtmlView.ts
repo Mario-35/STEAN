@@ -7,7 +7,7 @@
  */
 
 import koa from "koa";
-import { CONFIGURATION } from "../../configuration";
+import { serverConfig } from "../../configuration";
 import { Iuser } from "../../types";
 import { addCssFile } from "../css";
 
@@ -95,7 +95,8 @@ export class CreateHtmlView {
 
     public config = (datas: { config: string | undefined ; body?: any; why?: {[key: string]: string} }): string => {
       try {
-        const conf = datas.config ? CONFIGURATION.list[datas.config] : CONFIGURATION.createBlankConfig(this.ctx._configName);        
+        const conf = serverConfig.configs["essai"];        
+        // const conf = datas.config ? serverConfig.configs[datas.config] : serverConfig.createBlankConfig(this.ctx._configName);        
         const alert = (name: string): string => {
             return datas.why && datas.why[name] ? `<div class="alert">${datas.why[name]}</div>` : "";
         };
@@ -142,11 +143,11 @@ export class CreateHtmlView {
                         </div>
                       </div>
                       <div class="sign-up-htm">
-                        ${this.addTextInput({id: "host", label: "Host", value: conf.pg_host, alert: alert("host"), toolType: "PostgreSql database host"})}
-                        ${this.addTextInput({id: "username", label: "User name", value: conf.pg_user, alert: alert("username"), toolType: "PostgreSql database username"})}
-                        ${this.addTextInput({id: "password", label: "Password", value: conf.pg_password, alert: alert("dassword"), toolType: "PostgreSql database Password"})}
-                        ${this.addTextInput({id: "database", label: "Database", value: conf.pg_database, alert: alert("database"), toolType: "PostgreSql database"})}
-                        ${this.addTextInput({id: "port", label: "Port", value: conf.pg_port, alert: alert("port"), toolType: "PostgreSql database Port"})}
+                        ${this.addTextInput({id: "host", label: "Host", value: conf.pg.host, alert: alert("host"), toolType: "PostgreSql database host"})}
+                        ${this.addTextInput({id: "username", label: "User name", value: conf.pg.user, alert: alert("username"), toolType: "PostgreSql database username"})}
+                        ${this.addTextInput({id: "password", label: "Password", value: conf.pg.password, alert: alert("dassword"), toolType: "PostgreSql database Password"})}
+                        ${this.addTextInput({id: "database", label: "Database", value: conf.pg.database, alert: alert("database"), toolType: "PostgreSql database"})}
+                        ${this.addTextInput({id: "port", label: "Port", value: conf.pg.port, alert: alert("port"), toolType: "PostgreSql database Port"})}
                       </div>
                     </form>
                   </div>
@@ -256,13 +257,13 @@ export class CreateHtmlView {
     };
 
     public status = (user: Iuser): string => {
-      const config = CONFIGURATION.getConfigNameFromDatabase(user.database);  
+      const config = serverConfig.getConfigNameFromDatabase(user.database);  
         return `<!DOCTYPE html> <html> ${this.head(
             "Status",
             "user"
         )} <body> <div class="login-wrap"> <div class="login-html"> <h2>You are authenticated.</h2> <div class="hr"></div> <h3>Username : ${
             user.username
-        }</h3> <h3>Hosting : ${user.database == "all" ? "all" : config ? CONFIGURATION.list[config].pg_host : "Not Found"}</h3> <h3>Database : ${user.database}</h3> <h3>Status : ${
+        }</h3> <h3>Hosting : ${user.database == "all" ? "all" : config ? serverConfig.configs[config].pg.host : "Not Found"}</h3> <h3>Database : ${user.database}</h3> <h3>Status : ${
             user.admin
         }</h3> ${user.superAdmin ? `<div class="inner"> <a href="${this.ctx._linkBase}/admin" class="button-admin" >users</a> </div>` : ""} ${this.foot([
             { href: this.ctx._linkBase + "/Logout", class: "button-logout", name: "Logout" },
@@ -286,7 +287,7 @@ export class CreateHtmlView {
         )} <body> <div class="login-html"> <div class="table-wrapper"> <table class="fl-table"> <tbody>TODO</tbody></table> </div> ${this.foot([
             { href: this.ctx._linkBase + `/${this.ctx._version}/`, class: "button-submit", name: "Root" },
             { href: this.ctx._linkBase + `/${this.ctx._version}/Query`, class: "button", name: "Query" },
-            { href: `${CONFIGURATION.list[this.ctx._configName].webSite}`, class: "button-logout", name: "Documentation" }
+            { href: `${serverConfig.configs[this.ctx._configName].webSite}`, class: "button-logout", name: "Documentation" }
         ])} </div> </body> </html> `;
     };
 

@@ -12,8 +12,8 @@ import koa from "koa";
 import { Logs } from "../../logger";
 import { IreturnResult } from "../../types";
 import { getEntityName } from "../../helpers";
-import { db } from "..";
 import { messages } from "../../messages";
+// import { serverConfig } from "../../configuration";
 
 export class apiAccess {
     readonly myEntity: Common | undefined;
@@ -23,7 +23,7 @@ export class apiAccess {
         this.ctx = ctx;     
         const entityName = getEntityName(this.ctx._odata.entity);
         if (entityName && entityName in entities) {
-            this.myEntity = new entities[(this.ctx, entityName)](ctx, db[this.ctx._configName]);
+            this.myEntity = new entities[(this.ctx, entityName)](ctx);
             if (this.myEntity === undefined) Logs.error(`${messages.errors.entity} : ${entityName}`);
             else Logs.class("constructor apiAccess", "Ok");
         } else Logs.error(`${messages.errors.entity} : ${entityName}`);
