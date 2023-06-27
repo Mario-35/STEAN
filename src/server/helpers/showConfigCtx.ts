@@ -17,9 +17,8 @@ import koa from "koa";
 export const configCtx = (ctx: koa.Context): {[key: string]: string} => {
     return {
         "_linkBase": `"${ctx._linkBase}"`,
-        "_configName": `"${ctx._configName}"`,
+        "name": `"${ctx._config.name}"`,
         "_rootName": `"${ctx._rootName}"`,
-        "_version": `"${ctx._version}"`,
         "method": `"${ctx.method}"`,
         "url": `"${ctx.url}"`,
         "originalUrl": `"${ctx.originalUrl}"`,

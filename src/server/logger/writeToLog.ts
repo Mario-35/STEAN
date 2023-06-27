@@ -24,7 +24,7 @@ export const writeToLog = async (ctx: koa.Context, ...error: any[]): Promise<voi
             "method" : ctx.method,
             "code" : error && error["code"] ? +error["code"] : +ctx.response.status,
             "url" : ctx.url,
-            "database" : ctx._configName,
+            "database" : ctx._config.pg.database,
             "datas" : typeof ctx.request.body && Object.keys(ctx.request.body).length === 0 ? ctx._datas : ctx.request.body as string,
             "user_id" : getUserId(ctx).toString(),
             "error": util.format.apply(null, error),

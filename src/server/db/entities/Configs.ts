@@ -35,7 +35,7 @@ export class Configs extends Common {
      async getSingle(idInput: bigint | string): Promise<IreturnResult | undefined> {
          Logs.override(messagesReplace(messages.infos.classConstructor, [this.constructor.name, `getSingle`]));            
         if (!ensureAuthenticated(this.ctx)) this.ctx.throw(401);
-        return this.createReturnResult({ body: hidePasswordInJson(serverConfig.configs[typeof idInput === "string" ? idInput : this.ctx._configName]) });       
+        return this.createReturnResult({ body: hidePasswordInJson(serverConfig.configs[typeof idInput === "string" ? idInput : this.ctx._config.name]) });       
     }
 
 

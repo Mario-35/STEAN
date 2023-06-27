@@ -33,16 +33,16 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
     const adminWithSuperAdminAccess = isAdmin(ctx) ? isAllowedTo(ctx, EuserRights.SuperAdmin) ? true : false : true;
 
     switch (testRoutes(ctx.path).toUpperCase()) {
-        case ctx._version.toUpperCase():
+        case ctx._config.apiVersion.toUpperCase():
             const expectedResponse: object[] = [];
             if (isAdmin(ctx) && !adminWithSuperAdminAccess) ctx.throw(401);            
-            serverConfig.configs[ctx._configName].entities
+            ctx._config.entities
                 .filter((elem: string) => _DB[elem].order > 0)
                 .sort((a, b) => (_DB[a].order > _DB[b].order ? 1 : -1))
                 .forEach((value: string) => {
                 expectedResponse.push({
                     name: _DB[value].name,
-                    url: `${ctx._linkBase}/${ctx._version}/${value}`
+                    url: `${ctx._linkBase}/${ctx._config.apiVersion}/${value}`
                 });
             }); 
             ctx.type = returnFormats.json.type;
@@ -87,7 +87,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             let sql = getUrlKey(ctx.request.url, "query");   
             if (sql) {
                 sql = atob(sql);
-                const resultSql = sql.includes("log_request") ? await serverConfig.db(ADMIN).raw(sql) : await serverConfig.db(ctx._configName).raw(sql);
+                const resultSql = sql.includes("log_request") ? await serverConfig.db(ADMIN).raw(sql) : await serverConfig.db(ctx._config.name).raw(sql);
                 ctx.status = 201;
                 ctx.body = resultSql.rows;
             }
@@ -143,7 +143,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             const createHtml = new CreateHtmlView(ctx);
             const configQuery = getUrlKey(ctx.href, "name");                
             ctx.type = returnFormats.html.type;
-            ctx.body = createHtml.config({ config: configQuery ? configQuery : ctx._configName });
+            ctx.body = createHtml.config({ config: configQuery ? configQuery : ctx._config.name });
             return;
             
         case "ADDCONFIG":

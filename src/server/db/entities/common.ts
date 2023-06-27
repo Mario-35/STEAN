@@ -28,8 +28,8 @@ export class Common {
     constructor(ctx: koa.Context) {
         Logs.class(this.constructor.name, messages.infos.constructor);
         this.ctx = ctx;
-        Common.dbContext = serverConfig.db(ctx._configName);
-        this.nextLinkBase = removeKeyFromUrl(`${this.ctx._odata.options.rootBase}${this.ctx.href.split(`${ctx._version}/`)[1]}`, ["top", "skip"]);
+        Common.dbContext = serverConfig.db(ctx._config.name);
+        this.nextLinkBase = removeKeyFromUrl(`${this.ctx._odata.options.rootBase}${this.ctx.href.split(`${ctx._config.apiVersion}/`)[1]}`, ["top", "skip"]);
         this.linkBase = `${this.ctx._odata.options.rootBase}${this.constructor.name}`; 
         this.DBST = _DBFILTERED(this.ctx);
     }
@@ -80,7 +80,7 @@ export class Common {
     // create the nextLink
     nextLink = (resLength: number): string | undefined => {
         if (this.ctx._odata.limit < 1) return;       
-        const max: number = this.ctx._odata.limit > 0 ? +this.ctx._odata.limit : +serverConfig.configs[this.ctx._configName].nb_page;
+        const max: number = this.ctx._odata.limit > 0 ? +this.ctx._odata.limit : this.ctx._config.nb_page;
         if (resLength >= max) return `${encodeURI(this.nextLinkBase)}${this.nextLinkBase.includes("?") ? "&" : "?"}$top=${this.ctx._odata.limit}&$skip=${this.ctx._odata.skip + this.ctx._odata.limit}`;
     };
     
@@ -88,7 +88,7 @@ export class Common {
     prevLink = (resLength: number): string | undefined => {
         if (this.ctx._odata.limit < 1) return;
         const prev = this.ctx._odata.skip - this.ctx._odata.limit;
-        if ((serverConfig.configs[this.ctx._configName].nb_page && resLength >= +serverConfig.configs[this.ctx._configName].nb_page || this.ctx._odata.limit) && prev >= 0)
+        if ((this.ctx._config.nb_page && resLength >= this.ctx._config.nb_page || this.ctx._odata.limit) && prev >= 0)
             return `${encodeURI(this.nextLinkBase)}${this.nextLinkBase.includes("?") ? "&" : "?"}$top=${this.ctx._odata.limit}&$skip=${prev}`;
     };
 

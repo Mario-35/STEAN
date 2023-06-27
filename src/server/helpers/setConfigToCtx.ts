@@ -11,14 +11,9 @@ import { serverConfig } from "../configuration";
 import querystring from "querystring";
 import cookieModule from "cookie";
 import cookieParser from "cookie-parser";
-import { APP_KEY, API_VERSION } from "../constants";
+import { APP_KEY, API_VERSION, TEST, setDebug } from "../constants";
 import { messages, messagesReplace } from "../messages";
-
-/**
- *
- * @param ctx Koa context
- * @returns string or undefined
- */
+import { isTest } from ".";
 
 const getCookie = (serializedCookies: string, key: string) => cookieModule.parse(serializedCookies)[key] ?? false;
 
@@ -80,27 +75,49 @@ const bearerToken = (ctx: koa.Context) => {
 
     ctx.request["token"] = token;
 };
+const getVersionFromUrl = (input: string) => input .replace(/[//]+/g, "/") .split("/") .filter((value: string) => value.match(/v{1}\d\.\d/g))[0] || API_VERSION;
+
+const getConfigFromPort = (port: number | undefined): string | undefined => {
+    if (port) {
+        const databaseName = isTest() ? [TEST] : Object.keys(serverConfig.configs).filter((word) => (word != "test" && serverConfig.configs[word].port) == port);
+        if (databaseName && databaseName.length === 1) return databaseName[0];
+    }
+};
+
+const getNameFromUrl = (input: string, version?: string): string | undefined => {
+    version = version || getVersionFromUrl(input);
+    return input.split(version)[0].split("/").filter((e: string) => e != "")[0]; 
+};
+
+const getConfigNameFromName = (name: string): string | undefined => {
+    if (name) {
+        const databaseName = isTest() ? "test" : Object.keys(serverConfig.configs).includes(name) ? name: undefined;
+        if (databaseName) return databaseName;
+        let aliasName: undefined | string = undefined;
+        Object.keys(serverConfig.configs).forEach((configName: string) => { if(serverConfig.configs[configName].alias.includes(name)) aliasName = configName;});        
+        if (aliasName) return aliasName;
+    }
+};
 
 export const setConfigToCtx = (ctx: koa.Context): void => {
     bearerToken(ctx);
-    ctx._version =
-        ctx.originalUrl
-            .replace(/[//]+/g, "/")
-            .split("/")
-            .filter((value: string) => value.match(/v{1}\d\.\d/g))[0] || API_VERSION;
-
-    const temp = serverConfig.getConfigNameFromContext(ctx);
-
-    if (!temp) throw new Error(messages.errors.noConfigName);    
-    if (!serverConfig.configs[temp]) throw new Error(messagesReplace(messages.errors.notPresentInConfigName, [temp]));    
-
-    ctx._configName = temp.trim().toLowerCase();
+    setDebug(ctx.request.url.includes("$debug=true"));
+    ctx._addToLog = false;
+    let configName = getConfigFromPort(ctx.req.socket.localPort);            
+    const version = getVersionFromUrl(ctx.originalUrl);
+    const name = getNameFromUrl(ctx.originalUrl, version);
+    if (!name) throw new Error(messages.errors.noConfigName);
+    if (name) {
+        configName = configName || getConfigNameFromName(name);
+        if (configName) ctx._config = serverConfig.configs[configName];
+        else throw new Error(messagesReplace(messages.errors.notPresentInConfigName, [name]));    
+    }    
 
     ctx.querystring = decodeURIComponent(querystring.unescape(ctx.querystring));
 
     const protocol = ctx.request.headers["x-forwarded-proto"]
         ? ctx.request.headers["x-forwarded-proto"]
-        : serverConfig.configs[ctx._configName].forceHttps && serverConfig.configs[ctx._configName].forceHttps == true
+        : ctx._config.forceHttps && ctx._config.forceHttps == true
         ? "https"
         : ctx.protocol;
 
@@ -110,6 +127,6 @@ export const setConfigToCtx = (ctx: koa.Context): void => {
         ? `${protocol}://${ctx.request.header.host}`
         : "";
 
-    if (!ctx._linkBase.includes(ctx._configName)) ctx._linkBase = ctx._linkBase + "/" + ctx._configName;
-    ctx._rootName = process.env.NODE_ENV?.trim() === "test" ? `proxy/${ctx._version}/` : `${ctx._linkBase}/${ctx._version}/`;
+    if (!ctx._linkBase.includes(name)) ctx._linkBase = ctx._linkBase + "/" + name;
+    ctx._rootName = process.env.NODE_ENV?.trim() === "test" ? `proxy/${version}/` : `${ctx._linkBase}/${version}/`;
 };

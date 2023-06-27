@@ -11,7 +11,6 @@ import { ADMIN, API_VERSION, APP_NAME, APP_VERSION, NODE_ENV, setDebug, setReady
 import { Logs } from "../logger";
 import { asyncForEach, decrypt, encrypt, hidePasswordInJson, isTest } from "../helpers";
 import util from "util";
-import Koa from "koa";
 import { app } from "..";
 import knex, { Knex } from "knex";
 import { createDatabase } from "../db/helpers";
@@ -85,10 +84,7 @@ class Configuration {
         app.listen(serverConfig.configs[TEST].port, async () => {        
             Logs.booting(messages.infos.serverListening, serverConfig.configs[TEST].port);
             this.createKnexConnectionFromConfigName(TEST);
-        }); 
-        // await this.addToServer("admin");
-        console.log(this.configs);
-        
+        });
     } 
     
     async init (): Promise<boolean> {
@@ -159,32 +155,12 @@ class Configuration {
         });
     }
 
-
     getConfigNameFromDatabase(input: string): string | undefined { 
         if (input === "all") return;
          
         const aliasName = Object.keys(this.configs).filter((configName: string) => this.configs[configName].pg.database === input)[0];         
         if (aliasName) return aliasName;
         throw new Error(`No configuration found for ${input} name`);
-    }
-
-    getConfigNameFromContext(ctx: Koa.Context): string | undefined {
-        const port = ctx.req.socket.localPort;
-        if (port) {
-            const databaseName = isTest() ? [TEST] : Object.keys(this.configs).filter((word) => (word != "test" && this.configs[word].port) == port);
-            if (databaseName && databaseName.length === 1) return databaseName[0];
-        }
-        const name = ctx.originalUrl.split(ctx._version)[0].split("/").filter((e: string) => e != "")[0]; 
-               
-        if (name) {
-            const databaseName = isTest() ? "test" : Object.keys(this.configs).includes(name) ? name: undefined;
-            if (databaseName) return databaseName;
-            let aliasName: undefined | string = undefined;
-            Object.keys(this.configs).forEach((configName: string) => { if(this.configs[configName].alias.includes(name)) aliasName = configName;});        
-            if (aliasName) return aliasName;
-            throw new Error(port ? `No configuration found for ${port} port or ${name} name` :`No configuration found for ${name} name`);
-        }
-        throw new Error(port ? `No configuration found for ${port} port or name missing` :`name missing`);
     }
 
     private formatConfig(input: object | string, name?: string): IconfigFile {
@@ -232,32 +208,6 @@ class Configuration {
         );
     }
 
-    // createBlankConfig(base: string): IconfigFile {
-    //     return {
-    //         name: "name",
-    //         port: this.configs[base].port,
-    //         pg: {
-    //             host: "host",
-    //             port: 5432,
-    //             user: "user",
-    //             password: "password",
-    //             database: "database",
-    //             retry: 2
-    //         },
-    //         apiVersion: API_VERSION,
-    //         date_format: "DD/MM/YYYY hh:mi:ss",
-    //         webSite: "no web site",
-    //         nb_page: 200,
-    //         forceHttps: false,
-    //         alias: [],
-    //         lora: false,
-    //         highPrecision: false,
-    //         multiDatastream: false,
-    //         logFile: "",      
-    //         entities: this.createBlankEntities(true, false)
-    //     };
-    // }
-    // add new config and create database if not exist
     async addConfig(addJson: object): Promise<IconfigFile> {
         const configs = this.formatConfig(addJson);
         const input = Configuration.jsonConfiguration.hasOwnProperty(NODE_ENV) ? Configuration.jsonConfiguration[NODE_ENV] : Configuration.jsonConfiguration;    

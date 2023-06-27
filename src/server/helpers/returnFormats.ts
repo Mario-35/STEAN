@@ -85,7 +85,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
                         </div>
                       </div>
                       <script>
-                        const linkBase = "${ctx._linkBase}/${ctx._version}";
+                        const linkBase = "${ctx._linkBase}/${ctx._config.apiVersion}";
                         const value = ${JSON.stringify(input, null, 2)};
                         ${addJsFile("graph.js")}
                         showGraph(value);

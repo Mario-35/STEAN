@@ -22,7 +22,7 @@ export const createIqueryFromContext = async (ctx: koa.Context): Promise<Iquery>
         methods: ["GET"],
         host: ctx._linkBase,
         entity:  "",
-        version: ctx._version,
+        version: ctx._config.apiVersion,
         options: ctx.querystring ? ctx.querystring : "",
         user: user
             ? user
@@ -41,8 +41,8 @@ export const createIqueryFromContext = async (ctx: koa.Context): Promise<Iquery>
               },
               // TODO universal return
         graph: ctx.url.includes("$resultFormat=graph"),
-        admin: ctx._configName === 'admin',
-        _DATAS: ctx._configName === 'admin' === true 
+        admin: ctx._config.name === 'admin',
+        _DATAS: ctx._config.name === 'admin' === true 
             ? _DBADMIN 
             : user && (user.admin === true || user.superAdmin === true) 
                 ? _DB

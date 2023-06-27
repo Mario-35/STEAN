@@ -19,7 +19,7 @@ import path from "path";
 import { HELMET_CONFIG, APP_KEY, TEST, ADMIN } from "./constants";
 import { serverConfig } from "./configuration";
 import { PgVisitor } from "./odata";
-import { IuserToken } from "./types";
+import { IconfigFile, IuserToken } from "./types";
 import { messages } from "./messages";
 import { Logs } from "./logger";
 
@@ -28,8 +28,7 @@ declare module "koa" {
     // Underscore to identify own context
     interface DefaultContext {
         _linkBase: string;
-        _configName: string;
-        _version: string;
+        _config: IconfigFile;
         _odata: PgVisitor;
         _datas: {[key: string]: string};
         _user: IuserToken;

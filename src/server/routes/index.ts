@@ -8,12 +8,12 @@
 
 import Koa from "koa";
 import { decodeToken } from "../authentication";
-import { setDebug, _debug } from "../constants";
+import { _debug } from "../constants";
 import { EuserRights } from "../enums";
 import { configCtx, setConfigToCtx } from "../helpers";
 import { Logs, writeToLog } from "../logger";
 
-export const isAdmin = (ctx: Koa.Context):boolean => ctx._configName === "admin";
+export const isAdmin = (ctx: Koa.Context):boolean => ctx._config.name === "admin";
 export const isAllowedTo = (ctx: Koa.Context, what: EuserRights):boolean => ctx._user.PDCUAS[what];
 
 
@@ -22,8 +22,6 @@ export { unProtectedRoutes } from "./unProtected";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const routerHandle = async (ctx: Koa.Context, next: any) => {
     try {
-        setDebug(ctx.request.url.includes("$debug=true"));
-        ctx._addToLog = false;
         setConfigToCtx(ctx);
         
         const tempUser = decodeToken(ctx); 

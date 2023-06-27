@@ -88,5 +88,5 @@ export const createAdminHtml = async (ctx: Koa.Context, list: boolean): Promise<
     
     listaddJsFiles().forEach((item: string) => replaceInResult(`<script src="${fileWithOutMin(item)}"></script>`, `<script>${addJsFile(item)}</script>`));
 
-    return result.join("").replace("URLINK", `${ctx._linkBase}/${ctx._version}`);
+    return result.join("").replace("URLINK", `${ctx._linkBase}/${ctx._config.apiVersion}`);
 };

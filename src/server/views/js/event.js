@@ -347,7 +347,7 @@
     } else {
       url += `Logs?$filter=method eq 'POST'`;
       if(replayId.value != "") url += ` and datas/deveui eq '${replayId.value}'`;
-      url += ` and code eq 404 and code eq 400 and entityid eq null`;
+      url += ` and code eq 404 and entityid eq null`;
       url += `&$orderby=date desc&$top=200000`;
       url = addDebug(url);
       const jsonObj = await getFetchDatas(url, "json");

@@ -111,7 +111,7 @@ export class CreateHtmlView {
                   <input id="tab-2" type="radio" name="tab" class="sign-up">
                   <label for="tab-2" class="tab">Database</label>
                   <div class="login-form">
-                    <form action="${this.ctx._linkBase}/${this.ctx._version}/config" method="post">
+                    <form action="${this.ctx._linkBase}/${this.ctx._config.apiVersion}/config" method="post">
                       <div class="sign-in-htm">
                         <div class="group">
                           <label for="user" class="label">config name</label>
@@ -180,14 +180,14 @@ export class CreateHtmlView {
                               datas.login ? "" : "checked"
                           }><label for="tab-2" class="tab">Sign Up</label>
                           <div class="login-form">
-                            <form action="${this.ctx._linkBase}/${this.ctx._version}/login" method="post">
+                            <form action="${this.ctx._linkBase}/${this.ctx._config.apiVersion}/login" method="post">
                               <div class="sign-in-htm">
                                 ${this.addTextInput({id: "user", name: "username", label: "Username", value: ""})}
                                 ${this.addTextInput({id: "pass", name: "password", label: "Password", value: "", password: true})}
                                 ${this.addCheckBox({id: "check", checked: true, label: "Keep me Signed in"})}
                                 ${this.addSubmitButton("Sign In")}
                                 <div class="hr"></div>
-                                ${this.addButton(`${this.ctx._linkBase}/${this.ctx._version}/Query`, "Return to Query")}
+                                ${this.addButton(`${this.ctx._linkBase}/${this.ctx._config.apiVersion}/Query`, "Return to Query")}
                                 <div class="foot-lnk">
                                   <a href="#forgot">Forgot Password?</a>
                                 </div>
@@ -267,7 +267,7 @@ export class CreateHtmlView {
             user.admin
         }</h3> ${user.superAdmin ? `<div class="inner"> <a href="${this.ctx._linkBase}/admin" class="button-admin" >users</a> </div>` : ""} ${this.foot([
             { href: this.ctx._linkBase + "/Logout", class: "button-logout", name: "Logout" },
-            { href: this.ctx._linkBase + `/${this.ctx._version}/Query`, class: "button", name: "Query" }
+            { href: this.ctx._linkBase + `/${this.ctx._config.apiVersion}/Query`, class: "button", name: "Query" }
         ])} </div> </div> </body> </html> `;
     };
 
@@ -276,7 +276,7 @@ export class CreateHtmlView {
             "Error",
             "user"
         )} <body> <div class="login-wrap"> <div class="login-html"> <h1>Error.</h1> <div class="hr"></div> <h3>On error page</h3> <h3>${message}</h3> <div class="hr"></div> <div id="outer"> <div class="inner"> <a href="/Login" class="button-submit" >Login</a> </div> <div class="inner"> <a href="${
-            this.ctx._linkBase + `/${this.ctx._version}/Query`
+            this.ctx._linkBase + `/${this.ctx._config.apiVersion}/Query`
         }" class="button" >query</a> </div> </div> </div> </body> </html>`;
     };
 
@@ -285,9 +285,9 @@ export class CreateHtmlView {
             "Infos",
             "user"
         )} <body> <div class="login-html"> <div class="table-wrapper"> <table class="fl-table"> <tbody>TODO</tbody></table> </div> ${this.foot([
-            { href: this.ctx._linkBase + `/${this.ctx._version}/`, class: "button-submit", name: "Root" },
-            { href: this.ctx._linkBase + `/${this.ctx._version}/Query`, class: "button", name: "Query" },
-            { href: `${serverConfig.configs[this.ctx._configName].webSite}`, class: "button-logout", name: "Documentation" }
+            { href: this.ctx._linkBase + `/${this.ctx._config.apiVersion}/`, class: "button-submit", name: "Root" },
+            { href: this.ctx._linkBase + `/${this.ctx._config.apiVersion}/Query`, class: "button", name: "Query" },
+            { href: `${this.ctx._config.webSite}`, class: "button-logout", name: "Documentation" }
         ])} </div> </body> </html> `;
     };
 

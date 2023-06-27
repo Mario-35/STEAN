@@ -14,7 +14,6 @@ import { DOUBLEQUOTE, QUOTEDCOMA, VOIDTABLE } from "../../constants";
 import { Logs } from "../../logger";
 import { IreturnResult } from "../../types";
 import { messages, messagesReplace } from "../../messages/";
-import { serverConfig } from "../../configuration";
 import { EdatesType } from "../../enums";
 
 export class Loras extends Common {
@@ -234,7 +233,7 @@ export class Loras extends Common {
                         const tmp = JSON.stringify(elem);
                         return tmp == "null" ? tmp : `${tmp}`;
                     })
-                    .join(",")}}'::${serverConfig.configs[this.ctx._configName].highPrecision ? 'float8' : 'float4'}[]`
+                    .join(",")}}'::${this.ctx._config.highPrecision ? 'float8' : 'float4'}[]`
             );
 
             const sql = `WITH "${VOIDTABLE}" as (select srid FROM "${VOIDTABLE}" LIMIT 1)
