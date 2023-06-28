@@ -23,7 +23,7 @@
         "multiDatastream": true
     },
     "agri4cast": {
-        "port": 8029,
+        "port": 8030,
         "pg_host": "localhost",
         "pg_user": "sensorapi",
         "pg_password": "mario29",

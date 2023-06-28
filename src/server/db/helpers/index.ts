@@ -12,7 +12,6 @@ export { createTable } from "./createTable";
 export { streamCsvFileInPostgreSql, createColumnHeaderName } from "./streamCsvFileInPostgreSql";
 export { knexQueryToSqlString } from "./knexQueryToSqlString";
 export { removeKeyFromUrl } from "./removeKeyFromUrl";
-export { testConnection } from "./testConnection";
 export { verifyId } from "./verifyId";
 export { countId } from "./countId";
 export { isGraph } from "./isGraph";

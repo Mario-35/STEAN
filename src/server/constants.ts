@@ -5,6 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
+"use strict";
 
 import fs from "fs";
 export let _ready = false;
@@ -19,10 +20,8 @@ export const DOUBLEQUOTE = '"';
 export const QUOTEDCOMA = '",\n"';
 export const API_VERSION = "v1.0";
 export const NODE_ENV = process.env.NODE_ENV ? process.env.NODE_ENV : "production";
-export const TIMESTAMP = (): string => {
-    const d = new Date();
-    return d.toLocaleTimeString();
-};
+export const booleanToString = (input: boolean):string => input === true ? "TRUE" : "FALSE"; 
+export const TIMESTAMP = (): string => { const d = new Date(); return d.toLocaleTimeString(); };
 export const HELMET_CONFIG = Object.freeze({
     defaultSrc: ["'self'"],
     scriptSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com"],

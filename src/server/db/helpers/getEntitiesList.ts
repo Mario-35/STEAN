@@ -13,7 +13,7 @@ import Koa from "koa";
 
 
 export const getEntitiesList = (input: IconfigFile, ctx?: Koa.Context): string[] => (Object.keys(_DB)
-        .filter(e => _DB[e].essai.includes(apiType.base)
-        || (_DB[e].essai.includes(apiType.logged) && ctx && ctx._user.id > 0))
+        .filter(e => _DB[e].essai.includes(apiType.base) || (_DB[e].essai
+        .includes(apiType.logged) && ctx && ctx._user.id > 0))
     );
     

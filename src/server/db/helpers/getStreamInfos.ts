@@ -14,7 +14,7 @@ import { IstreamInfos } from "../../types";
 import { _DB, _STREAM } from "../constants";
 
 export const getStreamInfos = async (conn: Knex | Knex.Transaction, input: JSON): Promise<IstreamInfos | undefined> => {
-    Logs.head("getStreamInfos");
+    Logs.whereIam();
     const stream: _STREAM = input["Datastream"] ? "Datastream" : input["MultiDatastream"] ? "MultiDatastream" : undefined;
     if(!stream) return undefined;
     const streamEntity = getEntityName(stream);

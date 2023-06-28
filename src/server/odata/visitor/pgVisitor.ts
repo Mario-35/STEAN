@@ -2,7 +2,7 @@
 import { _DB } from "../../db/constants";
 import { isGraph, isObservation } from "../../db/helpers";
 import { getEntityName, removeQuotes, returnFormats } from "../../helpers";
-import { IconfigFile, IreturnFormat } from "../../types";
+import { IKeyString, IreturnFormat } from "../../types";
 import { Token } from "../parser/lexer";
 import { Literal } from "../parser/literal";
 import { SQLLiteral } from "../parser/sqlLiteral";
@@ -11,7 +11,7 @@ import koa from "koa";
 import { Logs } from "../../logger";
 import { createGetSql, createPostSql, oDatatoDate } from "./helper";
 import { Knex } from "knex";
-import { messages } from "../../messages/";
+import { errors, msg } from "../../messages/";
 
 export class PgVisitor {
     public options: SqlOptions;
@@ -25,7 +25,7 @@ export class PgVisitor {
     id: bigint | string = BigInt(0);
     parentId: bigint | string = BigInt(0);
     select = "";
-    arrayNames: { [key: string]: string } = {} ;
+    arrayNames: IKeyString = {} ;
     where = "";
     orderby = "";
     blanks: string[] | undefined = undefined;
@@ -44,8 +44,8 @@ export class PgVisitor {
     parameters: unknown[] = [];
     ast: Token;
     showRelations = true;
-    public config: IconfigFile;
-    results: { [key: string]: string } = {};
+    public configName: string;
+    results: IKeyString = {};
     sql = "";
     constructor(options = <SqlOptions>{}) {
         this.options = options;
@@ -83,7 +83,7 @@ export class PgVisitor {
     init(ctx: koa.Context, node: Token) {
         Logs.head("INIT PgVisitor");
         this.limit = ctx._config.nb_page || 200;
-        this.config = ctx._config;
+        this.configName = ctx._config.name;
         
         const temp = this.VisitRessources(node);
         Logs.infos("PgVisitor", temp);
@@ -97,8 +97,8 @@ export class PgVisitor {
         
         if (this.entity.toUpperCase() === "LORA") this.setEntity("Loras");
         if (this.parentEntity) {
-            if (!_DB[this.parentEntity].relations[this.entity]) ctx.throw(40, { detail: messages.errors.invalidPath + this.entity.trim() }); 
-        } else if (!_DB[this.entity]) ctx.throw(404, { detail: messages.errors.invalidPath + this.entity.trim() }); 
+            if (!_DB[this.parentEntity].relations[this.entity]) ctx.throw(40, { detail: msg(errors.invalid, "path") + this.entity.trim() }); 
+        } else if (!_DB[this.entity]) ctx.throw(404, { detail: msg(errors.invalid, "path") + this.entity.trim() }); 
     
     };
 
@@ -238,7 +238,7 @@ export class PgVisitor {
             
             this.select.split(",").filter((e:string) => e.trim() != "").forEach((element:string) => {
                 const test = removeQuotes(element);   
-                if (!cols.includes(test) && test !== "result") ctx.throw(404, { detail: messages.errors.invalidName + test} );   
+                if (!cols.includes(test) && test !== "result") ctx.throw(404, { detail: msg(errors.invalid, "name") + test} );   
             }); 
         }
         const expands: string[] = [];
@@ -251,18 +251,17 @@ export class PgVisitor {
             elems.unshift(this.entity);     
             if (elems[0]) {            
                 if (!Object.keys(_DB[elems[0]].relations).includes(elems[1]) ) ctx.throw(400, { detail:`Invalid expand path ${elems[1]} for ${elems[0]}` });  
-            } else ctx.throw(400, { detail: messages.errors.invalidEntity + elems[0] });  
+            } else ctx.throw(400, { detail: msg(errors.invalid, "entity") + elems[0] });  
         });    
         
         if (isObservation(this.entity) === true && this.splitResult !== undefined && Number(this.parentId) == 0) {
-            ctx.throw(400, { detail: messages.errors.splitNotAllowed }); 
+            ctx.throw(400, { detail: errors.splitNotAllowed }); 
         }
 
         if (this.resultFormat === returnFormats.dataArray && BigInt(this.id) > 0 && !this.parentEntity ) {
-            ctx.throw(400, { detail: messages.errors.dataArrayNotAllowed }); 
+            ctx.throw(400, { detail: errors.dataArrayNotAllowed }); 
 
         }
-        // ctx._log = this.log;
     };
 
     Visit(node: Token, context?: any) {

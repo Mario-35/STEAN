@@ -12,7 +12,7 @@ import { Logs } from "../../logger";
 import { IreturnResult } from "../../types";
 import { serverConfig } from "../../configuration";
 import { hidePasswordInJson } from "../../helpers";
-import { messages } from "../../messages/";
+import { errors } from "../../messages/";
 import { EuserRights } from "../../enums";
 import { _DBADMIN } from "../constants";
 import { ADMIN } from "../../constants";
@@ -24,7 +24,7 @@ import { ADMIN } from "../../constants";
      }
 
      async getAll(): Promise<IreturnResult | undefined> {
-        Logs.class(this.constructor.name, `getAll in ${this.ctx._odata.resultFormat} format`);
+        Logs.whereIam();
         if (this.ctx._user?.PDCUAS[EuserRights.SuperAdmin] === true || this.ctx._user?.PDCUAS[EuserRights.Admin] === true) {
             const temp = await serverConfig.db(ADMIN)
                 .table("user")
@@ -35,14 +35,12 @@ import { ADMIN } from "../../constants";
             return this.createReturnResult({
                 body: temp,
             });       
-        } else this.ctx.throw(401, { code: 401, detail: messages.errors[401] });
+        } else this.ctx.throw(401, { code: 401, detail: errors[401] });
      }
 
      async add(dataInput: object | undefined): Promise<IreturnResult | undefined> {
-        Logs.override(this.constructor.name, "add");
-
-        if (!dataInput) return;
-        return this.createReturnResult({
+        Logs.whereIam(); 
+        if (dataInput) return this.createReturnResult({
             body: await serverConfig.addConfig(dataInput),
         });
     }

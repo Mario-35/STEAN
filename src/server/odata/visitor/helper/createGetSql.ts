@@ -25,7 +25,6 @@ import { PgVisitor } from "../PgVisitor";
             }
         }
     });  
-        
     main.includes.forEach((item) => item.asGetSql());
     main.sql = createQueryString(main, main);
     return main.onlyValue ? main.sql : main.resultFormat.generateSql(main);

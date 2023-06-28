@@ -12,8 +12,8 @@ import { Common } from "./common";
 import { getBigIntFromString, notNull, removeQuotes } from "../../helpers/index";
 import { DOUBLEQUOTE, QUOTEDCOMA, VOIDTABLE } from "../../constants";
 import { Logs } from "../../logger";
-import { IreturnResult } from "../../types";
-import { messages, messagesReplace } from "../../messages/";
+import { IKeyString, IreturnResult } from "../../types";
+import { errors, msg } from "../../messages/";
 import { EdatesType } from "../../enums";
 
 export class Loras extends Common {
@@ -21,18 +21,16 @@ export class Loras extends Common {
     constructor(ctx: koa.Context) {
          super(ctx);
     }
+
     async prepareInputResult(dataInput: object): Promise<object> {
-        Logs.class(this.constructor.name, "prepareInputResult"); 
+        Logs.whereIam(); 
         ["deveui", "sensor_id", "payload_deciphered"].forEach((key: string) => {
             if (dataInput[key]) dataInput[key] = dataInput[key].toUpperCase();
         });
         return dataInput;    
     }
-    // load decoder and decode payload with the code
 
-
-    async decodeLoraValues(knexInstance: Knex | Knex.Transaction, loraDeveui: string, input: JSON): Promise<{[key: string]: string}> {   
-            
+    async decodeLoraValues(knexInstance: Knex | Knex.Transaction, loraDeveui: string, input: JSON): Promise<IKeyString> {               
        Logs.debug("decodeLoraValues", loraDeveui);
        try {
            return await knexInstance(this.DBST.Decoders.table).select("code").whereRaw(`id = (SELECT "decoder_id" FROM "${this.DBST.Loras.table}" WHERE "deveui" = '${loraDeveui}')`).first().then((res: object) => {
@@ -41,15 +39,14 @@ export class Loras extends Common {
                        const F = new Function("input", String(res["code"]));                       
                        return F(input);
                    } catch (error) {
-                       return {"error" : "decoder error"};            
+                       return {"error" : errors.decoderError};            
                    }
-               }
-               return {"error" : "decoder error"};            
+               }          
            });
        } catch (error) {
            Logs.error(error);           
        }
-       return {"error" : "decoder error"};            
+       return {"error" : errors.decoderError};            
    }
 
     createListQuery(input: string[], columnListString: string): string {
@@ -58,32 +55,30 @@ export class Loras extends Common {
     }
 
     async add(dataInput: object, silent?: boolean): Promise<IreturnResult | undefined> {
-        Logs.override(messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));    
+        Logs.whereIam();    
         if (dataInput) dataInput = await this.prepareInputResult(dataInput);
 
         const decodeLoraPayload = async (knexInstance: Knex | Knex.Transaction, loraDeveui: string, input: string): Promise<any> => {
             Logs.debug(`decodeLoraPayload deveui : [${loraDeveui}]`, input);
-            const ErrorMessage = "Decoding Payload error";
             return await knexInstance(this.DBST.Decoders.table).select("code", "nomenclature", "synonym", "dataKeys").whereRaw(`id = (SELECT "decoder_id" FROM "${this.DBST.Loras.table}" WHERE "deveui" = '${loraDeveui}')`).first().then((res: any) => {
-                try {
-                    if (res) {     
+                if (res) {     
+                    try {
                         this.synonym = res.synonym ? res.synonym : {};
                         const F = new Function("input", `${String(res.code)}; const nomenclature = ${JSON.stringify(res.nomenclature)}; return decode(input, nomenclature);`);                   
-                        const temp = F(input);
-                        return temp;
-                    }
-                 } catch (error) {
-                     if (res.dataKeys) { 
-                        let temp: object | undefined = undefined;
-                        res.dataKeys.forEach((key: string) => {
-                            if (dataInput["data"][key]) 
+                        return F(input);
+                    } catch (error) {
+                        if (res.dataKeys) { 
+                            let temp: object | undefined = undefined;
+                            res.dataKeys.forEach((key: string) => {
+                                if (dataInput["data"][key]) 
                                 temp = { messages : [ {"measurementValue" : dataInput["data"][key]}] }; 
-                        });
-                        if (temp) return temp;
-                     }
-                     return {"error" : ErrorMessage};         
-                 }
-                 return {"error" : ErrorMessage};            
+                            });
+                            if (temp) return temp;
+                        }
+                        return {"error" : errors.DecodingPayloadError};         
+                    }
+                }
+                return {"error" : errors.DecodingPayloadError};            
             });
         };
 
@@ -96,8 +91,8 @@ export class Loras extends Common {
         if (notNull(dataInput["MultiDatastream"])) {
            if (!notNull(dataInput["deveui"])) {
                if (silent) 
-                    return this.createReturnResult({ body: messages.errors.deveuiMessage });
-                    else this.ctx.throw(400, { code: 400, detail: messages.errors.deveuiMessage });
+                    return this.createReturnResult({ body: errors.deveuiMessage });
+                    else this.ctx.throw(400, { code: 400, detail: errors.deveuiMessage });
            }
            return await super.add(dataInput);
         }
@@ -105,16 +100,16 @@ export class Loras extends Common {
         if (notNull(dataInput["Datastream"])) {
             if (!notNull(dataInput["deveui"])) {
                if (silent) 
-                    return this.createReturnResult({ body: messages.errors.deveuiMessage });
-                    else this.ctx.throw(400, { code: 400, detail: messages.errors.deveuiMessage });
+                    return this.createReturnResult({ body: errors.deveuiMessage });
+                    else this.ctx.throw(400, { code: 400, detail: errors.deveuiMessage });
            }
            return await super.add(dataInput);
         }
         
         if (!notNull(dataInput["deveui"])) {
             if (silent) 
-                return this.createReturnResult({ body: messages.errors.deveuiMessage });
-                else this.ctx.throw(400, { code: 400, detail: messages.errors.deveuiMessage });
+                return this.createReturnResult({ body: errors.deveuiMessage });
+                else this.ctx.throw(400, { code: 400, detail: errors.deveuiMessage });
         }
         
         if (notNull(dataInput["payload_deciphered"])) {
@@ -143,7 +138,7 @@ export class Loras extends Common {
             const tempSql = await Common.dbContext.raw(`SELECT id, _default_foi, thing_id FROM "${this.DBST.Datastreams.table}" WHERE "${this.DBST.Datastreams.table}".id = (SELECT "${this.DBST.Loras.table}"."datastream_id" FROM "${this.DBST.Loras.table}" WHERE "${this.DBST.Loras.table}"."deveui" = '${dataInput["deveui"]}')`);
             datastream = tempSql.rows[0];
            if (!datastream) {
-               const errorMessage = messages.errors.noStreamDeveui + dataInput["deveui"];
+               const errorMessage = errors.noStreamDeveui + dataInput["deveui"];
                if (silent) return this.createReturnResult({ body: errorMessage });
                else this.ctx.throw(404, { code: 404, detail: errorMessage });
            }
@@ -157,15 +152,15 @@ export class Loras extends Common {
 
         if (!notNull(dataInput["formatedDatas"])) {
             if (silent) 
-                 return this.createReturnResult({ body: messages.errors.dataMessage });
-                 else this.ctx.throw(400, { code: 400, detail: messages.errors.dataMessage });
+                 return this.createReturnResult({ body: errors.dataMessage });
+                 else this.ctx.throw(400, { code: 400, detail: errors.dataMessage });
         }
         
         dataInput["date"] = getDate();
         if (!dataInput["date"]) {
             if (silent) 
-                return this.createReturnResult({ body: messages.errors.noValidDate });
-                else this.ctx.throw(400, { code: 400, detail: messages.errors.noValidDate });
+                return this.createReturnResult({ body: errors.noValidDate });
+                else this.ctx.throw(400, { code: 400, detail: errors.noValidDate });
             }
             
         if (multiDatastream) { 
@@ -190,7 +185,7 @@ export class Loras extends Common {
     
             // If all datas null
             if (Object.values(listOfSortedValues).filter((word) => word != null).length < 1) {
-                const errorMessage = `${messages.errors.dataNotCorresponding} [${multiDatastream.keys}]`;
+                const errorMessage = `${errors.dataNotCorresponding} [${multiDatastream.keys}]`;
                 if (silent) return this.createReturnResult({ body: errorMessage });
                 else this.ctx.throw(400, { code: 400, detail: errorMessage });
             }
@@ -203,7 +198,7 @@ export class Loras extends Common {
     
                 Logs.debug("data : Keys", `${tempLength} : ${multiDatastream.keys.length}`);
                 if (tempLength != multiDatastream.keys.length) {
-                    const errorMessage = messagesReplace(messages.errors.sizeListKeys, [String(tempLength), multiDatastream.keys.length]);
+                    const errorMessage = msg(errors.sizeListKeys, String(tempLength), multiDatastream.keys.length);
                     if (silent) return this.createReturnResult({ body: errorMessage });
                     else this.ctx.throw(400, { code: 400, detail: errorMessage });
                    }
@@ -281,8 +276,8 @@ export class Loras extends Common {
                         });
                     } else {                    
                        //  return await duplicate(tempResult.duplicate);
-                        if (silent) return this.createReturnResult({ body: messages.errors.observationExist });
-                        else this.ctx.throw(409, { code: 409, detail: messages.errors.observationExist, link: `${this.ctx._odata.options.rootBase}Observations(${[tempResult.duplicate]})` });
+                        if (silent) return this.createReturnResult({ body: errors.observationExist });
+                        else this.ctx.throw(409, { code: 409, detail: errors.observationExist, link: `${this.ctx._odata.options.rootBase}Observations(${[tempResult.duplicate]})` });
                     }
                 });
         } else if (datastream) { 
@@ -296,8 +291,8 @@ export class Loras extends Common {
    
            if (searchFOI["rows"].length < 1) {
                if (silent) 
-                    return this.createReturnResult({ body: messages.errors.noFoi });
-                    else this.ctx.throw(400, { code: 400, detail: messages.errors.noFoi });
+                    return this.createReturnResult({ body: errors.noFoi });
+                    else this.ctx.throw(400, { code: 400, detail: errors.noFoi });
            }
 
            const value = dataInput["decodedPayload"]["measurementValue"] 
@@ -308,8 +303,8 @@ export class Loras extends Common {
 
             if (!value) {
                 if (silent) 
-                    return this.createReturnResult({ body: messages.errors.noValue });
-                    else this.ctx.throw(400, { code: 400, detail: messages.errors.noValue });
+                    return this.createReturnResult({ body: errors.noValue });
+                    else this.ctx.throw(400, { code: 400, detail: errors.noValue });
             }
             
            const insertObject = {
@@ -373,15 +368,15 @@ export class Loras extends Common {
                        });
                    } else {                    
                       //  return await duplicate(tempResult.duplicate);
-                       if (silent) return this.createReturnResult({ body: messages.errors.observationExist });
-                       else this.ctx.throw(409, { code: 409, detail: messages.errors.observationExist, link: `${this.ctx._odata.options.rootBase}Observations(${[tempResult.duplicate]})` });
+                       if (silent) return this.createReturnResult({ body: errors.observationExist });
+                       else this.ctx.throw(409, { code: 409, detail: errors.observationExist, link: `${this.ctx._odata.options.rootBase}Observations(${[tempResult.duplicate]})` });
                    }
                });
        }
     }
 
     async update(idInput: bigint | string, dataInput: object | undefined): Promise<IreturnResult | undefined> {
-        Logs.override(messagesReplace(messages.infos.classConstructor, [this.constructor.name, `update`]));
+        Logs.whereIam(); 
         return undefined;
     }
 }

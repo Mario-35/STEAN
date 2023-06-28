@@ -13,13 +13,13 @@ import fs from "fs";
 import koa from "koa";
 import { checkPassword, emailIsValid, testRoutes } from "./helpers";
 import { Logs } from "../logger";
-import { IreturnResult, Iuser } from "../types";
+import { IKeyString, IreturnResult, Iuser } from "../types";
 import { DefaultState, Context } from "koa";
 import { CreateHtmlView } from "../views/helpers/CreateHtmlView";
 import { createIqueryFromContext } from "../views/helpers/";
 import { createQueryHtml } from "../views/query";
 import { createOdata } from "../odata";
-import { messages } from "../messages";
+import { errors, infos, msg } from "../messages";
 import { isAllowedTo } from ".";
 import { EuserRights } from "../enums";
 import { loginUser } from "../authentication";
@@ -38,7 +38,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
                     if (ctx.request.header.accept && ctx.request.header.accept.includes("text/html")) ctx.redirect(`${ctx._rootName}Status`);
                     else
                         ctx.body = {
-                            message: messages.infos.loginOk,
+                            message: infos.loginOk,
                             user: user.username,
                             token: user.token
                         };
@@ -51,32 +51,32 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
         case "REGISTER":
             const body = ctx.request.body;
             const isObject = typeof body != "string";
-            const why: {[key: string]: string} = {};
+            const why: IKeyString = {};
             // Username
             if (isObject && body["username"].trim() === "") {
-                why["username"] = messages.errors.emptyUsername;
+                why["username"] = msg(errors.empty, "username");
             } else {
                 const user = await serverConfig.db(ADMIN).table("user").select("username").where({ username: ctx.request.body["username"] }).first();
-                if (user) why["username"] = messages.errors.alreadyPresent;
+                if (user) why["username"] = errors.alreadyPresent;
             }
             // Email
             if (isObject && body["email"].trim() === "") {
-                why["email"] = messages.errors.emptyEmail;
+                why["email"] = msg(errors.empty, "email");
             } else {
-                if (emailIsValid(body["email"]) === false) why["email"] = messages.errors.invalidEmail;
+                if (emailIsValid(body["email"]) === false) why["email"] = msg(errors.invalid, "email");
             }
             // Password
             if (isObject && body["password"].trim() === "") {
-                why["password"] = messages.errors.emptyPass;
+                why["password"] = msg(errors.empty, "password");          
             }
             // Repeat password
             if (isObject && (body["repeat"] as string).trim() === "") {
-                why["repeat"] = messages.errors.emptyRepeatPass;
+                why["repeat"] = msg(errors.empty, "repeat password");
             } else {
                 if (body["password"] != body.repeat) {
-                    why["repeat"] = messages.errors.differentPass;
+                    why["repeat"] = errors.passowrdDifferent;
                 } else {
-                    if (checkPassword(body["password"]) === false) why["password"] = messages.errors.invalidPass;
+                    if (checkPassword(body["password"]) === false) why["password"] = msg(errors.invalid, "password");
                 }
             }
 
@@ -124,7 +124,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
             } else ctx.throw(400);
         } else if (ctx.request.type.startsWith("multipart/form-data")) {
             // If upload datas            
-            const getDatas = async (): Promise<{[key: string]: string}> => {
+            const getDatas = async (): Promise<IKeyString> => {
                 Logs.head("getDatas ...");
                 return new Promise(async (resolve, reject) => {
                     await upload(ctx)
@@ -163,7 +163,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
             }
         } else {
             // payload is malformed
-            ctx.throw(400, { details: messages.errors.payloadIsMalformed });
+            ctx.throw(400, { details: errors.payloadIsMalformed });
         }
     } else {
         ctx.throw(401);
@@ -186,7 +186,7 @@ protectedRoutes.patch("/(.*)", async (ctx) => {
                     ctx.body = returnValue.body;
                 }
             } else {
-                ctx.throw(400, { detail: messages.errors.idRequired });
+                ctx.throw(400, { detail: errors.idRequired });
             }
         } else {
             ctx.throw(404);
@@ -204,12 +204,12 @@ protectedRoutes.delete("/(.*)", async (ctx) => {
         if (ctx._odata) {
             Logs.head("DELETE");
             const objectAccess = new apiAccess(ctx);
-            if (!ctx._odata.id) ctx.throw(400, { detail: messages.errors.idRequired });
+            if (!ctx._odata.id) ctx.throw(400, { detail: errors.idRequired });
             const returnValue = await objectAccess.delete(ctx._odata.id);
             if (returnValue && returnValue.id && returnValue.id > 0) {
                 returnFormats.json.type;
                 ctx.status = 204;
-            } else ctx.throw(404, { code: 404, detail: messages.errors.noId + ctx._odata.id });
+            } else ctx.throw(404, { code: 404, detail: errors.noId + ctx._odata.id });
         } else {
             ctx.throw(404);
         }

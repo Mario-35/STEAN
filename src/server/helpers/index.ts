@@ -20,6 +20,7 @@ export { cleanStringComma } from "./cleanStringComma";
 export { getBigIntFromString } from "./getBigIntFromString";
 export { getEntityName } from "./getEntityName";
 export { hidePasswordInJson } from "./hidePasswordInJson";
+export { hideKeysInJson } from "./hideKeysInJson";
 export { getUrlId } from "./getUrlId";
 export { getUrlKey } from "./getUrlKey";
 export { setConfigToCtx } from "./setConfigToCtx";

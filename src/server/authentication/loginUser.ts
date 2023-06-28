@@ -32,6 +32,6 @@ export const loginUser = async (ctx: koa.Context): Promise<Iuser | undefined> =>
                 return undefined;
             });
     } else {
-        console.log("c'est ici que ca se passe");
+        ctx.throw(401);
     }
 };

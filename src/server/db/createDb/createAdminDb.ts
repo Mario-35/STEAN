@@ -12,21 +12,20 @@ import { asyncForEach } from "../../helpers";
 import { Logs } from "../../logger";
 import { _DBADMIN, _RIGHTS } from "../constants";
 import { ADMIN } from "../../constants";
+import { IKeyString } from "../../types";
  
-export const createAdminDB = async(configName: string): Promise<{ [key: string]: string }> => {
+export const createAdminDB = async(): Promise<IKeyString> => {
     Logs.head("createAdminDB", "createDatabase");
-
+    const config = serverConfig.configs[ADMIN].pg;
     // init result
-    const config = serverConfig.configs[configName].pg;
     const returnValue = { "Start create Database": config.database };
-    // create blank DATABASE
 
     await serverConfig.db(ADMIN)
-        .raw(`CREATE Database ${config.database}`)
+        .raw(`CREATE DATABASE ${config.database}`)
         .then(async () => {
             returnValue["create Admin DB"] = "✔";
             returnValue["User"] = await serverConfig.db(ADMIN)
-                .raw(`SELECT count(*) FROM pg_user WHERE usename = '${config.user}';`)
+                .raw(`SELECT COUNT(*) FROM pg_user WHERE usename = '${config.user}';`)
                 .then(async (res: any) => {
                     if (res.rowCount < 1) {
                         Logs.infoSystem("Create User", config.user);
@@ -48,9 +47,7 @@ export const createAdminDB = async(configName: string): Promise<{ [key: string]:
                 });
         })
         .catch((err: Error) => err.message);
-
-    // create tables   
-
+    // loop to create each admin table
     await asyncForEach(Object.keys(_DBADMIN), async (keyName: string) => {
         await createTable(serverConfig.db(ADMIN), _DBADMIN[keyName], undefined);
     });

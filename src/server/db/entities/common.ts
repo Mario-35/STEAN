@@ -15,9 +15,10 @@ import { Ientity, IreturnResult } from "../../types";
 import { createDbGraph, knexQueryToSqlString, removeKeyFromUrl, verifyId } from "../helpers";
 import { serverConfig } from "../../configuration";
 import { IGraphDatas } from "../helpers/createDbGraph";
-import { messages } from "../../messages/";
+import { errors } from "../../messages/";
 import { _DBFILTERED } from "../constants";
 
+// Connon class
 export class Common {
     readonly ctx: koa.Context;
     static dbContext: Knex | Knex.Transaction;
@@ -26,7 +27,7 @@ export class Common {
     public DBST: { [key: string]: Ientity; };
 
     constructor(ctx: koa.Context) {
-        Logs.class(this.constructor.name, messages.infos.constructor);
+        Logs.whereIam();
         this.ctx = ctx;
         Common.dbContext = serverConfig.db(ctx._config.name);
         this.nextLinkBase = removeKeyFromUrl(`${this.ctx._odata.options.rootBase}${this.ctx.href.split(`${ctx._config.apiVersion}/`)[1]}`, ["top", "skip"]);
@@ -34,6 +35,7 @@ export class Common {
         this.DBST = _DBFILTERED(this.ctx);
     }
 
+    // Get a key value
     getKeyValue(input: object, key: string): string | undefined {
         let result: string | undefined = undefined;
         if (input[key]) {
@@ -42,7 +44,7 @@ export class Common {
         }
         return result;
     }
-
+    // Get a list of key values
     getKeysValue(input: object, keys: string[]): string | undefined {
         keys.forEach(key => {
             const temp = this.getKeyValue(input, key);
@@ -64,7 +66,7 @@ export class Common {
 
     // create a blank ReturnResult
     createReturnResult(args: Record<string, unknown>): IreturnResult {
-        Logs.class(this.constructor.name, "createReturnResult");
+        Logs.whereIam();
         return {
             ...{
                 id: undefined,
@@ -106,8 +108,9 @@ export class Common {
         return input;
     };
 
+    // Return all items
     async getAll(): Promise<IreturnResult | undefined> {
-        Logs.class(this.constructor.name, `getAll in ${this.ctx._odata.resultFormat} format`);
+        Logs.whereIam();
         // create query
         const sql = this.ctx._odata.asGetSql();
 
@@ -136,8 +139,9 @@ export class Common {
             .catch((err: Error) => this.ctx.throw(400, { code: 400,detail: err.message }));
     }
 
+    // Return one item
     async getSingle(idInput: bigint | string): Promise<IreturnResult | undefined> {
-        Logs.class(this.constructor.name, `getSingle [${idInput}]`);
+        Logs.whereIam();
         // create query
         const sql = this.ctx._odata.asGetSql();
 
@@ -167,8 +171,9 @@ export class Common {
             .catch((err: Error) => this.ctx.throw(400, { code: 400, detail: err.message }));
     }
 
+    // Post an item
     async add(dataInput: object | undefined): Promise<IreturnResult | undefined> {        
-        Logs.class(this.constructor.name, "add");
+        Logs.whereIam();
         
         dataInput = this.formatDataInput(dataInput);
         
@@ -197,14 +202,15 @@ export class Common {
             });
     }
 
+    // Update an item
     async update(idInput: bigint | string, dataInput: object | undefined): Promise<IreturnResult | undefined> {
-        Logs.class(this.constructor.name, "update");
+        Logs.whereIam();
 
-        // if (!dataInput) this.ctx.throw(400, { code: 400, detail: messages.errors.noDataSend + "update" });
+        // if (!dataInput) this.ctx.throw(400, { code: 400, detail: errors.noDataSend + "update" });
 
         const testIfId = await verifyId(Common.dbContext, BigInt(idInput), this.DBST[this.constructor.name].table);
 
-        if (testIfId === false) this.ctx.throw(404, { code: 404, detail: messages.errors.noId + idInput });
+        if (testIfId === false) this.ctx.throw(404, { code: 404, detail: errors.noId + idInput });
 
         dataInput = this.formatDataInput(dataInput);
         if (!dataInput) return;
@@ -229,8 +235,9 @@ export class Common {
             });
     }
 
+    // Delete an item
     async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {
-        Logs.class(this.constructor.name, "delete");
+        Logs.whereIam();
         // create query
         const sql = `DELETE FROM "${this.DBST[this.constructor.name].table}" WHERE id = ${idInput} RETURNING id`;
         // build return result

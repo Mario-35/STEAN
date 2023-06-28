@@ -19,8 +19,8 @@ import path from "path";
 import { HELMET_CONFIG, APP_KEY, TEST, ADMIN } from "./constants";
 import { serverConfig } from "./configuration";
 import { PgVisitor } from "./odata";
-import { IconfigFile, IuserToken } from "./types";
-import { messages } from "./messages";
+import { IconfigFile, IKeyString, IuserToken } from "./types";
+import { infos } from "./messages";
 import { Logs } from "./logger";
 
 // Extend koa context (no ts test on it)
@@ -30,7 +30,7 @@ declare module "koa" {
         _linkBase: string;
         _config: IconfigFile;
         _odata: PgVisitor;
-        _datas: {[key: string]: string};
+        _datas: IKeyString;
         _user: IuserToken;
         _addToLog: boolean;
     }
@@ -74,6 +74,6 @@ app.use(protectedRoutes.routes());
 export const server = isTest()
     ? app.listen(serverConfig.configs[TEST].port, async () => {   
         serverConfig.addToServer[ADMIN];     
-        Logs.booting(messages.infos.serverListening, serverConfig.configs[TEST].port);
+        Logs.booting(infos.serverListening, serverConfig.configs[TEST].port);
         serverConfig.createKnexConnectionFromConfigName(TEST);
-    }) : serverConfig.start();
+    }) : serverConfig.init();

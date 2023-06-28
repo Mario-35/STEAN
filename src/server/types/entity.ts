@@ -6,7 +6,7 @@
  *
  */
 
-import { IentityColumn, IentityRelation } from ".";
+import { IentityColumn, IentityRelation, IKeyString } from ".";
 import { apiType } from "../enums";
 
 export interface Ientity {
@@ -19,8 +19,8 @@ export interface Ientity {
     readonly columns: IentityColumn;
     readonly canPost: boolean;
     readonly relations: { [key: string]: IentityRelation };
-    readonly constraints?: {[key: string]: string};
-    readonly indexes?: {[key: string]: string};
+    readonly constraints?: IKeyString;
+    readonly indexes?: IKeyString;
     readonly after?: string;
     readonly essai: apiType[];
 }

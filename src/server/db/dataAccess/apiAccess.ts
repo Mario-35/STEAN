@@ -12,9 +12,9 @@ import koa from "koa";
 import { Logs } from "../../logger";
 import { IreturnResult } from "../../types";
 import { getEntityName } from "../../helpers";
-import { messages } from "../../messages";
-// import { serverConfig } from "../../configuration";
+import { errors, msg } from "../../messages";
 
+// Interface API
 export class apiAccess {
     readonly myEntity: Common | undefined;
     readonly ctx: koa.Context;
@@ -24,38 +24,38 @@ export class apiAccess {
         const entityName = getEntityName(this.ctx._odata.entity);
         if (entityName && entityName in entities) {
             this.myEntity = new entities[(this.ctx, entityName)](ctx);
-            if (this.myEntity === undefined) Logs.error(`${messages.errors.entity} : ${entityName}`);
-            else Logs.class("constructor apiAccess", "Ok");
-        } else Logs.error(`${messages.errors.entity} : ${entityName}`);
+            if (this.myEntity === undefined) Logs.error(`${ msg(errors.invalid, "entity") } : ${entityName}`);
+            else Logs.whereIam();
+        } else Logs.error(`${ msg(errors.invalid, "entity") } : ${entityName}`);
     }
 
     formatDataInput(input: object | undefined): object | undefined {
-        Logs.class(this.constructor.name, "formatDataInput");
+        Logs.whereIam();
         return this.myEntity ? this.myEntity.formatDataInput(input) : input;
     }
 
     async getAll(): Promise<IreturnResult | undefined> {
-        Logs.class(this.constructor.name, "getAll");
+        Logs.whereIam();
         if (this.myEntity) return await this.myEntity.getAll();
     }
 
     async getSingle(idInput: bigint | string, propertyName?: string, onlyValue?: boolean): Promise<IreturnResult | undefined> {
-        Logs.class(this.constructor.name, "getSingle");
+        Logs.whereIam();
         if (this.myEntity) return await this.myEntity.getSingle(idInput);
     }
 
     async add(): Promise<IreturnResult | undefined> {
-        Logs.class(this.constructor.name, "add");
+        Logs.whereIam();
         if (this.myEntity) return await this.myEntity.add(this.ctx.request.body);
     }
 
     async update(idInput: bigint | string): Promise<IreturnResult | undefined> {
-        Logs.class(this.constructor.name, "update");
+        Logs.whereIam();
         if (this.myEntity) return await this.myEntity.update(idInput, this.ctx.request.body);
     }
 
     async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {
-        Logs.class(this.constructor.name, "delete");
+        Logs.whereIam();
         if (this.myEntity) return await this.myEntity.delete(idInput);
     }
 }

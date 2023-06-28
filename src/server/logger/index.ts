@@ -8,5 +8,6 @@
 
 import { Logger } from "./logger";
 export { writeToLog } from "./writeToLog";
+
 export const Logs = new Logger();
 

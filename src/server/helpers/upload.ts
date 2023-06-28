@@ -13,6 +13,7 @@ import util from "util";
 import fs from "fs";
 import koa from "koa";
 import { Logs } from "../logger";
+import { IKeyString } from "../types";
 
 /**
  *
@@ -20,8 +21,8 @@ import { Logs } from "../logger";
  * @returns KeyString
  */
 
-export const upload = (ctx: koa.Context): Promise<{[key: string]: string}> => {
-    const data: {[key: string]: string} = {};
+export const upload = (ctx: koa.Context): Promise<IKeyString> => {
+    const data:IKeyString = {};
     return new Promise(async (resolve, reject) => {
         const uploadPath = "./upload";
         const allowedExtName = ["csv", "txt", "json"];
@@ -33,8 +34,9 @@ export const upload = (ctx: koa.Context): Promise<{[key: string]: string}> => {
             });
         }
 
+        // create object
         const busboy = new Busboy({ headers: ctx.req.headers });
-
+        // stream 
         busboy.on("file", (fieldname, file, filename) => {
             const extname = path.extname(filename).substring(1);
             if (!allowedExtName.includes(extname)) {
@@ -56,18 +58,22 @@ export const upload = (ctx: koa.Context): Promise<{[key: string]: string}> => {
                 });
             }
         });
+
         busboy.on("field", (fieldname, value) => {
             data[fieldname] = value;
         });
+        // catch error
         busboy.on("error", (error: Error) => {
             Logs.error(error.message);
             data.state = "ERROR";
             reject(error);
         });
+        // END
         busboy.on("finish", () => {
             data.state = "DONE";
             resolve(data);
         });
+
         ctx.req.pipe(busboy);
     });
 };

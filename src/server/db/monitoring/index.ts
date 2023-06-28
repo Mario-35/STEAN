@@ -12,7 +12,7 @@ import { asyncForEach } from "../../helpers";
 import { Logs } from "../../logger";
 
 export const getMetrics = async (name: string): Promise<string[] | {[key: string] : any}> => {
-    Logs.head("getMetrics");
+    Logs.whereIam();
     const sqlTemp = await serverConfig.db(ADMIN).raw(`SELECT split_part(split_part((SELECT version()), ',', 1), ' ', 2) as version`);
     const dbVersion = sqlTemp["rows"][0]["version"];
     const username = 'postgres';    

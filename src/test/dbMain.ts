@@ -12,16 +12,16 @@ const config = require("../server/configuration/test.json");
 export const dbTest = knex({
     client: "pg",
     connection: {
-        host: config[TEST].pg_host,
-        user: config[TEST].pg_user,
-        password: config[TEST].pg_password,
+        host: config["test"].pg_host,
+        user: config["test"].pg_user,
+        password: config["test"].pg_password,
         database: "test",
-        port: config[TEST].pg_port
+        port: config["test"].pg_port
     },
     pool: {
         min: 0,
-        log: (msg: string, level: string) => {
-            console.log(`${level} : ${msg}`);
+        log: (puduq: string, level: string) => {
+            console.log(`${level} : ${puduq}`);
         }
     }
 });

@@ -7,6 +7,7 @@
  */
 
 import koa from "koa";
+import { IKeyString } from "../types";
 
 /**
  *
@@ -14,7 +15,7 @@ import koa from "koa";
  * @returns string or undefined
  */
 
-export const configCtx = (ctx: koa.Context): {[key: string]: string} => {
+export const configCtx = (ctx: koa.Context):IKeyString => {
     return {
         "_linkBase": `"${ctx._linkBase}"`,
         "name": `"${ctx._config.name}"`,

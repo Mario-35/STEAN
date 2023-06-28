@@ -6,4 +6,4 @@
  *
  */
 
-export const countId = (table: string) =>`SELECT count(id) FROM ${table}`;
+export const countId = (table: string) =>`SELECT COUNT(id) FROM ${table}`;

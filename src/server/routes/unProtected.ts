@@ -14,18 +14,19 @@ import fs from "fs";
 import { Logs } from "../logger";
 import { IreturnResult } from "../types";
 import { EuserRights } from "../enums";
-import { ADMIN, API_VERSION, _ready } from "../constants";
+import { ADMIN, API_VERSION, TEST, _ready } from "../constants";
 import { createQueryHtml } from "../views/query";
 import { CreateHtmlView, createIqueryFromContext, } from "../views/helpers/";
 import { testRoutes } from "./helpers";
 import { DefaultState, Context } from "koa";
 import { createOdata } from "../odata";
-import { messages } from "../messages";
+import { infos, } from "../messages";
 import { isAdmin, isAllowedTo } from ".";
 import { getMetrics } from "../db/monitoring";
 import { decodeToken, ensureAuthenticated, getAuthenticatedUser } from "../authentication";
 import { createAdminHtml } from "../views/admin";
 import { serverConfig } from "../configuration";
+import { createDatabase } from "../db/createDb";
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 
 // ALl others
@@ -79,7 +80,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             if (ctx.request.header.accept && ctx.request.header.accept.includes("text/html")) ctx.redirect(`${ctx._rootName}login`);
             else ctx.status = 200;
             ctx.body = {
-                message: messages.infos.logoutOk
+                message: infos.logoutOk
             };
             return;
 
@@ -185,7 +186,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         case "CREATEDB":
             // create DB test 
             Logs.head("GET createDB");
-            const returnValue = await serverConfig.createDBTest();                    
+            const returnValue = await createDatabase(TEST);                     
             if (returnValue) {
                 ctx.status = 201;
                 ctx.body = returnValue;
@@ -198,7 +199,10 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         case "REMOVEDBTEST":
             // create DB test 
             Logs.head("GET remove DB test");
-            const returnDel = await serverConfig.removeTests();                 
+            const returnDel = await serverConfig.db(ADMIN).raw(`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'test';`).then(async () => {
+                                                            await serverConfig.db(ADMIN).raw("DROP DATABASE IF EXISTS test");
+                                                            return true;
+                                                        });                
             if (returnDel) {
                 ctx.status = 204;
                 ctx.body = returnDel;

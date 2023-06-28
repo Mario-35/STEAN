@@ -19,7 +19,7 @@ export interface IGraphDatas {
 }
 
 export const createDbGraph = (input: JSON, mainTitle: string): IGraphDatas | undefined => {
-    Logs.class("createDbGraph");
+    Logs.whereIam();
     if (input)
         try {
             const multi = typeof input[0]["result"] === "object" && input[0]["result"] != null;
@@ -37,13 +37,18 @@ export const createDbGraph = (input: JSON, mainTitle: string): IGraphDatas | und
 
             Object(input).forEach((inputElement: JSON) => {
                 if (multi) {
-                    keys.forEach(key => {returnResult.values[key].push(inputElement["result"] && inputElement["result"][key] ? inputElement["result"][key] : null);});
+                    keys.forEach(key => {
+                        returnResult.values[key].push(inputElement["result"] && inputElement["result"][key] 
+                            ? inputElement["result"][key] 
+                            : null);
+                    });
                     returnResult.ids.push(inputElement["id"]);
                     returnResult.dates.push(inputElement["date"]);
                 } else {
                     returnResult.ids.push(inputElement["id"]);
                     returnResult.dates.push(inputElement["date"]);
-                    returnResult.values["result"].push(inputElement["result"]);}
+                    returnResult.values["result"].push(inputElement["result"]);
+                }
             });
             return returnResult;
         } catch (error) {

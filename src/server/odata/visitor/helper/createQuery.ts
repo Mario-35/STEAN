@@ -17,15 +17,14 @@ import { PgVisitor } from "../PgVisitor";
 
 
 export function createQueryString(main: PgVisitor, element: PgVisitor): string { 
-    Logs.head("createQueryString");  
-    const tempIpgQuery = createpgQuery(main, element);
+    Logs.whereIam();  
+    const tempIpgQuery = createPgQuery(main, element);
     if (!tempIpgQuery) return "ERROR";
-    const sql = createSql(tempIpgQuery);
-    return sql;
+    return createSql(tempIpgQuery);
 }
 
-export function createpgQuery(main: PgVisitor, element: PgVisitor): IpgQuery | undefined { 
-    Logs.head("createpgQuery");  
+export function createPgQuery(main: PgVisitor, element: PgVisitor): IpgQuery | undefined { 
+    Logs.whereIam();  
     // get the name of the entity
     const realEntity = element.relation ? element.relation : element.getEntity() ;
     if (realEntity) {

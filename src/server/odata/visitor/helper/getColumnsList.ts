@@ -6,6 +6,7 @@
  *
  */
 
+import { serverConfig } from "../../../configuration";
 import { _DB } from "../../../db/constants";
 import { columnList, isCsvOrArray, isGraph, isObservation } from "../../../db/helpers";
 import { getEntityName, goodNameForPostgres, removeQuotes } from "../../../helpers";
@@ -40,7 +41,7 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
             elem = removeQuotes(elem);
             if (main.interval) main.addToBlanks(elem);  
             if (tempEntity.columns.hasOwnProperty(elem)) {  
-                const column = main.config.lora === false && tempEntity.columns[elem].alias_lora 
+                const column = serverConfig.configs[main.configName].lora === false && tempEntity.columns[elem].alias_lora 
                             ? tempEntity.columns[elem].alias_lora ||`"${elem}"` 
                             : tempEntity.columns[elem].alias ||`"${elem}"`;
                 if (main.id) returnValue.push(column.replace(/$ID+/g, main.id.toString()) );

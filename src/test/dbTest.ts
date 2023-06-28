@@ -21,8 +21,8 @@ export const dbTest = knex({
     },
     pool: {
         min: 0,
-        log: (msg: string, level: string) => {
-            console.log(`${level} : ${msg}`);
+        log: (puduq: string, level: string) => {
+            console.log(`${level} : ${puduq}`);
         }
     }
 });

@@ -12,10 +12,12 @@ import { Logs } from "../../logger";
 import { IcsvColumn, IcsvFile, IreturnResult, IstreamInfos } from "../../types";
 import { getStreamInfos, streamCsvFileInPostgreSql } from "../helpers";
 import { asyncForEach } from "../../helpers";
-import { messages, messagesReplace } from "../../messages/";
+import { errors, msg } from "../../messages/";
 import { QUOTEDCOMA } from "../../constants";
 import { EdatesType, EobservationType } from "../../enums";
 import util from "util";
+
+// TODOCLEAN
 
 
 export class CreateObservations extends Common {
@@ -77,14 +79,13 @@ export class CreateObservations extends Common {
     }
     
     async add(dataInput: JSON): Promise<IreturnResult | undefined> {
-        Logs.override(messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));  
-          
+        Logs.whereIam(); 
         const returnValue: string[] = [];
         let total = 0;
         // verify is there JSON data
         if (this.ctx._datas) {
             const datasJson = JSON.parse(this.ctx._datas["datas"]);
-            if (!datasJson["columns"]) this.ctx.throw(404, { code: 404, detail: messages.errors.noColumn });
+            if (!datasJson["columns"]) this.ctx.throw(404, { code: 404, detail: errors.noColumn });
             const myColumns: IcsvColumn[] = [];
             const streamInfos: IstreamInfos[] = [];
             await asyncForEach(    
@@ -97,7 +98,7 @@ export class CreateObservations extends Common {
                             column: key,
                             stream: tempStreamInfos
                         });
-                    } else this.ctx.throw(404, messagesReplace(messages.errors.noValidStream, [util.inspect(datasJson["columns"][key], { showHidden: false, depth: null, colors: false })]));
+                    } else this.ctx.throw(404, msg(errors.noValidStream, util.inspect(datasJson["columns"][key], { showHidden: false, depth: null, colors: false })));
                   }
               );
               
@@ -128,7 +129,7 @@ export class CreateObservations extends Common {
             });
         } else { /// classic Create
             const dataStreamId = await getStreamInfos(Common.dbContext, dataInput);
-            if (!dataStreamId) this.ctx.throw(404, { code: 404, detail: messages.errors.noStream}); 
+            if (!dataStreamId) this.ctx.throw(404, { code: 404, detail: errors.noStream}); 
             else {
                 await asyncForEach(dataInput["dataArray"], async (elem: string[]) => {
                     const keys = [`"${dataStreamId.type?.toLowerCase()}_id"`].concat(this.createListColumnsValues("COLUMNS", dataInput["components"], dataStreamId.observationType));

@@ -4,7 +4,10 @@
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
- */
+ */  
+
+
+// TODOCLEAN
 
 import { Knex } from "knex";
 import koa from "koa";
@@ -14,7 +17,7 @@ import { IcsvColumn, IcsvFile, IreturnResult } from "../../types";
 import { createColumnHeaderName} from "../helpers";
 import copyFrom from "pg-copy-streams";
 import fs from "fs";
-import { messages, messagesReplace } from "../../messages/";
+import { errors, infos, msg } from "../../messages/";
 
 
 // import { db } from "..";
@@ -41,11 +44,9 @@ export class CreateFile extends Common {
     streamCsvFileInPostgreSqlFileInDatastream = async (ctx: koa.Context, knex: Knex | Knex.Transaction, paramsFile: IcsvFile): Promise<IreturnResult | undefined> => {
         Logs.head("streamCsvFileInPostgreSqlFileInDatastream");
         let returnValue: IreturnResult | undefined = undefined;
-
         const headers = await createColumnHeaderName(paramsFile.filename);
-        Logs.debug("streamCsvFileInPostgreSqlFileInDatastream");
         
-        if (!headers) { ctx.throw(400, { code: 400, detail: messages.errors.noHeaderCsv + paramsFile.filename }); }
+        if (!headers) { ctx.throw(400, { code: 400, detail: errors.noHeaderCsv + paramsFile.filename }); }
         const createDataStream = async () => {
             const nameOfFile = paramsFile.filename.split("/").reverse()[0];
             const copyCtx = Object.assign({}, ctx._odata);
@@ -126,13 +127,13 @@ export class CreateFile extends Common {
                     
 
                     .on("error", (err: Error) => {
-                        Logs.error(messages.errors.stream, err);
+                        Logs.error(errors.stream, err);
                         reject(err);
                     });
                 
                 const fileStream = fs.createReadStream(paramsFile.filename);
                 fileStream.on("error", (err: Error) => {
-                    Logs.error(messages.errors.fileStream, err);
+                    Logs.error(errors.fileStream, err);
                     cleanup(false, err);
                 });
 
@@ -151,7 +152,7 @@ export class CreateFile extends Common {
     };
 
     async add(dataInput: object): Promise<IreturnResult | undefined> {
-        Logs.head(messagesReplace(messages.infos.classConstructor, [this.constructor.name, `add`]));        
+        Logs.head(msg(infos.classConstructor, this.constructor.name, `add`));        
         if (this.ctx._datas) {
             const myColumns: IcsvColumn[] = [];
             const paramsFile: IcsvFile = {

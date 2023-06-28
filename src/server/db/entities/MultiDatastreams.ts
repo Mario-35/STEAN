@@ -8,7 +8,7 @@
 
 import koa from "koa";
 import { Common } from "./common";
-import { messages, messagesReplace } from "../../messages/";
+import { errors, msg } from "../../messages/";
 import { Logs } from "../../logger";
 
 
@@ -18,26 +18,26 @@ export class MultiDatastreams extends Common {
     }
 
     formatDataInput(input: object | undefined): object | undefined {
-        Logs.head(`class ${this.constructor.name} override formatDataInput`);
+        Logs.whereIam();
         if (!input)
-            this.ctx.throw(400, { code: 400, detail: messages.errors.noData });
+            this.ctx.throw(400, { code: 400, detail: errors.noData });
 
         const temp = this.getKeysValue(input, ["FeaturesOfInterest", "foi"]);            
         if (temp) input["_default_foi"] = temp;
 
         if (input["multiObservationDataTypes"] && input["unitOfMeasurements"] && input["ObservedProperties"]) {
             if (input["multiObservationDataTypes"].length != input["unitOfMeasurements"].length)
-                this.ctx.throw(400, { code: 400, detail: messagesReplace(messages.errors.sizeListKeysUnitOfMeasurements, [input["unitOfMeasurements"].length, input["multiObservationDataTypes"].length]) });
+                this.ctx.throw(400, { code: 400, detail: msg(errors.sizeListKeysUnitOfMeasurements, input["unitOfMeasurements"].length, input["multiObservationDataTypes"].length) });
 
             if (input["multiObservationDataTypes"].length != input["ObservedProperties"].length)
-                this.ctx.throw(400, { code: 400, detail: messagesReplace(messages.errors.sizeListKeysObservedProperties, [input["ObservedProperties"].length, input["multiObservationDataTypes"].length]) });
+                this.ctx.throw(400, { code: 400, detail: msg(errors.sizeListKeysObservedProperties, input["ObservedProperties"].length, input["multiObservationDataTypes"].length) });
         }
         if (input && input["multiObservationDataTypes"] && input["multiObservationDataTypes"] != null)
             input["multiObservationDataTypes"] = JSON.stringify(input["multiObservationDataTypes"]).replace("[", "{").replace("]", "}");
 
         if (input["observationType"]) {
             if (!this.DBST.MultiDatastreams.columns["observationType"].verify?.list.includes(input["observationType"]))
-                this.ctx.throw(400, { code: 400, detail: messages.errors["observationType"]});
+                this.ctx.throw(400, { code: 400, detail: errors["observationType"]});
                 
         } else input["observationType"] = this.DBST.MultiDatastreams.columns["observationType"].verify?.default;
 

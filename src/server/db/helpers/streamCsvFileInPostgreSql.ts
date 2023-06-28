@@ -72,6 +72,7 @@ const dateSqlRequest = async (paramsFile: IcsvFile): Promise<ICsvImport | undefi
     }
     return returnValue;
 };
+
 export const createColumnHeaderName = async (filename: string): Promise<string[] | undefined> => {
     const fileStream = fs.createReadStream(filename);
 
@@ -99,7 +100,7 @@ export const createColumnHeaderName = async (filename: string): Promise<string[]
 };
 
 export const streamCsvFileInPostgreSql = async (ctx: koa.Context, knex: Knex | Knex.Transaction, paramsFile: IcsvFile): Promise<string | undefined> => {
-    Logs.head("streamCsvFileInPostgreSql");
+    Logs.whereIam();
     let returnValue = undefined;
     const sqlRequest = await dateSqlRequest(paramsFile);
 

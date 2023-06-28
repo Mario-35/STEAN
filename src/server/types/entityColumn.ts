@@ -6,6 +6,8 @@
  *
  */
 
+import { IKeyString } from ".";
+
 export interface IentityColumn {
     [key: string]: {
         readonly create: string;
@@ -13,7 +15,7 @@ export interface IentityColumn {
         readonly alias_lora?: string;
         readonly unique?: boolean;
         readonly test?: string;
-        readonly dataList?: { [key: string]: string };
+        readonly dataList?: IKeyString;
         readonly type?: string;
         readonly verify?: {
             list: string[];

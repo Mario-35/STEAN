@@ -9,10 +9,8 @@
 import jsonErrors from "./error.json";
 import jsonInfos from "./infos.json";
 
-export const messagesReplace = (name: string, keys: string[]) => { keys.forEach((e: string, i: number) => { name = name.replace(`$${i+1}`, e);}); return name; };
+export const msg = (...args: string[]) => { for (let i = 1; i < args.length; i++) args[0] = args[0].replace(`$${i}`, args[i]); return args[0]; };
 
-export const messages = {
-    errors : jsonErrors, 
-    infos : jsonInfos 
-};
+export const errors =jsonErrors;
+export const infos =jsonInfos;
 

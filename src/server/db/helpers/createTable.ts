@@ -9,16 +9,16 @@
 
 import { Knex } from "knex";
 import { Logs } from "../../logger";
-import { Ientity } from "../../types";
+import { Ientity, IKeyString } from "../../types";
 
-export const createTable = async(connectionDb: Knex | Knex.Transaction, tableEntity: Ientity, doAfter: string | undefined): Promise<{ [key: string]: string }> => {
+export const createTable = async(connectionDb: Knex | Knex.Transaction, tableEntity: Ientity, doAfter: string | undefined): Promise<IKeyString> => {
     if(!tableEntity) return {};
 
     const space = 5;
     const tab = () => " ".repeat(space);
     const tabInsertion: string[] = [];
     const tabConstraints: string[] = [];
-    const returnValue: { [key: string]: string } ={};
+    const returnValue: IKeyString ={};
 
     let insertion = "";
     if (!connectionDb) {

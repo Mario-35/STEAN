@@ -8,12 +8,12 @@
 
 import koa from "koa";
 import { serverConfig } from "../../configuration";
-import { Iuser } from "../../types";
+import { IKeyString, Iuser } from "../../types";
 import { addCssFile } from "../css";
 
 export class CreateHtmlView {
     private ctx: koa.Context;
-    private userHeader: {[key: string]: string} = Object.freeze({
+    private userHeader: IKeyString = Object.freeze({
       "canPost": "post",
       "canDelete": "Delete",
       "canCreateUser": "Create User",
@@ -93,7 +93,7 @@ export class CreateHtmlView {
   </div>`;
   }
 
-    public config = (datas: { config: string | undefined ; body?: any; why?: {[key: string]: string} }): string => {
+    public config = (datas: { config: string | undefined ; body?: any; why?: IKeyString }): string => {
       try {
         const conf = serverConfig.configs["essai"];        
         // const conf = datas.config ? serverConfig.configs[datas.config] : serverConfig.createBlankConfig(this.ctx._configName);        
@@ -163,7 +163,7 @@ export class CreateHtmlView {
 
     };
 
-    public login = (datas: { login: boolean; body?: any; why?: {[key: string]: string} }): string => {
+    public login = (datas: { login: boolean; body?: any; why?: IKeyString }): string => {
         const alert = (name: string): string => {
             return datas.why && datas.why[name] ? `<div class="alert">${datas.why[name]}</div>` : "";
         };
@@ -214,7 +214,7 @@ export class CreateHtmlView {
                 </html>`;
     };
 
-    public userEdit = (datas: { body?: any; why?: {[key: string]: string} }): string => {
+    public userEdit = (datas: { body?: any; why?: IKeyString }): string => {
         const user = datas.body;
         const alert = (name: string): string => (datas.why && datas.why[name] ? `<div class="alert">${datas.why[name]}</div>` : "");
         return `<!DOCTYPE html>

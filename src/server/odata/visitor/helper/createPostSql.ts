@@ -7,15 +7,15 @@
  */
 
 import { Knex } from "knex";
-import { createpgQuery } from ".";
 import { VOIDTABLE } from "../../../constants";
 import { getBigIntFromString, getEntityName } from "../../../helpers";
 import { queryAsJson } from "../../../helpers/returnFormats";
 import { Logs } from "../../../logger";
-import { Ientity } from "../../../types";
+import { Ientity, IKeyString } from "../../../types";
 import { EoperationType } from "../../../enums/";
 import { PgVisitor } from "../PgVisitor";
 import { _DB } from "../../../db/constants";
+import { createPgQuery } from ".";
 
 export function createPostSql(datas: object, knexInstance: Knex | Knex.Transaction, main: PgVisitor): string {
     let sqlResult = "";
@@ -30,7 +30,7 @@ export function createPostSql(datas: object, knexInstance: Knex | Knex.Transacti
     const tempEntity = main.getEntity();
     const postEntity: Ientity = _DB[tempEntity == "CreateFile" ? "Datastreams" : tempEntity];
     const postParentEntity: Ientity | undefined = main.parentEntity ? _DB[main.parentEntity ] : undefined;
-    const names: { [key: string]: string } = {
+    const names: IKeyString = {
         [postEntity.table]: postEntity.table
     };
     let level = 0;
@@ -353,7 +353,7 @@ export function createPostSql(datas: object, knexInstance: Knex | Knex.Transacti
 
 
             }
-    const temp = createpgQuery(main, main); 
+    const temp = createPgQuery(main, main); 
     sqlResult += queryAsJson({
         query: `SELECT ${temp && temp.select ? temp.select : "*"} FROM ${names[postEntity.table]} ${temp && temp.groupBy ? `GROUP BY ${temp.groupBy}` : ''}`, 
         singular: false, 

@@ -20,5 +20,4 @@ export { IstreamInfos } from "./streamInfos";
 export { Iuser } from "./user";
 export { Iquery } from "./query";
 export { IuserToken } from "./userToken";
-
-
+export interface IKeyString { [key: string]: string; }

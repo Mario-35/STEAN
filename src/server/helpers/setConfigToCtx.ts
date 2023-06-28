@@ -12,7 +12,7 @@ import querystring from "querystring";
 import cookieModule from "cookie";
 import cookieParser from "cookie-parser";
 import { APP_KEY, API_VERSION, TEST, setDebug } from "../constants";
-import { messages, messagesReplace } from "../messages";
+import { errors, msg } from "../messages";
 import { isTest } from ".";
 
 const getCookie = (serializedCookies: string, key: string) => cookieModule.parse(serializedCookies)[key] ?? false;
@@ -24,7 +24,7 @@ const bearerToken = (ctx: koa.Context) => {
     const cookie = true;
 
     if (cookie && !APP_KEY) {
-        throw new Error(messages.errors.koaBearerToken);
+        throw new Error(errors.tokenMissing);
     }
 
     const { body, header, query } = ctx.request;
@@ -69,7 +69,7 @@ const bearerToken = (ctx: koa.Context) => {
     // in more than one place in a single request.
     if (count > 1) {
         ctx.throw(400, "token_invalid", {
-            message: messages.errors.tokenInvalid
+            message: errors.tokenInvalid
         });
     }
 
@@ -106,12 +106,12 @@ export const setConfigToCtx = (ctx: koa.Context): void => {
     let configName = getConfigFromPort(ctx.req.socket.localPort);            
     const version = getVersionFromUrl(ctx.originalUrl);
     const name = getNameFromUrl(ctx.originalUrl, version);
-    if (!name) throw new Error(messages.errors.noConfigName);
+    if (!name) throw new Error(errors.noNameIdentified);
     if (name) {
         configName = configName || getConfigNameFromName(name);
         if (configName) ctx._config = serverConfig.configs[configName];
-        else throw new Error(messagesReplace(messages.errors.notPresentInConfigName, [name]));    
-    }    
+        else throw new Error(msg(errors.notPresentInConfigName, name));    
+    }
 
     ctx.querystring = decodeURIComponent(querystring.unescape(ctx.querystring));
 
