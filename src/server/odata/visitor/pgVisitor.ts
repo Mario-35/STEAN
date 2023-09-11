@@ -103,10 +103,7 @@ export class PgVisitor {
     };
 
     VisitRessources(node: Token, context?: any) {
-            const ressource = this[`VisitRessources${node.type}`]; 
-            // console.log(`Ressource Visit ==========================> VisitRessources${node.type}`);            
-            // console.log(node);
-            // console.log(context);          
+            const ressource = this[`VisitRessources${node.type}`];           
             if (ressource) ressource.call(this, node, context);
             else{
                 console.log(`Ressource Not Found ============> VisitRessources${node.type}`);            
@@ -269,16 +266,9 @@ export class PgVisitor {
         context = context || { target: "where" };
 
         if (node) {
-            const visitor = this[`Visit${node.type}`];            
-            // console.log(`VISIT =============================================> Visit${node.type}`);              
-            // console.log(node);
-            // console.log(context);          
-            // console.log(`Where : ${this.where}`);          
-            // console.log(`select : ${this.select}`);          
+            const visitor = this[`Visit${node.type}`];         
             if (visitor) {
-                visitor.call(this, node, context);
-                // console.log(`AFTER  Visit${node.type} Where : ${this.where}`);          
-                // console.log(`AFTER  Visit${node.type} Select : ${this.select}`);        
+                visitor.call(this, node, context);        
             }
             else { 
                 console.log(`ERROR =================> Visit${node.type}`);            

@@ -48,13 +48,14 @@ export function createPgQuery(main: PgVisitor, element: PgVisitor): IpgQuery | u
                         main.addToArrayNames(name);
                     }
                 });
-
                 relations.forEach((rel: string) => {                    
                     if (rel[0] == "(") select.push(rel);
-                    else if (element.showRelations == true && main.onlyRef == false) {
+                    else if (element.showRelations == true && main.onlyRef == false ) {
                         const temTable = getEntityName(rel);
                         if (temTable) {
-                            select.push(`CONCAT('${main.options.rootBase}${_DB[realEntityName].name}(', "${_DB[realEntityName].table}"."id", ')/${rel}') AS "${rel}@iot.navigationLink"`);
+                            if(!_DB[realEntityName].relations[rel].relationKey.startsWith("_"))
+                            select.push(`CONCAT('${main.options.rootBase}${_DB[realEntityName].name}(', "${_DB[realEntityName].table}"."id", ')/${rel}') AS "${rel}@iot.navigationLink"`);                            
+                            if(!_DB[realEntityName].relations[rel].relationKey.startsWith("_"))
                             main.addToBlanks(`'${main.options.rootBase}${_DB[realEntityName].name}(0)/${rel}' AS "${rel}@iot.navigationLink"`);
                         }
                     }

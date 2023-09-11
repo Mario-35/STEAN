@@ -24,10 +24,13 @@ export class Loras extends Common {
 
     async prepareInputResult(dataInput: object): Promise<object> {
         Logs.whereIam(); 
-        ["deveui", "sensor_id", "payload_deciphered"].forEach((key: string) => {
+        ["deveui", "DevEUI", "sensor_id", "payload_deciphered"].forEach((key: string) => {
             if (dataInput[key]) dataInput[key] = dataInput[key].toUpperCase();
         });
-        return dataInput;    
+        const result = {};
+        Object.entries(dataInput).forEach(([k, v]) => {result[k.toLocaleLowerCase()] = v;});
+        if(!isNaN(dataInput["timestamp"])) result["timestamp"] = new Date( dataInput["timestamp"]*1000).toISOString();
+        return result;    
     }
 
     async decodeLoraValues(knexInstance: Knex | Knex.Transaction, loraDeveui: string, input: JSON): Promise<IKeyString> {               
@@ -85,7 +88,8 @@ export class Loras extends Common {
 
         function getDate(): string | undefined {
             if (dataInput["datetime"]) return String(dataInput["datetime"]);
-            if (dataInput["timestamp"]) return String(dataInput["timestamp"]);
+            const essai = new Date( dataInput["timestamp"]*1000);
+            if (dataInput["timestamp"]) return String(essai);
         }
 
         if (notNull(dataInput["MultiDatastream"])) {

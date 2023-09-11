@@ -2,7 +2,7 @@
 
   function addDebug(input) {
     if (input.trim() != "") input += '&';
-    return getIfChecked("checkDebug") ? `${input}$debug=true`: input;
+    return isDebug ? `${input}$debug=true`: input;
   }
 
   function decodeOptions() {
@@ -40,7 +40,7 @@
             decode = true;
           break;
           case 'debug':
-            checkDebug.checked = (temp[1] == "true");
+            isDebug = (temp[1] == "true");
             deleteOption(key);
           break;
           case '$skip':
@@ -65,8 +65,16 @@
         return false;
     } 
   }
+  
+  function removeQuotes(input) { 
+    if (input != null && input.length >= 2 && input.charAt(0) == '\"' && input.charAt(input.length - 1) == '\"') {
+          input = input.substring(1, input.length - 1);
+    }
+    return input;
+  }
 
   function decodeUrl(input) {
+    input = removeQuotes(input);
     header("decodeUrl", input);
     try {
       // return true if some works are done (for init to not delete value)
@@ -144,7 +152,7 @@
     } 
   }
 
-  createUrl = () => {
+  function createUrl() {
     header("createUrl");
     const queryOptions = [];
 
@@ -185,6 +193,8 @@
         directLink = directLink + "/$value";
         queryLink = queryLink + `&onlyValue=true`;
       } 
+
+      return { "direct" : directLink, "query": queryLink};
     }  
   
     if (datas.innerText != "") {
@@ -193,15 +203,19 @@
     }
   
     addInOption("resultFormat", (queryResultFormat.value != "json" ) ? queryResultFormat.value : "");
-    addInOption("debug", getIfChecked("checkDebug") ? "true" : "");
+    addInOption("debug", isDebug ? "true" : "");
     addInOption("count", getIfChecked("count") ? "true" : "");
     if (intervalOption.value != "" && isObservation() ) addInOption("interval",intervalOption.value);
     if (!["","0"].includes(skipOption.value)) addInOption("skip",skipOption.value);
     if (!["","0"].includes(topOption.value)) addInOption("top",topOption.value);
-    if (!queryExpand.value.startsWith(_NONE)) addInOption("expand", getMultiSelect(queryExpand));
-    addInOption("orderby",getOrderBy());
-    addInOption("select",getMultiSelect(querySelect));
+    let tempDatas = multiSelects["queryExpand"].getData();
+    if (tempDatas && tempDatas.length > 0) addInOption("expand", tempDatas);
+    tempDatas = multiSelects["querySelect"].getData();
+    if (tempDatas && tempDatas.length > 0) addInOption("select", tempDatas);
+    tempDatas = multiSelects["queryOrderBy"].getData();
+    if (tempDatas && tempDatas.length > 0) addInOption("orderby", tempDatas);
 
+    // queryOrderBy;
   
     const queryBuilder = getElement("query-builder").innerText;
   
@@ -242,4 +256,4 @@
       console.log(`query : ${queryLink}`);
     }
     return { "direct" : directLink, "query": queryLink};
-  };
+  }

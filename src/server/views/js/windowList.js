@@ -1,5 +1,8 @@
+var clickCount = 0;
+var singleClickTimer = 0;
+
 function updateWinLinks(input) {
-    if (!winLinks || winLinks === null || winLinks.content === null) {
+  if (!winLinks || winLinks === null || winLinks.content === null) {
     const temp = new Window("Links", {
       state: WindowState.NORMAL,
       size: {
@@ -13,20 +16,33 @@ function updateWinLinks(input) {
       lang: "json"
     });
     winLinks = temp;
-} 
-let str = '<div class="linkCcontainer">';
-if (input.direct) str += `<a href="${input.direct}" target="_blank" class="buttonLink">${input.direct}</a>`;
-if (input.direct) str += "<hr>";
-if (input.query) str += `<a href="${input.query}" target="_self" class="buttonLink">Load in query</a>`;
+  } 
+let str = '<div class="linkCcontainer"> <center> ';
+if (input.direct) str += `<br> <button id="btnDirect" class="clipboard">Click me to copy current Url</button> <br> <a href="${input.direct}" target="_blank" class="buttonLink">${input.direct}</a> <br> <hr> <br>`;
+
+if (input.query) str += `<a href="${input.query}" target="_self" class="loadInQuery">Load in query</a>`;
 if (input.sqlUrl) {
   str += `<a href="${input.sqlUrl}" target="_blank" class="buttonLink">Sql Query</a>`;
   str += "<hr>";
   str += `<input type="text" class="urlForm" v-model="url" value="${input.sqlUrl}"/>`;
 }
 
-str += "</div>";
+str += "</center> </div>";
+
+
 winLinks.content.innerHTML = str;
 winLinks.show();
+
+if (input.direct) {
+  btnDirect.addEventListener("click", () => {
+    if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(input.direct).then(() => {
+        alert("url copied");
+      });
+    }
+  });
+}
+
 }
 
 function updateWinDecoderResult(input) {
@@ -112,7 +128,7 @@ function updateWinSqlQuery(input) {
   const menuitems = [
     {
       "text": "Execute script",
-      "events": {                              // Adds eventlisteners to the item (you can use any event there is)
+      "events": { // Adds eventlisteners to the item (you can use any event there is)
         "click": function(e){
           executeSql(e);
         }
@@ -135,10 +151,19 @@ function updateWinSqlQuery(input) {
   });
 }
 
+
+function simpleClick(link) {
+  if (link.includes && link.includes(optHost.value)) {
+    clear();
+    decodeUrl(link);
+    refresh();
+  }
+}
+
 function updateWinJsonResult(input, title) {
-    if (!winJsonResult || winJsonResult === null || winJsonResult.content === null) {
-        const temp = new Window(title, {
-            state: WindowState.MAXIMIZED,
+  if (!winJsonResult || winJsonResult === null || winJsonResult.content === null) {
+      winJsonResult = new Window(title, {
+            state: onlyOneWinActive() ? WindowState.NORMAL : WindowState.MAXIMIZED,
             size: {
                 width: 750,
                 height: 500
@@ -148,42 +173,58 @@ function updateWinJsonResult(input, title) {
       container: two ,
       lang: "sql"
     });
-    winJsonResult = temp;
-  } else  winJsonResult.setTitle(title);
-  winJsonResult.content.innerHTML = `<pre class="json-viewer" id="jsonRenderer" onclick = "clickLink(event)" ondblclick = "dblClickLink(event)" ></pre>`;
-  jsonRenderer.addEventListener("click", function(e){
-    e.preventDefault();
-    self.close();
+  } else winJsonResult.setTitle(title);
+  winJsonResult.content.innerHTML = `<pre class="json-viewer" id="jsonRenderer" </pre>`;
+  
+  jsonRenderer.addEventListener("click", function(event) { 
+		clickCount++;
+		if (clickCount === 1) {
+			if (Array.from(event.target.classList).includes('type-url')) {
+				singleClickTimer = setTimeout(function() {
+					clickCount = 0;
+					simpleClick(event.target.innerHTML);
+				}, 400);	
+			}
+		} else if (clickCount === 2) {
+			clearTimeout(singleClickTimer);
+			clickCount = 0;
+			if (Array.from(event.target.classList).includes('type-url')) {
+        simpleClick(event.target.innerHTML);
+        go.onclick();
+			}
+		}
   });
-  jsonViewer(input, jsonRenderer);
+  
+  jsonRenderer.appendChild(jsonViewer.getContainer());
+  jsonViewer.showJSON(input);
   winJsonResult.show();
 }
 
 function updateWinCsvResult(input) {
-  if (!winCsvResult || winCsvResult === null || winCsvResult.content === null) {
-      const temp = new Window("Csv file", {
-          state: WindowState.MAXIMIZED,
-          size: {
-              width: 750,
-              height: 500
-          },
-          selected: true,
-          minimizable: false,
-      container: two ,
-      lang: "sql"
-    });
-    winCsvResult = temp;
-  } ;
-  winCsvResult.content.innerHTML = `<div id="csvRenderer"></div>`;
-  // jsonViewer(input, jsonRenderer);
-  buildTableWithCsv(input, ";", csvRenderer);
-  winCsvResult.show();
+if (!winCsvResult || winCsvResult === null || winCsvResult.content === null) {
+    const temp = new Window("Csv file", {
+      state: onlyOneWinActive() ? WindowState.NORMAL : WindowState.MAXIMIZED,
+        size: {
+            width: 750,
+            height: 500
+        },
+        selected: true,
+        minimizable: false,
+    container: two ,
+    lang: "sql"
+  });
+  winCsvResult = temp;
+} 
+winCsvResult.content.innerHTML = `<div id="csvRenderer" class="patrom-table-container"></div>`;
+// jsonViewer(input, jsonRenderer);
+buildTableWithCsv(input, ";", csvRenderer);
+winCsvResult.show();
 }
 
 function updateWinResult(input) {
-  if (! winResult ||  winResult === null ||  winResult.content === null) {
+  if (! winResult || winResult === null || winResult.content === null) {
   const temp = new Window("Result", {
-    state: WindowState.NORMAL,
+    state: onlyOneWinActive() ? WindowState.NORMAL : WindowState.MAXIMIZED,
     size: {
       width: 750,
       height: 500
@@ -208,4 +249,4 @@ function addToResultList(key, value, plus) {
   li.appendChild(span);
   getElement("listResult").appendChild(li);
   if (plus) addToResultList("-->", plus);
-};
+}

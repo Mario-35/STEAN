@@ -439,8 +439,6 @@ class Observation extends Component {
 class ExecuteCode extends Component {
     
     constructor(options) {
-        console.log(ExecuteCode);
-        console.log(ExecuteCode);
         super(options);
         this.submitText = isString(options.submitText) ? options.submitText : 'Send';
         this.placeholderText = options.placeholderText ? options.placeholderText : 'Type';
@@ -515,7 +513,6 @@ class ViewJson extends Component {
 
     constructor(options) {
         super(options);
-        console.log(options);
         this.buttonOk = 'Ok';
         this.content = JSON.stringify(options.content);
         this.injectTemplate();

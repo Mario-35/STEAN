@@ -463,7 +463,7 @@ describe("endpoint : Datastream", () => {
                 "Thing": { "@iot.id": 1 },
                 "ObservedProperty": { "@iot.id": 1 },
                 "Sensor": { "@iot.id": 1 },
-                "FeaturesOfInterest": { "@iot.id": 2 }
+                "FeatureOfInterest": { "@iot.id": 2 }
             };
             const infos = {
                 api: `{post} ${entity.name} Post with default FOI`,
@@ -486,7 +486,7 @@ describe("endpoint : Datastream", () => {
                     should.not.exist(err);
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
-                    res.body.should.include.keys(testsKeys);
+                    res.body.should.include.keys(testsKeys);                    
                     addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });

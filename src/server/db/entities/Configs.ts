@@ -24,7 +24,7 @@ export class Configs extends Common {
          if (!ensureAuthenticated(this.ctx)) this.ctx.throw(401);
          const result: { [key: string]: IconfigFile; } = {};
          Object.keys(serverConfig.configs).filter(e => e != "admin").forEach((elem: string) => {
-               result[elem] = serverConfig.configs[elem];
+               result[elem] = {... serverConfig.configs[elem]};
          });
          return this.createReturnResult({ body: hideKeysInJson(result, ["entities"]) });       
      }

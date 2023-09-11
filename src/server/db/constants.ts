@@ -141,6 +141,18 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                 relationKey: "featureofinterest_id",
                 entityColumn: "id",
                 tableKey: "id"
+            },
+            Datastreams: {
+                type: Erelations.hasMany,
+                expand: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."_default_foi" = "featureofinterest"."id")`,
+                // link: `"observation"."id" = (select "observation"."id" from "observation" where "observation"."id" = $NESTED AND "observation"."featureofinterest_id" = $ID)`,
+                link: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."_default_foi" = $ID)`,
+
+                entityName: "Datastreams",
+                tableName: "datastream",
+                relationKey: "_default_foi",
+                entityColumn: "id",
+                tableKey: "id"
             }
         },
         constraints: {
@@ -516,6 +528,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             },
             _default_foi: {
                 create: "BIGINT NOT NULL DEFAULT 1",
+                type : "relation:FeaturesOfInterest"
             }
         },
         canPost: false,
@@ -570,6 +583,16 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                 relationKey: "datastream_id",
                 entityColumn: "id",
                 tableKey: "id"
+            },
+            FeatureOfInterest: {
+                type: Erelations.belongsTo,
+                expand: "",
+                link: "",
+                entityName: "FeaturesOfInterest",
+                tableName: "featureofinterest",
+                relationKey: "_default_foi",
+                entityColumn: "id",
+                tableKey: "id"
             }
         },
         constraints: {
@@ -577,7 +600,8 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             datastream_unik_name: 'UNIQUE ("name")',
             datastream_observedproperty_id_fkey: 'FOREIGN KEY ("observedproperty_id") REFERENCES "observedproperty"("id") ON UPDATE CASCADE ON DELETE CASCADE',
             datastream_sensor_id_fkey: 'FOREIGN KEY ("sensor_id") REFERENCES "sensor"("id") ON UPDATE CASCADE ON DELETE CASCADE',
-            datastream_thing_id_fkey: 'FOREIGN KEY ("thing_id") REFERENCES "thing"("id") ON UPDATE CASCADE ON DELETE CASCADE'
+            datastream_thing_id_fkey: 'FOREIGN KEY ("thing_id") REFERENCES "thing"("id") ON UPDATE CASCADE ON DELETE CASCADE',
+            datastream_featureofinterest_id_fkey: 'FOREIGN KEY ("_default_foi") REFERENCES "featureofinterest"("id") ON UPDATE CASCADE ON DELETE CASCADE'
         },
         indexes: {
             datastream_observedproperty_id: 'ON public."datastream" USING btree ("observedproperty_id")',
@@ -670,7 +694,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                 type: Erelations.belongsTo,
                 expand: `"sensor"."id" = "multidatastream"."sensor_id"`,
                 link: `"sensor"."id" = (select "multidatastream"."sensor_id" from "multidatastream" where "multidatastream"."id" =$ID)`,
-
                 entityName: "Sensors",
                 tableName: "multidatastream",
                 relationKey: "id",
@@ -708,12 +731,24 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                 entityColumn: "id",
                 tableKey: "id"
             },
+            FeatureOfInterest: {
+                type: Erelations.belongsTo,
+                expand: "",
+                link: "",
+                entityName: "FeaturesOfInterest",
+                tableName: "featureofinterest",
+                relationKey: "_default_foi",
+                entityColumn: "id",
+                tableKey: "id"
+            }
         },
         constraints: {
             multidatastream_pkey: 'PRIMARY KEY ("id")',
             multidatastream_unik_name: 'UNIQUE ("name")',
             multidatastream_sensor_id_fkey: 'FOREIGN KEY ("sensor_id") REFERENCES "sensor"("id") ON UPDATE CASCADE ON DELETE CASCADE',
-            multidatastream_thing_id_fkey: 'FOREIGN KEY ("thing_id") REFERENCES "thing"("id") ON UPDATE CASCADE ON DELETE CASCADE'
+            multidatastream_thing_id_fkey: 'FOREIGN KEY ("thing_id") REFERENCES "thing"("id") ON UPDATE CASCADE ON DELETE CASCADE',
+            multidatastream_featureofinterest_id_fkey: 'FOREIGN KEY ("_default_foi") REFERENCES "featureofinterest"("id") ON UPDATE CASCADE ON DELETE CASCADE'
+
         },
         indexes: {
             multidatastream_sensor_id: 'ON public."multidatastream" USING btree ("sensor_id")',

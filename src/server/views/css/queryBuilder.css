@@ -9,7 +9,7 @@
  .query-container {
   min-height: 3rem;
   min-width: 20vw;
-  border: 1px solid grey;
+  border: 1px solid var(--background-color);
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
@@ -32,7 +32,7 @@
 }
 .criterium-container {
   min-height: 3rem;
-  background-color: #696b72;
+  background-color: var(--content-background);
   margin: 1px;
   /* align-self: flex-start; */
   width: 99%;
@@ -69,8 +69,6 @@
 
 .remove-criterium-button {
   flex-basis: 15px;
-  height: 22px;
-  color: red;
 }
 
 .criteria-choice-container .add-condition-text {
@@ -135,6 +133,7 @@
 .textarea {
   display: block;
   overflow: hidden;
-  color: black;
-  background-color: white;
+  border: 1px solid var(--btn-gray-border);
+  background-color: var(--input-background);
+  color: var(--content-color);
 }

@@ -5,7 +5,7 @@
 * @license MIT
 */
 function Window(title, options){
-  'use strict'
+  'use strict';
 
   var self = this;
   var container = null;
@@ -34,12 +34,12 @@ function Window(title, options){
   var drag_position = {
     x: 0,
     y: 0
-  }
+  };
 
   var resize_position = {
     x: 0,
     y: 0
-  }
+  };
 
   var current_resize = null;
 
@@ -87,7 +87,7 @@ function Window(title, options){
     }
 
     return title;
-  }
+  };
 
   this.setTitle = function(_title){
     if(!living){
@@ -105,7 +105,7 @@ function Window(title, options){
     if(typeof container !== null){
       container.getElementsByClassName('window_title')[0].innerHTML = title;
     }
-  }
+  };
 
   this.getContainer = function(){
     if(!living){
@@ -117,7 +117,7 @@ function Window(title, options){
     }
 
     return container;
-  }
+  };
 
   this.changeOption = function(option, value){
     if(!living){
@@ -209,7 +209,7 @@ function Window(title, options){
     }else{
       throw new Error("Parameter 1 must be of type string");
     }
-  }
+  };
 
   this.getOptions = function(){
     if(!living){
@@ -217,7 +217,7 @@ function Window(title, options){
     }
 
     return options;
-  }
+  };
 
   this.reload = function(){
     living = true;
@@ -291,7 +291,7 @@ function Window(title, options){
 
     container.appendChild(bar);
 
-    var resize_handles = new Array();
+    var resize_handles = [];
     var resize_pos = ["n", "ne", "e", "se", "s", "sw", "w", "nw"];
 
     for(var i = 0; i < 8; i++){
@@ -379,14 +379,13 @@ function Window(title, options){
 
     toggle_close.addEventListener("click", function(e){
       e.preventDefault();
-      whatButton(go);
       self.close();
     });
 
     updateEvents();
 
     self.on("reload")();
-  }
+  };
 
   function resize_mouseDown(e){
     if(!WindowUtil.getProperty(options, "resizable", true)){
@@ -571,7 +570,7 @@ function Window(title, options){
     size_state = _state;
 
     changeSizeState(_state);
-  }
+  };
 
   this.changeWindowState = function(_window_state){
     if(!living){
@@ -587,7 +586,7 @@ function Window(title, options){
     display_state = _window_state;
 
     changeDisplayState(display_state);
-  }
+  };
 
   function changeSizeState(_size_state){
     container.classList.remove("window_maximized");
@@ -742,7 +741,7 @@ function Window(title, options){
     this.changeWindowState(WindowState.MINIMIZED);
 
     self.on("minimize")();
-  }
+  };
 
   this.normalSize = function(){
     if(!living){
@@ -752,7 +751,7 @@ function Window(title, options){
     this.changeState(WindowState.NORMAL);
 
     self.on("normalSize")();
-  }
+  };
 
   this.maximize = function(){
     if(!living || !WindowUtil.getProperty(options, "maximizable", true) || self.on("maximizing") === false){
@@ -763,7 +762,7 @@ function Window(title, options){
     updateSize();
 
     self.on("maximize")();
-  }
+  };
 
   this.toggleMaximize = function(){
     if(!living){
@@ -775,7 +774,7 @@ function Window(title, options){
     }else{
       self.normalSize();
     }
-  }
+  };
 
   this.hide = function(){
     if(!living){
@@ -785,7 +784,7 @@ function Window(title, options){
     this.changeWindowState(WindowState.HIDDEN);
 
     self.on("hide")();
-  }
+  };
 
   this.show = function(){
     if(!living){
@@ -795,7 +794,7 @@ function Window(title, options){
     this.changeWindowState(WindowState.SHOWN);
 
     self.on("show")();
-  }
+  };
 
   function updatePosition(){
     if(!living){
@@ -816,7 +815,7 @@ function Window(title, options){
     var old_position = {
       x: options.position.x,
       y: options.position.y
-    }
+    };
 
     position.x = WindowUtil.getProperty(_position, "x", 0);
     position.y = WindowUtil.getProperty(_position, "y", 0);
@@ -869,7 +868,7 @@ function Window(title, options){
     }
 
     events[ev] = callback;
-  }
+  };
 
   this.removeOn = function(ev){
     if(!living){
@@ -877,7 +876,7 @@ function Window(title, options){
     }
 
     delete events[ev];
-  }
+  };
 
   function updateBarVisible(){
     if(!living){
@@ -937,7 +936,7 @@ function Window(title, options){
     }
 
     return size_state;
-  }
+  };
 
   this.getWindowState = function(){
     if(!living){
@@ -945,7 +944,7 @@ function Window(title, options){
     }
 
     return display_state;
-  }
+  };
 
   this.getSize = function(){
     if(!living){
@@ -953,7 +952,7 @@ function Window(title, options){
     }
 
     return size;
-  }
+  };
 
   this.getPosition = function(){
     if(!living){
@@ -961,7 +960,7 @@ function Window(title, options){
     }
 
     return position;
-  }
+  };
 
   this.isMinimized = function(){
     if(!living){
@@ -969,7 +968,7 @@ function Window(title, options){
     }
 
     return display_state == WindowState.MINIMIZED;
-  }
+  };
 
   this.isHidden = function(){
     if(!living){
@@ -977,7 +976,7 @@ function Window(title, options){
     }
 
     return display_state == WindowState.HIDDEN;
-  }
+  };
 
   this.isShown = function(){
     if(!living){
@@ -985,7 +984,7 @@ function Window(title, options){
     }
 
     return display_state == WindowState.SHOWN;
-  }
+  };
 
   this.isVisible = function(){
     if(!living){
@@ -993,7 +992,7 @@ function Window(title, options){
     }
 
     return !(this.isMinimized() || this.isHidden());
-  }
+  };
 
   this.isMaximized = function(){
     if(!living){
@@ -1001,7 +1000,7 @@ function Window(title, options){
     }
 
     return size_state == WindowState.MAXIMIZED;
-  }
+  };
 
   this.isNormalSized = function(){
     if(!living){
@@ -1009,7 +1008,7 @@ function Window(title, options){
     }
 
     return size_state == WindowState.NORMAL;
-  }
+  };
 
   this.isSelected = function(){
     if(!living){
@@ -1017,7 +1016,7 @@ function Window(title, options){
     }
 
     return WindowUtil.getProperty(options, "selected", false);
-  }
+  };
 
   this.reset = function(){
     if(!living){
@@ -1028,7 +1027,7 @@ function Window(title, options){
     this.normalSize();
 
     self.on("reset")();
-  }
+  };
 
   this.close = function(){
     var close_option = WindowUtil.getProperty(options, "close_action", Window.DISPOSE_ON_CLOSE);
@@ -1045,18 +1044,18 @@ function Window(title, options){
         this.dispose();
       }
     }
-  }
+  };
 
   this.dispose = function(){
     if(self.on("disposing")() !== false){
       this.content.remove(); this.content = null;
-      container.remove();    container = null;
+      container.remove(); container = null;
 
       self.on("disposed")();
 
       living = false;
     }
-  }
+  };
 
   this.reload();
 
@@ -1064,11 +1063,9 @@ function Window(title, options){
 }
 
 Window.count = 0;
-
 Window.DISPOSE_ON_CLOSE = 0;
 Window.HIDE_ON_CLOSE = 1;
 Window.DO_NOTHING_ON_CLOSE = 2;
-
 Window.DOUBLE_CLICK_DELAY = 300; //ms
 
 const WindowState = {
@@ -1078,14 +1075,14 @@ const WindowState = {
   MINIMIZED: 2,
   SHOWN: 3,
   HIDDEN: 4
-}
+};
 
 const WindowUtil = {
-  getProperty: function(options, opt, def){
+  getProperty: function(options, opt, def) {
 		if(typeof options[opt] !== "undefined"){
 			return options[opt];
 		}else{
 			return def;
 		}
 	}
-}
+};

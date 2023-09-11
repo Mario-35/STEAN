@@ -6,13 +6,7 @@
  *
  */
 
-const _SPACE = " ";
 const _NONE = "none";
-const _CHECK = "✔";
-const _UP = "↑";
-const _DOWN = "↓";
-const _ALL = "all";
-const _SELECTED = "selected";
 
 
 // load file json
@@ -20,8 +14,8 @@ let importFile = false;
 var jsonObj = {};
 var listOptions = {};
 var canGo = false;
-var modeDebug = true;
 let builder = undefined;
+
 let winSqlQuery = null;
 let winDecoderResult = null;
 let winDecoderCode = null;
@@ -31,9 +25,10 @@ let winResult = null;
 let winLinks = null;
 const cardDatas = {};
 let dragText = "";
+let jsonViewer = undefined; 
 
 // log debug test
-let isDebug = true;
+let isDebug = false;
 
 // replace at execution
 const _PARAMS={};
@@ -50,4 +45,22 @@ function columnsList(input) {
 function relationsList(input) {
     const ent = getEntityName(input);
     return ent ? Object.keys(_PARAMS._DATAS[ent].relations) : undefined;
+}
+
+function winActives() {
+    const results = [];
+    if (winSqlQuery !== null) results.push("winSqlQuery");
+    if (winDecoderResult !== null) results.push("winDecoderResult");
+    if (winDecoderCode !== null) results.push("winDecoderCode");
+    if (winJsonResult !== null) results.push("winJsonResult");
+    if (winCsvResult !== null) results.push("winCsvResult");
+    if (winResult !== null) results.push("winResult");
+    if (winLinks !== null) results.push("winLinks");
+    return results;
+}
+
+function onlyOneWinActive() {
+    console.log(winJsonResult);
+    console.log(winActives());
+    return winActives().length > 0;
 }

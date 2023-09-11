@@ -82,4 +82,5 @@ a {
 #two {
 	padding: 2px 2px 1px 5px;
 	height: 100%;
+	background-color: var(--background-body);
 }

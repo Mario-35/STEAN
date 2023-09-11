@@ -227,7 +227,6 @@ export const writeAddToFile = (): void => {
 
 export const limitResult = (input: object, keyName?: string) => {  
     const key:string = keyName || "value";
-    // console.log(input["body"]);
     if (input["body"][key]) input["body"][key] = [input["body"][key][0], input["body"][key][1], "..."];
     return input;
 };

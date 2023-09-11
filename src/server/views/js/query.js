@@ -23,7 +23,7 @@ function wait(on) {
   }
 
   function show(obj) {
-    obj.style.display = "block";
+    obj.style.display = "table-cell";
   }
 
   function toggleShowHide(obj, test) {
@@ -62,36 +62,42 @@ function wait(on) {
     return temp;
   }
 
+  function tabEnabledDisabled(objName, test) {
+    const elemId = (typeof objName === "string") ? document.getElementsByName(objName)[0] : objName;
+    if (typeof(elemId) != 'undefined' && elemId != null) {
+      if (test === true ) elemId.removeAttribute("disabled");
+        else {
+          elemId.setAttribute('disabled', '');
+          elemId.checked = false;
+        }
+    }
+  }
+
   function updateForm() {
-    header("updateForm");
-    toggleShowHide(observationsTab, isObservation());    
-    toggleShowHide(importTab, _PARAMS.user.canPost);    
+    header("updateForm");    
     toggleShowHide(logout, _PARAMS.user.canPost);
-    toggleShowHide(fileone, _PARAMS.user.canPost);
-    toggleShowHide(fileonelabel, _PARAMS.user.canPost);  
-    ToggleOption( getIfChecked("splitResultOption") && isObservation(), 'splitResult',splitResultOptionName.value, "");
     buttonGo();
 
     const tempOptions = getFormatOptions() ;
     populateSelect(queryResultFormat, tempOptions, getDefaultValue(queryResultFormat, tempOptions));
-    EnabledOrDisabled([queryProperty], (nb.value != ""));
-    EnabledOrDisabled([onlyValue], (!queryProperty.value.startsWith(_NONE) && nb.value != ""));
     getElement("actionForm").action = `${optHost.value}/${optVersion.value}/${entity.value}${entity.value === "CreateObservations" ? "" : `${entity.value}(${nb.value})/CreateFile` }`;
-    if (getIfChecked("checkDebug")) getElement("actionForm").action += "?$debug=true";
+    tabEnabledDisabled("propertyTab", (nb.value != ""));
+    tabEnabledDisabled("importTab", _PARAMS.user.canPost);
+    tabEnabledDisabled("multiDatastreamTab", entity.value === "MultiDatastreams" && subentity.value === "Observations");
+    tabEnabledDisabled("observationsTab", isObservation());
   }
 
 
   function refresh() {
     header("refresh");
     const tempEntity = SubOrNot();
-    populateMultiSelect("querySelect", columnsList(tempEntity).filter(e => !e.includes("_")) , null, "all");
-    populateMultiSelect("queryOrderBy", columnsList(tempEntity) , null, _NONE, true);
+    populateMultiSelect("querySelect", columnsList(tempEntity).filter(e => !e.includes("_")) , "all");
+    populateMultiSelect("queryOrderBy", columnsList(tempEntity));
     populateSelect(queryProperty, columnsList(tempEntity), _PARAMS.property != undefined ? _PARAMS.property :_NONE, true);
-    populateMultiSelect("queryExpand", relationsList(tempEntity), null, _NONE);
+    populateMultiSelect("queryExpand", relationsList(tempEntity));
     updateForm();
     updateBuilder();
     canShowQueryButton();
-    EnabledOrDisabled([splitResultOption, splitResultOptionName], (subentity.value === "Observations" && entity.value === "MultiDatastreams"));
   }
 
   function updateBuilder() {
@@ -107,8 +113,6 @@ function wait(on) {
       });
     });
     if (builder) builder.clear("query-builder", fields); else builder = new QueryBuilder("query-builder", fields);
-    // console.log("=========> fields");
-    // console.log(fields);
   }
 
   function canShowQueryButton() {
@@ -120,24 +124,18 @@ function wait(on) {
   // ===============================================================================
 
   function whatButton(obj) {
-    [ go, addImport].forEach(elem => {
-      if (elem === obj) show(getElement(elem));
-      else hide(getElement(elem));
-    });
+      if (go === obj) show(getElement(go));
+      else hide(getElement(go));
   }
 
   function buttonGo() {
     if (importFile == true) {
-      hide(go);
-      show(addImport);     
-      show(submit);      
-      // toggleShowHide(submit, datas.last_string_content.match("columns") != null);      
+      hide(go);    
+      show(submit);   
     } else {
       show(go);
       canShowQueryButton();
-      hide(submit);
-      hide(addImport);
-          
+      hide(submit);          
     }
   }
 
@@ -216,7 +214,6 @@ async function editDataClicked(id, _PARAMS) {
     populateSelect(entity, Object.keys(_PARAMS._DATAS), tempEntity);
 
     populateSelect(method, entity.value == "Loras" ? ["GET","POST"] : _PARAMS.methods, _PARAMS.method ? _PARAMS.method : "GET");
-    populateSelect(selectSeries, ["year", "month", "day"], _NONE, true);
     hide(querySubExpand);
     nb.value = _PARAMS.id;
     
@@ -230,6 +227,33 @@ async function editDataClicked(id, _PARAMS) {
     decodeOptions();
   }
 
+  var simpleClick = function(link) {
+    if (link.includes && link.includes(optHost.value)) {
+    console.log("=========== simpleClick =============");
 
+      clear();
+      decodeUrl(link);
+      refresh();
+    }
+  // } else if (className === "json-code" || (event.previousElementSibling && Object.values(event.previousElementSibling.classList).includes("json-code"))) {
+  //   try {
+  //     updateWinDecoderCode(event.explicitOriginalTarget.innerText);  
+  //   } catch (err) {     
+  //     notifyError("Error", err);
+  //   } finally {
+  //     canGo = true;
+  //     buttonGo();
+  //   }
+  // }
+};
+
+
+jsonViewer = new JSONViewer(simpleClick, function(link) {
+  console.log("=========== doubleClick =============");
+
+  simpleClick(link);
+  go.onclick();
+  });
+  
 init();
 

@@ -7,12 +7,12 @@
  */
  
  .window{
-    border: 1px solid #ccc;
+    border: 1px solid var(--window-border-head);
     position: absolute;
     z-index: 1;
     border-radius: 2px;
     box-sizing: border-box;
-  
+    color: var(--text-color);
     transform: scale(1);
   }
   
@@ -34,8 +34,8 @@
   }
   
   .window .window_bar{
-    border-bottom: 1px solid #ccc;
-    background-color: #eee;
+    border-bottom: 1px solid var(--window-border-head);
+    background-color: var(--window-border-head);
     height: 2em;
   }
   
@@ -67,6 +67,7 @@
     overflow: hidden;
     max-width: calc(100% - 150px);
     vertical-align: middle;
+    color: var(--text-color);
   }
   
   .window .window_bar .window_toggle_buttons{
@@ -95,7 +96,7 @@
   }
   
   .window .window_bar .window_toggle_buttons > *:hover{
-    background-color: #ccc;
+    background-color: var(--window-border-head);
   }
   
   .window.window_not_maximizable .window_button_toggle_maximize, .window.window_not_minimizable .window_button_minimize { 
@@ -103,13 +104,12 @@
   }
   
   .window .window_bar .window_toggle_buttons .window_button_close:hover{
-    background-color: #ccc;
+    background-color: var(--window-border-head);
   }
   
   .window .window_content{
     overflow: auto;
-    background-color: #282828;
-  
+    background-color: var(--content-window-background);  
     position: absolute;
     top: 2em;
     right: 0;
@@ -143,12 +143,12 @@
   }
   
   .window.window_selected .window_bar{
-    background-color: #ddd;
+    background-color: var(--window-border-head);
   }
   
   .window.window_selected .window_bar .window_toggle_buttons .window_button_close:hover{
     background-color: #f12;
-    color: #fff;
+    color: var(--text-color);
   }
   
   .window.window_maximized .window_resize_handle, .window.window_not_resizable .window_resize_handle, .window.window_resizing .window_resize_handle{

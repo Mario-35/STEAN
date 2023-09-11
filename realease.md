@@ -1,4 +1,16 @@
 
+# version 1.8.0
+    add patrom component
+    add urls interaction in query
+    query builder in progress
+
+
+# version 1.7.0
+    add /status route to indicate if server is ready
+    remove id default sorted for speed result
+    perform configuration connection db
+    add /ready route to show status of the server status
+
 # version 1.6.0
     Add key lora in configuration to show or not entities
     Add key highPrecision in configuration to have float8 instead of float4

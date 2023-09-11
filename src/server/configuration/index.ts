@@ -7,7 +7,7 @@
  */
 
 import fs from "fs";
-import { ADMIN, API_VERSION, APP_NAME, APP_VERSION, NODE_ENV, setDebug, setReady, TIMESTAMP } from "../constants";
+import { ADMIN, API_VERSION, APP_NAME, APP_VERSION, NODE_ENV, setDebug, setReady, TIMESTAMP, _debug } from "../constants";
 import { Logs } from "../logger";
 import { asyncForEach, decrypt, encrypt, hidePasswordInJson, isTest } from "../helpers";
 import util from "util";
@@ -89,16 +89,15 @@ class Configuration {
 
     // Create logs in file
     private logToFile(file: string) {        
-        const active = file && file.length > 0 ? true: false;
-        if (active) Logs.head("active Logs to file", file);
+        setDebug(file && file.length > 0 ? true : false);
+        if (_debug === false) return;
+        Logs.head("active Logs to file", file);
       
-        if (active === false) return;
-        setDebug(active);
         // Or 'w' to truncate the file every time the process starts.
         const logFile = fs.createWriteStream(file, { flags: 'a' });
       
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        console.log = function (...data: any[]) {
+        console.log = (...data: any[]) => {
           logFile.write(util.format.apply(null, data).replace(/\u001b[^m]*?m/g,"") + '\n');
           if (!isTest())process.stdout.write(util.format.apply(null, data) + '\n');
         };
@@ -155,7 +154,7 @@ class Configuration {
         const lora = input["lora"] ? input["lora"] : false;
         const returnValue: IconfigFile = {
             name: goodDbName,
-            port: goodDbName === "admin" ? input["port"] || 8029 : input["port"] || this.configs[ADMIN].port,
+            port: goodDbName === "admin" ? input["port"] || 8029 : input["port"] || this.configs[ADMIN].port || 8029 ,
             pg: {
                 host: input["pg_host"] || "ERROR",
                 port: input["pg_port"] ? +input["pg_port"] : 5432,
@@ -174,19 +173,14 @@ class Configuration {
             highPrecision: input["highPrecision"] ? input["highPrecision"] : false,
             multiDatastream: multi,
             logFile: input["log"] ? input["log"] : "",
-            entities: this.createBlankEntities(multi, lora),
+            entities: Object.keys(_DB).filter(e => _DB[e].essai.includes(apiType.base)
+                || (_DB[e].essai.includes(apiType.multiDatastream) && multi === true)
+                || (_DB[e].essai.includes(apiType.lora) && lora === true)
+            ),
             db : undefined
         };
         if (Object.values(returnValue).includes("ERROR")) throw new TypeError(`${errors.inConfigFile} [${util.inspect(returnValue, { showHidden: false, depth: null })}]`);
         return returnValue;
-    }
-
-    // Create a blank entity
-    private createBlankEntities(multi: boolean, lora: boolean) {
-        return Object.keys(_DB).filter(e => _DB[e].essai.includes(apiType.base)
-            || (_DB[e].essai.includes(apiType.multiDatastream) && multi === true)
-            || (_DB[e].essai.includes(apiType.lora) && lora === true)
-        );
     }
 
     // Add a new config file in json file

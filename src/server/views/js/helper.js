@@ -12,6 +12,10 @@
     if (isDebug && infos) typeof infos === "object" ? console.log(infos) : console.log(`==>${infos}<==`);
   }
 
+  function message(message) {
+    if (isDebug && message) typeof message === "object" ? console.log(message) : console.log(`==>${message}<==`);
+  }
+
   // show spinner
   function wait(on) {
     toggleShowHide(spinner, on);

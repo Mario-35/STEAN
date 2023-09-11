@@ -175,7 +175,7 @@ class QueryBuilder {
         choiceContainer.classList.add("criteria-choice-container");
         criteriumElement.appendChild(choiceContainer);
         const choiceSelect = document.createElement("select");
-        choiceSelect.classList.add("criteria-select");
+        choiceSelect.classList.add("criteria-select","patrom-select");
         choiceContainer.appendChild(choiceSelect);
         // add listener to change events of criterium selector
         choiceSelect.addEventListener("change", (e) => {
@@ -191,7 +191,7 @@ class QueryBuilder {
         if (criteriumContainer.querySelector(".add-condition-button") === null) {
             criteriumContainer.appendChild(criteriumElement);
             const addConditionButton = document.createElement("button");
-            addConditionButton.classList.add("add-condition-button");
+            addConditionButton.classList.add("add-condition-button", "patrom-button");
             addConditionButton.innerText = "+ add 'AND' condition";
             addConditionButton.addEventListener("click", (e) => {
                 e.preventDefault();
@@ -229,7 +229,7 @@ class QueryBuilder {
         conditionElement.classList.add("condition-container");
         conditionElement.id = `condition-container-${this.makeid(10)}`;
         const conditionSelect = document.createElement("select");
-        conditionSelect.classList.add("condition-select");
+        conditionSelect.classList.add("condition-select" ,"patrom-select");
         conditionElement.appendChild(conditionSelect);
         // gather criterium options
         const criteriumType = this.fields.find((field) => field.value === criterium).type;
@@ -264,9 +264,7 @@ class QueryBuilder {
     }
 
     addValueInput(criteriumElement, value = null) {
-        console.log("=============================================================================");
         const condition = criteriumElement.querySelector(".condition-select");
-        console.log(this);
         if (criteriumElement.querySelector(".valueinput") !== null) {
             criteriumElement.querySelector(".valueinput").remove();
         }
@@ -278,7 +276,7 @@ class QueryBuilder {
             const singleValueInput = document.createElement("span");
             singleValueInput['role'] = "text";
             singleValueInput.contentEditable = "true";
-            singleValueInput.classList.add("value-singleinput");
+            singleValueInput.classList.add("value-singleinput", "patrom-text-input");
             singleValueInput.classList.add("textarea");
             valueInputContainer.appendChild(singleValueInput);
             singleValueInput.focus();
@@ -292,7 +290,7 @@ class QueryBuilder {
             doubleInputContainer.classList.add("value-doubleinput");
             const firstInput = document.createElement("input");
             firstInput.type = "text";
-            firstInput.classList.add("doubleinput-firstvalue");
+            firstInput.classList.add("doubleinput-firstvalue", "patrom-text-input");
             doubleInputContainer.appendChild(firstInput);
             if (value !== null) {
                 firstInput.value = value.first;
@@ -302,7 +300,7 @@ class QueryBuilder {
             doubleInputContainer.appendChild(separator);
             const secondInput = document.createElement("input");
             secondInput.type = "text";
-            secondInput.classList.add("doubleinput-secondvalue");
+            secondInput.classList.add("doubleinput-secondvalue", "patrom-text-input");
             doubleInputContainer.appendChild(secondInput);
             if (value !== null) {
                 secondInput.value = value.second;
@@ -313,7 +311,7 @@ class QueryBuilder {
         else if (this.inputTypes["select"].includes(condition.value)) {
             const conditionSelect = document.createElement("select");
             conditionSelect.multiple = true;
-            conditionSelect.classList.add("value-select");
+            conditionSelect.classList.add("value-select", "patrom-select");
             valueInputContainer.appendChild(conditionSelect);
             const criterium = criteriumElement.querySelector(".criteria-select").value;
             const field = this.fields.find((singleField) => singleField.value === criterium);
@@ -354,7 +352,7 @@ class QueryBuilder {
 
     addRemoveCriteriumButton(criteriumElement) {
         const removeCriteriumButton = document.createElement("button");
-        removeCriteriumButton.classList.add("remove-criterium-button");
+        removeCriteriumButton.classList.add("remove-criterium-button", "patrom-button", "patrom-button--danger");
         removeCriteriumButton.innerHTML = "✕";
         criteriumElement.appendChild(removeCriteriumButton);
         removeCriteriumButton.addEventListener("click", (e) => {

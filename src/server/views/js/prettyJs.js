@@ -1276,8 +1276,6 @@ pp.prototype.sql = function(text) {
                         parenthesisLevel = 0,
                         str = '',
                         ix = 0;
-                        console.log("============================================================");
-                        console.log(ar_by_quote);
 
     for(ix=0;ix<len;ix++) {
 

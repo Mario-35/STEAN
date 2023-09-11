@@ -24,24 +24,16 @@
     window.location.href = "https://github.com/Mario-35/api-sensorthing";
   };
 
+  debug.onclick = () => {
+    isDebug = !isDebug;
+    if (isDebug ) 
+      debug.classList.add("debug");
+      else debug.classList.remove("debug");
+  };
+
   btnShowLinks.onclick = () => { 
     const temp = createUrl();
     updateWinLinks(JSON.parse(` { "direct" : "${temp.direct}", "query" : "${temp.query}"}`));
-  };
-
-  addImport.onclick = () => {
-    datas.innerText = JSON.stringify({
-      "header": true,
-      "nan": true,
-      "duplicates": true,
-      "columns": {
-        "1": {
-          "datastream": "1",
-          "featureOfInterest": "1"
-        }
-      }
-    });
-    
   };
 
   btnLimit.onclick = async () => {
@@ -73,7 +65,17 @@
   };
 
   btnPostTemplate.onclick = () => {
-    const result = {};
+    const result = (importFile == true) ? JSON.stringify({
+      "header": true,
+      "nan": true,
+      "duplicates": true,
+      "columns": {
+        "1": {
+          "datastream": "1",
+          "featureOfInterest": "1"
+        }
+      }
+    }) : {};
     const src = Object.keys(_PARAMS._DATAS[entity.value].columns);
     src.forEach(e => {
       if(_PARAMS._DATAS[entity.value].columns[e].type)
@@ -92,7 +94,8 @@
             break;
         } else console.log(e);
     });
-    beautifyDatas(getElement("datas"), result, "json") ;
+    
+    beautifyDatas(getElement("jsonDatas"), result, "json") ;
   };
 
   btnClear.onclick = () => {
@@ -119,7 +122,6 @@
         // ===============================================================================
         // |                                     GET                                     |
         // ===============================================================================
-        console.log(queryResultFormat.value );
         if (queryResultFormat.value === "graph") url=url.replace("resultFormat=graph","resultFormat=graphDatas");
         const jsonObj = await getFetchDatas(url, queryResultFormat.value);
         try {
@@ -200,38 +202,8 @@
       }  
   };
 
-  function clickLink(event) {
-    canGo = false;
-    const className = Object.values(event.explicitOriginalTarget.classList)[0];
-    if (className === "json-url") {
-      clear();
-      decodeUrl(event.explicitOriginalTarget.innerText);
-      refresh();
-      canGo = true;
-    } else if (className === "json-code" || (event.previousElementSibling && Object.values(event.previousElementSibling.classList).includes("json-code"))) {
-      try {
-        updateWinDecoderCode(event.explicitOriginalTarget.innerText);  
-      } catch (err) {     
-        notifyError("Error", err);
-      } finally {
-        canGo = true;
-        buttonGo();
-      }
-    }
-  }
-
-  function dblClickLink(element) {
-      if (canGo === true) go.onclick(element);
-  }
-
   nb.addEventListener("change", () => {
     updateForm();
-  });
-
-  queryExpand.addEventListener("change", () => {
-    const test = !queryExpand.value.startsWith(_NONE);
-    toggleShowHide(querySubExpand, test);
-    if (test) populateMultiSelect("querySubExpand", Object.keys( _PARAMS._DATAS [queryExpand.value].relations)[subentity.value], null, _NONE);
   });
 
   entity.addEventListener("change", () => {
@@ -251,6 +223,10 @@
   subentity.addEventListener("change", () => {
     refresh();
   });  
+
+  nb.addEventListener("exit", () => {
+    refresh();
+  });
 
   splitResultOption.addEventListener("change", () => {
     const test = getIfChecked("splitResultOption");
@@ -279,6 +255,7 @@
   });
 
   fileone.addEventListener( "change", ( e ) => 	{
+    header("fileone");
     var fileName = "";
     try {
       if (this.files && this.files.length > 1 )

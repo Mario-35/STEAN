@@ -16,14 +16,16 @@
   
   var _wrapper = document.createElement("div");
   _wrapper.setAttribute("id", "tablewrapper");
-  _wrapper.classList.add("table-wrapper");
+  _wrapper.classList.add("patrom-table-container");
 
   var _table = document.createElement("table");
   _table.setAttribute("id", "csv");
-  _table.classList.add("fl-table");
+  var _thead = document.createElement("thead"); 
+  var _tbody = document.createElement("tbody"); 
 
+  // _tr = document.createElement(singleRow === 0 ? "thead" : "tr"); 
   for (var singleRow = 0; singleRow < allRows.length; singleRow++) {
-    _tr = document.createElement(singleRow === 0 ? "thead" : "tr"); 
+    var _tr = document.createElement("tr"); 
     const rowCells = allRows[singleRow].split(separator);
     for(var rowCell = 0; rowCell < rowCells.length; rowCell++){
       const _td = document.createElement(singleRow === 0 ? "th" : "td");
@@ -31,10 +33,14 @@
       _td.appendChild(text);
       _tr.appendChild(_td);
     }
-    _table.appendChild(_tr);
+    if (singleRow === 0) _thead.appendChild(_tr);
+    else _tbody.appendChild(_tr);
   }  
+  _table.appendChild(_thead);
+  _table.appendChild(_tbody);
+  console.log(_table);
   _wrapper.appendChild(_table);
 
   tableArea.appendChild(_wrapper);
-  tableArea.classList.add("scrolling");
+  // tableArea.classList.add("scrolling");
 };

@@ -22,7 +22,6 @@ const SplitterBar = function (container, leftContent, rightContent) {
     splitter.style.width = "5px";
     splitter.style.left = "25%";
     splitter.style.transform = "translateX(-25%)";
-    leftSide.style.background = "rgba(121, 137, 177, 0.9)";
     splitter.style.background = "black";
 
 
