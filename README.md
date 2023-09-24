@@ -4,6 +4,8 @@
 
 ![Inrae](https://raw.githubusercontent.com/Mario-35/STEAN/main/doc/assets/inrae.png "Inrae")
 
+[Release infos](https://github.com/Mario-35/STEAN/blob/main/realease.md)
+
 ## Want to use this with docker
 
 ![Docker](https://raw.githubusercontent.com/Mario-35/STEAN/main/doc/assets/logo-docker.png "Docker")
@@ -42,7 +44,7 @@ services:
 1. Fork/Clone
 2. Install dependencies - npm install
 3. Fire up Postgres on the default ports
-4. Make configuration/config.json file (see [config.json.example](https://github.com/Mario-35/STEAN/blob/main/src/server/configuration/config.json.example))
+4. Make configuration/config.json file (see [config.json.example](https://github.com/Mario-35/STEAN/blob/main/src/configuration/config.json.example))
 5. npm run dev for dev, npm run build (vs script package.json)
 6. If database not exists the program create it.
 
