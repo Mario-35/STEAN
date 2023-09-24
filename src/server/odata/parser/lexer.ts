@@ -133,6 +133,7 @@ export enum TokenType {
     entity = "Entity",
     splitResult = "SplitResult",
     interval = "Interval",
+    payload = "Payload",
     Root = "Root",
     Debug = "Debug",
     InlineCount = "InlineCount",

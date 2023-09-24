@@ -33,6 +33,7 @@ export class PgVisitor {
     expand: string[] = [];
     splitResult: string[] | undefined;
     interval: string | undefined;
+    payload: string | undefined;
     skip = 0;
     limit = 0;
     count = false;
@@ -319,6 +320,12 @@ export class PgVisitor {
         if (this.interval) this.noLimit();
     }
 
+    protected VisitPayload(node: Token, context: any) {
+        this.Visit(node.value.path, context);
+        if (node.value.options) node.value.options.forEach((item: Token) => this.Visit(item, context));
+        this.payload = node.value;
+    }
+
     protected VisitresultFormat(node: Token, context: any) {
         this.Visit(node.value.path, context);
         if (node.value.options) node.value.options.forEach((item: Token) => this.Visit(item, context));
@@ -493,8 +500,7 @@ export class PgVisitor {
         node.value.name = node.value.name === "result" ? "_resultnumber" : node.value.name;
         context.identifier = node.value.name;
         if (this.entity != "" && context.target) 
-            if (Object.keys(_DB[this.entity].columns).includes(node.value.name)) {
-                
+            if (Object.keys(_DB[this.entity].columns).includes(node.value.name)) {                
                 if (context.relation) {                      
                     if (Object.keys(_DB[this.entity].relations).includes(context.relation)) {
                         if (!context.key) {
@@ -505,8 +511,7 @@ export class PgVisitor {
                     }
                 }  
                 
-            } else if (Object.keys(_DB[this.entity].relations).includes(node.value.name)) {
-                
+            } else if (Object.keys(_DB[this.entity].relations).includes(node.value.name)) {                
                 const relation = getEntityName(node.value.name);
                 if (relation) {
                     context.relation = node.value.name;

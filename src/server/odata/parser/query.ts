@@ -50,6 +50,7 @@ namespace Query {
             Query.resultFormat(value, index) ||
             Query.splitResult(value, index) ||
             Query.interval(value, index) ||
+            Query.payload(value, index) ||
             Query.id(value, index) ||
             Query.InlineCount(value, index) ||
             Query.orderby(value, index) ||
@@ -110,6 +111,21 @@ namespace Query {
 
         return Lexer.tokenize(value, start, index, Utils.stringify(value, eq, index), Lexer.TokenType.splitResult);
         
+    }
+
+    export function payload(value: Utils.SourceArray, index: number): Lexer.Token | undefined {
+        const start = index;
+        const add = addToIndex(value, start, "payload");
+        if (add) index += add; else return;
+
+        const eq = Lexer.EQ(value, index);
+        if (!eq) return;
+        index = eq;
+
+        while (value[index] !== 0x26 && index < value.length) index++;
+        if (index === eq) return;
+
+        return Lexer.tokenize(value, start, index, Utils.stringify(value, eq, index), Lexer.TokenType.payload);
     }
 
     export function interval(value: Utils.SourceArray, index: number): Lexer.Token | undefined {

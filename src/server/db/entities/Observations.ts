@@ -31,7 +31,7 @@ export class Observations extends Common {
             if (!search) this.ctx.throw(404, { code: 404, detail: msg(errors.noFound, "MultiDatastreams") });
             
             const tempSql = await Common.dbContext.raw(
-                `select jsonb_agg(tmp.units -> 'name') as keys from ( select jsonb_array_elements("unitOfMeasurements") as units from multidatastream where id = ${search} ) as tmp`
+                `select jsonb_agg(tmp.units -> 'name') AS keys from ( select jsonb_array_elements("unitOfMeasurements") AS units from multidatastream where id = ${search} ) AS tmp`
                 );
                 const multiDatastream = tempSql.rows[0];
                 if (dataInput["result"] && typeof dataInput["result"] == "object") {

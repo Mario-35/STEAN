@@ -84,7 +84,7 @@ export const createSTDB = async(configName: string): Promise<IKeyString> => {
 
     if (isTest()) await asyncForEach(testsDatas(), async (sql: string) => {
         returnValue["Feed datas"] = await dbConnection
-        .raw(sql.split("\n").join(""))
+        .raw(`${sql}`)
         .then(() => "✔")
         .catch((error) => {
             Logs.error(error);

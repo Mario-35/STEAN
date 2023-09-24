@@ -88,7 +88,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
                         const linkBase = "${ctx._linkBase}/${ctx._config.apiVersion}";
                         const value = ${JSON.stringify(input, null, 2)};
                         ${addJsFile("graph.js")}
-                        showGraph(value);
+                        updateWinGraph(value);
                         ${edit}                              
                       </script>
                     </body>

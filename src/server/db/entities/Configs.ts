@@ -35,12 +35,10 @@ export class Configs extends Common {
          return this.createReturnResult({ body: hideKeysInJson(serverConfig.configs[typeof idInput === "string" ? idInput : this.ctx._config.name], ["entities"]) });       
     }
 
-
      async add(dataInput: object | undefined): Promise<IreturnResult | undefined> {
          Logs.whereIam(); 
          if (!ensureAuthenticated(this.ctx)) this.ctx.throw(401);
          if (dataInput) return this.createReturnResult({ body: await serverConfig.addConfig(dataInput)});
     }
-
  }
  

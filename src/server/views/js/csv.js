@@ -38,7 +38,6 @@
   }  
   _table.appendChild(_thead);
   _table.appendChild(_tbody);
-  console.log(_table);
   _wrapper.appendChild(_table);
 
   tableArea.appendChild(_wrapper);

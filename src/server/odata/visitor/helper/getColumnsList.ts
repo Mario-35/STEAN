@@ -9,7 +9,7 @@
 import { serverConfig } from "../../../configuration";
 import { _DB } from "../../../db/constants";
 import { columnList, isCsvOrArray, isGraph, isObservation } from "../../../db/helpers";
-import { getEntityName, goodNameForPostgres, removeQuotes } from "../../../helpers";
+import { getEntityName, removeQuotes } from "../../../helpers";
 import { Ientity } from "../../../types";
 import { PgVisitor } from "../PgVisitor";
 
@@ -37,7 +37,7 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
         // only ref
         if (main.interval) main.addToBlanks(`CONCAT('${main.options.rootBase}${tempEntity.name}(', coalesce("@iot.id", '0')::text, ')') AS "@iot.selfLink"`); 
         if (element.onlyRef == true ) returnValue.push(selfLink);   
-        else cols.forEach((elem: string) => {                    
+        else cols.forEach((elem: string) => {     
             elem = removeQuotes(elem);
             if (main.interval) main.addToBlanks(elem);  
             if (tempEntity.columns.hasOwnProperty(elem)) {  
@@ -45,6 +45,7 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
                             ? tempEntity.columns[elem].alias_lora ||`"${elem}"` 
                             : tempEntity.columns[elem].alias ||`"${elem}"`;
                 if (main.id) returnValue.push(column.replace(/$ID+/g, main.id.toString()) );
+                if (tempEntity.columns[elem].create.includes("timestamptz")) returnValue.push(`to_char("${elem}", '${serverConfig.configs[main.configName].date_format}') AS "${elem}"`);          
                 else returnValue.push(column && column != "" ? column : `"${elem}"`);                    
                 if (elem === "id" && (element.showRelations == true || csvOrArray)) {
                     if (csvOrArray) main.addToArrayNames("id");            
@@ -64,8 +65,8 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
         if (main.interval && !isGraph(main)) returnValue.push(`timestamp_ceil("resultTime", interval '${main.interval}') AS srcdate`);
 
         if (element.splitResult) element.splitResult.forEach((elem: string) => {
-            const alias: string = goodNameForPostgres(element.splitResult && element.splitResult.length === 1 ? "result" : elem);
-            returnValue.push( `"_resultnumbers"[(select position from  multidatastream, jsonb_array_elements("multidatastream"."unitOfMeasurements") with ordinality arr(elem, position) where id = "multidatastream_id" and elem->>'name' = '${elem}')] as "${alias}"` );  
+            const alias: string = element.splitResult && element.splitResult.length === 1 ? "result" : elem;
+            returnValue.push( `"_resultnumbers"[(select position from  multidatastream, jsonb_array_elements("multidatastream"."unitOfMeasurements") with ordinality arr(elem, position) where id = "multidatastream_id" and elem->>'name' = '${removeQuotes(elem)}')] AS "${alias}"` );  
             main.addToArrayNames(alias);
             Object.keys(tempEntity.columns).filter((word) => word.includes("_")).forEach(e => ResultgroupBy.push(`"${tempEntity.table}"."${e}"`));
             // element.groupBy.push(`"${tempEntity.table}"."id"`);

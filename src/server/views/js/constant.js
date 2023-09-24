@@ -5,9 +5,10 @@
  * @author mario.adam@inrae.fr
  *
  */
+// log debug test
+let isDebug = false;
 
 const _NONE = "none";
-
 
 // load file json
 let importFile = false;
@@ -16,19 +17,22 @@ var listOptions = {};
 var canGo = false;
 let builder = undefined;
 
-let winSqlQuery = null;
-let winDecoderResult = null;
-let winDecoderCode = null;
-let winJsonResult = null;
-let winCsvResult = null;
-let winResult = null;
-let winLinks = null;
+
+const wins = {
+    SqlQuery: false,
+    Json: false,
+    logs: false,
+    Csv: false,
+    Sql: false,
+    Links: false,
+    Graph: false
+};
+
+
 const cardDatas = {};
 let dragText = "";
 let jsonViewer = undefined; 
 
-// log debug test
-let isDebug = false;
 
 // replace at execution
 const _PARAMS={};
@@ -46,21 +50,5 @@ function relationsList(input) {
     const ent = getEntityName(input);
     return ent ? Object.keys(_PARAMS._DATAS[ent].relations) : undefined;
 }
-
-function winActives() {
-    const results = [];
-    if (winSqlQuery !== null) results.push("winSqlQuery");
-    if (winDecoderResult !== null) results.push("winDecoderResult");
-    if (winDecoderCode !== null) results.push("winDecoderCode");
-    if (winJsonResult !== null) results.push("winJsonResult");
-    if (winCsvResult !== null) results.push("winCsvResult");
-    if (winResult !== null) results.push("winResult");
-    if (winLinks !== null) results.push("winLinks");
-    return results;
-}
-
-function onlyOneWinActive() {
-    console.log(winJsonResult);
-    console.log(winActives());
-    return winActives().length > 0;
-}
+const winActives = () => Object.entries(wins).filter(e => e === true).length > 0;
+// const wianActives = () => Object.entries(wins).filter(e => e === true).length < 1;

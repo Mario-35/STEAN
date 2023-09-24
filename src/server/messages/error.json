@@ -40,5 +40,6 @@
 	"observationType": "Wrong value for observationType",
 	"createUser": "Error in creating user",
 	"decoderError": "decoder error",
-	"DecodingPayloadError": "Decoding Payload error"
+	"DecodingPayloadError": "Decoding Payload error",
+	"InvalidPayload": "Invalid Payload"
 }

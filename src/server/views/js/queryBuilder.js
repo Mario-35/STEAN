@@ -9,6 +9,8 @@ class QueryBuilder {
             "general": {
                 "eq": "Equal to",
                 "ne": "Not equal to",
+                "nu": "null",
+                "nn": "Notnull",
             },
             "number": {
                 "gt": "Greater than",

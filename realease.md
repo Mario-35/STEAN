@@ -1,4 +1,12 @@
 
+# version 1.9.0
+    query builder finished
+    add specific logs result in Query
+    add Not Null in Query Builder
+    add Null in Query Builder
+    json show date formated as parameter in configuration file
+
+
 # version 1.8.0
     add patrom component
     add urls interaction in query

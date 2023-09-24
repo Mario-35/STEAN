@@ -87,7 +87,7 @@
 
 
 [class*="shj-lang-"] {
-	color: #f8f8f2;
+	color: var(--text-Color);
 }
 [class*="shj-lang-"]:before {color: #6f9aff}
 

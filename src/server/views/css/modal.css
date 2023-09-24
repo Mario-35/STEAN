@@ -32,7 +32,7 @@
 
 .attention-component .inner-container {
     padding: 20px;
-    background-color: #fff
+    background-color: var(--background-color);
 }
 
 .attention-component .head {

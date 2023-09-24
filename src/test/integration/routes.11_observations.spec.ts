@@ -283,9 +283,9 @@ describe("endpoint : Observations", () => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
-                    res.body.result.should.include.keys("Humidity");
-                    res.body.result.should.include.keys("Temperature");
-                    res.body.result.should.include.keys("Battery");
+                    res.body.result.should.include.keys("soil moisture");
+                    res.body.result.should.include.keys("soil temperature");
+                    res.body.result.should.include.keys("battery voltage");
                     addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
@@ -322,22 +322,22 @@ describe("endpoint : Observations", () => {
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
                     Object.keys(res.body).length.should.eql(2);
-                    res.body.value[0].should.include.keys("humidity");
-                    res.body.value[0].should.include.keys("temperature");
-                    temp = res.body.value[0]["temperature"];
-                    res.body.value[0].should.include.keys("battery");
+                    res.body.value[0].should.include.keys("soil moisture");
+                    res.body.value[0].should.include.keys("soil temperature");
+                    temp = res.body.value[0]["soil temperature"];
+                    res.body.value[0].should.include.keys("battery voltage");
                     addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });
         });
 
-        it("Return Observations with multiple result and split result Temperature", (done) => {
+        it("Return Observations with multiple result and split result soil temperature", (done) => {
             const infos = {
                 api: `{get} Get with Split Result Property`,
                 apiName: `GetSelectObservationsSplitResultTemp`,
                 apiDescription: "Retrieve observations with splitted Temperature result.",
                 apiExample: {
-                    http: `/v1.0/MultiDatastreams(1)/${entity.name}?$splitResult=Temperature`,
+                    http: `/v1.0/MultiDatastreams(1)/${entity.name}?$splitResult="soil temperature"`,
                     curl: defaultGet("curl", "KEYHTTP"),
                     javascript: defaultGet("javascript", "KEYHTTP"),
                     python: defaultGet("python", "KEYHTTP")
@@ -571,9 +571,9 @@ describe("endpoint : Observations", () => {
                 "phenomenonTime": "2017-02-07T18:02:00.000Z",
                 "resultTime": "2017-02-07T18:02:05.000Z",
                 "result": {
-                    "temperature": 10.1,
-                    "humidity": 10.2,
-                    "battery": 10.3
+                    "soil temperature": 10.1,
+                    "soil moisture": 10.2,
+                    "battery voltage": 10.3
                 },
                 "FeatureOfInterest": {
                     "name": "Au Comptoir Vénitien [8]",
@@ -607,9 +607,9 @@ describe("endpoint : Observations", () => {
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
                     res.body.should.include.keys(testsKeys);
-                    res.body.result["Humidity"].should.eql(10.2);
-                    res.body.result["Temperature"].should.eql(10.1);
-                    res.body.result["Battery"].should.eql(10.3);
+                    res.body.result["soil moisture"].should.eql(10.2);
+                    res.body.result["soil temperature"].should.eql(10.1);
+                    res.body.result["battery voltage"].should.eql(10.3);
                     done();
                 });
         });
@@ -619,8 +619,8 @@ describe("endpoint : Observations", () => {
                 "phenomenonTime": "2017-02-07T18:02:00.000Z",
                 "resultTime": "2017-02-07T18:02:05.000Z",
                 "result": {
-                    "temperature": 10.1,
-                    "humidity": 10.2
+                    "soil temperature": 10.1,
+                    "soil moisture": 10.2
                 },
                 "FeatureOfInterest": {
                     "name": "Au Comptoir Vénitien[9]",

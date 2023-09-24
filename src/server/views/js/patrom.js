@@ -194,7 +194,7 @@ class PatromMultiSelect {
 	_getSettings(element) {
 		var settings = {};
 		var defaultSettings = {
-			width: this._setpixel(element.width || '250px'),
+			width: 'auto',
 			height: themes.common["font-size+2"],
 			appendTo: '__auto__',
 			className: '',
@@ -599,6 +599,7 @@ var multiSelects = {};
 		this._dom_container = document.createElement("pre");
 		this._dom_container.classList.add("json-viewer", "content");
 		this._dom_container.addEventListener('click', this.SimulateClickEventListener);
+		this.rootName = "none";
 	};
 
 	/**
@@ -608,7 +609,10 @@ var multiSelects = {};
 	 * @param {Number} [inputMaxLvl] Process only to max level, where 0..n, -1 unlimited
 	 * @param {Number} [inputColAt] Collapse at level, where 0..n, -1 unlimited
 	 */
-	showJSON(jsonValue, inputMaxLvl, inputColAt) {
+	setRoot( rootName) {
+		this.rootName = rootName || "none";
+	}
+	showJSON(jsonValue,  inputMaxLvl, inputColAt) {
 		// Process only to maxLvl, where 0..n, -1 unlimited
 		var maxLvl = typeof inputMaxLvl === "number" ? inputMaxLvl : -1; // max level
 		// Collapse at level colAt, where 0..n, -1 unlimited
@@ -786,19 +790,32 @@ var multiSelects = {};
 		}
 	};
 
-	isDate2(string) {
-		const temp = new Date(string);
-		return (temp instanceof Date && !isNaN(temp));
-	}
+	isDate(str) {
+		str = str.slice(0, 10);
+		if (str.length !== 10 ) return false;
+		const regex = /^\d+$/.test(str[2]) 
+			? /^\d{4}[\/\-](0?[1-9]|1[012])[\/\-](0?[1-9]|[12][0-9]|3[01])$/		
+			: /^[0-9]{2}[\/][0-9]{2}[\/][0-9]{4}$/g;		
+		return regex.test(str);
+	  }
+
 	isUrl(string) {
 		const regexp = /^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#:.?+=&%@!\-/]))?/;
 		return regexp.test(string);
 	  }
 
 	isCode(string) {
-	return string.startsWith("function decode(");
+		return string.startsWith("function decode(");
 	}
 	
+	isObject(string) {
+		try {
+			 JSON.parse(string);
+			return true;
+		} catch (error) {
+			return false;
+		}
+	}
 
 	/**
 	 * Create simple value (no object|array).
@@ -813,11 +830,13 @@ var multiSelects = {};
 
 		if (type === "string") {
 			if (this.isUrl(value)) {
-				type = "url";
-			  } else if (this.isDate2(value)) {
+				type = value.includes(this.rootName) ?  "url-link" : "url";
+			  } else if (this.isDate(value)) {
 				type = "date";
 			  } else if (this.isCode(value)) {
 				type = "code";
+			  } else if (this.isObject(value)) {
+				type = "json";
 			  }
 			asText = '"' + value + '"';
 		} else if (value === null) {
@@ -826,11 +845,9 @@ var multiSelects = {};
 		} else if (isDate) {
 			type = "date";
 			asText = value.toLocaleString();
-		}
-
+		} 
 		spanEl.className = "type-" + type;
 		spanEl.textContent = asText;
-
 		return spanEl;
 	};
 

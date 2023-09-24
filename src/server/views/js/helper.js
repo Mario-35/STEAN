@@ -16,6 +16,12 @@
     if (isDebug && message) typeof message === "object" ? console.log(message) : console.log(`==>${message}<==`);
   }
 
+  // Extract only digit to get id (from element id)
+  function getId(input) { 
+    var numb = input.match(/\d/g);
+    return numb.join("");
+  }
+
   // show spinner
   function wait(on) {
     toggleShowHide(spinner, on);
@@ -97,31 +103,10 @@ async function executeSql(e) {
   wait(true); 
   if (e) e.preventDefault();
   try {
-    const encoded = btoa(winSqlQuery.content.innerText); 
+    const encoded = btoa(wins.Sql.content.innerText); 
     const url = `${optHost.value}/${optVersion.value}/Sql?$query=${encoded}`;
     const jsonObj = await getFetchDatas(url);
     updateWinJsonResult(jsonObj, url);          
-  }
-  catch (err) {
-    notifyError("Error", err);
-  } finally {
-    wait(false);
-  } 
-}
-
-async function executeJS(e) {
-  wait(true); 
-  if (e) e.preventDefault();
-  try {
-    
-    new ExecuteCode({
-      title:  "Execute code",
-      submitText: "Execute",
-      content: `enter payload`,
-      placeholderText: "payload",
-      code: winDecoderCode.content.innerText
-    });
-
   }
   catch (err) {
     notifyError("Error", err);

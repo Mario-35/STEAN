@@ -27,6 +27,7 @@ import { decodeToken, ensureAuthenticated, getAuthenticatedUser } from "../authe
 import { createAdminHtml } from "../views/admin";
 import { serverConfig } from "../configuration";
 import { createDatabase } from "../db/createDb";
+import { createLoradminHtml } from "../views/Loradmin";
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 
 // ALl others
@@ -161,6 +162,15 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             ctx.set("Content-Security-Policy", "self");
             ctx.type = returnFormats.html.type;
             ctx.body = createQueryHtml(temp);
+            return;
+
+        case "LORADMIN":
+            if(!adminWithSuperAdminAccess) ctx.redirect(`${ctx._rootName}login`);
+            const loraTemp = await createIqueryFromContext(ctx);
+            ctx.set("script-src", "self");
+            ctx.set("Content-Security-Policy", "self");
+            ctx.type = returnFormats.html.type;
+            ctx.body = createLoradminHtml(loraTemp);
             return;
                 
         case "ADMIN":

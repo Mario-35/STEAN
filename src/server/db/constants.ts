@@ -449,17 +449,18 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                 relationKey: "sensor_id",
                 entityColumn: "id",
                 tableKey: "id"
-            },
-            Loras: {
-                type: Erelations.belongsTo,
-                expand: `"lora"."id" = (select "lora"."id" from "lora" where "lora"."sensor_id" = "sensor"."id")`,
-                link: `"lora"."id" = (select "lora"."id" from "lora" where "lora"."sensor_id" = $ID)`,
-                entityName: "Loras",
-                tableName: "lora",
-                relationKey: "sensor_id",
-                entityColumn: "id",
-                tableKey: "id"
             }
+            // ,
+            // Loras: {
+            //     type: Erelations.belongsTo,
+            //     expand: `"lora"."id" = (select "lora"."id" from "lora" where "lora"."sensor_id" = "sensor"."id")`,
+            //     link: `"lora"."id" = (select "lora"."id" from "lora" where "lora"."sensor_id" = $ID)`,
+            //     entityName: "Loras",
+            //     tableName: "lora",
+            //     relationKey: "sensor_id",
+            //     entityColumn: "id",
+            //     tableKey: "id"
+            // }
         }
     },
 
@@ -813,21 +814,21 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                   FROM "multidatastream" where id = "multidatastream_id" ) AS tmp) ) AS tmp2 ) AS tmp3)
                 WHEN "observation"."_resultjson" IS NOT NULL THEN json_object_agg('result',"observation"."_resultjson")->'result'
                 WHEN "observation"."_resulttexts" IS NOT NULL THEN json_object_agg('result',(SELECT json_object_agg(key, value) 
-                  FROM ( SELECT replace(unnest(keys), '"','') as key, unnest("observation"."_resulttexts") AS value 
+                  FROM ( SELECT replace(unnest(keys), '"','') AS key, unnest("observation"."_resulttexts") AS value 
                   FROM ( SELECT keys FROM  string_to_array((select "unitOfMeasurement"->'name'::text 
                   FROM "datastream" WHERE id = coalesce("datastream_id", "multidatastream_id"))::text, ',') keys ) AS tmp2 ) AS tmp3 ))->'result'
                 WHEN "observation"."_resulttext" IS NOT NULL THEN json_object_agg('result',"observation"."_resulttext")->'result'
-                end as "result"`,
+                end AS "result"`,
                 alias_lora: ` CASE 
                 WHEN "observation"."_resultnumber" IS NOT NULL THEN json_object_agg('result',"observation"."_resultnumber")->'result'
                 WHEN "observation"."_resultnumbers" IS NOT NULL THEN json_object_agg('result',"observation"."_resultnumbers")->'result'
                 WHEN "observation"."_resultjson" IS NOT NULL THEN json_object_agg('result',"observation"."_resultjson")->'result'
                 WHEN "observation"."_resulttexts" IS NOT NULL THEN json_object_agg('result',(SELECT json_object_agg(key, value) 
-                  FROM ( SELECT replace(unnest(keys), '"','') as key, unnest("observation"."_resulttexts") AS value 
+                  FROM ( SELECT replace(unnest(keys), '"','') AS key, unnest("observation"."_resulttexts") AS value 
                   FROM ( SELECT keys FROM  string_to_array((select "unitOfMeasurement"->'name'::text 
                   FROM "datastream" WHERE id = coalesce("datastream_id", "multidatastream_id"))::text, ',') keys ) AS tmp2 ) AS tmp3 ))->'result'
                 WHEN "observation"."_resulttext" IS NOT NULL THEN json_object_agg('result',"observation"."_resulttext")->'result'
-                end as "result"`,
+                end AS "result"`,
              type : "json"
             },
             _resultint: {

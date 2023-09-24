@@ -556,6 +556,41 @@ describe("endpoint : Datastream", () => {
                     done();
                 });
         });
+
+        it(`Return added ${entity.name} from Thing`, (done) => {
+            const datas = {
+                "name": "Capteur de pression [70b3d5e75e014f06]",
+                "description": "Capteur de pression",
+                "observationType": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+                "unitOfMeasurement": {
+                    "name": "Pression",
+                    "symbol": "B",
+                    "definition": "http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#DegreeCelsius"
+                },
+                "ObservedProperty": {
+                    "name": `Capteur de pression de chez moi`,
+                    "description": "Capteur de pression de biere",
+                    "definition": "http://www.qudt.org/qudt/owl/1.0.0/quantity/Instances.html#AreaTemperature"
+                },
+                "Sensor": {  
+                    "name": `Capteur de pression`,
+                    "description": "Capteur de pression",
+                    "encodingType": "application/pdf",
+                    "metadata": "https://www.watteco.fr/download/fiche-technique-torano-lorawan/?wpdmdl=8460&refresh=6405aa1c76d491678092828"
+                }                
+            };
+            chai.request(server)
+                .post(`/test/v1.0/Things(1)/${entity.name}`)
+                .send(datas)
+                .set("Cookie", `${keyTokenName}=${token}`)
+                .end(async (err: Error, res: any) => {
+                    should.not.exist(err);
+                    res.status.should.equal(201);
+                    res.type.should.equal("application/json");
+                    res.body.should.include.keys(testsKeys);
+                    done();
+                });
+        });
     });
 
     describe(`{patch} ${entity.name} ${nbColorTitle}[10.3]`, () => {
@@ -635,7 +670,7 @@ describe("endpoint : Datastream", () => {
                 .select("*")
                 .orderBy("id")
                 .then((items) => {
-                    const thingObject = items[items.length - 1];
+                    const thingObject = items[items.length - 2];
                     const lengthBeforeDelete = items.length;
                     const infos = {
                         api: `{delete} ${entity.name} Delete one`,

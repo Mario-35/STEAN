@@ -22,13 +22,13 @@ export const commonHtml = (input: string, params: Iquery): string => {
     Logs.head("commonHtml");
     Logs.debug("params", params); 
     const result: string[] = input
-                                .replace(/<link /g,'\n<link ')
-                                .replace(/<script /g,'\n<script ')
-                                .replace(/<\/script>/g,'</script>\n')
-                                .replace(/\r\n/g,'\n')
-                                .split('\n')
-                                .map((e:string) => e.trim())  
-                                .filter(e => e.trim() != "");
+                            .replace(/<link /g,'\n<link ')
+                            .replace(/<script /g,'\n<script ')
+                            .replace(/<\/script>/g,'</script>\n')
+                            .replace(/\r\n/g,'\n')
+                            .split('\n')
+                            .map((e:string) => e.trim())  
+                            .filter(e => e.trim() != "");
     
     const replaceInResult = (searhText: string, content: string) => {
         let index = result.indexOf(searhText);
@@ -77,7 +77,7 @@ export const commonHtml = (input: string, params: Iquery): string => {
         replaceInResult(`<link rel="stylesheet" href="${fileWithOutMin(item)}">`, `<style>${addCssFile(item)}</style>`);
     });
     
-    listaddJsFiles().forEach((item: string) => {   
+    listaddJsFiles().forEach((item: string) => {  
         replaceInResult(`<script src="${fileWithOutMin(item)}"></script>`, `<script>${addJsFile(item)}</script>`);
     });
 

@@ -1,7 +1,7 @@
 /**
 * Patrom theme 
 * @copyright 2023-present Inrae
-* 11/09/2023 16:04:59
+* 23/09/2023 17:47:50
 * @author mario.adam@inrae.fr
 *
 */
@@ -97,7 +97,7 @@ body {
   --background-color-hover: #f9c62a70;
   --background-content: #e1e6e6;
   --content-window-background: #d9d5f5;
-  --background-highlight: #288edf;
+  --background-highlight: #c1ddf2;;
   --background-highlight-hover: #4ca1e4;
 
   --color-active: #0772c3;
@@ -127,8 +127,10 @@ body {
 
   --json-number: #073aff;
   --json-code: #8e08a0;
+  --json-object: #cdf323;
   --json-url: #DD2E2E;
-  --json-string: #116408;
+  --json-url-link: #ce8787;
+  --json-string: #107904;
   --json-date: #CB7500;
 }.theme-dark {
   --font-size: 14px;
@@ -248,11 +250,15 @@ body {
 
   --json-number: #0cbde6;
   --json-code: #de9ae7;
+  --json-object: #cdf323;
   --json-url: #F0A1A1;
+  --json-url-link: #ce8787;
   --json-string: #B7E4B2;
   --json-date: #CB7500;
 }
-
+.width100 {
+  width: 100%;
+}
 
 .container {
   display: flex;
@@ -1424,10 +1430,6 @@ body {
   border: none;
 }
 
-input[type=checkbox].orderby:after {
-  content: "";
-}
-
 input[type=checkbox].orderby:checked:after {
   content: "";
 }
@@ -2053,6 +2055,7 @@ input[type="radio"]:disabled:active + .patrom-radio-button__checkmark:before {
   }
   .patrom-select {
     background: var(--input-background);
+    font-size: var(--font-size-2);
     background-image: none;
     border:1px solid var(--select-border-top); 
     color: var(--text-color);
@@ -2061,7 +2064,7 @@ input[type="radio"]:disabled:active + .patrom-radio-button__checkmark:before {
     box-sizing: border-box;
   }
 .patrom-multi-select-container {
-  display: inline-block;
+  /* display: inline-block; */
 }
 
 .patrom-multi-select li .buttonMini-all {
@@ -2094,6 +2097,7 @@ input[type="radio"]:disabled:active + .patrom-radio-button__checkmark:before {
 }
 .patrom-multi-select li{
   padding-left: 3px;
+  padding-right: 13px;
   background-color: var(--input-background);
   cursor: pointer;
 }
@@ -2805,15 +2809,24 @@ input[type="radio"]:disabled:active + .patrom-radio-button__checkmark:before {
 }
 
 .json-viewer .type-string {
-	color: var(--json-string)
+	color: var(--json-string);
 }
 
 .json-viewer .type-url {
-	color: var(--json-url)
+	color: var(--json-url);
+}
+
+.json-viewer .type-url-link {
+	color: var(--json-url-link);
+	cursor: pointer;
 }
 
 .json-viewer .type-code {
 	color: var(--json-code)
+}
+
+.json-viewer .type-json {
+	color: var(--json-object)
 }
 
 .json-viewer .type-date {
@@ -2930,3 +2943,131 @@ input[type="radio"]:disabled:active + .patrom-radio-button__checkmark:before {
     background: var(--table-head-background);
   }
   
+.patrom-flex-row {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: patrom-flex-row;
+  flex-wrap: wrap;
+}
+
+.col {
+  flex: 1 1 8%;
+  margin: 0 0 0.5rem 0;
+  padding: 0.5em 10px;
+  box-sizing: border-box;
+}
+
+/* nested grids */
+.patrom-flex-row .patrom-flex-row, .patrom-flex-row.nested {
+  flex: 1 1 auto;
+  margin-top: -0.5em;
+}
+
+/* full width grids */
+.patrom-flex-row.wide-fit {
+  margin-left: -10px;
+  margin-right: -10px;
+}
+
+/* center grids */
+.patrom-flex-row.center {
+  justify-content: center;
+}
+
+.center .col {
+  flex-gpatrom-flex-row: 0;
+  flex-shrink: 0;
+}
+
+/* columns widths */
+
+.col-span-1 {
+  flex-basis: 8.3333%;
+}
+
+.col-span-2 {
+  flex-basis: 16.6666%; 
+}
+
+.col-span-3 {
+  flex-basis: 25%;
+}
+
+.col-span-4 {
+  flex-basis: 33.3333%;
+}
+
+.col-span-5 {
+  flex-basis: 41.6666%;
+}
+
+.col-span-6 {
+  flex-basis: 50%;
+}
+
+.col-span-7 {
+  flex-basis: 58.3333%;
+}
+
+.col-span-8 {
+  flex-basis: 66.6666%;
+}
+
+.col-span-9 {
+  flex-basis: 75%;
+}
+
+.col-span-10 {
+  flex-basis: 83.3333%;
+}
+
+.col-span-11 {
+  flex-basis: 91.6666%;
+}
+
+.col-span-12 {
+  flex-basis: 100%;
+}
+
+/* examples */
+
+.fixed-width {
+  flex: 0 0 500px;
+  background-color: rgba(255,0,0,0.1) !important;
+}
+
+@media all and (max-width: 568px) {
+  .col-span-1,
+  .col-span-2,
+  .col-span-3,
+  .col-span-4,
+  .col-span-5 {
+    flex-basis: 50%;
+  }
+
+  .col-span-6,
+  .col-span-7,
+  .col-span-8,
+  .col-span-9,
+  .col-span-10,
+  .col-span-11 {
+    flex-basis: 100%;
+  }
+
+  .nested .col {
+    flex-basis: 100%;
+  }
+  
+}
+
+
+.patrom-flex-row {
+  background-color: #cccccc;
+  background-color: rgba(0,0,0,0.1);
+}
+.col {
+  background-color: #999999;
+  background-color: rgba(0,0,0,0.2);
+  background-clip: content-box;
+  border: 1px solid rgba(0,0,0,0.1);
+}

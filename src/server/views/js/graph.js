@@ -79,17 +79,3 @@ function createOptions(datas) {
     };
 }
 
-function showGraph(value) {
-    const container = document.getElementById('graph');
-    if(container) {
-        echarts.dispose(container);
-        const myChart = echarts.init(container);
-        const option = createOptions(value);
-        myChart.on('click', async function(_PARAMS) {
-          if (_PARAMS.dataIndex) await editDataClicked(value["ids"][_PARAMS.dataIndex], _PARAMS);
-        });
-        myChart.setOption(option);
-        graphContainer.style.display = "block";
-    }
-}
-

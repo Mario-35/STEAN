@@ -2,7 +2,7 @@ var clickCount = 0;
 var singleClickTimer = 0;
 
 function updateWinLinks(input) {
-  if (!winLinks || winLinks === null || winLinks.content === null) {
+  if (!wins.Links || wins.Links === null || wins.Links.content === null) {
     const temp = new Window("Links", {
       state: WindowState.NORMAL,
       size: {
@@ -15,7 +15,7 @@ function updateWinLinks(input) {
       container: two ,
       lang: "json"
     });
-    winLinks = temp;
+    wins.Links = temp;
   } 
 let str = '<div class="linkCcontainer"> <center> ';
 if (input.direct) str += `<br> <button id="btnDirect" class="clipboard">Click me to copy current Url</button> <br> <a href="${input.direct}" target="_blank" class="buttonLink">${input.direct}</a> <br> <hr> <br>`;
@@ -30,8 +30,8 @@ if (input.sqlUrl) {
 str += "</center> </div>";
 
 
-winLinks.content.innerHTML = str;
-winLinks.show();
+wins.Links.content.innerHTML = str;
+wins.Links.show();
 
 if (input.direct) {
   btnDirect.addEventListener("click", () => {
@@ -42,73 +42,10 @@ if (input.direct) {
     }
   });
 }
-
-}
-
-function updateWinDecoderResult(input) {
-    if (!winDecoderResult || winDecoderResult === null || winDecoderResult.content === null) {
-    const temp = new Window("Decoding result", {
-      state: WindowState.NORMAL,
-      size: {
-        width: 750,
-        height: 500
-      },
-      selected: true,
-      minimizable: false,
-      container: two ,
-      lang: "json"
-    });
-    winDecoderResult = temp;
-}
-winDecoderResult.content.innerHTML = `<div contenteditable spellcheck="false" id="winDecoderResult" class='shj-lang-json'>${highlightText(pretty.json(input), "json")}</div>`;
-winDecoderResult.show();
-}
-
-function updateWinDecoderCode(input) {
-    if (!winDecoderCode || winDecoderCode === null || winDecoderCode.content === null) {
-        const temp = new Window("Decoder code", {
-            state: WindowState.NORMAL,
-            size: {
-                width: 750,
-                height: 500
-            },
-            selected: true,
-            minimizable: false,
-      container: two ,
-      lang: "js"
-    });
-    winDecoderCode = temp;
-  }
-  winDecoderCode.show();
-  winDecoderCode.content.innerHTML = `<div contenteditable spellcheck="false" onpaste="jsDatasPasteEvent(event)" ondrop="jsDatasPasteEvent(event)" id="winDecoderCode" class='shj-lang-js'>${highlightText(pretty.js(input), "js")}</div>`;
-  const menuitems = [
-    {
-      "text": "Execute code",
-      "events": { 
-        "click": function(e){
-          executeJS(e);
-        }
-      }
-    },
-    {
-      "text": "Save",
-      "events": {
-        "click": function(e){
-          updateWinLinks(JSON.parse(` { "sqlUrl" : "${optHost.value}/${optVersion.value}/Sql?$query=${btoa(winSqlQuery.content.innerText)}"}`));
-        }
-      }
-    }
-  ];
-  
-  var menu = new ContextMenu(menuitems);
-
-  winDecoderCode.content.addEventListener("contextmenu", function(e){
-    menu.display(e);
-  });
 }
 
 function updateWinSqlQuery(input) {
-    if (!winSqlQuery || winSqlQuery === null || winSqlQuery.content === null) {
+    if (!wins.Sql || wins.Sql === null || wins.Sql.content === null) {
         const temp = new Window("Script SQL", {
             state: WindowState.NORMAL,
             size: {
@@ -121,10 +58,10 @@ function updateWinSqlQuery(input) {
       container: two ,
       lang: "sql"
     });
-    winSqlQuery = temp;
+    wins.Sql = temp;
   }
-  winSqlQuery.show();
-  winSqlQuery.content.innerHTML = `<div contenteditable spellcheck="false" id="winSqlQuery" class='shj-lang-sql'>${highlightText(input, "sql")}</div>`;
+  wins.Sql.show();
+  wins.Sql.content.innerHTML = `<div contenteditable spellcheck="false" id="wins.Sql" class='shj-lang-sql'>${highlightText(input, "sql")}</div>`;
   const menuitems = [
     {
       "text": "Execute script",
@@ -138,7 +75,7 @@ function updateWinSqlQuery(input) {
       "text": "Encoded html",
       "events": {
         "click": function(e){
-          updateWinLinks(JSON.parse(` { "sqlUrl" : "${optHost.value}/${optVersion.value}/Sql?$query=${btoa(winSqlQuery.content.innerText)}"}`));
+          updateWinLinks(JSON.parse(` { "sqlUrl" : "${optHost.value}/${optVersion.value}/Sql?$query=${btoa(wins.Sql.content.innerText)}"}`));
         }
       }
     }
@@ -146,11 +83,10 @@ function updateWinSqlQuery(input) {
   
   var menu = new ContextMenu(menuitems);
 
-  winSqlQuery.content.addEventListener("contextmenu", function(e){
+  wins.Sql.content.addEventListener("contextmenu", function(e){
     menu.display(e);
   });
 }
-
 
 function simpleClick(link) {
   if (link.includes && link.includes(optHost.value)) {
@@ -161,9 +97,9 @@ function simpleClick(link) {
 }
 
 function updateWinJsonResult(input, title) {
-  if (!winJsonResult || winJsonResult === null || winJsonResult.content === null) {
-      winJsonResult = new Window(title, {
-            state: onlyOneWinActive() ? WindowState.NORMAL : WindowState.MAXIMIZED,
+  if (!wins.Json || wins.Json === null || wins.Json.content === null) {
+      wins.Json = new Window(title, {
+            state: winActives ? WindowState.NORMAL : WindowState.MAXIMIZED,
             size: {
                 width: 750,
                 height: 500
@@ -173,13 +109,12 @@ function updateWinJsonResult(input, title) {
       container: two ,
       lang: "sql"
     });
-  } else winJsonResult.setTitle(title);
-  winJsonResult.content.innerHTML = `<pre class="json-viewer" id="jsonRenderer" </pre>`;
-  
+  } else wins.Json.setTitle(title);
+  wins.Json.content.innerHTML = `<pre class="json-viewer" id="jsonRenderer" </pre>`;  
   jsonRenderer.addEventListener("click", function(event) { 
 		clickCount++;
 		if (clickCount === 1) {
-			if (Array.from(event.target.classList).includes('type-url')) {
+			if (Array.from(event.target.classList).includes('type-url-link')) {
 				singleClickTimer = setTimeout(function() {
 					clickCount = 0;
 					simpleClick(event.target.innerHTML);
@@ -188,7 +123,7 @@ function updateWinJsonResult(input, title) {
 		} else if (clickCount === 2) {
 			clearTimeout(singleClickTimer);
 			clickCount = 0;
-			if (Array.from(event.target.classList).includes('type-url')) {
+			if (Array.from(event.target.classList).includes('type-url-link')) {
         simpleClick(event.target.innerHTML);
         go.onclick();
 			}
@@ -196,14 +131,15 @@ function updateWinJsonResult(input, title) {
   });
   
   jsonRenderer.appendChild(jsonViewer.getContainer());
+  jsonViewer.setRoot(optHost.value);
   jsonViewer.showJSON(input);
-  winJsonResult.show();
+  wins.Json.show();
 }
 
 function updateWinCsvResult(input) {
-if (!winCsvResult || winCsvResult === null || winCsvResult.content === null) {
+if (!wins.Csv || wins.Csv === null || wins.Csv.content === null) {
     const temp = new Window("Csv file", {
-      state: onlyOneWinActive() ? WindowState.NORMAL : WindowState.MAXIMIZED,
+      state: winActives() ? WindowState.NORMAL : WindowState.MAXIMIZED,
         size: {
             width: 750,
             height: 500
@@ -213,40 +149,70 @@ if (!winCsvResult || winCsvResult === null || winCsvResult.content === null) {
     container: two ,
     lang: "sql"
   });
-  winCsvResult = temp;
+  wins.Csv = temp;
 } 
-winCsvResult.content.innerHTML = `<div id="csvRenderer" class="patrom-table-container"></div>`;
-// jsonViewer(input, jsonRenderer);
+wins.Csv.content.innerHTML = `<div id="csvRenderer" class="patrom-table-container"></div>`;
 buildTableWithCsv(input, ";", csvRenderer);
-winCsvResult.show();
+wins.Csv.show();
 }
 
-function updateWinResult(input) {
-  if (! winResult || winResult === null || winResult.content === null) {
-  const temp = new Window("Result", {
-    state: onlyOneWinActive() ? WindowState.NORMAL : WindowState.MAXIMIZED,
-    size: {
-      width: 750,
-      height: 500
-    },
-    selected: true,
-    minimizable: false,
-    container: two ,
-    lang: "any"
+function updateWinGraph(value) {
+    if (!wins.Graph || wins.Graph === null || wins.Graph.content === null) {
+        const temp = new Window("Script SQL", {
+            state: WindowState.MAXIMIZED,
+            size: {
+                width: 7500,
+                height: 5000
+            },
+            selected: true,
+            minimizable: false,
+            always_on_top: true,
+      container: two ,
+      lang: ""
+    });
+    wins.Graph = temp;
+  }
+  wins.Graph.show();
+  echarts.dispose( wins.Graph.content);
+  const myChart = echarts.init( wins.Graph.content);
+  const option = createOptions(value);
+  myChart.on('click', async function(_PARAMS) {
+    if (_PARAMS.dataIndex) await editDataClicked(value["ids"][_PARAMS.dataIndex], _PARAMS);
   });
-   winResult = temp;
-}
- winResult.content.innerHTML = `<div spellcheck="false" id=" winResult">${input}</div>`;
- winResult.show();
+  myChart.setOption(option);
 }
 
-function addToResultList(key, value, plus) {
-  var li = document.createElement("li");
-  li.innerText = `${key}: `;
-  var span = document.createElement("span");
-  span.className = "json-literal";
-  span.innerText = value;
-  li.appendChild(span);
-  getElement("listResult").appendChild(li);
-  if (plus) addToResultList("-->", plus);
+function updateWinLogs(input) {
+  if (! wins.Logs || wins.Logs === null || wins.Logs.content === null) {
+    const temp = new Window("Result", {
+      state: winActives() ? WindowState.NORMAL : WindowState.MAXIMIZED,
+      size: {
+        width: 750,
+        height: 500
+      },
+      selected: true,
+      minimizable: false,
+      container: two ,
+      lang: "any"
+    });
+    wins.Logs = temp;
+  }
+  const lines = [];
+  input.value.forEach((log) => {
+    lines.push(`<dt class="collapsible-title" id="log${log["@iot.id"]} " ><button class="patrom-button--${log.code < 300 ? 'success' : 'danger'} size-xs" disabled="">${log.method}</button>&nbsp;${log["date"]} </dt>`);
+    lines.push(`<dd class="collapsible-content">pipo</dd>`);
+  });
+  wins.Logs.content.innerHTML = `<div spellcheck="false" id="wins.Logs"> <dl class="collapsible"> ${lines.join("")} </dl> </div>`;
+  wins.Logs.content.addEventListener("click", async function(event) {
+    if (Array.from(event.target.classList).includes('collapsible-title') && event.target.innerHTML !== "Deleted") {
+      await openLineTabLog(event.target);
+    } else if (Array.from(event.target.classList).includes('patrom-button--success')) {
+      const id = getId(event.target.id);
+      await replayLog(id);
+    } else if (Array.from(event.target.classList).includes('patrom-button--danger')) {
+      const id = getId(event.target.id);
+      await deleteLog(id);
+    }
+  });
+  wins.Logs.show();
 }

@@ -16,7 +16,7 @@
         "pg_password": "mario29",
         "pg_database": "mario",
         "apiVersion": "v1.0",
-        "date_format": "DD/MM/YYYY hh:mm:ss",
+        "date_format": "DD/MM/YYYY HH24:MI:SS",
         "webSiteDoc": "https://api.geosas.fr/test/",
         "alias": "adam,mario",
         "lora": true,

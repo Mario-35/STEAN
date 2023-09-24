@@ -5,38 +5,9 @@ const isObservation = () => entity.value == "Observations" || subentity.value ==
 const testNull = (input) => (input.value == "<empty string>" || input.value.trim() == "" || input.value.trim()[0] == "0" || input.value.startsWith(_NONE)); 
 
 
-/**
- * Show spinner for wating
- * @param {boolean} on 
- */
-function wait(on) {
-  toggleShowHide(spinner, on);
-}
-
-
 // DON'T REMOVE !!!!
 // @start@
 
-
-  function hide(obj) {
-    obj.style.display = _NONE;
-  }
-
-  function show(obj) {
-    obj.style.display = "table-cell";
-  }
-
-  function toggleShowHide(obj, test) {
-    obj.style.display = test === true ? "block" : _NONE;
-  }
-
-  function EnabledOrDisabled(obj, test) {
-    if (obj.length == undefined) obj = [obj];
-    obj.forEach(e => {
-      if (test) e.removeAttribute('disabled', ''); 
-      else e.setAttribute('disabled', ''); 
-    });
-  }
 
   function getIfChecked(objName) {
     const elemId = getElement(objName);
@@ -59,6 +30,7 @@ function wait(on) {
       temp.push("graph");
       temp.push("graphDatas");
     }
+    if (entity.value === "Logs") temp.push("logs");
     return temp;
   }
 
@@ -85,6 +57,7 @@ function wait(on) {
     tabEnabledDisabled("importTab", _PARAMS.user.canPost);
     tabEnabledDisabled("multiDatastreamTab", entity.value === "MultiDatastreams" && subentity.value === "Observations");
     tabEnabledDisabled("observationsTab", isObservation());
+    
   }
 
 
@@ -98,6 +71,8 @@ function wait(on) {
     updateForm();
     updateBuilder();
     canShowQueryButton();
+    toggleShowHide(getElement("payloadPartTab"), entity.value === "Decoders" );
+    toggleShowHide(getElement("logsPartTab"), entity.value === "Logs" );
   }
 
   function updateBuilder() {
@@ -203,6 +178,7 @@ async function editDataClicked(id, _PARAMS) {
   function init() {
     header("==== Init ====");
     hide(datas);
+   
     if (isDebug) console.log(_PARAMS);
     new SplitterBar(container, first, two);
     wait(false);
@@ -225,35 +201,9 @@ async function editDataClicked(id, _PARAMS) {
     queryOptions.value = _PARAMS.options;
 
     decodeOptions();
+    jsonViewer = new JSONViewer();
   }
 
-  var simpleClick = function(link) {
-    if (link.includes && link.includes(optHost.value)) {
-    console.log("=========== simpleClick =============");
-
-      clear();
-      decodeUrl(link);
-      refresh();
-    }
-  // } else if (className === "json-code" || (event.previousElementSibling && Object.values(event.previousElementSibling.classList).includes("json-code"))) {
-  //   try {
-  //     updateWinDecoderCode(event.explicitOriginalTarget.innerText);  
-  //   } catch (err) {     
-  //     notifyError("Error", err);
-  //   } finally {
-  //     canGo = true;
-  //     buttonGo();
-  //   }
-  // }
-};
-
-
-jsonViewer = new JSONViewer(simpleClick, function(link) {
-  console.log("=========== doubleClick =============");
-
-  simpleClick(link);
-  go.onclick();
-  });
   
 init();
 

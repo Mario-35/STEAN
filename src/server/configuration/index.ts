@@ -167,6 +167,7 @@ class Configuration {
             date_format: input["date_format"] || "DD/MM/YYYY hh:mi:ss",
             webSite: input["webSite"] || "no web site",
             nb_page: input["nb_page"] ? +input["nb_page"] : 200,
+            nb_logs: input["nb_logs"] ? +input["nb_logs"] : 10000,
             forceHttps: input["forceHttps"] ? input["forceHttps"] : false,
             alias: input["alias"] ? String(input["alias"]).split(",") : [],
             lora: lora,
@@ -231,7 +232,7 @@ class Configuration {
         return await this.pgwait(connection).then(async test => {
             if (test === true) {
                 return this.configs[configName] ? await this.db(configName)
-                    .raw("select 1+1 as result")
+                    .raw("select 1+1 AS result")
                     .then(() => this.configs[configName].db)
                     .catch(() => undefined) : undefined;
             }
@@ -242,7 +243,7 @@ class Configuration {
     private async isDbExist(connectName: string, create: boolean): Promise<boolean> {
         Logs.booting(infos.dbExist, this.configs[connectName].pg.database);
         return await this.db(connectName)
-            .raw("select 1+1 as result")
+            .raw("select 1+1 AS result")
             .then(async () => {
                const listTempTables = await this.db(connectName).raw("SELECT array_agg(table_name) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'temp%';");
                const tables = listTempTables.rows[0].array_agg;

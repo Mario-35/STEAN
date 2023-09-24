@@ -202,7 +202,7 @@
       queryLink = queryLink + `&datas=${datasEncoded}`;
     }
   
-    addInOption("resultFormat", (queryResultFormat.value != "json" ) ? queryResultFormat.value : "");
+    addInOption("resultFormat", ["json", "logs"].includes(queryResultFormat.value) ? "" : queryResultFormat.value);
     addInOption("debug", isDebug ? "true" : "");
     addInOption("count", getIfChecked("count") ? "true" : "");
     if (intervalOption.value != "" && isObservation() ) addInOption("interval",intervalOption.value);
@@ -210,15 +210,15 @@
     if (!["","0"].includes(topOption.value)) addInOption("top",topOption.value);
     let tempDatas = multiSelects["queryExpand"].getData();
     if (tempDatas && tempDatas.length > 0) addInOption("expand", tempDatas);
-    tempDatas = multiSelects["querySelect"].getData();
+    tempDatas = (queryResultFormat.value === "logs") ? ["id","date","code","method","database"] : multiSelects["querySelect"].getData();
     if (tempDatas && tempDatas.length > 0) addInOption("select", tempDatas);
     tempDatas = multiSelects["queryOrderBy"].getData();
+    if (queryResultFormat.value === "logs" && tempDatas.length < 1) tempDatas = ["date desc"];
     if (tempDatas && tempDatas.length > 0) addInOption("orderby", tempDatas);
+    if (payload.value != "" && ["Decoders"].includes(entity.value)) addInOption("payload", payload.value);
 
     // queryOrderBy;
-  
     const queryBuilder = getElement("query-builder").innerText;
-  
     const listOr = [];
     JSON.parse(queryBuilder).forEach((whereOr) => {    
       const listAnd = [];
@@ -235,6 +235,12 @@
             case "between":
               listAnd.push(`${whereAnd.criterium} gt ${whereAnd.value.first} and ${whereAnd.criterium} lt ${whereAnd.value.second} `);              
               break;
+            case "nn":
+              listAnd.push(`${whereAnd.criterium} ne null`);              
+              break;
+            case "nu":
+              listAnd.push(`${whereAnd.criterium} eq null`);              
+              break;
           
             default:
               listAnd.push(`${whereAnd.criterium} ${whereAnd.condition} ${value}`);
@@ -244,7 +250,6 @@
         });
       listOr.push(listAnd.join(" and "));
     });
-    
     const where = listOr.join(" or ");
     addInOption("filter", where);  
 

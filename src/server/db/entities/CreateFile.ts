@@ -140,7 +140,7 @@ export class CreateFile extends Common {
                 fileStream.on("end", async (tx: Knex.Transaction) => {
                     Logs.debug("COPY TO ", paramsFile.tempTable);
                     if (returnValue && returnValue.body && returnValue.body["@iot.id"]) {
-                        await client.query(`INSERT INTO "${this.DBST.Observations.table}" ("datastream_id", "phenomenonTime", "resultTime", "_resultjson") SELECT '${String(returnValue.body["@iot.id"])}', '2021-09-17T14:56:36+02:00', '2021-09-17T14:56:36+02:00', ROW_TO_JSON(p) FROM (SELECT * FROM ${paramsFile.tempTable}) as p`); 
+                        await client.query(`INSERT INTO "${this.DBST.Observations.table}" ("datastream_id", "phenomenonTime", "resultTime", "_resultjson") SELECT '${String(returnValue.body["@iot.id"])}', '2021-09-17T14:56:36+02:00', '2021-09-17T14:56:36+02:00', ROW_TO_JSON(p) FROM (SELECT * FROM ${paramsFile.tempTable}) AS p`); 
                         cleanup(true);
                         return returnValue;
                     }

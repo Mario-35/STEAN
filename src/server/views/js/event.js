@@ -129,8 +129,10 @@
             updateWinSqlQuery(jsonObj);
           else if (queryResultFormat.value === "csv") 
             updateWinCsvResult(jsonObj);
-          else if (queryResultFormat.value === "graph")   
-            showGraph(jsonObj);   
+          else if (queryResultFormat.value === "graph")  
+            updateWinGraph(jsonObj);   
+          else if (queryResultFormat.value === "logs")  
+            updateWinLogs(jsonObj);
           else updateWinJsonResult(jsonObj, `[${method.value}]:${url}`);     
         } catch (err) {
           notifyError("Error", err);
@@ -292,64 +294,12 @@
       addToResultList("-->", plus);
     }
   }
-  
-  btnLoraLogs.onclick = async (e) => {
-    if (e) e.preventDefault();
-    wait(true);
-    let url = `${optHost.value}/${optVersion.value}/`;
-    if(replayId.value.startsWith("where")) {
-      const encoded = btoa(`select * from "log_request" ${replayId.value}`);
-      url += `Sql?$query=${encoded}`;
-      const jsonObj = await getFetchDatas(url, "json");
-      wait(false);
-      updateWinResult("rien");
-      if (getIfChecked("checkReplay") === false) {
-        updateWinJsonResult(jsonObj, `[${method.value}]:${url}`); 
-        return;
-      }
-      updateWinResult(`<div class="json-viewer"><ul id="listResult" class="json-dict"><li data-key-type="object">url: <span class="json-literal">response</span></li></ul></div>`);
-      jsonObj.forEach(async element => {
-        if(element.datas) {
-          const myUrl = `${optHost.value}/${optVersion.value}/Loras?$log=${element["id"]}`;
-          const response = await fetch(myUrl, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(element["datas"]),
-          });
-          addToResultList(response.status, myUrl, response.statusText);
-        }
-      }); 
-    } else {
-      url += `Logs?$filter=method eq 'POST'`;
-      if(replayId.value != "") url += ` and datas/deveui eq '${replayId.value}'`;
-      url += ` and code eq 404 and entityid eq null`;
-      url += `&$orderby=date desc&$top=200000`;
-      url = addDebug(url);
-      const jsonObj = await getFetchDatas(url, "json");
-      wait(false);
-      updateWinJsonResult(jsonObj, `[${method.value}]:${url}`); 
-      if (getIfChecked("checkReplay") === false) return;
-      for (const property in jsonObj.value) {
-        if(jsonObj.value[property].datas) {
-          const datas = jsonObj.value[property].datas;
-          const myUrl = `${optHost.value}/${optVersion.value}/Loras?$log=${jsonObj.value[property]["@iot.id"]}`;
-          const response = await fetch(myUrl, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(datas),
-          });
-          if (response.status === 500) return;
-        }
-      }        
-    }
-  };
+
 
   function prepareForm() {
     const text = jsonDatas.innerText.replace(/[^\x00-\x7F]/g, '');
     datas.innerText = text;
     document.getElementById("actionForm").requestSubmit();
   }
+
+
