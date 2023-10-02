@@ -1,7 +1,7 @@
 
 # version 1.9.1
     change timestampTZ for posgreSQL 16
-    create connfig and start it without restart server
+    create config and start it without restart server
     add metrics in Query
     correction bug when multiple @iot.id in odata
     all start in one pass from scratch 
