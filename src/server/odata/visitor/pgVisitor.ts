@@ -347,7 +347,10 @@ export class PgVisitor {
         if (node.value.format) this.resultFormat = returnFormats[node.value.format];
         //ATTTENTION
         if ([returnFormats.dataArray, returnFormats.graph, returnFormats.graphDatas, returnFormats.csv].includes(this.resultFormat)) this.noLimit();
-        if (isGraph(this)) this.showRelations = false;
+        if (isGraph(this)) {
+            this.showRelations = false;
+            this.orderby += "date ASC";
+        }
     }
 
     protected VisitExpandItem(node: Token, context: any) {   

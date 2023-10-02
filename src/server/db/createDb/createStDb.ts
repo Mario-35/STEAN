@@ -13,8 +13,8 @@ import { Logs } from "../../logger";
 import { _DB, _RIGHTS } from "../constants";
 import { testsDatas } from "./testsDatas";
 import { triggers } from "./triggers";
-import { ADMIN } from "../../constants";
 import { IKeyString } from "../../types";
+import { ADMIN } from "../../constants";
  
 export const createSTDB = async(configName: string): Promise<IKeyString> => {
     Logs.head("createDatabase", "createDatabase");

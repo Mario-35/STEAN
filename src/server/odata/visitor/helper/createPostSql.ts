@@ -9,13 +9,13 @@
 import { Knex } from "knex";
 import { VOIDTABLE } from "../../../constants";
 import { getBigIntFromString, getEntityName } from "../../../helpers";
-import { queryAsJson } from "../../../helpers/returnFormats";
 import { Logs } from "../../../logger";
 import { Ientity, IKeyString } from "../../../types";
 import { EoperationType } from "../../../enums/";
 import { PgVisitor } from "../PgVisitor";
 import { _DB } from "../../../db/constants";
 import { createPgQuery } from ".";
+import { queryAsJson } from "../../../db/queries";
 
 export function createPostSql(datas: object, knexInstance: Knex | Knex.Transaction, main: PgVisitor): string {
     let sqlResult = "";

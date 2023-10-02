@@ -100,4 +100,4 @@ const highLightLangs = {
             match: /[a-zA-Z$_][\w$_]*(?=\s*((\?\.)?\s*\(|=\s*(\(?[\w,{}\[\])]+\)? =>|function\b)))/g
         }
     ]
-}
+};

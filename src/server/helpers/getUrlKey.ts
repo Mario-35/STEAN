@@ -9,9 +9,7 @@
 export function getUrlKey(input: string, key: string): string | undefined {
     let result: string | undefined = undefined;    
     try {
-        const temp = input.split("?")[1];
-        const temps = temp.split("$");
-        temps.forEach(e => {
+        input.split("?")[1].split("$").forEach(e => {
             if(e.toUpperCase().startsWith(`${key.toUpperCase()}=`)) result = e.split("=")[1];
         });
     } catch (error) {        

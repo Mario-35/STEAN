@@ -40,5 +40,12 @@ export class Configs extends Common {
          if (!ensureAuthenticated(this.ctx)) this.ctx.throw(401);
          if (dataInput) return this.createReturnResult({ body: await serverConfig.addConfig(dataInput)});
     }
+
+        // Delete an item
+        async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {
+          Logs.whereIam();
+console.log(idInput);
+return;
+       }
  }
  

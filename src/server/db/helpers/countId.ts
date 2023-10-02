@@ -6,4 +6,6 @@
  *
  */
 
-export const countId = (table: string) =>`SELECT COUNT(id) FROM ${table}`;
+export const countId = (table: string) =>`select * from row_estimator('select * from ${table}') AS count`;
+
+

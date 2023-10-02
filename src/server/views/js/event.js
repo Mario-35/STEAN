@@ -303,3 +303,8 @@
   }
 
 
+  // allMetrics.onclick = async () => {
+  //   const jsonObj = await getFetchDatas(`${optHost.value}/${optVersion.value}/metrics?$query=all`, "json");
+  //   console.log(jsonObj);
+  //   updateWinLogs(jsonObj);
+  // };

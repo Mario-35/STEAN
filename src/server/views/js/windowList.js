@@ -212,7 +212,47 @@ function updateWinLogs(input) {
     } else if (Array.from(event.target.classList).includes('patrom-button--danger')) {
       const id = getId(event.target.id);
       await deleteLog(id);
+    } else if (Array.from(event.target.classList).includes('patrom-button--primary')) {
+      const id = getId(event.target.id);
+      await patchLog(id);
     }
   });
   wins.Logs.show();
+  if(isLog()) {
+    const menuitems = [
+      {
+        "text": "Errors only",
+        "events": { // Adds eventlisteners to the item (you can use any event there is)
+          "click": function(e){
+            Logfilter = "code gt 400";
+            go.onclick();
+          }
+        }
+      },
+      {
+        "text": "Good Only",
+        "events": {
+          "click": function(e){
+            Logfilter = "code gt 199 and code lt 300";
+            go.onclick();
+          }
+        }
+      },
+      {
+        "text": "all",
+        "events": {
+          "click": function(e){
+            Logfilter = undefined;
+            go.onclick();
+          }
+        }
+      }
+    ];
+    
+    var menu = new ContextMenu(menuitems);
+  
+    wins.Logs.content.addEventListener("contextmenu", function(e){
+      menu.display(e);
+    });
+  }
 }

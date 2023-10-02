@@ -19,7 +19,6 @@ export interface IconfigFile {
     date_format: string;
     webSite: string;
     nb_page: number;
-    nb_logs: number;
     createUser?: boolean;
     forceHttps: boolean;
     alias: string[];

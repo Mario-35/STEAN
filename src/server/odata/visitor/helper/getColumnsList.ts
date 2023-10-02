@@ -45,7 +45,7 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
                             ? tempEntity.columns[elem].alias_lora ||`"${elem}"` 
                             : tempEntity.columns[elem].alias ||`"${elem}"`;
                 if (main.id) returnValue.push(column.replace(/$ID+/g, main.id.toString()) );
-                if (tempEntity.columns[elem].create.includes("timestamptz")) returnValue.push(`to_char("${elem}", '${serverConfig.configs[main.configName].date_format}') AS "${elem}"`);          
+                // if (tempEntity.columns[elem].create.includes("timestamptz")) returnValue.push(`to_char("${elem}", '${serverConfig.configs[main.configName].date_format}') AS "${elem}"`);          
                 else returnValue.push(column && column != "" ? column : `"${elem}"`);                    
                 if (elem === "id" && (element.showRelations == true || csvOrArray)) {
                     if (csvOrArray) main.addToArrayNames("id");            

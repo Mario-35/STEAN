@@ -70,7 +70,6 @@ app.use((ctx, next) => {
 // authenticated routes
 app.use(protectedRoutes.routes());
 
-// export const server = serverConfig.start();
 export const server = isTest()
     ? app.listen(serverConfig.configs[TEST].port, async () => {   
         serverConfig.addToServer[ADMIN];     

@@ -40,5 +40,15 @@ export const triggers = [`CREATE OR REPLACE FUNCTION func_trigger_after_insert_o
 
   `CREATE OR REPLACE FUNCTION timestamp_ceil(_tstz timestamptz, _interval interval)
     RETURNS timestamptz LANGUAGE sql STABLE AS
-  'SELECT timestamp_ceil($1, extract(epoch FROM $2)::int)';`
+  'SELECT timestamp_ceil($1, extract(epoch FROM $2)::int)';`,
+
+  `CREATE or replace FUNCTION row_estimator(query text) RETURNS bigint
+    LANGUAGE plpgsql AS
+  $$DECLARE
+    plan jsonb;
+  BEGIN
+    EXECUTE 'EXPLAIN (FORMAT JSON) ' || query INTO plan;  
+    RETURN (plan->0->'Plan'->>'Plan Rows')::bigint;
+  END;$$;`
+
 ];

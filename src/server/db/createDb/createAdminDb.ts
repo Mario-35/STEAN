@@ -19,14 +19,13 @@ export const createAdminDB = async(): Promise<IKeyString> => {
     const config = serverConfig.configs[ADMIN].pg;
     // init result
     const returnValue = { "Start create Database": config.database };
-
-    await serverConfig.db(ADMIN)
-        .raw(`CREATE DATABASE ${config.database}`)
-        .then(async () => {
+    await serverConfig.dbAdmin()
+        .raw(`CREATE DATABASE ${ADMIN}`)
+        .then(async () => {           
             returnValue["create Admin DB"] = "✔";
             returnValue["User"] = await serverConfig.db(ADMIN)
                 .raw(`SELECT COUNT(*) FROM pg_user WHERE usename = '${config.user}';`)
-                .then(async (res: any) => {
+                .then(async (res) => {
                     if (res.rowCount < 1) {
                         Logs.infoSystem("Create User", config.user);
                         return serverConfig.db(ADMIN)
@@ -46,7 +45,9 @@ export const createAdminDB = async(): Promise<IKeyString> => {
                     }
                 });
         })
-        .catch((err: Error) => err.message);
+        .catch((err: Error) => {
+            Logs.error(err.message);            
+        });
     // loop to create each admin table
     await asyncForEach(Object.keys(_DBADMIN), async (keyName: string) => {
         await createTable(serverConfig.db(ADMIN), _DBADMIN[keyName], undefined);

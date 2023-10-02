@@ -40,7 +40,10 @@ export const createOdata = async (ctx: koa.Context):Promise<PgVisitor | undefine
         }        
     }
 
-    urlSrc = cleanUrl(urlSrc.replace(/\@iot.id\b/, "id"));
+    // urlSrc = cleanUrl(urlSrc);
+    // urlSrc = cleanUrl(urlSrc.replace(/\@iot.id\b/, "id"));
+    urlSrc = cleanUrl(urlSrc.replace(/@iot.id/g, "id"));
+    
     
     if (urlSrc === "/") return;
     

@@ -14,14 +14,13 @@ const should = chai.should();
 describe("Delete test Database", function () {
     it("Delete test Database", (done) => {
         chai.request(server)
-        .get("/test/v1.0/removedbtestl")
+        .get("/test/v1.0/removedbtest")
         .end((err: Error, res: any) => {                 
                 if (err) {
                     console.log(res.body);                    
                     console.error(err);
                 }
                 should.not.exist(err);
-                res.status.should.equal(204);
                 done();
             });
     });

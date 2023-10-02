@@ -365,7 +365,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
-                    const id = res.body["@iot.count"];
+                    const id = res.body.value[0]["@iot.id"];
                     res.body.value[0]["@iot.selfLink"].should.contain(`MultiDatastreams(${id})`);
                     res.body.value[0]["Thing@iot.navigationLink"].should.contain(`/MultiDatastreams(${id})/Thing`);
                     res.body.value[0]["Sensor@iot.navigationLink"].should.contain(`/MultiDatastreams(${id})/Sensor`);

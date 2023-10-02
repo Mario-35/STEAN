@@ -89,16 +89,6 @@ const getNameFromUrl = (input: string, version?: string): string | undefined => 
     return input.split(version)[0].split("/").filter((e: string) => e != "")[0]; 
 };
 
-const getConfigNameFromName = (name: string): string | undefined => {
-    if (name) {
-        const databaseName = isTest() ? "test" : Object.keys(serverConfig.configs).includes(name) ? name: undefined;
-        if (databaseName) return databaseName;
-        let aliasName: undefined | string = undefined;
-        Object.keys(serverConfig.configs).forEach((configName: string) => { if(serverConfig.configs[configName].alias.includes(name)) aliasName = configName;});        
-        if (aliasName) return aliasName;
-    }
-};
-
 export const setConfigToCtx = (ctx: koa.Context): void => {
     bearerToken(ctx);
     setDebug(ctx.request.url.includes("$debug=true"));
@@ -108,7 +98,7 @@ export const setConfigToCtx = (ctx: koa.Context): void => {
     const name = getNameFromUrl(ctx.originalUrl, version);
     if (!name) throw new Error(errors.noNameIdentified);
     if (name) {
-        configName = configName || getConfigNameFromName(name);
+        configName = configName || serverConfig.getConfigNameFromName(name);
         if (configName) ctx._config = serverConfig.configs[configName];
         else throw new Error(msg(errors.notPresentInConfigName, name));    
     }

@@ -74,6 +74,7 @@ export const getMetrics = async (name: string): Promise<string[] | {[key: string
         dump_statisticsext: `SELECT date_trunc('seconds', now()), current_database(), cn.nspname AS schemaname, c.relname AS tablename, sn.nspname AS stat_schemaname, s.stxname AS stat_name, pg_get_userbyid(s.stxowner) AS stat_owner, (SELECT array_agg(a.attname ORDER BY a.attnum) AS array_agg FROM unnest(s.stxkeys) k(k) JOIN pg_attribute a ON a.attrelid = s.stxrelid AND a.attnum = k.k) AS attnames, s.stxkind AS kinds FROM pg_statistic_ext s JOIN pg_class c ON c.oid = s.stxrelid LEFT JOIN pg_namespace cn ON cn.oid = c.relnamespace LEFT JOIN pg_namespace sn ON sn.oid = s.stxnamespace WHERE NOT (EXISTS (SELECT 1 FROM unnest(s.stxkeys) k(k) JOIN pg_attribute a ON a.attrelid = s.stxrelid AND a.attnum = k.k WHERE NOT has_column_privilege(c.oid, a.attnum, 'select'::text))) AND (c.relrowsecurity = false OR NOT row_security_active(c.oid))`,
         
     };
+
     if (name.trim() === "keys") return Object.keys(metrics);
     const res:{[key: string] : any} = {};
     await asyncForEach(name.trim() === "all" ? Object.keys(metrics) : name.trim().includes(",") ? name.split(",") : [name], async (operation: string) => {

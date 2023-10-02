@@ -11,7 +11,7 @@ import { apiAccess, userAccess } from "../db/dataAccess";
 import { returnFormats, upload } from "../helpers";
 import fs from "fs";
 import koa from "koa";
-import { checkPassword, emailIsValid, testRoutes } from "./helpers";
+import { checkPassword, emailIsValid, isAllowedTo, testRoutes } from "./helpers";
 import { Logs } from "../logger";
 import { IKeyString, IreturnResult, Iuser } from "../types";
 import { DefaultState, Context } from "koa";
@@ -20,7 +20,6 @@ import { createIqueryFromContext } from "../views/helpers/";
 import { createQueryHtml } from "../views/query";
 import { createOdata } from "../odata";
 import { errors, infos, msg } from "../messages";
-import { isAllowedTo } from ".";
 import { EuserRights } from "../enums";
 import { loginUser } from "../authentication";
 import { serverConfig } from "../configuration";
@@ -50,7 +49,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
 
         case "REGISTER":
             const body = ctx.request.body;
-            const isObject = typeof body != "string";
+            const isObject = typeof body !== "string";
             const why: IKeyString = {};
             // Username
             if (isObject && body["username"].trim() === "") {
@@ -107,13 +106,13 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
             return;
     }
 
+    // ADD LORA IS OPEN
     if ((ctx._user && ctx._user.id > 0) || ctx.request.url.includes("/Lora")) {
         ctx._addToLog = true;
         if (ctx.request.type.startsWith("application/json") && Object.keys(ctx.request.body).length > 0) {
             const odataVisitor = await createOdata(ctx);         
             if (odataVisitor) ctx._odata = odataVisitor;
             if (ctx._odata) {
-                Logs.head("POST JSON");
                 const objectAccess = new apiAccess(ctx);
                 const returnValue: IreturnResult | undefined | void = await objectAccess.add();
                 if (returnValue) {

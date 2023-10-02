@@ -6,6 +6,9 @@
  *
  */
 
+import Koa from "koa";
+import { EuserRights } from "../enums";
+
 
 export const testRoutes = (input: string): string => {
     const result: string | undefined =
@@ -28,3 +31,7 @@ export const checkPassword = (str: string): boolean => {
     // at least six characters that are letters, numbers or the underscore
     return /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])\w{6,}$/.test(str);
 };
+
+export const isAdmin = (ctx: Koa.Context):boolean => ctx._config.name === "admin";
+export const isAllowedTo = (ctx: Koa.Context, what: EuserRights):boolean => ctx._user.PDCUAS[what];
+

@@ -1279,6 +1279,10 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                 create: "text NULL",
                 type : "json"
             },
+            result: {
+                create: "jsonb NULL",
+                type : "json"
+            },
             error: {
                 create: "text NULL",
                 type : "text"

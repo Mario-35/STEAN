@@ -11,6 +11,7 @@ import { Ientity, Iuser } from ".";
 export interface Iquery {
     user: Iuser;
     methods: string[];
+    metrics: string[] | {[key: string] : any};
     entity: string;
     subentity?: string;
     id: string;

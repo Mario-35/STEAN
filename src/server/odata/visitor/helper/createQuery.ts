@@ -10,8 +10,8 @@ import { createSql, getColumnsList } from ".";
 import { _DB } from "../../../db/constants";
 import { isSingular } from "../../../db/helpers";
 import { getEntityName } from "../../../helpers";
-import { queryAsJson } from "../../../helpers/returnFormats";
 import { Logs } from "../../../logger";
+import { queryAsJson } from "../../../db/queries";
 import { IpgQuery } from "../../../types";
 import { PgVisitor } from "../PgVisitor";
 

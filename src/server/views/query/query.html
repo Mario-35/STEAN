@@ -151,25 +151,10 @@
                 </div>
               </div>
             </div>
-            <!-- Special Options -->
-            <div class="patrom-tab">
-              <input class="patrom-tab-check" type="checkbox" id="chck3">
-              <label class="patrom-tab-label" for="chck3">Options</label>
-              <div class="patrom-tab-content">
-                <div class="patrom-row">
-                  <!-- Count -->
-                  <div class="patrom-col col-span-3">
-                    <label class="patrom-checkbox-labeled">Count<input type="checkbox" id="count">
-                      <span class="checkmark"></span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
             <!-- Expand -->
             <div class="patrom-tab">
-              <input class="patrom-tab-check" type="checkbox" id="chck4">
-              <label class="patrom-tab-label" for="chck4">Expand</label>
+              <input class="patrom-tab-check" type="checkbox" id="chck3">
+              <label class="patrom-tab-label" for="chck3">Expand</label>
               <div class="patrom-tab-content">
                 <div class="patrom-row">
                   <!-- Expand -->
@@ -193,8 +178,8 @@
             </div>
             <!-- Property -->
             <div class="patrom-tab">
-              <input class="patrom-tab-check" type="checkbox" name= "propertyTab" id="chck5">
-              <label class="patrom-tab-label" for="chck5">Property</label>
+              <input class="patrom-tab-check" type="checkbox" name= "propertyTab" id="chck4">
+              <label class="patrom-tab-label" for="chck4">Property</label>
               <div class="patrom-tab-content">
                 <div class="patrom-row">
                   <!-- Property -->
@@ -213,8 +198,8 @@
             </div>
             <!-- Query Builder -->
             <div class="patrom-tab">
-              <input class="patrom-tab-check" type="checkbox" id="chck6">
-              <label class="patrom-tab-label" for="chck6">Query Builder</label>
+              <input class="patrom-tab-check" type="checkbox" id="chck5">
+              <label class="patrom-tab-label" for="chck5">Query Builder</label>
               <div class="patrom-tab-content">
                 <!-- Select & Order-->
                 <div class="patrom-row">
@@ -233,6 +218,14 @@
                     </div>
                   </div>
                 </div>
+                <div class="patrom-row">
+                  <!-- Count -->
+                  <div class="patrom-col col-span-3">
+                    <label class="patrom-checkbox-labeled">Count<input type="checkbox" id="count">
+                      <span class="checkmark"></span>
+                    </label>
+                  </div>
+                </div>
                 <!-- query-builder -->
                 <div class="patrom-row">
                   <div class="patrom-col col-span-12">
@@ -243,8 +236,8 @@
             </div>
             <!-- MultiDatastream Options -->
             <div class="patrom-tab">
-              <input class="patrom-tab-check" type="checkbox" name="multiDatastreamTab" id="chck7">
-              <label class="patrom-tab-label" for="chck7">MultiDatastream Options</label>
+              <input class="patrom-tab-check" type="checkbox" name="multiDatastreamTab" id="chck6">
+              <label class="patrom-tab-label" for="chck6">MultiDatastream Options</label>
               <div class="patrom-tab-content">
                 <!-- splitResult -->
                 <div class="patrom-row">
@@ -263,8 +256,8 @@
             </div>
             <!-- Observations Options -->
             <div class="patrom-tab">
-              <input class="patrom-tab-check" type="checkbox" name="observationsTab" id="chck8">
-              <label class="patrom-tab-label" for="chck8">Observations Options</label>
+              <input class="patrom-tab-check" type="checkbox" name="observationsTab" id="chck7">
+              <label class="patrom-tab-label" for="chck7">Observations Options</label>
               <div class="patrom-tab-content">
                 <div class="patrom-row">
                   <!-- Date Min -->
@@ -303,8 +296,8 @@
             </div>
             <!-- Import File  -->
             <div class="patrom-tab">
-              <input class="patrom-tab-check" type="checkbox" name= "importTab" id="chck9">
-              <label class="patrom-tab-label" for="chck9">Import File</label>
+              <input class="patrom-tab-check" type="checkbox" name= "importTab" id="chck8">
+              <label class="patrom-tab-label" for="chck8">Import File</label>
               <div class="patrom-tab-content">
                 <div class="patrom-row">
                   <div class="patrom-col col-span-12">
@@ -319,25 +312,19 @@
                 </div>
               </div>
             </div>
-            <!-- Loras -->
-            <div id="LorasTab" class="patrom-tab">
-              <input class="patrom-tab-check" type="checkbox" id="chck10">
-              <label class="patrom-tab-label" for="chck10">Loras</label>
+            <!-- Admin -->
+            <div class="patrom-tab">
+              <input class="patrom-tab-check" type="checkbox" name="AdminTab" id="chck9">
+              <label class="patrom-tab-label" for="chck9">Admin</label>
               <div class="patrom-tab-content">
                 <div class="patrom-row">
-                  <div class="patrom-col col-span-4">
-                    <div class="field">
-                      <div id="groupRePlay" class="group">
-                        <input type="checkbox" id="checkReplay" name="replay">
-                        <label for="replay">replay logs</label>
-                      </div>
+                  <!-- Metrics  -->
+                  <div class="patrom-col col-span-2">
+                      <label for="queryMetric">Metrics</label>
                     </div>
-                  </div>
-                  <div class="patrom-col col-span-8">
-                    <div class="field">
-                      <input id="replayId" type="text" class="patrom-text-input" value="">
+                    <div class="patrom-col col-span-10">
+                      <select class="patrom-multiselect width100" id="queryMetric"></select>                       
                     </div>
-                  </div>
                 </div>
               </div>
             </div>

@@ -1,6 +1,7 @@
 const pretty = new pp();
 const SubOrNot = () => _PARAMS.admin === false && subentity.value !== _NONE ? subentity.value : entity.value;
 const isObservation = () => entity.value == "Observations" || subentity.value == "Observations";
+const isLog = () => queryResultFormat.value === "logs";
 
 const testNull = (input) => (input.value == "<empty string>" || input.value.trim() == "" || input.value.trim()[0] == "0" || input.value.startsWith(_NONE)); 
 
@@ -57,6 +58,7 @@ const testNull = (input) => (input.value == "<empty string>" || input.value.trim
     tabEnabledDisabled("importTab", _PARAMS.user.canPost);
     tabEnabledDisabled("multiDatastreamTab", entity.value === "MultiDatastreams" && subentity.value === "Observations");
     tabEnabledDisabled("observationsTab", isObservation());
+    tabEnabledDisabled("AdminTab", (_PARAMS.user.admin || _PARAMS.user.superAdmin ));
     
   }
 
@@ -194,7 +196,7 @@ async function editDataClicked(id, _PARAMS) {
     nb.value = _PARAMS.id;
     
     refresh();
-
+    populateMultiSelect("queryMetric", _PARAMS.metrics);
     optVersion.value = _PARAMS.version;
     optHost.value = _PARAMS.host;
     if(_PARAMS.datas) datas.json_value = _PARAMS.datas;

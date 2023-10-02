@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import util from "util";
-import { TIMESTAMP, _debug } from "../constants";
+import { TIMESTAMP, _DEBUG } from "../constants";
 import fs from "fs";
 import Koa from "koa";
 import { EColor } from "../enums";
@@ -30,11 +30,11 @@ export class Logger {
     }
 
      booting(cle: string, value: string | number) {
-        if (_debug) this.log(`${this.col(EColor.FgYellow)} ${this.line(12)} ${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgWhite)} ${this.logAll(value, this.debugFile)} ${this.col(EColor.FgYellow)} ${this.line(12)}${this.col(EColor.Reset)}`);
+        if (_DEBUG) this.log(`${this.col(EColor.FgYellow)} ${this.line(12)} ${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgWhite)} ${this.logAll(value, this.debugFile)} ${this.col(EColor.FgYellow)} ${this.line(12)}${this.col(EColor.Reset)}`);
      }
  
      head(cle: string, infos?: any ) {
-         if (_debug) this.log(infos 
+         if (_DEBUG) this.log(infos 
              ? `${this.col(EColor.FgGreen)} ${this.line(4)} ${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgWhite)} ${this.logAll(infos, this.debugFile)} ${this.col(EColor.FgGreen)} ${this.line(4)}${this.col(EColor.Reset)}`
              : this.separator(cle, 4)
              );
@@ -46,42 +46,42 @@ export class Logger {
      }
 
     query(sql: unknown ) {
-        if (_debug) this.log(this.separator("Query", 30));
-        if (_debug) this.log(`${this.col(EColor.FgCyan)} ${this.logAll(sql)}${this.col(EColor.Reset)}`);
+        if (_DEBUG) this.log(this.separator("Query", 30));
+        if (_DEBUG) this.log(`${this.col(EColor.FgCyan)} ${this.logAll(sql)}${this.col(EColor.Reset)}`);
     }
 
     infos(cle: string, input: unknown ) {
-        if (_debug) this.log(this.separator(cle, 30));
-        if (_debug) this.log(`${this.col(EColor.FgYellow)} ${this.logAll(input, true)}${this.col(EColor.Reset)}`);
+        if (_DEBUG) this.log(this.separator(cle, 30));
+        if (_DEBUG) this.log(`${this.col(EColor.FgYellow)} ${this.logAll(input, true)}${this.col(EColor.Reset)}`);
     }
 
     debug(cle: string, infos: any ) {
-        if (_debug) this.log(`${this.col(EColor.FgGreen)} ${cle} ${this.col(EColor.FgWhite)} : ${this.col(EColor.FgCyan)} ${this.logAll(infos, this.debugFile)}${this.col(EColor.Reset)}`);
+        if (_DEBUG) this.log(`${this.col(EColor.FgGreen)} ${cle} ${this.col(EColor.FgWhite)} : ${this.col(EColor.FgCyan)} ${this.logAll(infos, this.debugFile)}${this.col(EColor.Reset)}`);
     }
 
     result(cle: string, infos?: any ) {
-        if (_debug) this.log(`${this.col(EColor.FgGreen)}     >>${this.col(EColor.FgBlack)} ${cle} ${this.col(EColor.FgMario)} : ${this.col(EColor.FgCyan)} ${this.logAll(infos, this.debugFile)}${this.col(EColor.Reset)}`);
+        if (_DEBUG) this.log(`${this.col(EColor.FgGreen)}     >>${this.col(EColor.FgBlack)} ${cle} ${this.col(EColor.FgMario)} : ${this.col(EColor.FgCyan)} ${this.logAll(infos, this.debugFile)}${this.col(EColor.Reset)}`);
     }
 
     infoSystem(cle: string, infos?: any ) {
-        if (_debug) this.log(`${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgBlue)} : ${this.col(EColor.FgWhite)} ${this.logAll(infos, this.debugFile)}${this.col(EColor.Reset)}`);
+        if (_DEBUG) this.log(`${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgBlue)} : ${this.col(EColor.FgWhite)} ${this.logAll(infos, this.debugFile)}${this.col(EColor.Reset)}`);
     }
 
     error(cle: unknown, infos?: any ) {
-        if (_debug) this.log( infos 
+        if (_DEBUG) this.log( infos 
             ? `${this.col(EColor.FgRed)} ${cle} ${this.col(EColor.FgBlue)} : ${this.col(EColor.FgYellow)} ${this.logAll(infos, this.debugFile)}${this.col(EColor.Reset)}`
             : `${this.col(EColor.FgRed)} Error ${this.col(EColor.FgBlue)} : ${this.col(EColor.FgYellow)} ${this.logAll(cle)}${this.col(EColor.Reset)}`);
     }
     
     env( testDebug: boolean, cle: string, infos?: any ) {
-        if (_debug) this.log(`${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgBlue)} : ${this.col(EColor.FgYellow)} ${this.logAll(infos, this.debugFile)}${this.col(EColor.Reset)}`);
+        if (_DEBUG) this.log(`${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgBlue)} : ${this.col(EColor.FgYellow)} ${this.logAll(infos, this.debugFile)}${this.col(EColor.Reset)}`);
     }
     whereIam() {
-        if (_debug) this.log(`${this.col(EColor.FgRed)} ${this.line(4)} ${this.col(EColor.FgCyan)} ${new Error().stack?.split("\n")[2].trim().split(" ")[1]} ${this.col(EColor.FgRed)} ${this.line(4)}${this.col(EColor.Reset)}`);
+        if (_DEBUG) this.log(`${this.col(EColor.FgRed)} ${this.line(4)} ${this.col(EColor.FgCyan)} ${new Error().stack?.split("\n")[2].trim().split(" ")[1]} ${this.col(EColor.FgRed)} ${this.line(4)}${this.col(EColor.Reset)}`);
     }
 
     logQuery(input: any, full?: boolean) {
-        if (_debug) this.log((full && full == true) ? this.logAll(input) : input);
+        if (_DEBUG) this.log((full && full == true) ? this.logAll(input) : input);
     }
 
     writeError(ctx: Koa.Context | undefined, ...data: any[]) {   
@@ -95,10 +95,10 @@ export class Logger {
     }
 
     start(cle: string) {
-        if (_debug) this.log(`${this.col(EColor.FgRed)} ${this.line(24)} ${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgWhite)} ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()} ${this.col(EColor.FgRed)} ${this.line(24)}${this.col(EColor.Reset)}`);
+        if (_DEBUG) this.log(`${this.col(EColor.FgRed)} ${this.line(24)} ${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgWhite)} ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()} ${this.col(EColor.FgRed)} ${this.line(24)}${this.col(EColor.Reset)}`);
     }
     end(cle: string) {
-        if (_debug) this.log(`${this.col(EColor.FgGreen)} ${this.line(24)} ${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgWhite)} ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()} ${this.col(EColor.FgGreen)} ${this.line(24)}${this.col(EColor.Reset)}`);
+        if (_DEBUG) this.log(`${this.col(EColor.FgGreen)} ${this.line(24)} ${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgWhite)} ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()} ${this.col(EColor.FgGreen)} ${this.line(24)}${this.col(EColor.Reset)}`);
     }
 
     

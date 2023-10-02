@@ -50,6 +50,11 @@ export const createDbGraph = (input: JSON, mainTitle: string): IGraphDatas | und
                     returnResult.values["result"].push(inputElement["result"]);
                 }
             });
+            if (multi) {
+                keys.forEach(key => {
+                    returnResult.values[key].shift();
+                });
+            } else returnResult.values["result"].shift();
             return returnResult;
         } catch (error) {
             Logs.error(error);

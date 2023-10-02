@@ -1,9 +1,8 @@
 let openedLog = undefined;
+let Logfilter = undefined;
 
-logs.onclick = async (e) => {
-  const url = `${optHost.value}/${optVersion.value}/Logs?$select=id,date,code,method,database&$orderby=date%20desc`;
-  const jsonObj = await getFetchDatas(url, "json");
-  console.log(jsonObj);
+logs.onclick = async () => {
+  const jsonObj = await getFetchDatas(`${optHost.value}/${optVersion.value}/Logs?$select=id,date,code,method,database&$orderby=date%20desc`, "json");
   updateWinLogs(jsonObj);
 };
 
@@ -49,7 +48,25 @@ async function replayLog(id) {
       },
       body: JSON.stringify(jsonObj["datas"]),
     });
-    console.log( response);
+    closeLineTabLog(); 
+    const temp = openedLog;
+    openedLog = undefined;
+    openLineTabLog(temp);
+  }
+}
+async function patchLog(id) { 
+  const url = `${optHost.value}/${optVersion.value}/Logs(${getId(id)})`;
+  const jsonObj = await getFetchDatas(url, "json");
+  
+  if(jsonObj.datas) {
+    const myUrl = `${optHost.value}/${optVersion.value}/Loras?$log=${jsonObj["@iot.id"]}`;
+    const response = await fetch(myUrl, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(jsonObj["datas"]),
+    });
     closeLineTabLog(); 
     const temp = openedLog;
     openedLog = undefined;

@@ -8,8 +8,8 @@
 
 import { Knex } from "knex";
 import { getEntityName } from "../../helpers";
-import { queryAsJson } from "../../helpers/returnFormats";
 import { Logs } from "../../logger";
+import { queryAsJson } from "../queries";
 import { IstreamInfos } from "../../types";
 import { _DB, _STREAM } from "../constants";
 

@@ -7,7 +7,7 @@
  */
 
 import fs from "fs";
-import { ADMIN, API_VERSION, APP_NAME, APP_VERSION, NODE_ENV, setDebug, setReady, TIMESTAMP, _debug } from "../constants";
+import { ADMIN, API_VERSION, APP_NAME, APP_VERSION, DEFAULT_DB, NODE_ENV, setDebug, setReady, TIMESTAMP, _DEBUG } from "../constants";
 import { Logs } from "../logger";
 import { asyncForEach, decrypt, encrypt, hidePasswordInJson, isTest } from "../helpers";
 import util from "util";
@@ -28,6 +28,7 @@ class Configuration {
     static filePath: fs.PathOrFileDescriptor;
     static jsonConfiguration: JSON;
     static ports: number[] = [];
+    
     constructor(file: fs.PathOrFileDescriptor) {   
         Logs.start(`START ${APP_NAME} version : ${APP_VERSION} [${NODE_ENV}]`);
         Configuration.filePath = file;    
@@ -39,12 +40,23 @@ class Configuration {
     }
 
     // return the connection
-    db(name: string): Knex<any, unknown[]> {        
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    db(name: string): Knex<any, unknown[]> {    
         if (!this.configs[name].db) this.createKnexConnectionFromConfigName(name);
         return this.configs[name].db || this.createKnexConnection(this.configs[name].pg);
     }
 
+    dbAdmin(): Knex<any, unknown[]> {      
+        return knex({
+            client: "pg",
+            connection:{... this.configs[ADMIN].pg, database: DEFAULT_DB, application_name: `${APP_NAME} ${APP_VERSION}`},
+            pool: { min: 0, max: 7 },
+            debug: false,            
+        });
+    }     
+
     // return knex connection from Connection
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private createKnexConnection(input: IdbConnection): Knex<any, unknown[]> {  
         return knex({
             client: "pg",
@@ -58,6 +70,7 @@ class Configuration {
     }     
 
     // create, affect and return kenx connection from and in config by is name
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     createKnexConnectionFromConfigName(input: string): Knex<any, unknown[]> {
         const temp = this.createKnexConnection(this.configs[input].pg);
         this.configs[input].db = temp;
@@ -90,7 +103,7 @@ class Configuration {
     // Create logs in file
     private logToFile(file: string) {        
         setDebug(file && file.length > 0 ? true : false);
-        if (_debug === false) return;
+        if (_DEBUG === false) return;
         Logs.head("active Logs to file", file);
       
         // Or 'w' to truncate the file every time the process starts.
@@ -141,6 +154,16 @@ class Configuration {
         throw new Error(`No configuration found for ${input} name`);
     }
 
+    getConfigNameFromName = (name: string): string | undefined => {
+        if (name) {
+            const databaseName = isTest() ? "test" : Object.keys(this.configs).includes(name) ? name: undefined;
+            if (databaseName) return databaseName;
+            let aliasName: undefined | string = undefined;
+            Object.keys(this.configs).forEach((configName: string) => { if(this.configs[configName].alias.includes(name)) aliasName = configName;});        
+            if (aliasName) return aliasName;
+        }
+    };
+
     // return IconfigFile Formated for IconfigFile object or name found in json file
     private formatConfig(input: object | string, name?: string): IconfigFile {
         if (typeof input === "string") {
@@ -156,18 +179,17 @@ class Configuration {
             name: goodDbName,
             port: goodDbName === "admin" ? input["port"] || 8029 : input["port"] || this.configs[ADMIN].port || 8029 ,
             pg: {
-                host: input["pg_host"] || "ERROR",
-                port: input["pg_port"] ? +input["pg_port"] : 5432,
-                user: input["pg_user"] || "ERROR",
-                password: input["pg_password"] || "ERROR",
-                database: name && name === "test" ? "test" : input["pg_database"] || "ERROR",                
+                host: input["pg_host"] || input["pg"]["host"] || "ERROR",
+                port: input["pg_port"] ? +input["pg_port"] : input["pg"] && input["pg"]["port"] ? +input["pg"]["port"] : 5432,
+                user: input["pg_user"] || input["pg"]["user"] || "ERROR",
+                password: input["pg_password"] || input["pg"]["password"] || "ERROR",
+                database: name && name === "test" ? "test" : input["pg_database"] || input["pg"]["database"] || "ERROR",                
                 retry: input["retry"] ? +input["retry"] : 2,
             },
             apiVersion: input["apiVersion"] || API_VERSION,
             date_format: input["date_format"] || "DD/MM/YYYY hh:mi:ss",
             webSite: input["webSite"] || "no web site",
             nb_page: input["nb_page"] ? +input["nb_page"] : 200,
-            nb_logs: input["nb_logs"] ? +input["nb_logs"] : 10000,
             forceHttps: input["forceHttps"] ? input["forceHttps"] : false,
             alias: input["alias"] ? String(input["alias"]).split(",") : [],
             lora: lora,
@@ -187,8 +209,7 @@ class Configuration {
     // Add a new config file in json file
     async addConfig(addJson: object): Promise<IconfigFile> {
         const configs = this.formatConfig(addJson);
-        Configuration.jsonConfiguration[configs.name] = configs;
-    
+        Configuration.jsonConfiguration[configs.name] = configs;    
          fs.writeFile(Configuration.filePath, JSON.stringify(Configuration.jsonConfiguration, null, 4), err => {
             if (err) {
               console.error(err);
@@ -227,6 +248,7 @@ class Configuration {
     }      
 
     // Wait postgres connection
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async waitConnection(configName: string): Promise<Knex<any, unknown[]> | undefined> {
         const connection = this.configs[configName].pg;
         return await this.pgwait(connection).then(async test => {
@@ -240,6 +262,20 @@ class Configuration {
     }
 
     // test in boolean exist if not and create is true then create DB
+    private async tryToCreateDB(connectName: string): Promise<boolean> {
+        return await createDatabase(connectName)
+        .then(async () => {
+             Logs.result(`${infos.db} ${infos.create} [${this.configs[connectName].pg.database}]`, "OK");
+             this.createKnexConnectionFromConfigName(connectName);
+            return true;
+        })
+        .catch((err: Error) => {
+            Logs.error(msg(infos.create, infos.db), err.message);
+            return false;
+        });
+    }
+
+
     private async isDbExist(connectName: string, create: boolean): Promise<boolean> {
         Logs.booting(infos.dbExist, this.configs[connectName].pg.database);
         return await this.db(connectName)
@@ -250,7 +286,8 @@ class Configuration {
                if (tables) Logs.result(`delete temp tables ==> \x1b[33m${connectName}\x1b[32m`, await this.db(connectName).raw(`DROP TABLE ${tables.slice(0, -1).slice(1).split(',')}`).then(() => "✔").catch((err: Error) => err.message));
                if (update) {
                    const list = update["database"];
-                   await asyncForEach(list, async (operation: string) => {
+                   await asyncForEach(list, async (operation: string) => {                    
+                        await this.db(connectName).raw(operation).then(() => "✔").catch((err: Error) => err.message);
                         Logs.result(`configuration ==> \x1b[33m${connectName}\x1b[32m`, await this.db(connectName).raw(operation).then(() => "✔").catch((err: Error) => err.message));
                    }); 
                 } 
@@ -259,19 +296,11 @@ class Configuration {
             .catch(async (err: Error) => {
                 let returnResult = false;
                 if (err["code"] === "28P01" ) {
-                   console.log("error connection");                   
+                    returnResult = await this.tryToCreateDB(connectName);
+                    if (returnResult === false) Logs.error(err.message);                   
                 } else if (err["code"] === "3D000" && create == true) {
                     Logs.debug(msg(infos.tryCreate, infos.db), this.configs[connectName].pg.database);
-                    returnResult = await createDatabase(connectName)
-                        .then(async () => {
-                             Logs.result(`${infos.db} ${infos.create} [${this.configs[connectName].pg.database}]`, "OK");
-                             this.createKnexConnectionFromConfigName(connectName);
-                            return true;
-                        })
-                        .catch((err: Error) => {
-                            Logs.error(msg(infos.create, infos.db), err.message);
-                            return false;
-                        });
+                    returnResult = await this.tryToCreateDB(connectName);
                 } else Logs.error(err);
                 return returnResult;
             });
@@ -279,7 +308,7 @@ class Configuration {
 
     // wait postgres connection
     private async pgwait(options: IdbConnection): Promise<boolean> {
-        const pool = new pg.Pool({... options, database: "postgres" });
+        const pool = new pg.Pool({... options, database: DEFAULT_DB});
         let passage = 1;
    
         const connect = async (): Promise<boolean> => {

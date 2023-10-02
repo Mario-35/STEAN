@@ -20,5 +20,4 @@ const isNullOrNotNull = (input: any, ret: boolean): boolean => {
 };
 
 export const notNull = (input: any): boolean => isNullOrNotNull (input, true); 
-
 export const isNull = (input: any): boolean => isNullOrNotNull (input, false); 

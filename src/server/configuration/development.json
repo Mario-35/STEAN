@@ -1,20 +1,23 @@
-
 {
     "admin": {
         "key": "my qui ses scions",
         "port": 8029,
-        "pg_host": "localhost",
-        "pg_user": "postgres",
-        "pg_password": "mario29",
-        "pg_database": "admin",
+        "pg": {
+            "host": "localhost",
+            "user": "postgres",
+            "password": "mario29",
+            "database": "admin"
+        },
         "log": "steam.log"
     },
     "mario": {
         "port": 8029,
-        "pg_host": "localhost",
-        "pg_user": "sensorapi",
-        "pg_password": "mario29",
-        "pg_database": "mario",
+        "pg": {
+            "host": "localhost",
+            "user": "sensorapi",
+            "password": "mario29",
+            "database": "mario"
+        },
         "apiVersion": "v1.0",
         "date_format": "DD/MM/YYYY HH24:MI:SS",
         "webSiteDoc": "https://api.geosas.fr/test/",
@@ -24,14 +27,15 @@
     },
     "agri4cast": {
         "port": 8030,
-        "pg_host": "localhost",
-        "pg_user": "sensorapi",
-        "pg_password": "mario29",
-        "pg_database": "agri4cast",
+        "pg": {
+            "host": "localhost",
+            "user": "sensorapi",
+            "password": "mario29",
+            "database": "agri4cast"
+        },
         "apiVersion": "v1.0",
         "date_format": "DD/MM/YYYY hh:mm:ss",
         "webSiteDoc": "https://api.geosas.fr/test/",
         "multiDatastream": true
     }
 }
-

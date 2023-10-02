@@ -9,5 +9,5 @@
 export enum EdatesType {    
     "date" = 'YYYY-MM-DD"T"HH24:MI:SSZ',
     "dateWithTimeZone" = 'YYYY-MM-DD HH:MI:SSTZH:TZM',
-    "dateWithOutTimeZone" = 'YYYY-MM-DD HH24:MI:SS'
+    "dateWithOutTimeZone" = 'YYYY-MM-DDXHH24:MI:SS'
 }

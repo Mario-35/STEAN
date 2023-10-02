@@ -166,93 +166,99 @@
   
     let directLink = root;
     let queryLink = `${root}/Query?&method=${method.value}`; 
-  
-    queryLink += `&entity=${entity.value}`;
 
-    
-    if (index > 0) {
-      directLink = directLink + "/" + entity.value + "(" + index + ")";
+    // Metrics
+    let tempDatas = multiSelects["queryMetric"].getData();
+    if (tempDatas && tempDatas.length > 0) {
+      directLink = directLink + "/metrics";
       queryLink = queryLink + `&id=${index}`;
-    } else {
-      if (entity.value == "Loras" && nb.value != "") 
-        directLink = directLink + "/" + entity.value + "(" + nb.value + ")";
-       else 
-        directLink = directLink + "/" + entity.value;
-    }
+      addInOption("query", tempDatas);
+    } else {    
+      if (index > 0) {
+        directLink = directLink + "/" + entity.value + "(" + index + ")";
+        queryLink = queryLink + `&id=${index}`;
+      } else {
+        if (entity.value == "Loras" && nb.value != "") 
+          directLink = directLink + "/" + entity.value + "(" + nb.value + ")";
+        else 
+          directLink = directLink + "/" + entity.value;
+      }
+      
+      if (subentity.value != "none") {
+        directLink = directLink + "/" + subentity.value;
+        queryLink = queryLink + `&subentity=${subentity.value}`;
+      }
+
+      if (queryProperty.value != "none" && nb.value != "") {
+          directLink = directLink + "/" + queryProperty.value;
+          queryLink = queryLink + `&property=${queryProperty.value}`;
+      
+        if (getIfChecked("onlyValue") === true) {
+          directLink = directLink + "/$value";
+          queryLink = queryLink + `&onlyValue=true`;
+        } 
+
+        return { "direct" : directLink, "query": queryLink};
+      }  
     
-    if (subentity.value != "none") {
-      directLink = directLink + "/" + subentity.value;
-      queryLink = queryLink + `&subentity=${subentity.value}`;
-    }
-
-    if (queryProperty.value != "none" && nb.value != "") {
-        directLink = directLink + "/" + queryProperty.value;
-        queryLink = queryLink + `&property=${queryProperty.value}`;
+      if (datas.innerText != "") {
+        const datasEncoded = encodeURIComponent(datas.innerText );
+        queryLink = queryLink + `&datas=${datasEncoded}`;
+      }
     
-      if (getIfChecked("onlyValue") === true) {
-        directLink = directLink + "/$value";
-        queryLink = queryLink + `&onlyValue=true`;
-      } 
+      addInOption("resultFormat", ["json", "logs"].includes(queryResultFormat.value) ? "" : queryResultFormat.value);
+      addInOption("debug", isDebug ? "true" : "");
+      addInOption("count", getIfChecked("count") ? "true" : "");
+      if (intervalOption.value != "" && isObservation() ) addInOption("interval",intervalOption.value);
+      if (!["","0"].includes(skipOption.value)) addInOption("skip",skipOption.value);
+      if (!["","0"].includes(topOption.value)) addInOption("top",topOption.value);
+      tempDatas = multiSelects["queryExpand"].getData();
+      if (tempDatas && tempDatas.length > 0) addInOption("expand", tempDatas);
+      tempDatas = (queryResultFormat.value === "logs") ? ["id","date","code","method","database"] : multiSelects["querySelect"].getData();
+      if (tempDatas && tempDatas.length > 0) addInOption("select", tempDatas);
+      tempDatas = multiSelects["queryOrderBy"].getData();
+      if (isLog() && tempDatas.length < 1) tempDatas = ["date desc"];
+      if (tempDatas && tempDatas.length > 0) addInOption("orderby", tempDatas);
+      if (payload.value != "" && ["Decoders"].includes(entity.value)) addInOption("payload", payload.value);
 
-      return { "direct" : directLink, "query": queryLink};
-    }  
-  
-    if (datas.innerText != "") {
-      const datasEncoded = encodeURIComponent(datas.innerText );
-      queryLink = queryLink + `&datas=${datasEncoded}`;
-    }
-  
-    addInOption("resultFormat", ["json", "logs"].includes(queryResultFormat.value) ? "" : queryResultFormat.value);
-    addInOption("debug", isDebug ? "true" : "");
-    addInOption("count", getIfChecked("count") ? "true" : "");
-    if (intervalOption.value != "" && isObservation() ) addInOption("interval",intervalOption.value);
-    if (!["","0"].includes(skipOption.value)) addInOption("skip",skipOption.value);
-    if (!["","0"].includes(topOption.value)) addInOption("top",topOption.value);
-    let tempDatas = multiSelects["queryExpand"].getData();
-    if (tempDatas && tempDatas.length > 0) addInOption("expand", tempDatas);
-    tempDatas = (queryResultFormat.value === "logs") ? ["id","date","code","method","database"] : multiSelects["querySelect"].getData();
-    if (tempDatas && tempDatas.length > 0) addInOption("select", tempDatas);
-    tempDatas = multiSelects["queryOrderBy"].getData();
-    if (queryResultFormat.value === "logs" && tempDatas.length < 1) tempDatas = ["date desc"];
-    if (tempDatas && tempDatas.length > 0) addInOption("orderby", tempDatas);
-    if (payload.value != "" && ["Decoders"].includes(entity.value)) addInOption("payload", payload.value);
-
-    // queryOrderBy;
-    const queryBuilder = getElement("query-builder").innerText;
-    const listOr = [];
-    JSON.parse(queryBuilder).forEach((whereOr) => {    
-      const listAnd = [];
-      whereOr.forEach((whereAnd) => {    
-        if (whereAnd.criterium && whereAnd.criterium != "" && whereAnd.condition && whereAnd.criterium != "" && whereAnd.criterium && whereAnd.value != "")
-        {
-          const value = isNaN(whereAnd.value) ? `'${whereAnd.value}'` : whereAnd.value;
-          switch (whereAnd.condition) {
-            case "contains":
-              case "endswith":
-                case "startswith":
-              listAnd.push(`${whereAnd.condition}(${whereAnd.criterium},${value})`);              
-              break;
-            case "between":
-              listAnd.push(`${whereAnd.criterium} gt ${whereAnd.value.first} and ${whereAnd.criterium} lt ${whereAnd.value.second} `);              
-              break;
-            case "nn":
-              listAnd.push(`${whereAnd.criterium} ne null`);              
-              break;
-            case "nu":
-              listAnd.push(`${whereAnd.criterium} eq null`);              
-              break;
-          
-            default:
-              listAnd.push(`${whereAnd.criterium} ${whereAnd.condition} ${value}`);
-              break;
+      // queryOrderBy;
+      const queryBuilder = getElement("query-builder").innerText;
+      const listOr = [];
+      JSON.parse(queryBuilder).forEach((whereOr) => {    
+        const listAnd = [];
+        whereOr.forEach((whereAnd) => {    
+          if (whereAnd.criterium && whereAnd.criterium != "" && whereAnd.condition && whereAnd.criterium != "" && whereAnd.criterium && whereAnd.value != "")
+          {
+            const value = isNaN(whereAnd.value) ? `'${whereAnd.value}'` : whereAnd.value;
+            switch (whereAnd.condition) {
+              case "contains":
+                case "endswith":
+                  case "startswith":
+                listAnd.push(`${whereAnd.condition}(${whereAnd.criterium},${value})`);              
+                break;
+              case "between":
+                listAnd.push(`${whereAnd.criterium} gt ${whereAnd.value.first} and ${whereAnd.criterium} lt ${whereAnd.value.second} `);              
+                break;
+              case "nn":
+                listAnd.push(`${whereAnd.criterium} ne null`);              
+                break;
+              case "nu":
+                listAnd.push(`${whereAnd.criterium} eq null`);              
+                break;
+            
+              default:
+                listAnd.push(`${whereAnd.criterium} ${whereAnd.condition} ${value}`);
+                break;
+            }
           }
-        }
-        });
-      listOr.push(listAnd.join(" and "));
-    });
-    const where = listOr.join(" or ");
-    addInOption("filter", where);  
-
+          });
+        listOr.push(listAnd.join(" and "));
+      });
+      let where = listOr.join(" or ");
+      // Filter for logs
+      if (isLog() && Logfilter) where += Logfilter;
+      addInOption("filter", where);  
+    }
     const addMark = queryOptions.length > 0 ? "?$":"";
     directLink = `${directLink}${addMark}${queryOptions.join("&$")}`;
     queryLink = `${queryLink}${addMark}options=${encodeURI(queryOptions.join("&"))}`;

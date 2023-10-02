@@ -14,20 +14,18 @@ import fs from "fs";
 import { Logs } from "../logger";
 import { IreturnResult } from "../types";
 import { EuserRights } from "../enums";
-import { ADMIN, API_VERSION, TEST, _ready } from "../constants";
+import { ADMIN, API_VERSION, TEST, _READY } from "../constants";
 import { createQueryHtml } from "../views/query";
 import { CreateHtmlView, createIqueryFromContext, } from "../views/helpers/";
-import { testRoutes } from "./helpers";
+import { isAdmin, isAllowedTo, testRoutes } from "./helpers";
 import { DefaultState, Context } from "koa";
 import { createOdata } from "../odata";
 import { infos, } from "../messages";
-import { isAdmin, isAllowedTo } from ".";
 import { getMetrics } from "../db/monitoring";
 import { decodeToken, ensureAuthenticated, getAuthenticatedUser } from "../authentication";
 import { createAdminHtml } from "../views/admin";
 import { serverConfig } from "../configuration";
 import { createDatabase } from "../db/createDb";
-import { createLoradminHtml } from "../views/Loradmin";
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 
 // ALl others
@@ -103,19 +101,12 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
                 ctx.body = createHtml.login({ login: true });
             }
             return;
-
-        case "ALL":
-            if (ctx.request["token"]?.PDCUAS[EuserRights.SuperAdmin] === true) {
-                ctx.type = returnFormats.json.type;
-                ctx.body = await userAccess.getAll();
-            }
-            return;
         case "READY":
             const moi = {};
             Object.keys(serverConfig.configs).flatMap(e => moi[e] = serverConfig.configs[e].db ? true : false);           
             ctx.type = returnFormats.json.type;
             ctx.body = {
-                status : _ready,
+                status : _READY,
                 databases: moi
             };
             return;
@@ -138,22 +129,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
                 ctx.type = returnFormats.json.type;
                 ctx.body = await getMetrics(query);         
             }
-            return;
-
-        case "EDITCONFIG":
-            if(!adminWithSuperAdminAccess) ctx.redirect(`${ctx._rootName}login`);
-            const createHtml = new CreateHtmlView(ctx);
-            const configQuery = getUrlKey(ctx.href, "name");                
-            ctx.type = returnFormats.html.type;
-            ctx.body = createHtml.config({ config: configQuery ? configQuery : ctx._config.name });
-            return;
-            
-        case "ADDCONFIG":
-            console.log("============> GET ADDCONFIG");            
-            const createAddHtml = new CreateHtmlView(ctx);            
-            ctx.type = returnFormats.html.type;
-            ctx.body = createAddHtml.config({ config: undefined});
-            return;               
+            return;             
             
         case "QUERY":
             if(!adminWithSuperAdminAccess) ctx.redirect(`${ctx._rootName}login`);
@@ -162,15 +138,6 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             ctx.set("Content-Security-Policy", "self");
             ctx.type = returnFormats.html.type;
             ctx.body = createQueryHtml(temp);
-            return;
-
-        case "LORADMIN":
-            if(!adminWithSuperAdminAccess) ctx.redirect(`${ctx._rootName}login`);
-            const loraTemp = await createIqueryFromContext(ctx);
-            ctx.set("script-src", "self");
-            ctx.set("Content-Security-Policy", "self");
-            ctx.type = returnFormats.html.type;
-            ctx.body = createLoradminHtml(loraTemp);
             return;
                 
         case "ADMIN":
@@ -224,7 +191,8 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
     } // END Switch
 
     // API REQUEST
-    if (ctx.path.includes(`/${API_VERSION}`)) {        
+    if (ctx.path.includes(`/${API_VERSION}`)) {  
+        Logs.head(`unProtected GET ${API_VERSION}`);
         const odataVisitor = await createOdata(ctx); 
         if (odataVisitor) ctx._odata = odataVisitor;
         if (ctx._odata) {
