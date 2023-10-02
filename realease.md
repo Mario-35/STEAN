@@ -1,4 +1,11 @@
 
+# version 1.9.1
+    change timestampTZ for posgreSQL 16
+    create connfig and start it without restart server
+    add metrics in Query
+    correction bug when multiple @iot.id in odata
+    all start in one pass from scratch 
+
 # version 1.9.0
     query builder finished
     add specific logs result in Query
