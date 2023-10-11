@@ -9,3 +9,8 @@
 export { queryAsJson } from "./queryAsJson";
 export { queryAsDataArray } from "./queryAsDataArray";
 export { queryInterval } from "./queryInterval";
+export { queryMultiDatastreamFromDeveui } from "./queryMultiDatastreamFromDeveui";
+export { queryMultiDatastreamsUnitsKeys } from "./queryMultiDatastreamsUnitsKeys";
+export { queryMultiDatastreamKeys } from "./queryMultiDatastreamKeys";
+export { countId } from "./countId";
+

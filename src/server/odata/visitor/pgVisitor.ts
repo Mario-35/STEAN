@@ -1,5 +1,13 @@
+/**
+ * pgVisitor for odata.
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { _DB } from "../../db/constants";
+import { convertResult, _DB } from "../../db/constants";
 import { isGraph, isObservation } from "../../db/helpers";
 import { getEntityName, removeQuotes, returnFormats } from "../../helpers";
 import { IKeyString, IreturnFormat } from "../../types";
@@ -12,6 +20,7 @@ import { Logs } from "../../logger";
 import { createGetSql, createPostSql, oDatatoDate } from "./helper";
 import { Knex } from "knex";
 import { errors, msg } from "../../messages/";
+import { EextensionsType } from "../../enums";
 
 export class PgVisitor {
     public options: SqlOptions;
@@ -39,6 +48,7 @@ export class PgVisitor {
     count = false;
     onlyRef = false;
     onlyValue = false;
+    numeric = false;
     navigationProperty: string;
     resultFormat: IreturnFormat = returnFormats.json;
     includes: PgVisitor[] = [];
@@ -85,7 +95,7 @@ export class PgVisitor {
         Logs.head("INIT PgVisitor");
         this.limit = ctx._config.nb_page || 200;
         this.configName = ctx._config.name;
-        
+        this.numeric = ctx._config.extensions.includes(EextensionsType.numeric);
         const temp = this.VisitRessources(node);
         Logs.infos("PgVisitor", temp);
         this.verifyRessources(ctx);
@@ -94,12 +104,10 @@ export class PgVisitor {
 
     verifyRessources = (ctx: koa.Context): void => {
         Logs.head("verifyRessources");
-        // TODO REMOVE AFTER ALL 
-        
-        if (this.entity.toUpperCase() === "LORA") this.setEntity("Loras");
+        if (["Configs","Logs"].includes(this.entity) && ctx.method === "GET") return;
         if (this.parentEntity) {
-            if (!_DB[this.parentEntity].relations[this.entity]) ctx.throw(40, { detail: msg(errors.invalid, "path") + this.entity.trim() }); 
-        } else if (!_DB[this.entity]) ctx.throw(404, { detail: msg(errors.invalid, "path") + this.entity.trim() }); 
+            if (!ctx._config.entities.includes(this.entity)) ctx.throw(40, { detail: msg(errors.invalid, "path" ) + this.entity.trim() }); 
+        } else if (!ctx._config.entities.includes(this.entity)) ctx.throw(404, { detail: msg(errors.invalid, "path" ) + this.entity.trim() }); 
     
     };
 
@@ -272,7 +280,7 @@ export class PgVisitor {
                 visitor.call(this, node, context);        
             }
             else { 
-                console.log(`ERROR =================> Visit${node.type}`);            
+                Logs.error(`Node error =================> Visit${node.type}`);            
                 console.log(node); throw new Error(`Unhandled node type: ${node.type}`);
             }
         }
@@ -500,7 +508,7 @@ export class PgVisitor {
  
 
     protected VisitODataIdentifier(node: Token, context: any) {
-        node.value.name = node.value.name === "result" ? "_resultnumber" : node.value.name;
+        node.value.name = node.value.name === "result" ? convertResult(this.numeric) : node.value.name;
         context.identifier = node.value.name;
         if (this.entity != "" && context.target) 
             if (Object.keys(_DB[this.entity].columns).includes(node.value.name)) {                
@@ -526,7 +534,7 @@ export class PgVisitor {
                     return;
                 }      
             }
-        if (!context.key) this[context.target] += `"${node.value.name}"`;
+        if (!context.key) this[context.target] += node.value.name.includes("->") || node.value.name.includes("::") ? node.value.name : `"${node.value.name}"`;
     }
 
     protected VisitEqualsExpression(node: Token, context: any): void {
@@ -601,9 +609,8 @@ export class PgVisitor {
         const params = node.value.parameters || [];
 
         const columnOrData = (index: number): string => {
-            let temp = decodeURIComponent(Literal.convert(params[index].value, params[index].raw));
-            temp = temp === "result" ? "_resultnumber" : temp;
-
+            const temp = decodeURIComponent(Literal.convert(params[index].value, params[index].raw));
+            if (temp === "result") return convertResult(this.numeric) ;
             return (_DB[this.entity].columns[temp]) ? `"${temp}"` : `'${temp}'`;
         };
 

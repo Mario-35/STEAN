@@ -205,9 +205,6 @@ export class Common {
     // Update an item
     async update(idInput: bigint | string, dataInput: object | undefined): Promise<IreturnResult | undefined> {
         Logs.whereIam();
-
-        // if (!dataInput) this.ctx.throw(400, { code: 400, detail: errors.noDataSend + "update" });
-
         const testIfId = await verifyId(Common.dbContext, BigInt(idInput), this.DBST[this.constructor.name].table);
 
         if (testIfId === false) this.ctx.throw(404, { code: 404, detail: errors.noId + idInput });

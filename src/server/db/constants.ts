@@ -9,11 +9,13 @@
 /* eslint-disable quotes */
 
 import koa from "koa";
-import { apiType, EdatesType, Eentities, EobservationType, Erelations } from "../enums";
+import { EextensionsType, EdatesType, Eentities, EobservationType, Erelations } from "../enums";
 import { Ientity } from "../types";
 const makeIDAlias = (table: string) => `"${table}"."id" AS "@iot.id"`;
 export const _RIGHTS = 'SUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION NOBYPASSRLS CONNECTION LIMIT -1';
 export type _STREAM = "Datastream" | "MultiDatastream" | undefined;
+export const convertResult = (numeric: boolean) => numeric ? `result::numeric` : `CASE WHEN jsonb_typeof("result"-> 'value') = 'number' then "result"->'value' END::numeric`;
+
 
 const dbDatas: { [key in Eentities]: Ientity } = {
     Things: {
@@ -21,7 +23,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "Thing",
         table: "thing",
         order: 10,
-        essai:[apiType.base],
+        essai:[EextensionsType.base],
         lora: false,
         columns: {
             id: {
@@ -96,7 +98,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "FeatureOfInterest",
         table: "featureofinterest",
         order: 4,
-        essai:[apiType.base],
+        essai:[EextensionsType.base],
         lora: false,
         columns: {
             id: {
@@ -133,9 +135,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             Observations: {
                 type: Erelations.hasMany,
                 expand: `"observation"."id" in (select "observation"."id" from "observation" where "observation"."featureofinterest_id" = "featureofinterest"."id")`,
-                // link: `"observation"."id" = (select "observation"."id" from "observation" where "observation"."id" = $NESTED AND "observation"."featureofinterest_id" = $ID)`,
                 link: `"observation"."id" in (select "observation"."id" from "observation" where "observation"."featureofinterest_id" = $ID)`,
-
                 entityName: "Observations",
                 tableName: "observation",
                 relationKey: "featureofinterest_id",
@@ -145,9 +145,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             Datastreams: {
                 type: Erelations.hasMany,
                 expand: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."_default_foi" = "featureofinterest"."id")`,
-                // link: `"observation"."id" = (select "observation"."id" from "observation" where "observation"."id" = $NESTED AND "observation"."featureofinterest_id" = $ID)`,
                 link: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."_default_foi" = $ID)`,
-
                 entityName: "Datastreams",
                 tableName: "datastream",
                 relationKey: "_default_foi",
@@ -167,7 +165,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "Location",
         table: "location",
         order: 6,
-        essai:[apiType.base],
+        essai:[EextensionsType.base],
         lora: false,
         columns: {
             id: {
@@ -196,12 +194,10 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                 test: "encodingType"
             },
             geom: {
-                // Not in Sensor 1.1
                 create: "geometry NULL",
                 type : "json"
             },
             properties: {
-                // Not in Sensor 1.1
                 create: "jsonb NULL",
                 type : "json"
             }
@@ -243,7 +239,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "HistoricalLocation",
         table: "historical_location",
         order: 5,
-        essai:[apiType.base],
+        essai:[EextensionsType.base],
         lora: false,
         columns: {
             id: {
@@ -297,7 +293,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "locationHistoricalLocation",
         table: "location_historical_location",
         order: -1,
-        essai:[apiType.base],
+        essai:[EextensionsType.base],
         lora: false,
         columns: {
             location_id: {
@@ -326,7 +322,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "ObservedProperty",
         table: "observedproperty",
         order: 8,
-        essai:[apiType.base],
+        essai:[EextensionsType.base],
         lora: false,
         columns: {
             id: {
@@ -389,7 +385,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "Sensor",
         table: "sensor",
         order: 9,
-        essai:[apiType.base],
+        essai:[EextensionsType.base],
         lora: false,
         columns: {
             id: {
@@ -469,7 +465,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "Datastream",
         table: "datastream",
         order: 1,
-        essai:[apiType.base],
+        essai:[EextensionsType.base],
         lora: false,
         columns: {
             id: {
@@ -616,7 +612,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "MultiDatastream",
         table: "multidatastream",
         order: 2,
-        essai:[apiType.base],
+        essai:[EextensionsType.multiDatastream],
         lora: false,
         columns: {
             id: {
@@ -762,7 +758,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "MultiDatastreamObservedProperty",
         table: "multi_datastream_observedproperty",
         order: -1,
-        essai:[apiType.base],
+        essai:[EextensionsType.multiDatastream],
         lora: false,
         columns: {
             multidatastream_id: {
@@ -792,7 +788,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "Observation",
         table: "observation",
         order: 7,
-        essai:[apiType.base],
+        essai:[EextensionsType.base],
         lora: false,
         columns: {
             id: {
@@ -805,55 +801,9 @@ const dbDatas: { [key in Eentities]: Ientity } = {
                 type : "date"
             },
             result: {
-                create: "",
-                alias: ` CASE 
-                WHEN "observation"."_resultnumber" IS NOT NULL THEN json_object_agg('result',"observation"."_resultnumber")->'result'
-                WHEN "observation"."_resultnumbers" IS NOT NULL THEN ( SELECT json_object_agg(key, value) 
-                  FROM ( SELECT jsonb_array_elements_text("keys") AS key, unnest("observation"."_resultnumbers")::float4 AS value 
-                  FROM (SELECT (SELECT jsonb_agg(tmp.units -> 'name') AS keys FROM (SELECT jsonb_array_elements("unitOfMeasurements") AS units 
-                  FROM "multidatastream" where id = "multidatastream_id" ) AS tmp) ) AS tmp2 ) AS tmp3)
-                WHEN "observation"."_resultjson" IS NOT NULL THEN json_object_agg('result',"observation"."_resultjson")->'result'
-                WHEN "observation"."_resulttexts" IS NOT NULL THEN json_object_agg('result',(SELECT json_object_agg(key, value) 
-                  FROM ( SELECT replace(unnest(keys), '"','') AS key, unnest("observation"."_resulttexts") AS value 
-                  FROM ( SELECT keys FROM  string_to_array((select "unitOfMeasurement"->'name'::text 
-                  FROM "datastream" WHERE id = coalesce("datastream_id", "multidatastream_id"))::text, ',') keys ) AS tmp2 ) AS tmp3 ))->'result'
-                WHEN "observation"."_resulttext" IS NOT NULL THEN json_object_agg('result',"observation"."_resulttext")->'result'
-                end AS "result"`,
-                alias_lora: ` CASE 
-                WHEN "observation"."_resultnumber" IS NOT NULL THEN json_object_agg('result',"observation"."_resultnumber")->'result'
-                WHEN "observation"."_resultnumbers" IS NOT NULL THEN json_object_agg('result',"observation"."_resultnumbers")->'result'
-                WHEN "observation"."_resultjson" IS NOT NULL THEN json_object_agg('result',"observation"."_resultjson")->'result'
-                WHEN "observation"."_resulttexts" IS NOT NULL THEN json_object_agg('result',(SELECT json_object_agg(key, value) 
-                  FROM ( SELECT replace(unnest(keys), '"','') AS key, unnest("observation"."_resulttexts") AS value 
-                  FROM ( SELECT keys FROM  string_to_array((select "unitOfMeasurement"->'name'::text 
-                  FROM "datastream" WHERE id = coalesce("datastream_id", "multidatastream_id"))::text, ',') keys ) AS tmp2 ) AS tmp3 ))->'result'
-                WHEN "observation"."_resulttext" IS NOT NULL THEN json_object_agg('result',"observation"."_resulttext")->'result'
-                end AS "result"`,
-             type : "json"
-            },
-            _resultint: {
-                create: "int NULL",
-                type : "number"
-            },
-            _resultnumber: {
-                create: "float4 NULL",
-                type : "number"
-            },
-            _resultnumbers: {
-                create: "float4[] NULL",
-                type : "number[]"
-            },
-            _resultjson: {
                 create: "jsonb NULL",
+                alias: `"result"-> 'value' AS result`,
                 type : "json"
-            },
-            _resulttexts: {
-                create: "text[] NULL",
-                type : "string[]"
-            },
-            _resulttext: {
-                create: "text NULL",
-                type : "string"
             },
             resultTime: {
                 create: "timestamptz NOT NULL",
@@ -886,18 +836,8 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         },
         constraints: {
             observation_pkey: 'PRIMARY KEY ("id")',
-            observation_unik_datastream_resultnumber: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id", "featureofinterest_id", "_resultnumber")',
-            observation_unik_datastream_resultnumbers: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id","featureofinterest_id", "_resultnumbers")',
-            observation_unik_datastream_resultjson: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id","featureofinterest_id", "_resultjson")',
-            observation_unik_datastream_resulttext: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id","featureofinterest_id", "_resulttext")',
-            observation_unik_datastream_resulttexts: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id","featureofinterest_id", "_resulttexts")',
-            observation_unik_datastream_resultint: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id","featureofinterest_id", "_resultint")',
-            observation_unik_multidatastream_resultnumber: 'UNIQUE ("phenomenonTime", "resultTime", "multidatastream_id", "featureofinterest_id", "_resultnumber")',
-            observation_unik_multidatastream_resultnumbers: 'UNIQUE ("phenomenonTime", "resultTime", "multidatastream_id","featureofinterest_id", "_resultnumbers")',
-            observation_unik_multidatastream_resultjson: 'UNIQUE ("phenomenonTime", "resultTime", "multidatastream_id","featureofinterest_id", "_resultjson")',
-            observation_unik_multidatastream_resulttext: 'UNIQUE ("phenomenonTime", "resultTime", "multidatastream_id","featureofinterest_id", "_resulttext")',
-            observation_unik_multidatastream_resulttexts: 'UNIQUE ("phenomenonTime", "resultTime", "multidatastream_id","featureofinterest_id", "_resulttexts")',
-            observation_unik_multidatastream_resultint: 'UNIQUE ("phenomenonTime", "resultTime", "multidatastream_id","featureofinterest_id", "_resultint")',
+            observation_unik_datastream_result: 'UNIQUE ("phenomenonTime", "resultTime", "datastream_id", "featureofinterest_id", "result")',
+            observation_unik_multidatastream_result: 'UNIQUE ("phenomenonTime", "resultTime", "multidatastream_id", "featureofinterest_id", "result")',
             observation_datastream_id_fkey: 'FOREIGN KEY ("datastream_id") REFERENCES "datastream"("id") ON UPDATE CASCADE ON DELETE CASCADE',
             observation_multidatastream_id_fkey: 'FOREIGN KEY ("multidatastream_id") REFERENCES "multidatastream"("id") ON UPDATE CASCADE ON DELETE CASCADE',
             observation_featureofinterest_id_fkey: 'FOREIGN KEY ("featureofinterest_id") REFERENCES "featureofinterest"("id") ON UPDATE CASCADE ON DELETE CASCADE'
@@ -950,7 +890,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "HistoricalObservation",
         table: "historical_observation",
         order: -1,
-        essai:[apiType.base],
+        essai:[EextensionsType.base],
         lora: false,
         columns: {
             id: {
@@ -960,11 +900,8 @@ const dbDatas: { [key in Eentities]: Ientity } = {
             validTime: {
                 create: "timestamptz DEFAULT CURRENT_TIMESTAMP"
             },
-            _resultnumber: {
-                create: "float4 NULL"
-            },
-            _resultnumbers: {
-                create: "float4[] NULL"
+            _result: {
+                create: "jsonb NULL",
             },
             observation_id: {
                 create: "BIGINT NULL"
@@ -998,7 +935,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "ThingLocation",
         table: "thing_location",
         order: -1,
-        essai:[apiType.base],
+        essai:[EextensionsType.base],
         lora: false,
         columns: {
             thing_id: {
@@ -1026,7 +963,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "Decoder",
         table: "decoder",
         order: 12,
-        essai:[apiType.lora],
+        essai:[EextensionsType.lora],
         lora: true,
         columns: {
             id: {
@@ -1091,7 +1028,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "Lora",
         table: "lora",
         order: 11,
-        essai:[apiType.lora],
+        essai:[EextensionsType.lora],
         lora: true,
         columns: {
             id: {
@@ -1181,7 +1118,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         table: "user",
         order: 21,
         canPost: true,
-        essai:[apiType.admin],
+        essai:[EextensionsType.admin],
         lora: true,
         columns: {
             id: {
@@ -1227,7 +1164,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         table: "log_request",
         order: 22,
         canPost: true,
-        essai:[apiType.logged, apiType.admin],
+        essai:[EextensionsType.logger, EextensionsType.admin],
         lora: true,
         columns: {
             id: {
@@ -1297,7 +1234,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         table: "config",
         order: 20,
         canPost: true,
-        essai:[apiType.logged, apiType.admin],
+        essai:[EextensionsType.logger, EextensionsType.admin],
         lora: false,
         columns: {
             name: {
@@ -1389,7 +1326,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "CreateObservation",
         table: "",
         order: 0,
-        essai:[apiType.logged],
+        essai:[EextensionsType.logger,],
         lora: false,
         columns: {},
         canPost: true,
@@ -1403,7 +1340,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         singular: "CreateFile",
         table: "",
         order: 0,
-        essai:[apiType.logged],
+        essai:[EextensionsType.logger,],
         lora: false,
         columns: {},
         canPost: true,
@@ -1416,6 +1353,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
 export const _DB = Object.freeze(dbDatas);
 export const _DBFILTERED = (input: koa.Context | string[]) => Array.isArray(input) 
     ? Object.fromEntries(Object.entries(_DB).filter(([k,v]) => input.includes(k)))
-    : Object.fromEntries(Object.entries(_DB).filter(([k,v]) => input._config.entities.includes(k) || _DB[k].essai.includes(apiType.logged) && input._user.id > 0));
-export const _DBADMIN = Object.fromEntries(Object.entries(_DB).filter(([k,v]) => v.essai.includes(apiType.admin)));
+    : Object.fromEntries(Object.entries(_DB).filter(([k,v]) => input._config.entities.includes(k) || _DB[k].essai.includes(EextensionsType.logger,) && input._user.id > 0));
+export const _DBADMIN = Object.fromEntries(Object.entries(_DB).filter(([k,v]) => v.essai.includes(EextensionsType.admin)));
  

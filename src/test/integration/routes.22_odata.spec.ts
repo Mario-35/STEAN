@@ -442,7 +442,6 @@ describe("Odata", () => {
                 res.body.value.length.should.eql(1);
                 res.body.value[0]["@iot.id"].should.eql(28);
                 res.body.value[0]["result"].should.eql(92);
-                // res.body.value[0]["resultTime"].should.contains("2017-02-13");
                 res.body.should.include.keys("@iot.count", "value");
                 done();
             });

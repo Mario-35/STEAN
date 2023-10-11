@@ -14,14 +14,14 @@ import { _DB, _RIGHTS } from "../constants";
 import { testsDatas } from "./testsDatas";
 import { triggers } from "./triggers";
 import { IKeyString } from "../../types";
-import { ADMIN } from "../../constants";
+import { EextensionsType } from "../../enums";
  
 export const createSTDB = async(configName: string): Promise<IKeyString> => {
     Logs.head("createDatabase", "createDatabase");
     // init result
     const config = serverConfig.configs[configName].pg;
     const returnValue:IKeyString = { "Start create Database": config.database };
-    const adminConnection = serverConfig.db(ADMIN);
+    const adminConnection = serverConfig.dbAdminFor(configName);
     // Test connection Admin
     if (!adminConnection) {
         returnValue["DROP Error"] = "No Admin connection";
@@ -90,7 +90,20 @@ export const createSTDB = async(configName: string): Promise<IKeyString> => {
             Logs.error(error);
             return error;
         });
-    });
+    }); else if(serverConfig.configs[configName].extensions.includes(EextensionsType.numeric)) {
+        await dbConnection
+        .raw(`ALTER TABLE observation ALTER COLUMN result TYPE float4 USING null;`)
+        .catch((error) => {
+            Logs.error(error);
+            return error;
+        });
+        await dbConnection
+        .raw(`ALTER TABLE historical_observation ALTER COLUMN _result TYPE float4 USING null;`)
+        .catch((error) => {
+            Logs.error(error);
+            return error;
+        });
+    }
 
     await dbConnection.raw(`SELECT COUNT(*) FROM pg_user WHERE usename = '${config.user}';`).then(() => {
         returnValue["Create DB"] = "✔";

@@ -14,5 +14,5 @@ export { EobservationType } from "./observationType";
 export { Erelations } from "./relations";
 export { EuserRights } from "./userRights";
 export { EdatesType } from "./datesType";
-export { apiType } from "./apiType";
+export { EextensionsType } from "./extensionsType";
 

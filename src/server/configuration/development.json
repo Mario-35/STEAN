@@ -25,17 +25,58 @@
         "lora": true,
         "multiDatastream": true
     },
-    "agri4cast": {
+    "zobi": {
+        "port": 8029,
+        "pg": {
+            "host": "localhost",
+            "user": "sensorapi",
+            "password": "mario29",
+            "database": "zobi"
+        },
+        "apiVersion": "v1.0",
+        "date_format": "DD/MM/YYYY HH24:MI:SS",
+        "webSiteDoc": "https://api.geosas.fr/test/",
+        "numeric": true,
+        "lora": false,
+        "multiDatastream": false
+    },
+    "rennes": {
+        "name": "rennes",
         "port": 8030,
         "pg": {
             "host": "localhost",
             "user": "sensorapi",
             "password": "mario29",
-            "database": "agri4cast"
+            "database": "rennes"
         },
         "apiVersion": "v1.0",
         "date_format": "DD/MM/YYYY hh:mm:ss",
         "webSiteDoc": "https://api.geosas.fr/test/",
+        "lora": true,
         "multiDatastream": true
+    },    
+    "lora": {
+        "host": "localhost",
+        "port": 8037,
+        "pg_host": "localhost",
+        "pg_port": 5432,
+        "pg_user": "sensorapi",
+        "pg_password": "mario29",
+        "pg_admin": "mario29",
+        "pg_admin_password": "mario29",
+        "pg_database": "rennesmetro",
+        "apiVersion": "v1.0",
+        "date-format": "DD/MM/YYYY hh:mm:ss",
+        "webSite": "http://sensorthings.geosas.fr/apidoc/",
+        "forceHttps": true,
+        "lora": true,
+        "multiDatastream": true,
+        "nb_page": 200,
+        "ssh": {
+            "host": "194.167.76.143",
+            "port": 22,
+            "username": "madam",
+            "password": "mario29"
+        }
     }
 }

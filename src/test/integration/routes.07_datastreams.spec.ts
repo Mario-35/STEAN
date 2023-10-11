@@ -568,12 +568,12 @@ describe("endpoint : Datastream", () => {
                     "definition": "http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#DegreeCelsius"
                 },
                 "ObservedProperty": {
-                    "name": `Capteur de pression de chez moi`,
+                    "name": "Capteur de pression de chez moi",
                     "description": "Capteur de pression de biere",
                     "definition": "http://www.qudt.org/qudt/owl/1.0.0/quantity/Instances.html#AreaTemperature"
                 },
                 "Sensor": {  
-                    "name": `Capteur de pression`,
+                    "name": "`Capteur de pression",
                     "description": "Capteur de pression",
                     "encodingType": "application/pdf",
                     "metadata": "https://www.watteco.fr/download/fiche-technique-torano-lorawan/?wpdmdl=8460&refresh=6405aa1c76d491678092828"

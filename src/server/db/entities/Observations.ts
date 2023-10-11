@@ -13,7 +13,9 @@ import { Logs } from "../../logger";
 import { IreturnResult } from "../../types";
 import { getBigIntFromString } from "../../helpers";
 import { errors, msg } from "../../messages";
-import { QUOTEDCOMA } from "../../constants";
+import { queryMultiDatastreamsUnitsKeys } from "../queries";
+import { EextensionsType } from "../../enums";
+// import { QUOTEDCOMA } from "../../constants";
 
 export class Observations extends Common {
     constructor(ctx: koa.Context) {
@@ -22,44 +24,26 @@ export class Observations extends Common {
 
     async prepareInputResult(dataInput: object): Promise<object> {
         Logs.whereIam();   
+        // IF MultiDatastream
         if ((dataInput["MultiDatastream"] && dataInput["MultiDatastream"] != null) || ( this.ctx._odata.parentEntity && this.ctx._odata.parentEntity.startsWith("MultiDatastream"))) {
-            const search: bigint | undefined =
-            dataInput["MultiDatastream"] && dataInput["MultiDatastream"] != null
-            ? BigInt(dataInput["MultiDatastream"]["@iot.id"])
-            : getBigIntFromString(this.ctx._odata.parentId);
+            // get search ID
+            const searchID: bigint | undefined = dataInput["MultiDatastream"] && dataInput["MultiDatastream"] != null ? BigInt(dataInput["MultiDatastream"]["@iot.id"]) : getBigIntFromString(this.ctx._odata.parentId);
             
-            if (!search) this.ctx.throw(404, { code: 404, detail: msg(errors.noFound, "MultiDatastreams") });
-            
-            const tempSql = await Common.dbContext.raw(
-                `select jsonb_agg(tmp.units -> 'name') AS keys from ( select jsonb_array_elements("unitOfMeasurements") AS units from multidatastream where id = ${search} ) AS tmp`
-                );
+            if (!searchID) this.ctx.throw(404, { code: 404, detail: msg(errors.noFound, "MultiDatastreams") });
+            // Search uint keys
+            const tempSql = await Common.dbContext.raw(queryMultiDatastreamsUnitsKeys(searchID));
                 const multiDatastream = tempSql.rows[0];
                 if (dataInput["result"] && typeof dataInput["result"] == "object") {
-                    Logs.debug("_resultnumbers : keys", `${Object.keys(dataInput["result"]).length} : ${multiDatastream["keys"].length}`);
+                    Logs.debug("result : keys", `${Object.keys(dataInput["result"]).length} : ${multiDatastream["keys"].length}`);
                     if (Object.keys(dataInput["result"]).length != multiDatastream["keys"].length) {
                         this.ctx.throw(400, {
                             code: 400, 
                             detail: msg(errors.sizeResultUnitOfMeasurements, String(Object.keys(dataInput["result"]).length), multiDatastream["keys"].length)
                         });
                     }
-                    const upperResults = {};
-                    Object.keys(dataInput["result"]).forEach((element: string) => {
-                        upperResults[element.toUpperCase()] = dataInput["result"][element];
-                    });
-                    
-                    const tempNumbers: number[] = [];
-                    multiDatastream["keys"].forEach((element: string) => {
-                        tempNumbers.push(upperResults[element.toUpperCase()]);
-                    });
-                    dataInput["_resultnumbers"] = `{"${tempNumbers.join(QUOTEDCOMA)}"}`;
-                delete dataInput["result"];
+                dataInput["result"] = {"value": dataInput["result"]};
             }
-        } else if (dataInput["result"]) {
-            const inputValue = dataInput["result"];
-            if (inputValue != null && inputValue !== "" && !isNaN(Number(inputValue.toString()))) dataInput["_resultnumber"] = inputValue.toString();
-            else if (typeof inputValue == "object") dataInput["_resultnumbers"] = `{"${Object.values(inputValue).join(QUOTEDCOMA)}"}`;
-            delete dataInput["result"];
-        }        
+        } else if (dataInput["result"] && typeof dataInput["result"] != "object") dataInput["result"] = this.ctx._config.extensions.includes(EextensionsType.numeric) ? dataInput["result"] : {"value": dataInput["result"]};
         return dataInput;
     }
     

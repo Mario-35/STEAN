@@ -9,12 +9,13 @@
 import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
-import { getBigIntFromString, notNull, removeQuotes } from "../../helpers/index";
+import { getBigIntFromString, notNull } from "../../helpers/index";
 import { DOUBLEQUOTE, QUOTEDCOMA, VOIDTABLE } from "../../constants";
 import { Logs } from "../../logger";
 import { IKeyString, IreturnResult } from "../../types";
 import { errors, msg } from "../../messages/";
 import { EdatesType } from "../../enums";
+import { queryMultiDatastreamFromDeveui } from "../queries";
 
 export class Loras extends Common {
     synonym: object = {};
@@ -59,9 +60,12 @@ export class Loras extends Common {
 
 
     async add(dataInput: object, silent?: boolean): Promise<IreturnResult | undefined> {
+        Logs.whereIam();  
+
         const addToStream = (key: string) => this.stean[key] = dataInput[key];
-        Logs.whereIam();    
+        
         if (dataInput) this.stean = await this.prepareInputResult(dataInput);
+
         const decodeLoraPayload = async (knexInstance: Knex | Knex.Transaction, loraDeveui: string, input: string): Promise<any> => {
             Logs.debug(`decodeLoraPayload deveui : [${loraDeveui}]`, input);
             return await knexInstance(this.DBST.Decoders.table).select("code", "nomenclature", "synonym", "dataKeys").whereRaw(`id = (SELECT "decoder_id" FROM "${this.DBST.Loras.table}" WHERE "deveui" = '${loraDeveui}')`).first().then((res: any) => {
@@ -88,14 +92,14 @@ export class Loras extends Common {
                 return {"error" : errors.DecodingPayloadError};            
             });
         };
-
-        function getDate(): string | undefined {
+        
+        function gedataInputtDate(): string | undefined {
             if (dataInput["datetime"]) return String(dataInput["datetime"]);
             const tempDate = new Date( dataInput["timestamp"]*1000);
             if (dataInput["timestamp"]) return String(tempDate);
         }
  
-
+        // search for MultiDatastream
         if (notNull(dataInput["MultiDatastream"])) {            
             if (!notNull(this.stean["deveui"])) {
                 if (silent) 
@@ -106,6 +110,7 @@ export class Loras extends Common {
             return await super.add(this.stean);
         }
         
+        // search for Datastream
         if (notNull(dataInput["Datastream"])) {
             if (!notNull(dataInput["deveui"])) {
                if (silent) 
@@ -116,12 +121,14 @@ export class Loras extends Common {
            return await super.add(this.stean);
         }
         
+        // search for deveui
         if (!notNull(this.stean["deveui"])) {
             if (silent) 
                 return this.createReturnResult({ body: errors.deveuiMessage });
                 else this.ctx.throw(400, { code: 400, detail: errors.deveuiMessage });
         }
         
+        // search for frame and decode payload if found
         if (notNull(this.stean["frame"])) {
             this.stean["decodedPayload"] = await decodeLoraPayload(Common.dbContext, this.stean["deveui"], this.stean["frame"]);
                         if (this.stean["decodedPayload"].hasOwnProperty("error")) {
@@ -131,13 +138,8 @@ export class Loras extends Common {
                 }
             if (this.stean["decodedPayload"].valid === false) this.ctx.throw(400, { code: 400, detail: errors.InvalidPayload });
         }
-        const searchMulti = `(SELECT jsonb_agg(tmp.units -> 'name') AS keys 
-                                FROM ( SELECT jsonb_array_elements("unitOfMeasurements") AS units ) AS tmp) 
-                                    FROM "${ this.DBST.MultiDatastreams.table }" 
-                                    WHERE "${this.DBST.MultiDatastreams.table}".id = (
-                                        SELECT "${this.DBST.Loras.table}"."multidatastream_id" 
-                                        FROM "${this.DBST.Loras.table}" 
-                                        WHERE "${this.DBST.Loras.table}"."deveui" = '${this.stean["deveui"]}')`;
+
+        const searchMulti = queryMultiDatastreamFromDeveui(this.stean["deveui"]);
 
         const tempSql = await Common.dbContext.raw(`SELECT id, _default_foi, thing_id, ${searchMulti}`);
         const multiDatastream = tempSql.rows[0];
@@ -158,6 +160,7 @@ export class Loras extends Common {
             this.stean["formatedDatas"][key.toLowerCase()] = this.stean["decodedPayload"]["datas"][key];
         });
 
+
         // convert all keys in lowercase
         if (notNull(dataInput["data"])) Object.keys(dataInput["data"]).forEach((key) => {
             this.stean["formatedDatas"][key.toLowerCase()] = dataInput["data"][key];
@@ -169,7 +172,7 @@ export class Loras extends Common {
                  else this.ctx.throw(400, { code: 400, detail: errors.dataMessage });
         }
         
-        this.stean["date"] = getDate();
+        this.stean["date"] = gedataInputtDate();
         if (!this.stean["date"]) {
             if (silent) 
                 return this.createReturnResult({ body: errors.noValidDate });
@@ -217,6 +220,7 @@ export class Loras extends Common {
                    }
                }
     
+               const resultCreate = `'${JSON.stringify({"value": listOfSortedValues, "payload": this.stean["frame"] })}'::jsonb`;
             const insertObject = {
                 "featureofinterest_id":
                 getFeatureOfInterest
@@ -225,24 +229,10 @@ export class Loras extends Common {
                 "multidatastream_id": "(select multidatastream1.id from multidatastream1)",
                 "phenomenonTime": `to_timestamp('${this.stean["timestamp"]}','${EdatesType.dateWithOutTimeZone}')::timestamp`,
                 "resultTime": `to_timestamp('${this.stean["timestamp"]}','${EdatesType.dateWithOutTimeZone}')::timestamp`,
-                "_resultnumbers": `array ${removeQuotes(JSON.stringify(Object.values(listOfSortedValues)))}`
+                "result": resultCreate
             };
-    
-            let searchDuplicate = "";
-            Object.keys(insertObject)
-                .slice(0, -1)
-                .forEach((elem: string) => {
-                    searchDuplicate = searchDuplicate.concat(`"${elem}" = ${insertObject[elem]} AND `);
-                });
-    
-            searchDuplicate = searchDuplicate
-                    .concat(`"_resultnumbers" = '{${Object.values(listOfSortedValues)
-                    .map((elem) => {
-                        const tmp = JSON.stringify(elem);
-                        return tmp == "null" ? tmp : `${tmp}`;
-                    })
-                    .join(",")}}'::${this.ctx._config.highPrecision ? 'float8' : 'float4'}[]`
-            );
+            
+            const searchDuplicate = Object.keys(insertObject) .slice(0, -1) .map((elem: string) => `"${elem}" = ${insertObject[elem]} AND `).concat(`"result" = ${resultCreate}`).join("");
 
             const sql = `WITH "${VOIDTABLE}" AS (select srid FROM "${VOIDTABLE}" LIMIT 1)
                 , multidatastream1 AS (SELECT id, thing_id, _default_foi, ${searchMulti} LIMIT 1)
@@ -251,7 +241,7 @@ export class Loras extends Common {
                 , observation1 AS (INSERT INTO  "${this.DBST.Observations.table}" ("${Object.keys(insertObject).join(QUOTEDCOMA)}") SELECT * FROM myValues
                                 WHERE NOT EXISTS (SELECT * FROM searchDuplicate)
                                 AND (SELECT id FROM multidatastream1) IS NOT NULL
-                                RETURNING *, _resultnumbers AS result)
+                                RETURNING *)
                 , result1 AS (SELECT (SELECT observation1.id FROM observation1)
                 , (SELECT multidatastream1."keys" FROM multidatastream1)
                 , (SELECT searchDuplicate.id AS duplicate FROM  searchDuplicate)
@@ -260,23 +250,18 @@ export class Loras extends Common {
                     "(SELECT observation1.COLUMN FROM observation1), "
                 )} (SELECT multidatastream1.id FROM multidatastream1) AS multidatastream, (SELECT multidatastream1.thing_id FROM multidatastream1) AS thing)
                  SELECT coalesce(json_agg(t), '[]') AS result FROM result1 AS t`;
-    
             this.logQuery(sql);
             return await Common.dbContext
                 .raw(sql)
                 .then(async (res: any) => {
                     const tempResult = res["rows"][0].result[0];
                     if (tempResult.id != null) {
-                        const _resultnumbers = {};
-                        tempResult.keys.forEach((elem: string, index: number) => {
-                            _resultnumbers[elem] = tempResult["_resultnumbers"][index];
-                        });
                         const result = {
                             "@iot.id": tempResult.id,
                             "@iot.selfLink": `${this.ctx._odata.options.rootBase}Observations(${tempResult.id})`,
                             "phenomenonTime": `"${tempResult.phenomenonTime}"`,
                             "resultTime": `"${tempResult.resultTime}"`,
-                            result: _resultnumbers
+                            "result": res["rows"][0].result[0]["result"]["value"]
                         };
     
                         Object.keys(this.DBST["Observations"].relations).forEach((word) => {
@@ -293,6 +278,12 @@ export class Loras extends Common {
                         else this.ctx.throw(409, { code: 409, detail: errors.observationExist, link: `${this.ctx._odata.options.rootBase}Observations(${[tempResult.duplicate]})` });
                     }
                 });
+                // .catch((error: any) => {
+                //     console.log(error);
+                    
+                //     if(error.code === "23505") this.ctx.throw(409, { code: 409, detail: errors.observationExist, link: `` });
+                //     return undefined;
+                // });
         } else if (datastream) { 
            Logs.debug("datastream", datastream);
            const getFeatureOfInterest = getBigIntFromString(dataInput["FeatureOfInterest"]);
@@ -319,25 +310,19 @@ export class Loras extends Common {
                     return this.createReturnResult({ body: errors.noValue });
                     else this.ctx.throw(400, { code: 400, detail: errors.noValue });
             }
-            
+
+            const resultCreate = `'${JSON.stringify({"value": value})}'::jsonb`;            
            const insertObject = {
                "featureofinterest_id": "(select datastream1._default_foi from datastream1)",
                "datastream_id": "(select datastream1.id from datastream1)",
                "phenomenonTime": `to_timestamp('${this.stean["timestamp"]}','${EdatesType.dateWithOutTimeZone}')::timestamp`,
                "resultTime": `to_timestamp('${this.stean["timestamp"]}}','${EdatesType.dateWithOutTimeZone}')::timestamp`,
-               "_resultnumber": `${value}`
+               "result": resultCreate
            };
-           let searchDuplicate = "";
-
-           Object.keys(insertObject)
-               .slice(0, -1)
-               .forEach((elem: string) => {
-                   searchDuplicate = searchDuplicate.concat(`"${elem}" = ${insertObject[elem]} AND `);
-               });
-               searchDuplicate = searchDuplicate.concat(
-                   `"_resultnumber" = ${insertObject["_resultnumber"]}`
-               );
-               Logs.debug("searchDuplicate", searchDuplicate);
+           
+           const searchDuplicate = Object.keys(insertObject) .slice(0, -1) .map((elem: string) => `"${elem}" = ${insertObject[elem]} AND `).concat(`"result" = ${resultCreate}`).join("");
+           
+           Logs.debug("searchDuplicate", searchDuplicate);
    
            const sql = `WITH "${VOIDTABLE}" AS (select srid FROM "${VOIDTABLE}" LIMIT 1)
                , datastream1 AS (SELECT id, _default_foi, thing_id FROM "${this.DBST.Datastreams.table}" WHERE id =${datastream.id})
@@ -368,7 +353,7 @@ export class Loras extends Common {
                            "@iot.selfLink": `${this.ctx._odata.options.rootBase}Observations(${tempResult.id})`,
                            "phenomenonTime": `"${tempResult.phenomenonTime}"`,
                            "resultTime": `"${tempResult.resultTime}"`,
-                           result: tempResult._resultnumbers
+                           result: tempResult["result"]["value"]
                        };
    
                        Object.keys(this.DBST["Observations"].relations).forEach((word) => {

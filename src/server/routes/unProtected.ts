@@ -26,6 +26,7 @@ import { decodeToken, ensureAuthenticated, getAuthenticatedUser } from "../authe
 import { createAdminHtml } from "../views/admin";
 import { serverConfig } from "../configuration";
 import { createDatabase } from "../db/createDb";
+import { exportToXlsx, importToXlsx } from "../db/helpers/export";
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 
 // ALl others
@@ -66,6 +67,14 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             const createHtmlError = new CreateHtmlView(ctx);
             ctx.type = returnFormats.html.type;
             ctx.body = createHtmlError.error("what ?");
+            return;
+
+        case "EXPORT":
+            await exportToXlsx(ctx);
+            return;
+
+        case "IMPORT":
+            await importToXlsx(ctx);
             return;
 
         case "REGISTER":

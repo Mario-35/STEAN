@@ -5,6 +5,7 @@ import fs from "fs";
 import Koa from "koa";
 import { EColor } from "../enums";
 import { IKeyString } from "../types";
+import { isTest } from "../helpers";
 
 
 export class Logger {
@@ -30,8 +31,12 @@ export class Logger {
     }
 
      booting(cle: string, value: string | number) {
-        if (_DEBUG) this.log(`${this.col(EColor.FgYellow)} ${this.line(12)} ${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgWhite)} ${this.logAll(value, this.debugFile)} ${this.col(EColor.FgYellow)} ${this.line(12)}${this.col(EColor.Reset)}`);
+        if (!isTest()) this.log(`${this.col(EColor.FgYellow)} ${this.line(12)} ${this.col(EColor.FgCyan)} ${cle} ${this.col(EColor.FgWhite)} ${this.logAll(value, this.debugFile)} ${this.col(EColor.FgYellow)} ${this.line(12)}${this.col(EColor.Reset)}`);
      }
+
+     bootingResult(cle: string, infos?: any ) {
+        if (!isTest()) this.log(`${this.col(EColor.FgGreen)}     >>${this.col(EColor.FgBlack)} ${cle} ${this.col(EColor.FgMario)} : ${this.col(EColor.FgCyan)} ${this.logAll(infos, this.debugFile)}${this.col(EColor.Reset)}`);
+    }
  
      head(cle: string, infos?: any ) {
          if (_DEBUG) this.log(infos 

@@ -9,7 +9,6 @@
 import { Knex } from "knex";
 import { IdbConnection } from "./dbConnection";
 
-
 export interface IconfigFile {
     name: string; // item of the config file
     key?: string; // key for crypto
@@ -21,9 +20,8 @@ export interface IconfigFile {
     nb_page: number;
     createUser?: boolean;
     forceHttps: boolean;
+    extensions: string[];
     alias: string[];
-    lora: boolean;
-    multiDatastream: boolean;
     highPrecision: boolean;
     logFile: string;
     entities: string[];

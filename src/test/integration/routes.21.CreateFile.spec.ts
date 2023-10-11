@@ -75,14 +75,12 @@ describe(`CSV ${entity.name}`, function () {
                     should.not.exist(err);
                     res.should.have.status(201);
                     res.body["@iot.id"].should.eql(16);
-                    // res.body["observationType"].should.eql('http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation');
-
                     dbTest(_DB.Observations.table)
                         .where("datastream_id", 16)
                         .orderBy("id")
                         .then((test) => {
                             test.length.should.eql(25);                            
-                            test[0]["_resultjson"]["annee"].should.eql('2010');
+                            test[0]["result"]["value"]["annee"].should.eql('2010');
                             addToApiDoc({ ...infos, result: limitResult(res) });
                             done();
                         })
@@ -118,7 +116,7 @@ describe(`CSV ${entity.name}`, function () {
                         .orderBy("id")
                         .then((test) => {
                             test.length.should.eql(24);
-                            test[0]["_resultjson"]["annee"].should.eql('2020');
+                            test[0]["result"]["value"]["annee"].should.eql('2020');
                             addToApiDoc({ ...infos, result: limitResult(res) });
                             generateApiDoc(docs, `apiDoc${entity.name}.js`);
                             done();

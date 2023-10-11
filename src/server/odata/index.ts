@@ -1,3 +1,11 @@
+/**
+ * pgVisitor index.
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+
 import { query, resourcePath } from "./parser/parser";
 import { Token } from "./parser/lexer";
 import koa from "koa";
@@ -5,22 +13,33 @@ import { cleanUrl } from "../helpers";
 import { serverConfig } from "../configuration";
 import { PgVisitor } from "./visitor/PgVisitor";
 import { SqlOptions } from "./parser/sqlOptions";
-import { _DB } from "../db/constants";
+import { queryMultiDatastreamKeys } from "../db/queries";
 export { PgVisitor } from "./visitor/PgVisitor";
 
-const doSomeWarkAfterAst = async (input: PgVisitor, ctx: koa.Context) => {    
+const doSomeWarkAfterCreateAst = async (input: PgVisitor, ctx: koa.Context) => {
     if ( input.splitResult && input.splitResult[0].toUpperCase() == "ALL" && input.parentId && <bigint>input.parentId > 0) {
-        const temp = await serverConfig.db(ctx._config.name).raw(`select jsonb_agg(tmp.units -> 'name') as keys from ( select jsonb_array_elements("unitOfMeasurements") as units from ${_DB.MultiDatastreams.table} where id = ${input.parentId} ) as tmp`);
+        const temp = await serverConfig.db(ctx._config.name).raw(queryMultiDatastreamKeys(input.parentId));
         input.splitResult = temp.rows[0]["keys"];
     }   
 };
 
 export const createOdata = async (ctx: koa.Context):Promise<PgVisitor | undefined> => {
+    // blonk url if not defined
     const blankUrl = `$top=${ctx._config.nb_page ? ctx._config.nb_page : 200}`;
-    const options: SqlOptions = {loraId: undefined, rootBase: ctx._rootName, onlyValue: false, onlyRef: false, method: ctx.method, name: ""};
 
+    const options: SqlOptions = {
+        loraId: undefined, 
+        rootBase: ctx._rootName, 
+        onlyValue: false, 
+        onlyRef: false, 
+        method: ctx.method, 
+        name: ""
+    };
+
+    // normalize href
     let urlSrc = ctx.href.normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(ctx._config.apiVersion)[1];
 
+    // function to remove element in url
     const removeElement = (input: string) => {
         urlSrc = urlSrc.replace(`&${input}`, "");
         urlSrc = urlSrc.replace(input, "");
@@ -32,6 +51,7 @@ export const createOdata = async (ctx: koa.Context):Promise<PgVisitor | undefine
         urlSrc = urlSrc.replace(nameConfig, "1");        
     }
 
+    // intercept deveui loras identification and save it befor delete it for comptibility with number id
     if (urlSrc.includes("/Loras(")) {
         const idLora = urlSrc.split("/Loras(").join("").split(")")[0];      
         if(isNaN(+idLora)) {
@@ -40,8 +60,7 @@ export const createOdata = async (ctx: koa.Context):Promise<PgVisitor | undefine
         }        
     }
 
-    // urlSrc = cleanUrl(urlSrc);
-    // urlSrc = cleanUrl(urlSrc.replace(/\@iot.id\b/, "id"));
+    // clean id in url
     urlSrc = cleanUrl(urlSrc.replace(/@iot.id/g, "id"));
     
     
@@ -74,7 +93,7 @@ export const createOdata = async (ctx: koa.Context):Promise<PgVisitor | undefine
         
         const temp = new PgVisitor(options).init(ctx, astRessources).start(ctx, astQuery);
 
-        await doSomeWarkAfterAst(temp, ctx);
+        await doSomeWarkAfterCreateAst(temp, ctx);
         
         return temp;
 };

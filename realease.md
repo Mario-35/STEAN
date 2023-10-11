@@ -1,4 +1,22 @@
 
+# version 2
+    true result any (like the sensortings norm tue result is a true "any" value)
+    for lora in result the payload is saved and attached on observation :
+    ```javascript
+    {
+        "value": 
+            {
+                "soil moisture": 18.75, 
+                "battery voltage": null, 
+                "soil temperature": 16.946
+            }, 
+        "payload": "010610324200000107103E4900009808"
+    }
+    ```
+    new config extensions : the key estension [extensions: ["multiDatastream", "lora", "numeric"]
+    correction bug when multiple @iot.id in odata
+    all start in one pass from scratch 
+
 # version 1.9.1
     change timestampTZ for posgreSQL 16
     create config and start it without restart server

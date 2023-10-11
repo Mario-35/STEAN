@@ -12,7 +12,6 @@ export interface IentityColumn {
     [key: string]: {
         readonly create: string;
         readonly alias?: string;
-        readonly alias_lora?: string;
         readonly unique?: boolean;
         readonly test?: string;
         readonly dataList?: IKeyString;

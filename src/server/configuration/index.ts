@@ -5,11 +5,10 @@
  * @author mario.adam@inrae.fr
  *
  */
-
 import fs from "fs";
 import { ADMIN, API_VERSION, APP_NAME, APP_VERSION, DEFAULT_DB, NODE_ENV, setDebug, setReady, TIMESTAMP, _DEBUG } from "../constants";
 import { Logs } from "../logger";
-import { asyncForEach, decrypt, encrypt, hidePasswordInJson, isTest } from "../helpers";
+import { asyncForEach, decrypt, encrypt, hidePasswordInJson, isTest, unikeList } from "../helpers";
 import util from "util";
 import { app } from "..";
 import knex, { Knex } from "knex";
@@ -19,7 +18,7 @@ import update from "./update.json";
 import { errors, infos, msg } from "../messages";
 import { IconfigFile, IdbConnection, Iuser } from "../types";
 import { _DB } from "../db/constants";
-import { apiType } from "../enums";
+import { EextensionsType } from "../enums";
 
 
 // class to create configs environements
@@ -36,7 +35,7 @@ class Configuration {
         Configuration.jsonConfiguration = JSON.parse(fileTemp);
         Object.keys(Configuration.jsonConfiguration).forEach((element: string) => {             
             this.configs[element] = this.formatConfig(element);
-        });        
+        });     
     }
 
     // return the connection
@@ -45,15 +44,15 @@ class Configuration {
         if (!this.configs[name].db) this.createKnexConnectionFromConfigName(name);
         return this.configs[name].db || this.createKnexConnection(this.configs[name].pg);
     }
-
-    dbAdmin(): Knex<any, unknown[]> {      
+    
+    dbAdminFor(name: string): Knex<any, unknown[]> {      
         return knex({
             client: "pg",
-            connection:{... this.configs[ADMIN].pg, database: DEFAULT_DB, application_name: `${APP_NAME} ${APP_VERSION}`},
+            connection:{... this.configs[name].pg, database: DEFAULT_DB, application_name: `${APP_NAME} ${APP_VERSION}`},
             pool: { min: 0, max: 7 },
             debug: false,            
         });
-    }     
+    }   
 
     // return knex connection from Connection
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -62,9 +61,10 @@ class Configuration {
             client: "pg",
             connection: {
                 ... input, 
-                application_name: `${APP_NAME} ${APP_VERSION}`
+                application_name: `${APP_NAME} ${APP_VERSION}`,
             },
             pool: { min: 0, max: 7 },
+            
             debug: false,            
         });
     }     
@@ -172,9 +172,12 @@ class Configuration {
         }
         // If config encrypted
         Object.keys(input).forEach((elem: string) => {input[elem] = decrypt(input[elem]);});
-        const goodDbName = name ? name : decrypt(input["pg_database"]) || "ERROR";
-        const multi = input["multiDatastream"] ? input["multiDatastream"] : false;
-        const lora = input["lora"] ? input["lora"] : false;
+        const goodDbName = name ? name : decrypt(input["pg_database"] ? input["pg_database"] : input["pg"] ? input["pg"]["database"] : "ERROR") || "ERROR";
+        let extensions = input["extensions"] ? String(input["extensions"]).split(",") : [];
+        if (input["multiDatastream"] && input["multiDatastream"] === true) extensions.push("multiDatastream");
+        if (input["lora"] && input["lora"] === true) extensions.push("multiDatastream","lora");
+        if (input["numeric"] && input["numeric"] === true) extensions = ["numeric"];
+        extensions = unikeList(extensions);
         const returnValue: IconfigFile = {
             name: goodDbName,
             port: goodDbName === "admin" ? input["port"] || 8029 : input["port"] || this.configs[ADMIN].port || 8029 ,
@@ -191,17 +194,17 @@ class Configuration {
             webSite: input["webSite"] || "no web site",
             nb_page: input["nb_page"] ? +input["nb_page"] : 200,
             forceHttps: input["forceHttps"] ? input["forceHttps"] : false,
-            alias: input["alias"] ? String(input["alias"]).split(",") : [],
-            lora: lora,
+            alias: input["alias"] ? unikeList(String(input["alias"]).split(",")) : [],            
+            extensions: extensions,
             highPrecision: input["highPrecision"] ? input["highPrecision"] : false,
-            multiDatastream: multi,
             logFile: input["log"] ? input["log"] : "",
-            entities: Object.keys(_DB).filter(e => _DB[e].essai.includes(apiType.base)
-                || (_DB[e].essai.includes(apiType.multiDatastream) && multi === true)
-                || (_DB[e].essai.includes(apiType.lora) && lora === true)
-            ),
+            entities: Object.keys(_DB).filter(e => [goodDbName === "admin" ? EextensionsType.admin : EextensionsType.base ,...extensions].some(r => _DB[e].essai.includes(r))),
+            // entities: Object.keys(_DB).filter(e => _DB[e].essai.includes(goodDbName === "admin" ? EextensionsType.admin : EextensionsType.base)
+            //     || (_DB[e].essai.includes(EextensionsType.multiDatastream) && extensions.includes(EextensionsType.multiDatastream))
+            //     || (_DB[e].essai.includes(EextensionsType.lora) && extensions.includes(EextensionsType.lora))
+            // ),
             db : undefined
-        };
+        };        
         if (Object.values(returnValue).includes("ERROR")) throw new TypeError(`${errors.inConfigFile} [${util.inspect(returnValue, { showHidden: false, depth: null })}]`);
         return returnValue;
     }
@@ -227,13 +230,13 @@ class Configuration {
         await this.isDbExist(key, true)
             .then(async (res: boolean) => {
                 await serverConfig.createUser(key);
-                  Logs.result(`\x1b[37mDatabase => ${key}\x1b[39m on line`, res);
+                  Logs.bootingResult(`\x1b[37mDatabase => ${key}\x1b[39m on line`, res);
                   const port = this.configs[key].port;
                   if (port > 0) {
-                      if (Configuration.ports.includes(port)) Logs.result(`\x1b[35m[${key}]\x1b[32m ${infos.addPort}`, port);
+                      if (Configuration.ports.includes(port)) Logs.bootingResult(`\x1b[35m[${key}]\x1b[32m ${infos.addPort}`, port);
                       else app.listen(port, () => {
                         Configuration.ports.push(port);
-                        Logs.result(`\x1b[33m[${key}]\x1b[32m ${infos.ListenPort}`, port);
+                        Logs.bootingResult(`\x1b[33m[${key}]\x1b[32m ${infos.ListenPort}`, port);
                     });
                   }
                   return res;
@@ -265,7 +268,7 @@ class Configuration {
     private async tryToCreateDB(connectName: string): Promise<boolean> {
         return await createDatabase(connectName)
         .then(async () => {
-             Logs.result(`${infos.db} ${infos.create} [${this.configs[connectName].pg.database}]`, "OK");
+             Logs.bootingResult(`${infos.db} ${infos.create} [${this.configs[connectName].pg.database}]`, "OK");
              this.createKnexConnectionFromConfigName(connectName);
             return true;
         })
@@ -283,12 +286,15 @@ class Configuration {
             .then(async () => {
                const listTempTables = await this.db(connectName).raw("SELECT array_agg(table_name) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'temp%';");
                const tables = listTempTables.rows[0].array_agg;
-               if (tables) Logs.result(`delete temp tables ==> \x1b[33m${connectName}\x1b[32m`, await this.db(connectName).raw(`DROP TABLE ${tables.slice(0, -1).slice(1).split(',')}`).then(() => "✔").catch((err: Error) => err.message));
-               if (update) {
-                   const list = update["database"];
+               if (tables) Logs.bootingResult(`delete temp tables ==> \x1b[33m${connectName}\x1b[32m`, await this.db(connectName).raw(`DROP TABLE ${tables.slice(0, -1).slice(1).split(',')}`).then(() => "✔").catch((err: Error) => err.message));
+               if (update && update["database"] && Object.entries(update["database"]).length > 0) {
+                    Logs.head("update");                
+                    const list = update["database"];
+                //    console.log(list);
+                   
                    await asyncForEach(list, async (operation: string) => {                    
-                        await this.db(connectName).raw(operation).then(() => "✔").catch((err: Error) => err.message);
-                        Logs.result(`configuration ==> \x1b[33m${connectName}\x1b[32m`, await this.db(connectName).raw(operation).then(() => "✔").catch((err: Error) => err.message));
+                        await this.db(connectName).raw(operation).then(() => Logs.debug(operation, "✔")).catch((err: Error) => Logs.error(err.message));
+                        Logs.bootingResult(`configuration ==> \x1b[33m${connectName}\x1b[32m`, await this.db(connectName).raw(operation).then(() => "✔").catch((err: Error) => err.message));
                    }); 
                 } 
                 return true;
@@ -314,7 +320,7 @@ class Configuration {
         const connect = async (): Promise<boolean> => {
                 try {
                     await pool.query('SELECT 1');
-                     Logs.result(msg(infos.dbOnline, options.database || "none"), TIMESTAMP());
+                     Logs.bootingResult(msg(infos.dbOnline, options.database || "none"), TIMESTAMP());
                     await pool.end();
                     return true;
                 }   

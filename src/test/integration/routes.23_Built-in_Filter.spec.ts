@@ -12,12 +12,6 @@ import chai from "chai";
 import chaiHttp from "chai-http";
 import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult, apiInfos } from "./constant";
 import { server } from "../../server/index";
-import { dbTest } from "../dbTest";
-
-const countHowMany = (nb: number, op: string) => {
-    return `select count(id) from (select id FROM (select *, unnest(_resultnumbers) rowz FROM observation) as essai where rowz ${op} ${nb} UNION select "id"  from "observation" where "_resultnumber" ${op} ${nb}) as total`;
-};
-
 chai.use(chaiHttp);
 
 const should = chai.should();
@@ -47,22 +41,19 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             apiExample: { http: "/v1.0/Observations?$filter=result eq 45",
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
+            python: defaultGet("python", "KEYHTTP")}
         };
-        dbTest.raw(countHowMany(45, "=")).then((result) => {
-            // const nb = Number(result.rows[0]["count"]);
-            chai.request(server)
-                .get(`/test${infos.apiExample.http}`)
-                .end((err, res) => {
-                    should.not.exist(err);
-                    res.status.should.equal(200);
-                    res.type.should.equal("application/json");
-                    res.body.value.length.should.eql(3);
-                    res.body.should.include.keys("@iot.count", "value");
-                    addToApiDoc({ ...infos, result: limitResult(res) });
-                    done();
-                });
-        });
+        chai.request(server)
+        .get(`/test${infos.apiExample.http}`)
+        .end((err, res) => {
+                should.not.exist(err);
+                res.status.should.equal(200);
+                res.type.should.equal("application/json");
+                res.body.value.length.should.eql(3);
+                res.body.should.include.keys("@iot.count", "value");
+                addToApiDoc({ ...infos, result: limitResult(res) });
+                done();
+            });
     });
 
     it("Odata Built-in operator ne", (done) => {
@@ -76,19 +67,17 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") }
         };
-        dbTest.raw(countHowMany(45, "<>")).then((result) => {
-            chai.request(server)
-                .get(`/test${infos.apiExample.http}`)
-                .end((err, res) => {
-                    should.not.exist(err);
-                    res.status.should.equal(200);
-                    res.type.should.equal("application/json");
-                    res.body.value.length.should.eql(37);
-                    res.body.should.include.keys("@iot.count", "value");
-                    addToApiDoc({ ...infos, result: limitResult(res) });
-                    done();
-                });
-        });
+        chai.request(server)
+            .get(`/test${infos.apiExample.http}`)
+            .end((err, res) => {
+                should.not.exist(err);
+                res.status.should.equal(200);
+                res.type.should.equal("application/json");
+                res.body.value.length.should.eql(37);
+                res.body.should.include.keys("@iot.count", "value");
+                addToApiDoc({ ...infos, result: limitResult(res) });
+                done();
+            });
     });
 
     it("Odata Built-in operator gt", (done) => {
@@ -100,38 +89,32 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             apiExample: { http: "/v1.0/Observations?$filter=result gt 45",
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
+            python: defaultGet("python", "KEYHTTP") }
         };
-        dbTest.raw(countHowMany(45, "<")).then((result) => {
-            // const nb = Number(result.rows[0]["count"]);
-            chai.request(server)
-                .get(`/test${infos.apiExample.http}`)
-                .end((err, res) => {
-                    should.not.exist(err);
-                    res.status.should.equal(200);
-                    res.type.should.equal("application/json");
-                    res.body.value.length.should.eql(4);
-                    res.body.should.include.keys("@iot.count", "value");
-                    addToApiDoc({ ...infos, result: limitResult(res) });
-                    done();
-                });
-        });
+        chai.request(server)
+            .get(`/test${infos.apiExample.http}`)
+            .end((err, res) => {
+                should.not.exist(err);
+                res.status.should.equal(200);
+                res.type.should.equal("application/json");
+                res.body.value.length.should.eql(4);
+                res.body.should.include.keys("@iot.count", "value");
+                addToApiDoc({ ...infos, result: limitResult(res) });
+                done();
+            });
     });
 
     it("Odata Built-in operator gt AND lt", (done) => {
-        dbTest.raw('select count("id") from "observation" where "_resultnumber" > 20 AND "_resultnumber" < 22;').then((result) => {
-            const nb = Number(result.rows[0]["count"]);
-            chai.request(server)
-                .get(`/test/v1.0/Observations?$filter=result gt 20 and result lt 22`)
-                .end((err, res) => {
-                    should.not.exist(err);
-                    res.status.should.equal(200);
-                    res.type.should.equal("application/json");
-                    res.body.value.length.should.eql(nb);
-                    res.body.should.include.keys("@iot.count", "value");
-                    done();
-                });
-        });
+        chai.request(server)
+            .get(`/test/v1.0/Observations?$filter=result gt 20 and result lt 22`)
+            .end((err, res) => {
+                should.not.exist(err);
+                res.status.should.equal(200);
+                res.type.should.equal("application/json");
+                res.body.value.length.should.eql(9);
+                res.body.should.include.keys("@iot.count", "value");
+                done();
+            });
     });  
    
     it("Odata Built-in operator ge", (done) => {
@@ -143,22 +126,19 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             apiExample: { http: "/v1.0/Observations?$filter=result ge 45",
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
+            python: defaultGet("python", "KEYHTTP") }
         };
-        dbTest.raw(countHowMany(45, "<")).then((result) => {
-            // const nb = Number(result.rows[0]["count"]);
-            chai.request(server)
-                .get(`/test${infos.apiExample.http}`)
-                .end((err, res) => {
-                    should.not.exist(err);
-                    res.status.should.equal(200);
-                    res.type.should.equal("application/json");
-                    res.body.value.length.should.eql(7);
-                    res.body.should.include.keys("@iot.count", "value");
-                    addToApiDoc({ ...infos, result: limitResult(res) });
-                    done();
-                });
-        });
+        chai.request(server)
+            .get(`/test${infos.apiExample.http}`)
+            .end((err, res) => {
+                should.not.exist(err);
+                res.status.should.equal(200);
+                res.type.should.equal("application/json");
+                res.body.value.length.should.eql(7);
+                res.body.should.include.keys("@iot.count", "value");
+                addToApiDoc({ ...infos, result: limitResult(res) });
+                done();
+            });
     }); 
 
     it("Odata Built-in operator lt", (done) => {
@@ -170,22 +150,19 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             apiExample: { http: "/v1.0/Observations?$filter=result lt 45",
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
+            python: defaultGet("python", "KEYHTTP") }
         };
-        dbTest.raw(countHowMany(45, ">")).then((result) => {
-            // const nb = Number(result.rows[0]["count"]);
-            chai.request(server)
-                .get(`/test${infos.apiExample.http}`)
-                .end((err, res) => {
-                    should.not.exist(err);
-                    res.status.should.equal(200);
-                    res.type.should.equal("application/json");
-                    res.body.value.length.should.eql(33);
-                    res.body.should.include.keys("@iot.count", "value");
-                    addToApiDoc({ ...infos, result: limitResult(res) });
-                    done();
-                });
-        });
+        chai.request(server)
+            .get(`/test${infos.apiExample.http}`)
+            .end((err, res) => {
+                should.not.exist(err);
+                res.status.should.equal(200);
+                res.type.should.equal("application/json");
+                res.body.value.length.should.eql(33);
+                res.body.should.include.keys("@iot.count", "value");
+                addToApiDoc({ ...infos, result: limitResult(res) });
+                done();
+            });
     });
 
     it("Odata Built-in operator le", (done) => {
@@ -197,21 +174,19 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             apiExample: { http: "/v1.0/Observations?$filter=result le 45",
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
+            python: defaultGet("python", "KEYHTTP") }
         };
-        dbTest.raw(countHowMany(45, ">")).then((result) => {
-            chai.request(server)
-                .get(`/test${infos.apiExample.http}`)
-                .end((err, res) => {
-                    should.not.exist(err);
-                    res.status.should.equal(200);
-                    res.type.should.equal("application/json");
-                    res.body.value.length.should.eql(36);
-                    res.body.should.include.keys("@iot.count", "value");
-                    addToApiDoc({ ...infos, result: limitResult(res) });
-                    done();
-                });
-        });
+        chai.request(server)
+            .get(`/test${infos.apiExample.http}`)
+            .end((err, res) => {
+                should.not.exist(err);
+                res.status.should.equal(200);
+                res.type.should.equal("application/json");
+                res.body.value.length.should.eql(36);
+                res.body.should.include.keys("@iot.count", "value");
+                addToApiDoc({ ...infos, result: limitResult(res) });
+                done();
+            });
     });
 
     it("Odata Built-in operator and", (done) => {
@@ -223,7 +198,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             apiExample: { http: "/v1.0/Things?$filter=name eq 'SensorWebThing 9' and description eq 'A SensorWeb thing Number nine'",
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
+            python: defaultGet("python", "KEYHTTP") }
         };
 
         chai.request(server)
@@ -248,7 +223,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             apiExample: { http: "/v1.0/Things?$filter=name eq 'SensorWebThing 9' or description eq 'A New SensorWeb thing'",
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")  }
+            python: defaultGet("python", "KEYHTTP") }
         };
 
         chai.request(server)

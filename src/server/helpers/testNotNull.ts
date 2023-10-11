@@ -15,4 +15,4 @@ export const isNull = (input: any): boolean => {
         default:
             return false;
     } 
-}
+};

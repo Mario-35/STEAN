@@ -13,7 +13,6 @@ export { streamCsvFileInPostgreSql, createColumnHeaderName } from "./streamCsvFi
 export { knexQueryToSqlString } from "./knexQueryToSqlString";
 export { removeKeyFromUrl } from "./removeKeyFromUrl";
 export { verifyId } from "./verifyId";
-export { countId } from "./countId";
 export { isGraph } from "./isGraph";
 export { isCsvOrArray } from "./isCsvOrArray";
 export { isObservation } from "./isObservation";

@@ -25,12 +25,12 @@ export const triggers = [`CREATE OR REPLACE FUNCTION func_trigger_after_insert_o
     $$
     DECLARE t_id integer;    
     BEGIN
-      INSERT INTO historical_observation("validTime", "_resultnumber", "_resultnumbers", "observation_id") values (OLD."validTime", OLD."_resultnumber", OLD."_resultnumbers", OLD."id") returning id into t_id;
+      INSERT INTO historical_observation("validTime", "_result", "observation_id") values (OLD."validTime", OLD."result", OLD."id") returning id into t_id;
       RETURN NEW;
     END;
     $$ LANGUAGE 'plpgsql';`,
 
-  `CREATE TRIGGER trigger_after_update_observation__resultnumbers AFTER update ON observation FOR EACH ROW EXECUTE PROCEDURE func_trigger_after_update_observation();`,
+  `CREATE TRIGGER trigger_after_update_observation_result AFTER update ON observation FOR EACH ROW EXECUTE PROCEDURE func_trigger_after_update_observation();`,
 
   `CREATE OR REPLACE FUNCTION timestamp_ceil(_tstz timestamptz, _int_seconds int)
     RETURNS timestamptz AS

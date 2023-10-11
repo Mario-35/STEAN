@@ -23,22 +23,10 @@ import { errors, infos, msg } from "../../messages/";
 // import { db } from "..";
 import * as entities from "../entities/index";
 import { returnFormats } from "../../helpers";
-import { QUOTEDCOMA } from "../../constants";
-
-
-interface convert {
-    key: string;
-    value: string;
-}
 
 export class CreateFile extends Common {
     constructor(ctx: koa.Context) {
          super(ctx);
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    testValue(inputValue: any): convert | undefined {
-        if (inputValue != null && inputValue !== "" && !isNaN(Number(inputValue.toString()))) return { key: "_resultnumber", value: inputValue.toString() };
-        else if (typeof inputValue == "object") return { key: "_resultnumbers", value: `{"${Object.values(inputValue).join(QUOTEDCOMA)}"}` };
     }
 
     streamCsvFileInPostgreSqlFileInDatastream = async (ctx: koa.Context, knex: Knex | Knex.Transaction, paramsFile: IcsvFile): Promise<IreturnResult | undefined> => {
@@ -140,7 +128,7 @@ export class CreateFile extends Common {
                 fileStream.on("end", async (tx: Knex.Transaction) => {
                     Logs.debug("COPY TO ", paramsFile.tempTable);
                     if (returnValue && returnValue.body && returnValue.body["@iot.id"]) {
-                        await client.query(`INSERT INTO "${this.DBST.Observations.table}" ("datastream_id", "phenomenonTime", "resultTime", "_resultjson") SELECT '${String(returnValue.body["@iot.id"])}', '2021-09-17T14:56:36+02:00', '2021-09-17T14:56:36+02:00', ROW_TO_JSON(p) FROM (SELECT * FROM ${paramsFile.tempTable}) AS p`); 
+                        await client.query(`INSERT INTO "${this.DBST.Observations.table}" ("datastream_id", "phenomenonTime", "resultTime", "result") SELECT '${String(returnValue.body["@iot.id"])}', '2021-09-17T14:56:36+02:00', '2021-09-17T14:56:36+02:00', json_build_object('value',ROW_TO_JSON(p)) FROM (SELECT * FROM ${paramsFile.tempTable}) AS p`); 
                         cleanup(true);
                         return returnValue;
                     }

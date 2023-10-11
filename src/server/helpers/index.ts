@@ -8,10 +8,10 @@
 
 import koa from "koa";
 
-export const goodNameForPostgres = (input: string): string => input.replace(/[ ]+/g, "").toLowerCase();
 export const removeQuotes = (input: string): string => input.replace(/['"]+/g, "");
 export const isTest = () => process.env.NODE_ENV?.trim() === "test" || false;
 export const getUserId = (ctx: koa.Context): number => ctx.state.user && ctx.state.user.id ? ctx.state.user.id : -1;
+export const unikeList = (input: string[]) => [... new Set(input)];
 
 export { asyncForEach } from "./asyncForEach";
 export { encrypt, decrypt } from "./crypto";

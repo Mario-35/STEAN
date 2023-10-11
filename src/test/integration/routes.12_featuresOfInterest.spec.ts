@@ -370,7 +370,6 @@ addToApiDoc({
                     should.not.exist(err);
                     res.status.should.equal(404);
                     res.type.should.equal("application/json");
-
                     docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);
                     generateApiDoc(docs, `apiDoc${entity.name}.js`);
                     

@@ -13,21 +13,20 @@ import { IcsvColumn, IcsvFile, IreturnResult, IstreamInfos } from "../../types";
 import { getStreamInfos, streamCsvFileInPostgreSql } from "../helpers";
 import { asyncForEach } from "../../helpers";
 import { errors, msg } from "../../messages/";
-import { QUOTEDCOMA } from "../../constants";
-import { EdatesType, EobservationType } from "../../enums";
+// import { QUOTEDCOMA } from "../../constants";
+import { EdatesType, EextensionsType } from "../../enums";
 import util from "util";
 
 // TODOCLEAN
 
 
 export class CreateObservations extends Common {
+    public indexResult = -1;
     constructor(ctx: koa.Context) {
          super(ctx);
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     // get stream ID
-
-
     dateToDateWithTimeZone(value: string) {
         //Create Date object from ISO string
         const date = new Date(value);
@@ -48,26 +47,28 @@ export class CreateObservations extends Common {
     createListColumnsValues(type: "COLUMNS" | "VALUES", input: string[], observationType?: string): string[] {
             const res:string[] = [];
             const separateur = type === "COLUMNS" ? '"' : "'";            
-            for (let elem of input) {
+            input.forEach((elem: string, index: number) => {
                 switch (elem) {
                     case "result":                        
-                        if (observationType) elem = EobservationType[observationType];            
+                        this.indexResult = index + 1;
                         break;
                     case "FeatureOfInterest/id":
                         elem = "featureofinterest_id";           
                         break;
-                }                
-                res.push(isNaN(+elem) ? typeof elem === "string" ? elem.endsWith("Z") ? `TO_TIMESTAMP('${this.dateToDateWithTimeZone(elem)}', '${EdatesType.dateWithOutTimeZone}')::TIMESTAMP`: `${separateur}${elem}${separateur}` : `${separateur}{${elem}}${separateur}` : elem);
-            }    
+                }                              
+                res.push(
+                    isNaN(+elem) 
+                            ? Array.isArray(elem) ? `'{"value": [${elem}]}'` :
+                             typeof elem === "string" 
+                                ? elem.endsWith("Z") 
+                                    ? `TO_TIMESTAMP('${this.dateToDateWithTimeZone(elem)}', '${EdatesType.dateWithOutTimeZone}')::TIMESTAMP`
+                                    : `${separateur}${elem}${separateur}` 
+                                : `${separateur}{${elem}}${separateur}` 
+                            : index === this.indexResult && type === "VALUES" 
+                        ? this.ctx._config.extensions.includes(EextensionsType.numeric) ? elem : `'{"value": ${elem}}'` 
+                        : elem);
+            });    
             return res;
-    }
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-    testValue(inputValue: any): {
-        key: string;
-        value: string;
-    } | undefined {
-        if (inputValue != null && inputValue !== "" && !isNaN(Number(inputValue.toString()))) return { key: "_resultnumber", value: inputValue.toString() };
-        else if (typeof inputValue == "object") return { key: "_resultnumbers", value: `{"${Object.values(inputValue).join(QUOTEDCOMA)}"}` };
     }
     
     async getAll(): Promise<IreturnResult | undefined> {
@@ -116,11 +117,11 @@ export class CreateObservations extends Common {
                 if(res) {
                     Logs.result("query", res);
                     // Execute query
-                    const result = await Common.dbContext.raw(res);
+                    const returnResult = await Common.dbContext.raw(res);
                     // All is done create results return                
                     Logs.debug("SQL Executing", "Ok");
-                    returnValue.push(`Add ${result && result["rows"] ? +result["rows"][0]["inserted"] : -1} observations from ${paramsFile.filename.split('/').reverse()[0]}`);
-                    total = result && result["rows"] ? +result["rows"][0]["total"] : -1;
+                    returnValue.push(`Add ${returnResult && returnResult["rows"] ? +returnResult["rows"][0]["inserted"] : -1} observations from ${paramsFile.filename.split('/').reverse()[0]}`);
+                    total = returnResult && returnResult["rows"] ? +returnResult["rows"][0]["total"] : -1;
 
                 }
 

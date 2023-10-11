@@ -14,7 +14,7 @@ const should = chai.should();
 describe("Delete test Database", function () {
     it("Delete test Database", (done) => {
         chai.request(server)
-        .get("/test/v1.0/removedbtest")
+        .get("/test/v1.0/removedbtesta")
         .end((err: Error, res: any) => {                 
                 if (err) {
                     console.log(res.body);                    

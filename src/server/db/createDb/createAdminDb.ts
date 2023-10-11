@@ -19,7 +19,7 @@ export const createAdminDB = async(): Promise<IKeyString> => {
     const config = serverConfig.configs[ADMIN].pg;
     // init result
     const returnValue = { "Start create Database": config.database };
-    await serverConfig.dbAdmin()
+    await serverConfig.dbAdminFor(ADMIN)
         .raw(`CREATE DATABASE ${ADMIN}`)
         .then(async () => {           
             returnValue["create Admin DB"] = "✔";

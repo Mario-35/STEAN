@@ -7,7 +7,7 @@
  */
 
 import { IentityColumn, IentityRelation, IKeyString } from ".";
-import { apiType } from "../enums";
+import { EextensionsType } from "../enums";
 
 export interface Ientity {
     readonly name: string; // Entity Name
@@ -22,5 +22,5 @@ export interface Ientity {
     readonly constraints?: IKeyString;
     readonly indexes?: IKeyString;
     readonly after?: string;
-    readonly essai: apiType[];
+    readonly essai: EextensionsType[];
 }

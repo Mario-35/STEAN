@@ -15,24 +15,29 @@ import { addCssFile } from "../views/css";
 import { addJsFile } from "../views/js";
 import util from "util";
 import { PgVisitor } from "../odata";
-import { countId, isGraph } from "../db/helpers";
+import { isGraph } from "../db/helpers";
 import { _DB } from "../db/constants";
 import { Eformats } from "../enums";
-import { queryAsDataArray, queryAsJson, queryInterval } from "../db/queries";
+import { countId, queryAsDataArray, queryAsJson, queryInterval } from "../db/queries";
 
 const defaultFunction = (input: string | object) => input;
 const defaultForwat = (input: PgVisitor): string => input.sql;
-
 const generateFields = (input: PgVisitor): string[] => {
   let fields:string[] = [];
   if (isGraph(input)) {    
     const table = _DB[input.parentEntity ? input.parentEntity: input.getEntity()].table;
-    fields = [`(select ${table}."description" from ${table} where ${table}."id" = ${input.parentId ? input.parentId: input.id}) AS title, `];
+    fields = [`(SELECT ${table}."description" FROM ${table} WHERE ${table}."id" = ${input.parentId ? input.parentId: input.id}) AS title, `];
   } 
   return fields;
 };
 
 const _returnFormats: { [key in Eformats]: IreturnFormat } = {
+  xlsx: {
+    name : "xlsx",
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    format : defaultFunction,
+    generateSql:defaultForwat
+  }, // IMPORTANT TO HAVE THIS BEFORE GRAPH
   json: {
     name : "json",
     type: "application/json",
@@ -72,7 +77,6 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
                         const linkBase = "${ctx._linkBase}/${ctx._config.apiVersion}";
                         const value = ${JSON.stringify(input, null, 2)};
                         ${addJsFile("graph.js")}
-                        
                         showGraph(value);
                         ${edit}                              
                       </script>

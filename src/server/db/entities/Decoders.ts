@@ -26,7 +26,7 @@ export class Decoders extends Common {
                     const F = new Function("input", "nomenclature", `${String(res.code)}; return decode(input, nomenclature);`);
                     return F(payload, JSON.parse(res.nomenclature));
                 } catch (error) { 
-                    console.log(error);    
+                    Logs.error(error);    
                     return {"error" : error};          
                 }
             }            

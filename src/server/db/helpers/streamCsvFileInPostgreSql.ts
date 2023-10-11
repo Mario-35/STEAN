@@ -149,8 +149,8 @@ export const streamCsvFileInPostgreSql = async (ctx: koa.Context, knex: Knex | K
                     // make import query
                     Object.keys(paramsFile.columns).forEach(async (myColumn: string, index: number) => {                        
                         const csvColumn: IcsvColumn = paramsFile.columns[myColumn];
-                        const valueSql = `CASE "${paramsFile.tempTable}".value${csvColumn.column} WHEN '---' THEN NULL ELSE cast(REPLACE(value${csvColumn.column},',','.') AS float) END`;
-                        scriptSql.push(`${index == 0 ? "WITH" : ","} updated${index + 1} AS (INSERT into "${_DB.Observations.table }" ("${csvColumn.stream.type?.toLowerCase()}_id", "featureofinterest_id", "phenomenonTime","resultTime", "_resultnumber", "resultQuality") SELECT ${csvColumn.stream.id}, ${ csvColumn.stream.FoId},  ${sqlRequest.dateSql}, ${sqlRequest.dateSql},${valueSql}, '{"import": "${fileImport}","date": "${dateImport}"}'  FROM "${paramsFile.tempTable}" ON CONFLICT DO NOTHING returning 1)`);
+                        const valueSql = `json_build_object('value', CASE "${paramsFile.tempTable}".value${csvColumn.column} WHEN '---' THEN NULL ELSE cast(REPLACE(value${csvColumn.column},',','.') AS float) END)`;
+                        scriptSql.push(`${index == 0 ? "WITH" : ","} updated${index + 1} AS (INSERT into "${_DB.Observations.table }" ("${csvColumn.stream.type?.toLowerCase()}_id", "featureofinterest_id", "phenomenonTime","resultTime", "result", "resultQuality") SELECT ${csvColumn.stream.id}, ${ csvColumn.stream.FoId},  ${sqlRequest.dateSql}, ${sqlRequest.dateSql},${valueSql}, '{"import": "${fileImport}","date": "${dateImport}"}'  FROM "${paramsFile.tempTable}" ON CONFLICT DO NOTHING returning 1)`);
                         scriptSqlResult.push(index == 0 ? ` SELECT (SELECT count(*) FROM ${paramsFile.tempTable}) AS total, (SELECT count(updated1) FROM updated1` : ` UNION SELECT count(updated${index + 1}) FROM updated${index + 1}`);
                     });
                     scriptSqlResult.push(') AS inserted');
