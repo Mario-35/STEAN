@@ -4,6 +4,16 @@
 
 ![Inrae](https://raw.githubusercontent.com/Mario-35/STEAN/main/doc/assets/inrae.png "Inrae")
 
+# Installation
+
+1. Fork/Clone : https://github.com/Mario-35/STEAN.git 
+    or unzip  : https://github.com/Mario-35/STEAN/archive/refs/heads/main.zip
+2. Install dependencies : npm install
+3. Fire up Postgres on the default ports
+4. Make configuration/config.json file (see [config.json.example](https://github.com/Mario-35/STEAN/blob/main/src/configuration/config.json.example))
+5. npm run dev for dev, npm run build (vs script package.json)
+6. If database not exists the program create it.
+
 [Release infos](https://github.com/Mario-35/STEAN/blob/main/realease.md)
 
 ## Want to use this with docker
@@ -65,20 +75,23 @@ For views a little :
 ```js
 📦src
  ┣ 📂server // API Server
+ ┃ ┣ 📂authentication // authentication and tokens
  ┃ ┣ 📂configuration // Configuration Server
  ┃ ┃ ┣ 📜.key // crypt Key
- ┃ ┃ ┗ config.json // config file
+ ┃ ┃ ┗ 📜 production.json // configuration file
  ┃ ┣ 📂db
- ┃ ┃ ┣ 📂createDBDatas // datas to create blank Database
+ ┃ ┃ ┣ 📂createDb // datas to create blank Database
  ┃ ┃ ┣ 📂dataAccess
  ┃ ┃ ┣ 📂entities // SensorThings entities
  ┃ ┃ ┣ 📂helpers 
+ ┃ ┃ ┣ 📂monitoring 
+ ┃ ┃ ┣ 📂queries 
  ┃ ┃ ┣ 📂interfaces
- ┃ ┃ ┣ 📜constants.ts // Constants for DB
- ┃ ┃ ┗ 📜index.ts // connections DB
+ ┃ ┃ ┗ 📜constants.ts // Constants for DB
+ ┃ ┣ 📂enums // Enums datas
  ┃ ┣ 📂helpers // Application helpers
  ┃ ┣ 📂logger // Logs tools
- ┃ ┣ 📂lora // Specific lora entity
+ ┃ ┣ 📂messages //all messages of the api
  ┃ ┣ 📂odata // Odata decoder
  ┃ ┃ ┣ 📂parser // Odata parser
  ┃ ┃ ┗ 📂visitor //  Odata decoder process
@@ -107,7 +120,7 @@ For views a little :
 
 ## Tech Stack
 
--   [Node.js](https://nodejs.org/) `v14.15.1`
+-   [Node.js](https://nodejs.org/) `v18.15.0`
 -   [PostgreSQL](https://www.postgresql.org/)
 -   [Knex.js](https://knexjs.org/)
 -   [pg](https://node-postgres.com/)
@@ -115,6 +128,7 @@ For views a little :
 -   [json2csv](https://mircozeiss.com/json2csv/)
 -   [busboy](https://github.com/mscdex/busboy)
 -   [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)
+-   [exceljs](https://github.com/exceljs/exceljs)
 
 ---
 

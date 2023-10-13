@@ -13,4 +13,5 @@ export { queryMultiDatastreamFromDeveui } from "./queryMultiDatastreamFromDeveui
 export { queryMultiDatastreamsUnitsKeys } from "./queryMultiDatastreamsUnitsKeys";
 export { queryMultiDatastreamKeys } from "./queryMultiDatastreamKeys";
 export { countId } from "./countId";
+export { tool } from "./tool";
 

@@ -265,13 +265,37 @@ describe("endpoint : Observations", () => {
                 });
         });
 
-        it("Return Observations with multiple result from multiDatastreams", (done) => {
+        it("Return Observations with multiple Standard result from multiDatastreams", (done) => {
             const infos = {
-                api: `{get} Observations with Multi Results`,
-                apiName: `GetSelectObservationsMultiResult`,
+                api: `{get} Observations with Standard Results`,
+                apiName: `GetSelectObservationsMultiStandardResult`,
                 apiDescription: "Retrieve observations with multi result.",
                 apiExample: {
                     http: `/v1.0/${entity.name}(14)`,
+                    curl: defaultGet("curl", "KEYHTTP"),
+                    javascript: defaultGet("javascript", "KEYHTTP"),
+                    python: defaultGet("python", "KEYHTTP")
+                }
+            };
+            chai.request(server)
+                .get(`/test${infos.apiExample.http}`)
+                .end((err: Error, res: any) => {                    
+                    should.not.exist(err);
+                    res.status.should.equal(200);
+                    res.type.should.equal("application/json");
+                    res.body.result[0].should.equal(8.75);
+                    addToApiDoc({ ...infos, result: limitResult(res) });
+                    done();
+                });
+        });
+
+        it("Return Observations with multiple result from multiDatastreams", (done) => {
+            const infos = {
+                api: `{get} Observations with Multi valuesKeys Results`,
+                apiName: `GetSelectObservationsMultivaluesKeysResult`,
+                apiDescription: "Retrieve observations with valuesKeys result.",
+                apiExample: {
+                    http: `/v1.0/${entity.name}(14)?$valueskeys=true`,
                     curl: defaultGet("curl", "KEYHTTP"),
                     javascript: defaultGet("javascript", "KEYHTTP"),
                     python: defaultGet("python", "KEYHTTP")

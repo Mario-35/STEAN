@@ -9,6 +9,7 @@
 import { serverConfig } from "../../../configuration";
 import { _DB } from "../../../db/constants";
 import { columnList, isCsvOrArray, isGraph, isObservation } from "../../../db/helpers";
+import { resultAlias } from "../../../db/queries/resultAlias";
 import { EextensionsType } from "../../../enums";
 import { getEntityName, removeQuotes } from "../../../helpers";
 import { Ientity } from "../../../types";
@@ -42,7 +43,7 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
             if (main.interval) main.addToBlanks(elem);  
             if (tempEntity.columns.hasOwnProperty(elem)) {  
                 // const column = tempEntity.columns[elem].alias ||`"${elem}"`;                
-                const column = elem === "result" && serverConfig.configs[main.configName].extensions.includes(EextensionsType.numeric) ? `"${elem}"` : tempEntity.columns[elem].alias ||`"${elem}"`;                
+                const column = elem === "result" && serverConfig.configs[main.configName].extensions.includes(EextensionsType.numeric) ? `"${elem}"` : elem === "result" ? resultAlias(main.valuesKeys) : tempEntity.columns[elem].alias ||`"${elem}"`;                
                 if (main.id) returnValue.push(column.replace(/$ID+/g, main.id.toString()) );         
                 else returnValue.push(column && column != "" ? column : `"${elem}"`);                    
                 if (elem === "id" && (element.showRelations == true || csvOrArray)) {
@@ -64,7 +65,7 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
 
         if (element.splitResult) element.splitResult.forEach((elem: string) => {
             const alias: string = element.splitResult && element.splitResult.length === 1 ? "result" : elem;
-            returnValue.push( `result-> 'value'->'${element.splitResult && element.splitResult.length === 1 ? removeQuotes(element.splitResult[0]) : alias}' AS "${alias}"` );
+            returnValue.push( `result-> 'valueskeys'->'${element.splitResult && element.splitResult.length === 1 ? removeQuotes(element.splitResult[0]) : alias}' AS "${alias}"` );
             main.addToArrayNames(alias);
         });
     }

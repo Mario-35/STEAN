@@ -27,6 +27,8 @@ import { createAdminHtml } from "../views/admin";
 import { serverConfig } from "../configuration";
 import { createDatabase } from "../db/createDb";
 import { exportToXlsx, importToXlsx } from "../db/helpers/export";
+import { tool } from "../db/queries";
+import { remadeLog } from "../db/helpers/remadeLog";
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 
 // ALl others
@@ -131,6 +133,22 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             }
             ctx.redirect(`${ctx._rootName}login`);
             return;
+
+        case "REDOLOG":
+            const querylog = await remadeLog();                         
+            if (querylog) {
+                ctx.type = returnFormats.json.type;
+                ctx.body = querylog;         
+            }
+            return;    
+
+        case "TOOL":
+            const queryool = await tool(ctx);                         
+            if (queryool) {
+                ctx.type = returnFormats.json.type;
+                ctx.body = queryool;         
+            }
+            return;    
 
         case "METRICS":
             const query = getUrlKey(ctx.href, "query");                         

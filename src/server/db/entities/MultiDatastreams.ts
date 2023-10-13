@@ -40,7 +40,7 @@ export class MultiDatastreams extends Common {
                 this.ctx.throw(400, { code: 400, detail: errors["observationType"]});
                 
         } else input["observationType"] = this.DBST.MultiDatastreams.columns["observationType"].verify?.default;
-
+        
         return input;
     }
 }

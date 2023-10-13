@@ -41,7 +41,10 @@ export class Observations extends Common {
                             detail: msg(errors.sizeResultUnitOfMeasurements, String(Object.keys(dataInput["result"]).length), multiDatastream["keys"].length)
                         });
                     }
-                dataInput["result"] = {"value": dataInput["result"]};
+                dataInput["result"] = {
+                    "value": Object.values(dataInput["result"]),
+                    "valueskeys": dataInput["result"]
+                };
             }
         } else if (dataInput["result"] && typeof dataInput["result"] != "object") dataInput["result"] = this.ctx._config.extensions.includes(EextensionsType.numeric) ? dataInput["result"] : {"value": dataInput["result"]};
         return dataInput;

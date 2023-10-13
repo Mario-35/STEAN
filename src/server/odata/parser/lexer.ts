@@ -137,6 +137,7 @@ export enum TokenType {
     Root = "Root",
     Debug = "Debug",
     InlineCount = "InlineCount",
+    ValuesKeys = "ValuesKeys",
     Select = "Select",
     SelectItem = "SelectItem",
     SelectPath = "SelectPath",

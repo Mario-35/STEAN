@@ -220,7 +220,7 @@ export class Loras extends Common {
                    }
                }
     
-               const resultCreate = `'${JSON.stringify({"value": listOfSortedValues, "payload": this.stean["frame"] })}'::jsonb`;
+               const resultCreate = `'${JSON.stringify({"value": Object.values(listOfSortedValues), "valueskeys":  listOfSortedValues, "payload": this.stean["frame"] })}'::jsonb`;
             const insertObject = {
                 "featureofinterest_id":
                 getFeatureOfInterest

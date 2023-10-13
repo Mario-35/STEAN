@@ -139,8 +139,8 @@
                  "deveui": "8cf9574000009L8C"
              };
              const infos = {
-                 api: `{post} ${entity.name} Post basic`,
-                 apiName: `Post${entity.name}`,
+                 api: `{post} ${entity.name} Post MultiDatastream basic`,
+                 apiName: `Post${entity.name}MultiDatastream`,
                  apiDescription: `Post a new ${entity.name}.${showHide(`Post${entity.name}`, apiInfos["10.2"])}`, apiExample: {
                      http: `/v1.0/${entity.name}`,
                      curl: defaultPost("curl", "KEYHTTP", datas),
@@ -176,8 +176,8 @@
                  "deveui": "70b3d5e75e014f06"
              };
              const infos = {
-                 api: `{post} ${entity.name} Post basic`,
-                 apiName: `Post${entity.name}`,
+                 api: `{post} ${entity.name} Post Datastream basic`,
+                 apiName: `Post${entity.name}Datastream`,
                  apiDescription: `Post a new ${entity.name}.${showHide(`Post${entity.name}`, apiInfos["10.2"])}`, apiExample: {
                      http: `/v1.0/${entity.name}`,
                      curl: defaultPost("curl", "KEYHTTP", datas),
@@ -208,8 +208,8 @@
                  "frame": "010610324200000107103E4900009808"
              };
              const infos = {
-                 api: `{post} ${entity.name} Post basic`,
-                 apiName: `Post${entity.name}Multi`,
+                 api: `{post} ${entity.name} Post observation basic`,
+                 apiName: `Post${entity.name}Observation`,
                  apiDescription: `Post a new Observation in a Lora Thing.`,
                  apiExample: {
                      http: `/v1.0/${entity.name}`,
@@ -228,8 +228,8 @@
                      res.status.should.equal(201);
                      res.type.should.equal("application/json");
                      res.body["@iot.selfLink"].should.contain("/Observations(");
-                     res.body["result"]["soil moisture"].should.eql(18.75);
-                     res.body["result"]["soil temperature"].should.eql(16.946);
+                     res.body["result"][0].should.eql(18.75);
+                     res.body["result"][1].should.eql(16.946);
                      addToApiDoc({ ...infos, result: limitResult(res) });
                      done();
                  });
@@ -243,8 +243,8 @@
                 "frame": "AA010610324200000107103E4900009808"
             };
             const infos = {
-                api: `{post} ${entity.name} Post basic`,
-                apiName: `Post${entity.name}Multi`,
+                api: `{post} ${entity.name} Post observation payload basic`,
+                apiName: `Post${entity.name}ObservationError`,
                 apiDescription: `Post a new Observation in a Lora Thing.`,
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
@@ -276,7 +276,7 @@
             };
             const infos = {
                 api: `{post} ${entity.name} Post basic`,
-                apiName: `Post${entity.name}Multi`,
+                apiName: `Post${entity.name}InvalidPayload`,
                 apiDescription: `Post a new Observation in a Lora Thing.`,
                 apiExample: {
                     http: `/v1.0/${entity.name}`,
@@ -322,7 +322,7 @@
             };
              const infos = {
                  api: `{post} ${entity.name} Post Duplicate`,
-                 apiName: `Post${entity.name}`,
+                 apiName: `Post${entity.name}Duplicate`,
                  apiDescription: "Post a new Duplicate Lora Observation.",
                  apiExample: {
                      http: `/v1.0/${entity.name}`,
@@ -379,9 +379,9 @@
                      res.status.should.equal(201);
                      res.type.should.equal("application/json");
                      res.body["@iot.selfLink"].should.contain("/Observations(");
-                     res.body["result"]["soil moisture"].should.eql(100);
-                     res.body["result"]["soil temperature"].should.eql(25);
-                     res.body["result"]["battery voltage"].should.eql(50);
+                     res.body["result"][0].should.eql(100);
+                     res.body["result"][1].should.eql(25);
+                     res.body["result"][2].should.eql(50);
                      addToApiDoc({ ...infos, result: limitResult(res) });
                      done();
                  });

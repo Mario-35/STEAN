@@ -53,6 +53,7 @@ namespace Query {
             Query.payload(value, index) ||
             Query.id(value, index) ||
             Query.InlineCount(value, index) ||
+            Query.ValuesKeys(value, index) ||
             Query.orderby(value, index) ||
             Query.search(value, index) ||
             Query.select(value, index) ||
@@ -351,6 +352,7 @@ namespace Query {
             Query.orderby(value, index) ||
             Query.skip(value, index) ||
             Query.top(value, index) ||
+            Query.ValuesKeys(value, index) ||
             Query.InlineCount(value, index)
         );
     }
@@ -756,6 +758,25 @@ namespace Query {
         }
 
         if (format) return Lexer.tokenize(value, start, index, { format }, Lexer.TokenType.Format);
+    }
+
+    export function ValuesKeys(value: Utils.SourceArray, index: number): Lexer.Token | undefined {
+        const start = index;
+        if (Utils.equals(value, index, "%24valueskeys")) {
+            index += 13;
+        } else if (Utils.equals(value, index, "$valueskeys")) {
+            index += 11;
+        } else return;
+
+        const eq = Lexer.EQ(value, index);
+        if (!eq) return;
+        index = eq;
+
+        const token = PrimitiveLiteral.booleanValue(value, index);
+        if (!token) return;
+        index = token.next;
+
+        return Lexer.tokenize(value, start, index, token, Lexer.TokenType.ValuesKeys);
     }
 
     export function InlineCount(value: Utils.SourceArray, index: number): Lexer.Token | undefined {

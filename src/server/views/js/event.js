@@ -308,3 +308,13 @@
   //   console.log(jsonObj);
   //   updateWinLogs(jsonObj);
   // };
+
+  btnTool.onclick = async () => {
+    var i = 0;
+    var step = +loopStep.value;
+for (i=5; i <= 1000000; i += step){
+
+  console.log(i);
+}
+
+  };

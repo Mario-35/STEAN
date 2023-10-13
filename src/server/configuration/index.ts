@@ -63,7 +63,7 @@ class Configuration {
                 ... input, 
                 application_name: `${APP_NAME} ${APP_VERSION}`,
             },
-            pool: { min: 0, max: 7 },
+            pool: { min: 0, max: 10 },
             
             debug: false,            
         });
