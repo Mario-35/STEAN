@@ -9,4 +9,7 @@
 import { returnFormats } from "../../helpers";
 import { PgVisitor } from "../../odata";
 
-export const isGraph = (input: PgVisitor) => [returnFormats.graph, returnFormats.graphDatas].includes(input.resultFormat) ? true : undefined;
+export const isGraph = (input: PgVisitor) =>
+  [returnFormats.graph, returnFormats.graphDatas].includes(input.resultFormat)
+    ? true
+    : undefined;

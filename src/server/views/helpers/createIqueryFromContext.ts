@@ -10,6 +10,7 @@
 
 import koa from "koa";
 import { getAuthenticatedUser } from "../../authentication";
+import { serverConfig } from "../../configuration";
 import { _DB, _DBFILTERED } from "../../db/constants";
 import { _DBADMIN } from "../../db/constants";
 import { getMetrics } from "../../db/monitoring";
@@ -45,6 +46,7 @@ export const createIqueryFromContext = async (ctx: koa.Context): Promise<Iquery>
         graph: ctx.url.includes("$resultFormat=graph"),
         admin: ctx._config.name === 'admin',
         metrics: ["all"].concat(metrics as Array<string>),
+        services: Object.keys(serverConfig.configs).filter(e => e!== "admin"),
         _DATAS: ctx._config.name === 'admin' === true 
             ? _DBADMIN 
             : user && (user.admin === true || user.superAdmin === true) 

@@ -247,7 +247,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
-                    res.body["@iot.count"].should.eql("20");
+                    res.body["@iot.count"].should.eql(20);
                     res.body.value[0]["@iot.id"].should.eql(1);
                     Object.keys(res.body.value[0]).length.should.eql(3);
                     addToApiDoc({ ...infos, result: limitResult(res) });
@@ -262,7 +262,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
-                    res.body["@iot.count"].should.eql("20");
+                    res.body["@iot.count"].should.eql(20);
                     res.body.value[0]["@iot.id"].should.eql(1);
                     Object.keys(res.body.value[0]).length.should.eql(3);
                     done();
@@ -288,7 +288,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
-                    res.body["@iot.count"].should.eql("20");
+                    res.body["@iot.count"].should.eql(20);
                     res.body.value[0]["Datastreams@iot.navigationLink"].should.contain("/Things(1)/Datastreams");
                     Object.keys(res.body.value[0]).length.should.eql(3);
                     addToApiDoc({ ...infos, result: limitResult(res) });
@@ -315,7 +315,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
-                    res.body["@iot.count"].should.eql("1");
+                    res.body["@iot.count"].should.eql(1);
                     res.body.value[0]["@iot.id"].should.eql(1);
                     res.body.value[0]["@iot.selfLink"].should.contain("/Locations(1)");
                     res.body.value[0]["Things@iot.navigationLink"].should.contain("/Locations(1)/Things");
@@ -332,7 +332,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
-                    res.body["@iot.count"].should.eql("2");
+                    res.body["@iot.count"].should.eql(2);
                     const id = res.body.value[0]["@iot.id"];
                     res.body.value[0]["@iot.selfLink"].should.contain(`HistoricalLocations(${id})`);
                     res.body.value[0]["Things@iot.navigationLink"].should.contain(`/HistoricalLocations(${id})/Things`);
@@ -567,7 +567,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
-                    res.body["@iot.count"].should.eql("20");
+                    res.body["@iot.count"].should.eql(20);
                     res.body.value[0]["@iot.selfLink"].should.contain("/Things(1)");
                     addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
@@ -804,7 +804,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     },
                     "Locations": [{ "@iot.id": 1908 }]
                 })
-                .end((err: Error, res: any) => {
+                .end((err: Error, res: any) => {                   
                     should.not.exist(err);
                     res.status.should.equal(400);
                     res.type.should.equal("application/json");

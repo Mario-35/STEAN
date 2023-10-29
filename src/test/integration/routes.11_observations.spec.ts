@@ -291,9 +291,9 @@ describe("endpoint : Observations", () => {
 
         it("Return Observations with multiple result from multiDatastreams", (done) => {
             const infos = {
-                api: `{get} Observations with Multi valuesKeys Results`,
-                apiName: `GetSelectObservationsMultivaluesKeysResult`,
-                apiDescription: "Retrieve observations with valuesKeys result.",
+                api: `{get} Observations with Multi keyValue Results`,
+                apiName: `GetSelectObservationsMultikeyValueResult`,
+                apiDescription: "Retrieve observations with keyValue result.",
                 apiExample: {
                     http: `/v1.0/${entity.name}(14)?$valueskeys=true`,
                     curl: defaultGet("curl", "KEYHTTP"),
@@ -631,9 +631,9 @@ describe("endpoint : Observations", () => {
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
                     res.body.should.include.keys(testsKeys);
-                    res.body.result["soil moisture"].should.eql(10.2);
-                    res.body.result["soil temperature"].should.eql(10.1);
-                    res.body.result["battery voltage"].should.eql(10.3);
+                    res.body.result[0].should.eql(10.1);
+                    res.body.result[1].should.eql(10.2);
+                    res.body.result[2].should.eql(10.3);
                     done();
                 });
         });

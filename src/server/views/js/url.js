@@ -1,85 +1,10 @@
-
-
-  function addDebug(input) {
-    if (input.trim() != "") input += '&';
-    return isDebug ? `${input}$debug=true`: input;
-  }
-
-  function decodeOptions() {
-    header("decodeOptions", queryOptions.value);
-    if (queryOptions.value === "") return;
-    try {
-      // return true if some works are done (for init to not delete value)
-      let decode = false;
-
-      const myOptions = (input.includes('?')) ? input.split('?')[1] : input;
-      // process options
-      myOptions.split('&').forEach((element) => {
-        const temp = element.split('=');
-        const key = temp[0].replace("$","");
-        const value = decodeURIComponent(temp[1]);
-        switch (key) {
-          case 'splitResult':
-            const objChk = getElement("splitResultOption");
-            const objName = getElement("splitResultOptionName");
-            if(objChk) objChk.checked = true;
-            if(objName) objName.value = temp[1];
-            addOption('splitResult',temp[1], 'FALSE');
-            decode = true;
-            break;
-          case 'resultFormat':
-            getElement("queryResultFormat").value = value;
-            deleteOption(key);
-            break;
-          case 'interval':
-            getElement("intervalOption").value = value;
-            deleteOption(key);
-            break;
-          case 'expand':
-            setMultiSelect(`query${capitalize(key)}`, [temp[1].split(",")[0]]);
-            decode = true;
-          break;
-          case 'debug':
-            isDebug = (temp[1] == "true");
-            deleteOption(key);
-          break;
-          case '$skip':
-          case '$top':
-            const obj = getElement(`${key}Option`);
-            if(obj) {
-              if (typeof obj.add !== "undefined") { 
-                  obj.add(new Option(temp[1]));
-              }
-              obj.value = temp[1];
-              addOption(key,temp[1], '0');
-            }
-            decode = true;
-            break;
-          default :
-          if (isDebug) console.log(`NOT FOUND key : ${key} value : ${value}`);
-        }
-      });
-      canShowQueryButton();
-      return decode;
-    } catch (error) {
-        return false;
-    } 
-  }
   
-  function removeQuotes(input) { 
-    if (input != null && input.length >= 2 && input.charAt(0) == '\"' && input.charAt(input.length - 1) == '\"') {
-          input = input.substring(1, input.length - 1);
-    }
-    return input;
-  }
+  const removeQuotes = (input) => (input != null && input.length >= 2 && input.charAt(0) == '\"' && input.charAt(input.length - 1) === '\"') ? input.substring(1, input.length - 1) : input;
 
   function decodeUrl(input) {
     input = removeQuotes(input);
     header("decodeUrl", input);
     try {
-      // return true if some works are done (for init to not delete value)
-      let decode = false;
-
       // delete all before
       let myRoot = input;
       let myOptions = input;
@@ -97,59 +22,45 @@
         myPath = splitStr[1];
         myRoot = splitStr[0];
       }
-      // process my path
-      myPath.split('/')
-            .filter((word) => word !== '')
-            .forEach((element, index) => {
-              if (index === 0) {
-                if (element.includes('(')) {
-                  const temp = element.split('(');
-                  entity.value = temp[0];
-                  nb.value = temp[1].replace(')', '');
-                } else entity.value = getEntityName(element);          
-              } else if (index === 1) {
-                if (element.includes('?')) queryOptions.value = element;
-                else if (_PARAMS._DATAS[getEntityName(element)]) populateSelect(subentity, Object.keys(_PARAMS._DATAS[entity.value].relations), element, true);
-              }
-            });    
-
-      // process options
-      myOptions.split('&').forEach((element) => {
+      
+      myOptions.split('&').filter(e => e.trim() !== "").forEach((element) => {
         const temp = element.split('=');
-        const key = temp[0].substring(1);
         switch (temp[0]) {
-          case '$splitResult':
-            const objChk = getElement("splitResultOption");
-            const objName = getElement("splitResultOptionName");
-            if(objChk) objChk.checked = true;
-            if(objName) objName.value = temp[1];
-            addOption('splitResult',temp[1], 'FALSE');
-            decode = true;
-            break;
-          case '$resultFormat':
-          case '$expand':
-            setMultiSelect(`query${capitalize(key)}`, temp[1].split(","));
-            decode = true;
-          break;
-          case '$skip':
-          case '$top':
-            const obj = getElement(`${key}Option`);
-            if(obj) {
-              if (typeof obj.add !== "undefined") { 
-                  obj.add(new Option(temp[1]));
+          // case 'orderby':
+  	      //   const elementOrderby= getElement("orderbyOption");
+          //   if(elementOrderby) multiSelects[elementOrderby.id].setValue(temp[1].replace("%20","").split(","));
+          //   break;
+          default:
+            const element = getElement(`${temp[0]}Option`);
+            if(element) {
+              switch (element.type ) {
+                case "checkbox":                  
+                  setChecked(element.id, temp[1] === "true" ? true : false);
+                  break;              
+                case "select-multiple":
+                  multiSelects[element.id].setValue(temp[1].split(","));
+                  break;              
+                default:
+                  element.value = temp[1];
+                  break;
               }
-              obj.value = temp[1];
-              addOption(key,temp[1], '0');
-            }
-            decode = true;
-            break;
+            } else console.log(` Not found ====${temp[0]}================> ${temp}`);
+
         }
       });
-      canShowQueryButton();      
-      return decode;
+      // canShowQueryButton();      
+      // return decode;
     } catch (error) {
+      console.log(error);
         return false;
     } 
+  }
+
+  function cleanUrl(input) {
+    while (["$", "&", "?"].includes(input[input.length - 1])) {
+        input = input.slice(0, -1);
+    }
+    return input;
   }
 
   function createUrl() {
@@ -160,12 +71,12 @@
       if (value != "") queryOptions.push(`${key}=${value}`);
     };
 
-    const index = Number(nb.value);
+    const index = Number(idOption.value);
 
     const root = `${optHost.value}/${optVersion.value}`;
   
     let directLink = root;
-    let queryLink = `${root}/Query?&method=${method.value}`; 
+    let queryLink = `${root}/Query?&method=${methodOption.value}`; 
 
     // Metrics
     let tempDatas = multiSelects["queryMetric"].getData();
@@ -175,27 +86,31 @@
       addInOption("query", tempDatas);
     } else {    
       if (index > 0) {
-        directLink = directLink + "/" + entity.value + "(" + index + ")";
-        queryLink = queryLink + `&id=${index}`;
+        directLink = directLink + "/" + entityOption.value + "(" + index + ")";
+        queryLink = queryLink + `&entity=${entityOption.value}&id=${index}`;
       } else {
-        if (entity.value == "Loras" && nb.value != "") 
-          directLink = directLink + "/" + entity.value + "(" + nb.value + ")";
-        else 
-          directLink = directLink + "/" + entity.value;
+        if (entityOption.value == "Loras" && idOption.value != "") {
+          directLink = directLink + "/" + entityOption.value + "(" + idOption.value + ")";
+          queryLink = queryLink + `&entity=${entityOption.value}&id=${index}`;
+        }
+        else {
+          directLink = directLink + "/" + entityOption.value;
+          queryLink = queryLink + `&entity=${entityOption.value}`;
+        }
       }
       
-      if (subentity.value != "none") {
-        directLink = directLink + "/" + subentity.value;
-        queryLink = queryLink + `&subentity=${subentity.value}`;
+      if (subentityOption.value != "none") {
+        directLink = directLink + "/" + subentityOption.value;
+        queryLink = queryLink + `&subentity=${subentityOption.value}`;
       }
 
-      if (queryProperty.value != "none" && nb.value != "") {
-          directLink = directLink + "/" + queryProperty.value;
-          queryLink = queryLink + `&property=${queryProperty.value}`;
+      if (propertyOption.value != "none" && idOption.value != "") {
+          directLink = directLink + "/" + propertyOption.value;
+          queryLink = queryLink + `&property=${propertyOption.value}`;
       
-        if (getIfChecked("onlyValue") === true) {
+        if (getIfChecked("onlyValueOption") === true) {
           directLink = directLink + "/$value";
-          queryLink = queryLink + `&onlyValue=true`;
+          queryLink = queryLink + `&onlyValueOption=true`;
         } 
 
         return { "direct" : directLink, "query": queryLink};
@@ -206,22 +121,23 @@
         queryLink = queryLink + `&datas=${datasEncoded}`;
       }
     
-      addInOption("resultFormat", ["json", "logs"].includes(queryResultFormat.value) ? "" : queryResultFormat.value);
+      addInOption("resultFormat", ["json", "logs"].includes(resultFormatOption.value) ? "" : resultFormatOption.value);
       addInOption("debug", isDebug ? "true" : "");
-      addInOption("count", getIfChecked("count") ? "true" : "");
+      addInOption("count", getIfChecked("countOption") ? "true" : "");
+      addInOption("valueskeys", getIfChecked("valueskeysOption") ? "true" : "");
       if (intervalOption.value != "" && isObservation() ) addInOption("interval",intervalOption.value);
       if (!["","0"].includes(skipOption.value)) addInOption("skip",skipOption.value);
       if (!["","0"].includes(topOption.value)) addInOption("top",topOption.value);
-      tempDatas = multiSelects["queryExpand"].getData();
+      tempDatas = multiSelects["expandOption"].getData();
       if (tempDatas && tempDatas.length > 0) addInOption("expand", tempDatas);
-      tempDatas = (queryResultFormat.value === "logs") ? ["id","date","code","method","database"] : multiSelects["querySelect"].getData();
+      tempDatas = (resultFormatOption.value === "logs") ? ["id","date","code","method","database"] : multiSelects["selectOption"].getData();
       if (tempDatas && tempDatas.length > 0) addInOption("select", tempDatas);
-      tempDatas = multiSelects["queryOrderBy"].getData();
+      tempDatas = multiSelects["orderbyOption"].getData();
       if (isLog() && tempDatas.length < 1) tempDatas = ["date desc"];
       if (tempDatas && tempDatas.length > 0) addInOption("orderby", tempDatas);
-      if (payload.value != "" && ["Decoders"].includes(entity.value)) addInOption("payload", payload.value);
+      if (payload.value != "" && ["Decoders"].includes(entityOption.value)) addInOption("payload", payload.value);
 
-      // queryOrderBy;
+      // orderbyOption;
       const queryBuilder = getElement("query-builder").innerText;
       const listOr = [];
       JSON.parse(queryBuilder).forEach((whereOr) => {    
@@ -261,7 +177,9 @@
     }
     const addMark = queryOptions.length > 0 ? "?$":"";
     directLink = `${directLink}${addMark}${queryOptions.join("&$")}`;
-    queryLink = `${queryLink}${addMark}options=${encodeURI(queryOptions.join("&"))}`;
+    queryLink = `${queryLink}&${encodeURI(queryOptions.join("&"))}`;
+    directLink = cleanUrl(directLink);
+    queryLink = cleanUrl(queryLink);
     if (isDebug) {
       console.log(`direct : ${directLink}`);
       console.log(`query : ${queryLink}`);

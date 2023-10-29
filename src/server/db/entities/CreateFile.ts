@@ -1,11 +1,10 @@
 /**
- * Observations entity.
+ * CreateFile entity.
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
- */  
-
+ */
 
 // TODOCLEAN
 
@@ -14,150 +13,192 @@ import koa from "koa";
 import { Common } from "./common";
 import { Logs } from "../../logger";
 import { IcsvColumn, IcsvFile, IreturnResult } from "../../types";
-import { createColumnHeaderName} from "../helpers";
+import { createColumnHeaderName } from "../helpers";
 import copyFrom from "pg-copy-streams";
 import fs from "fs";
 import { errors, infos, msg } from "../../messages/";
-
 
 // import { db } from "..";
 import * as entities from "../entities/index";
 import { returnFormats } from "../../helpers";
 
 export class CreateFile extends Common {
-    constructor(ctx: koa.Context) {
-         super(ctx);
+  constructor(ctx: koa.Context) {
+    super(ctx);
+  }
+
+  streamCsvFileInPostgreSqlFileInDatastream = async (
+    ctx: koa.Context,
+    knex: Knex | Knex.Transaction,
+    paramsFile: IcsvFile
+  ): Promise<IreturnResult | undefined> => {
+    Logs.head("streamCsvFileInPostgreSqlFileInDatastream");
+    let returnValue: IreturnResult | undefined = undefined;
+    const headers = await createColumnHeaderName(paramsFile.filename);
+
+    if (!headers) {
+      ctx.throw(400, {
+        code: 400,
+        detail: errors.noHeaderCsv + paramsFile.filename,
+      });
     }
+    const createDataStream = async () => {
+      const nameOfFile = paramsFile.filename.split("/").reverse()[0];
+      const copyCtx = Object.assign({}, ctx._odata);
+      const tempId = ctx._odata.id.toString();
+      ctx._odata.entity = this.DBST.Datastreams.name;
 
-    streamCsvFileInPostgreSqlFileInDatastream = async (ctx: koa.Context, knex: Knex | Knex.Transaction, paramsFile: IcsvFile): Promise<IreturnResult | undefined> => {
-        Logs.head("streamCsvFileInPostgreSqlFileInDatastream");
-        let returnValue: IreturnResult | undefined = undefined;
-        const headers = await createColumnHeaderName(paramsFile.filename);
-        
-        if (!headers) { ctx.throw(400, { code: 400, detail: errors.noHeaderCsv + paramsFile.filename }); }
-        const createDataStream = async () => {
-            const nameOfFile = paramsFile.filename.split("/").reverse()[0];
-            const copyCtx = Object.assign({}, ctx._odata);
-            const tempId= ctx._odata.id.toString();
-            ctx._odata.entity = this.DBST.Datastreams.name;
+      // IMPORTANT TO ADD instead update
+      ctx._odata.id = "";
+      ctx._odata.resultFormat = returnFormats.json;
+      ctx._log = undefined;
 
-            // IMPORTANT TO ADD instead update
-            ctx._odata.id = "";
-            ctx._odata.resultFormat = returnFormats.json;
-            ctx._addToLog = false;      
-
-            const objectDatastream = new entities[this.DBST.Datastreams.name](ctx, Common.dbContext);
-            const myDatas = {
-                "name": `${this.DBST.Datastreams.name} import file ${nameOfFile}`,
-                "description": "Description in meta ?",
-                "observationType": "http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation",
-                "Thing": { "@iot.id": tempId },
-                "unitOfMeasurement": {
-                    "name": headers.join(),
-                    "symbol": "csv",
-                    "definition": "https://www.rfc-editor.org/rfc/pdfrfc/rfc4180.txt.pdf"
-                },
-                "ObservedProperty": {
-                    "name": `is Generik ${nameOfFile}`,
-                    "description": "KOIKE observe",
-                    "definition": "http://www.qudt.org/qudt/owl/1.0.0/quantity/Instances.html#AreaTemperature"
-                },
-                "Sensor": {
-                    "name": `Nom du Kapteur${nameOfFile}`,
-                    "description": "Capte heures a la seconde",
-                    "encodingType": "application/pdf",
-                    "metadata": "https://time.com/datasheets/capteHour.pdf"
-                }
-            };
-            try {
-                return await objectDatastream.add(myDatas);
-            } catch (error) {
-                ctx._odata.where = `"name" ~* '${nameOfFile}'`;
-                const returnValueError = await objectDatastream.getAll(); 
-                ctx._odata = copyCtx;
-                if (returnValueError) {
-                    returnValueError.body = returnValueError.body ? returnValueError.body[0] : {};
-                    if (returnValueError.body)
-                        await Common.dbContext.raw(`DELETE FROM "${this.DBST.Observations.table}" WHERE "datastream_id" = ${returnValueError.body["@iot.id"]}`);
-                    return returnValueError;
-                }
-            } finally {
-                ctx._odata = copyCtx;
-            }
-
-        };
-
-        returnValue = await createDataStream();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await knex.schema.createTable(paramsFile.tempTable, (table: any) => {
-                            table.increments("id").unsigned().notNullable().primary();
-                            headers.forEach((value) => table.string(value));
-                        })
-                        .catch((err: Error) => ctx.throw(400, { detail: err.message }));
-
-
-        Logs.debug("Create Table", paramsFile.tempTable);
-
-        await new Promise<Knex.Transaction>((resolve, reject) => {
-            knex.transaction(async (tx: Knex.Transaction) => {
-                const cleanup = (valid: boolean, err?: Error) => {
-                    if (valid == true) tx.commit;
-                    else tx.rollback;
-                    if (err) reject(err);
-                    resolve(tx);
-                };
-
-                const client = await tx.client.acquireConnection().catch((err: Error) => reject(err));
-
-                const stream = client
-                    // .query( copyFrom.from( `COPY ${paramsFile.tempTable} FROM STDIN WITH (FORMAT csv)`))
-                    .query( copyFrom.from( `COPY ${paramsFile.tempTable} (${headers.join(",")}) FROM STDIN WITH (FORMAT csv, DELIMITER ';'${paramsFile.header})`))
-                    
-
-                    .on("error", (err: Error) => {
-                        Logs.error(errors.stream, err);
-                        reject(err);
-                    });
-                
-                const fileStream = fs.createReadStream(paramsFile.filename);
-                fileStream.on("error", (err: Error) => {
-                    Logs.error(errors.fileStream, err);
-                    cleanup(false, err);
-                });
-
-                fileStream.on("end", async (tx: Knex.Transaction) => {
-                    Logs.debug("COPY TO ", paramsFile.tempTable);
-                    if (returnValue && returnValue.body && returnValue.body["@iot.id"]) {
-                        await client.query(`INSERT INTO "${this.DBST.Observations.table}" ("datastream_id", "phenomenonTime", "resultTime", "result") SELECT '${String(returnValue.body["@iot.id"])}', '2021-09-17T14:56:36+02:00', '2021-09-17T14:56:36+02:00', json_build_object('value',ROW_TO_JSON(p)) FROM (SELECT * FROM ${paramsFile.tempTable}) AS p`); 
-                        cleanup(true);
-                        return returnValue;
-                    }
-                });
-                fileStream.pipe(stream);
-            }).catch((err: Error) => reject(err));
-        });
-        return returnValue;        
+      const objectDatastream = new entities[this.DBST.Datastreams.name](
+        ctx,
+        Common.dbContext
+      );
+      const myDatas = {
+        name: `${this.DBST.Datastreams.name} import file ${nameOfFile}`,
+        description: "Description in meta ?",
+        observationType:
+          "http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation",
+        Thing: { "@iot.id": tempId },
+        unitOfMeasurement: {
+          name: headers.join(),
+          symbol: "csv",
+          definition: "https://www.rfc-editor.org/rfc/pdfrfc/rfc4180.txt.pdf",
+        },
+        ObservedProperty: {
+          name: `is Generik ${nameOfFile}`,
+          description: "KOIKE observe",
+          definition:
+            "http://www.qudt.org/qudt/owl/1.0.0/quantity/Instances.html#AreaTemperature",
+        },
+        Sensor: {
+          name: `Nom du Kapteur${nameOfFile}`,
+          description: "Capte heures a la seconde",
+          encodingType: "application/pdf",
+          metadata: "https://time.com/datasheets/capteHour.pdf",
+        },
+      };
+      try {
+        return await objectDatastream.add(myDatas);
+      } catch (error) {
+        ctx._odata.where = `"name" ~* '${nameOfFile}'`;
+        const returnValueError = await objectDatastream.getAll();
+        ctx._odata = copyCtx;
+        if (returnValueError) {
+          returnValueError.body = returnValueError.body
+            ? returnValueError.body[0]
+            : {};
+          if (returnValueError.body)
+            await Common.dbContext.raw(
+              `DELETE FROM "${this.DBST.Observations.table}" WHERE "datastream_id" = ${returnValueError.body["@iot.id"]}`
+            );
+          return returnValueError;
+        }
+      } finally {
+        ctx._odata = copyCtx;
+      }
     };
 
-    async add(dataInput: object): Promise<IreturnResult | undefined> {
-        Logs.head(msg(infos.classConstructor, this.constructor.name, `add`));        
-        if (this.ctx._datas) {
-            const myColumns: IcsvColumn[] = [];
-            const paramsFile: IcsvFile = {
-                tempTable: `temp${Date.now().toString()}`,
-                filename: this.ctx._datas["file"],
-                columns: myColumns,
-                header:  ", HEADER" ,
-                stream: [] // only for interface
-            };
-            const temp = await this.streamCsvFileInPostgreSqlFileInDatastream(this.ctx, Common.dbContext, paramsFile);
-            return this.createReturnResult({
-                body: temp?.body
-            });
-        } else {
-            console.log("fini else");
-            return;       
-        }
-    }
-}
+    returnValue = await createDataStream();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await knex.schema
+      .createTable(paramsFile.tempTable, (table: any) => {
+        table.increments("id").unsigned().notNullable().primary();
+        headers.forEach((value) => table.string(value));
+      })
+      .catch((err: Error) => ctx.throw(400, { detail: err.message }));
 
+    Logs.debug("Create Table", paramsFile.tempTable);
+
+    await new Promise<Knex.Transaction>((resolve, reject) => {
+      knex
+        .transaction(async (tx: Knex.Transaction) => {
+          const cleanup = (valid: boolean, err?: Error) => {
+            if (valid == true) tx.commit;
+            else tx.rollback;
+            if (err) reject(err);
+            resolve(tx);
+          };
+
+          const client = await tx.client
+            .acquireConnection()
+            .catch((err: Error) => reject(err));
+
+          const stream = client
+            // .query( copyFrom.from( `COPY ${paramsFile.tempTable} FROM STDIN WITH (FORMAT csv)`))
+            .query(
+              copyFrom.from(
+                `COPY ${paramsFile.tempTable} (${headers.join(
+                  ","
+                )}) FROM STDIN WITH (FORMAT csv, DELIMITER ';'${
+                  paramsFile.header
+                })`
+              )
+            )
+
+            .on("error", (err: Error) => {
+              Logs.error(errors.stream, err);
+              reject(err);
+            });
+
+          const fileStream = fs.createReadStream(paramsFile.filename);
+          fileStream.on("error", (err: Error) => {
+            Logs.error(errors.fileStream, err);
+            cleanup(false, err);
+          });
+
+          fileStream.on("end", async (tx: Knex.Transaction) => {
+            Logs.debug("COPY TO ", paramsFile.tempTable);
+            if (
+              returnValue &&
+              returnValue.body &&
+              returnValue.body["@iot.id"]
+            ) {
+              await client.query(
+                `INSERT INTO "${
+                  this.DBST.Observations.table
+                }" ("datastream_id", "phenomenonTime", "resultTime", "result") SELECT '${String(
+                  returnValue.body["@iot.id"]
+                )}', '2021-09-17T14:56:36+02:00', '2021-09-17T14:56:36+02:00', json_build_object('value',ROW_TO_JSON(p)) FROM (SELECT * FROM ${
+                  paramsFile.tempTable
+                }) AS p`
+              );
+              cleanup(true);
+              return returnValue;
+            }
+          });
+          fileStream.pipe(stream);
+        })
+        .catch((err: Error) => reject(err));
+    });
+    return returnValue;
+  };
+
+  async add(dataInput: object): Promise<IreturnResult | undefined> {
+    Logs.head(msg(infos.classConstructor, this.constructor.name, `add`));
+    if (this.ctx._datas) {
+      const myColumns: IcsvColumn[] = [];
+      const paramsFile: IcsvFile = {
+        tempTable: `temp${Date.now().toString()}`,
+        filename: this.ctx._datas["file"],
+        columns: myColumns,
+        header: ", HEADER",
+        stream: [], // only for interface
+      };
+      const temp = await this.streamCsvFileInPostgreSqlFileInDatastream(
+        this.ctx,
+        Common.dbContext,
+        paramsFile
+      );
+      return this.createReturnResult({
+        body: temp?.body,
+      });
+    } else {
+      console.log("fini else");
+      return;
+    }
+  }
+}

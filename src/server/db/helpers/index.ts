@@ -7,7 +7,6 @@
  */
 
 export { createDatabase } from "../createDb";
-export { createDbGraph } from "./createDbGraph";
 export { createTable } from "./createTable";
 export { streamCsvFileInPostgreSql, createColumnHeaderName } from "./streamCsvFileInPostgreSql";
 export { knexQueryToSqlString } from "./knexQueryToSqlString";

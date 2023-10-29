@@ -34,6 +34,70 @@ addToApiDoc({
    
 describe("Odata BuiltInDates [9.3.3.5.2]", () => {
 
+    it("search by resultTime eq 2016-11-18", (done) => {
+        const infos = {
+            api: "{get} Observations Year",
+            apiName: "BuiltInDateSearch",
+            apiDescription: "Stean have a multitude date an",
+            apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
+            apiExample: { http: "/v1.0/Observations?$filter=resultTime eq 2016-11-18",
+                            curl: defaultGet("curl", "KEYHTTP"),
+                            javascript: defaultGet("javascript", "KEYHTTP"),
+                            python: defaultGet("python", "KEYHTTP") 
+                        }
+        };
+        chai.request(server)
+            .get(`/test${infos.apiExample.http}`)
+            .end((err: Error, res: any) => {
+                should.not.exist(err);
+                res.status.should.equal(200);
+                res.type.should.equal("application/json");
+                res.body.value.length.should.eql(20);
+                res.body["value"][0]["@iot.id"].should.eql(3);
+                addToApiDoc({ ...infos, result: limitResult(res) });
+                done();
+            });
+    });
+
+    it("search by resultTime eq 18-11-2016", (done) => {
+        chai.request(server)
+            .get(`/test/v1.0/Observations?$filter=resultTime eq '18-11-2016'`)
+            .end((err: Error, res: any) => {
+                should.not.exist(err);
+                res.status.should.equal(200);
+                res.type.should.equal("application/json");
+                res.body.value.length.should.eql(20);
+                res.body["value"][0]["@iot.id"].should.eql(3);
+                done();
+            });
+    });
+
+    it("search by resultTime gt 18-11-2016", (done) => {
+        chai.request(server)
+            .get(`/test/v1.0/Observations?$filter=resultTime gt '18-11-2016'`)
+            .end((err: Error, res: any) => {
+                should.not.exist(err);
+                res.status.should.equal(200);
+                res.type.should.equal("application/json");
+                res.body.value.length.should.eql(34);
+                res.body["value"][0]["@iot.id"].should.eql(26);
+                done();
+            });
+    });
+
+    it("search by resultTime lt 2016-11-18", (done) => {
+        chai.request(server)
+            .get(`/test/v1.0/Observations?$filter=resultTime lt '18-11-2016'`)
+            .end((err: Error, res: any) => {
+                should.not.exist(err);
+                res.status.should.equal(200);
+                res.type.should.equal("application/json");
+                res.body.value.length.should.eql(22);
+                res.body["value"][0]["@iot.id"].should.eql(56);
+                done();
+            });
+    });    
+
     it("year(resultTime) eq 2000", (done) => {
         const infos = {
             api: "{get} Observations Year",
@@ -235,7 +299,7 @@ describe("Odata BuiltInDates [9.3.3.5.2]", () => {
     //         apiName: "BuiltInDateTotaloffsetminutes",
     //         apiDescription: "The totaloffsetminutes function returns the signed number of minutes in the time zone offset part of the DateTimeOffset parameter value, evaluated in the time zone of the DateTimeOffset parameter value.",
     //         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
-    //         apiExample: {   http: "/v1.0/Observations?$filter=totaloffsetminutes(resultTime) eq 330",
+    //         apiExample: { http: "/v1.0/Observations?$filter=totaloffsetminutes(resultTime) eq 330",
     //                         curl: defaultGet("curl", "KEYHTTP"),
     //                         javascript: defaultGet("javascript", "KEYHTTP"),
     //                         python: defaultGet("python", "KEYHTTP") 
@@ -284,7 +348,7 @@ describe("Odata BuiltInDates [9.3.3.5.2]", () => {
     //         apiName: "BuiltInDateFractionalseconds",
     //         apiDescription: "The fractionalseconds function returns the fractional seconds component of the DateTimeOffset or TimeOfDay parameter value as a non-negative decimal value less than 1.",
     //         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
-    //         apiExample: {   http: "/v1.0/Observations?$filter=fractionalseconds(resultTime) ne 0",
+    //         apiExample: { http: "/v1.0/Observations?$filter=fractionalseconds(resultTime) ne 0",
     //                         curl: defaultGet("curl", "KEYHTTP"),
     //                         javascript: defaultGet("javascript", "KEYHTTP"),
     //                         python: defaultGet("python", "KEYHTTP") 
@@ -298,7 +362,6 @@ describe("Odata BuiltInDates [9.3.3.5.2]", () => {
     //             res.type.should.equal("application/json");
     //             res.body.value.length.should.eql(52);
     //             res.body["value"][0]["@iot.id"].should.eql(1);
-    //             pipo
     //             addToApiDoc({ ...infos, result: limitResult(res) });
     //             done();
     //         });
@@ -310,7 +373,7 @@ describe("Odata BuiltInDates [9.3.3.5.2]", () => {
     //         apiName: "BuiltInDateMindatetime",
     //         apiDescription: "The mindatetime function returns the earliest possible point in time as a DateTimeOffset value.",
     //         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
-    //         apiExample: {   http: "/v1.0/Observations?$filter=resultTime gt mindatetime()",
+    //         apiExample: { http: "/v1.0/Observations?$filter=resultTime gt mindatetime()",
     //                         curl: defaultGet("curl", "KEYHTTP"),
     //                         javascript: defaultGet("javascript", "KEYHTTP"),
     //                         python: defaultGet("python", "KEYHTTP") 
@@ -324,7 +387,6 @@ describe("Odata BuiltInDates [9.3.3.5.2]", () => {
     //             res.type.should.equal("application/json");
     //             res.body.value.length.should.eql(52);
     //             res.body["value"][0]["@iot.id"].should.eql(1);
-    //             pipo
     //             addToApiDoc({ ...infos, result: limitResult(res) });
     //             done();
     //         });

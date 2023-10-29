@@ -13,25 +13,45 @@ import { queryAsJson } from "../queries";
 import { IstreamInfos } from "../../types";
 import { _DB, _STREAM } from "../constants";
 
-export const getStreamInfos = async (conn: Knex | Knex.Transaction, input: JSON): Promise<IstreamInfos | undefined> => {
-    Logs.whereIam();
-    const stream: _STREAM = input["Datastream"] ? "Datastream" : input["MultiDatastream"] ? "MultiDatastream" : undefined;
-    if(!stream) return undefined;
-    const streamEntity = getEntityName(stream);
-    if(!streamEntity) return undefined;
-    const foiId: bigint | undefined = input["FeaturesOfInterest"] ? input["FeaturesOfInterest"] : undefined;       
-    const searchKey = input[_DB[streamEntity].name] || input[_DB[streamEntity].singular];
-    const streamId: string | undefined = isNaN(searchKey) ? searchKey["@iot.id"] : searchKey;
-    if (streamId) {
-        const query = `SELECT "id", "observationType", "_default_foi" FROM "${_DB[streamEntity].table}" WHERE id = ${BigInt(streamId)} LIMIT 1`;
-        return await conn.raw(queryAsJson({query: query, singular: true, count: false}))
-        .then((res: object) => {
-            const temp = res["rows"][0].results;                    
-            return {type: stream, id: temp["id"], observationType: temp["observationType"], FoId: foiId ? foiId : temp["_default_foi"]};
-        })
-        .catch((error) => {                
-            Logs.error(error);
-            return undefined;
-        });
-    }
+export const getStreamInfos = async (
+  conn: Knex | Knex.Transaction,
+  input: JSON
+): Promise<IstreamInfos | undefined> => {
+  Logs.whereIam();
+  const stream: _STREAM = input["Datastream"]
+    ? "Datastream"
+    : input["MultiDatastream"]
+    ? "MultiDatastream"
+    : undefined;
+  if (!stream) return undefined;
+  const streamEntity = getEntityName(stream);
+  if (!streamEntity) return undefined;
+  const foiId: bigint | undefined = input["FeaturesOfInterest"]
+    ? input["FeaturesOfInterest"]
+    : undefined;
+  const searchKey =
+    input[_DB[streamEntity].name] || input[_DB[streamEntity].singular];
+  const streamId: string | undefined = isNaN(searchKey)
+    ? searchKey["@iot.id"]
+    : searchKey;
+  if (streamId) {
+    const query = `SELECT "id", "observationType", "_default_foi" FROM "${
+      _DB[streamEntity].table
+    }" WHERE id = ${BigInt(streamId)} LIMIT 1`;
+    return await conn
+      .raw(queryAsJson({ query: query, singular: true, count: false }))
+      .then((res: object) => {
+        const temp = res["rows"][0].results;
+        return {
+          type: stream,
+          id: temp["id"],
+          observationType: temp["observationType"],
+          FoId: foiId ? foiId : temp["_default_foi"],
+        };
+      })
+      .catch((error) => {
+        Logs.error(error);
+        return undefined;
+      });
+  }
 };

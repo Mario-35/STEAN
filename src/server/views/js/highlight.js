@@ -1,11 +1,11 @@
 /**
  * @module index
  * (Base script)
-*/
+ */
 
 /**
  * @module _type
-*/
+ */
 
 /**
  * Languages supported
@@ -51,11 +51,11 @@ const expandData = {
 		type: 'str',
 		match: /"((?!")[^\r\n\\]|\\[^])*"?/g
 	}
-}
+};
 
 const langs = {},
 	sanitize = (str = '') =>
-		str.replaceAll('&', '&#38;').replaceAll?.('<', '&lt;').replaceAll?.('>', '&gt;'),
+	str.replaceAll('&', '&#38;').replaceAll?.('<', '&lt;').replaceAll?.('>', '&gt;'),
 	/**
 	 * @function
 	 * @ignore
@@ -84,7 +84,7 @@ function tokenize(src, lang, token) {
 		let match;
 		let cache = [];
 		let i = 0;
-		let data = typeof lang === 'string' ? ( (langs[lang] ??= highLightLangs[lang])) : lang;
+		let data = typeof lang === 'string' ? ((langs[lang] ??= highLightLangs[lang])) : lang;
 		// make a fast shallow copy to bee able to splice lang without change the original on
 		let arr = [...typeof lang === 'string' ? data : data.sub];
 		// arr = [...typeof lang === 'string' ? data.default : lang.sub];
@@ -103,7 +103,10 @@ function tokenize(src, lang, token) {
 						continue;
 					}
 					// save match for later use to decrease performance cost
-					cache[m] = { match, lastIndex: part.match.lastIndex };
+					cache[m] = {
+						match,
+						lastIndex: part.match.lastIndex
+					};
 				}
 				// check if it the first match in the string
 				if (cache[m].match[0] && (cache[m].match.index <= first.index || first.index === null))
@@ -112,7 +115,7 @@ function tokenize(src, lang, token) {
 						index: cache[m].match.index,
 						match: cache[m].match[0],
 						end: cache[m].lastIndex
-					}
+					};
 			}
 			if (first.index === null)
 				break;
@@ -124,8 +127,7 @@ function tokenize(src, lang, token) {
 				token(first.match, first.part.type);
 		}
 		token(src.slice(i, src.length), data.type);
-	}
-    catch (err) {
+	} catch (err) {
 		token(src);
 	}
 }
@@ -143,10 +145,10 @@ function tokenize(src, lang, token) {
  * @returns {Promise<String>} The highlighted string
  */
 function highlightText(src, lang, opt = {}) {
-	let tmp = ''
-	tokenize(src, lang, (str, type) => tmp += toSpan(sanitize(str), type))
+	let tmp = '';
+	tokenize(src, lang, (str, type) => tmp += toSpan(sanitize(str), type));
 
-	return  tmp;
+	return tmp;
 	// return multiline
 	// 	? `<div><div class="shj-numbers">${'<div></div>'.repeat(!opt.hideLineNumbers && src.split('\n').length)}</div><div>${tmp}</div></div>`
 	// 	: tmp;

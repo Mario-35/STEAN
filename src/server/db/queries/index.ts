@@ -12,6 +12,7 @@ export { queryInterval } from "./queryInterval";
 export { queryMultiDatastreamFromDeveui } from "./queryMultiDatastreamFromDeveui";
 export { queryMultiDatastreamsUnitsKeys } from "./queryMultiDatastreamsUnitsKeys";
 export { queryMultiDatastreamKeys } from "./queryMultiDatastreamKeys";
-export { countId } from "./countId";
-export { tool } from "./tool";
+export { queryGraphMultiDatastream } from "./queryGraphMultiDatastream";
+export { queryGraphDatastream } from "./queryGraphDatastream";
+export { remadeLog } from "./tool";
 

@@ -12,17 +12,15 @@ import { userAccess } from "../db/dataAccess";
 import { decrypt } from "../helpers";
 import { Iuser } from "../types";
 
- 
- export const getAuthenticatedUser = async (ctx: koa.Context): Promise<Iuser | undefined> => {
-     const token = decodeToken(ctx);
-     if (token && token.id > 0) {
-         const user = await userAccess.getSingle(String(token.id));
-         if (token.password.match(decrypt(user.password)) !== null) {
-             return Object.freeze(user);
-         }
-     }
-     return undefined;
- };
- 
-
- 
+export const getAuthenticatedUser = async (
+  ctx: koa.Context
+): Promise<Iuser | undefined> => {
+  const token = decodeToken(ctx);
+  if (token && token.id > 0) {
+    const user = await userAccess.getSingle(String(token.id));
+    if (token.password.match(decrypt(user.password)) !== null) {
+      return Object.freeze(user);
+    }
+  }
+  return undefined;
+};

@@ -83,7 +83,7 @@ export function createPostSql(datas: object, knexInstance: Knex | Knex.Transacti
             if (queryMaker[element].datas.hasOwnProperty("@iot.id")) {
                 const searchId = queryMaker[element].datas["@iot.id"];
                 returnValue.push(
-                    `, ${element} AS (select coalesce((select "id" from "${queryMaker[element].table}" where "id" = ${searchId}), ${searchId}) AS id)`
+                    `, ${element} AS (select "id" from "${queryMaker[element].table}" where "id" = ${searchId})`
                     );
                 } else {
                     const query = knexInstance(queryMaker[element].table);

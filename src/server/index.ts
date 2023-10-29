@@ -25,34 +25,46 @@ import { Logs } from "./logger";
 
 // Extend koa context (no ts test on it)
 declare module "koa" {
-    // Underscore to identify own context
-    interface DefaultContext {
-        _linkBase: string;
-        _config: IconfigFile;
-        _odata: PgVisitor;
-        _datas: IKeyString;
-        _user: IuserToken;
-        _addToLog: boolean;
-    }
+  // Underscore to identify own context
+  interface DefaultContext {
+    _linkBase: string;
+    _config: IconfigFile;
+    _odata: PgVisitor;
+    _datas: IKeyString;
+    _user: IuserToken;
+    _log:
+      | {
+          method: string;
+          returnid?: string;
+          code: number;
+          url: string;
+          database: string;
+          datas: JSON;
+          user_id: string;
+          error?: string;
+        }
+      | undefined;
+  }
 }
 
 // new koa server https://koajs.com/
 export const app = new Koa();
 
 // add public folder [static]
-app.use(serve(path.join(__dirname, "public")));
+app.use(serve(path.join(__dirname, "/apidoc")));
 
 // helmet protection https://github.com/venables/koa-helmet
 app.use(helmet.contentSecurityPolicy({ directives: HELMET_CONFIG }));
 
+// bodybarser https://github.com/koajs/bodyparser
+app.use(bodyParser({ enableTypes: ["json", "text", "form"] }));
+
 // router
 app.use(routerHandle);
 
-// bodybarser https://github.com/koajs/bodyparser
-app.use(bodyParser({enableTypes: ['json', 'text', 'form']}));
-
 // logger https://github.com/koajs/logger
-if (!isTest()) app.use(logger((str) => console.log(`${new Date().toLocaleString()}${str}`)));
+if (!isTest())
+  app.use(logger((str) => console.log(`${new Date().toLocaleString()}${str}`)));
 
 // add json capabilities to KOA server
 app.use(json());
@@ -63,16 +75,17 @@ app.use(cors());
 app.use(unProtectedRoutes.routes());
 
 app.use((ctx, next) => {
-    ctx.state.secret = APP_KEY;
-    return next();
+  ctx.state.secret = APP_KEY;
+  return next();
 });
 
 // authenticated routes
 app.use(protectedRoutes.routes());
 
 export const server = isTest()
-    ? app.listen(serverConfig.configs[TEST].port, async () => {   
-        serverConfig.addToServer[ADMIN];     
-        Logs.booting(infos.serverListening, serverConfig.configs[TEST].port);
-        serverConfig.createKnexConnectionFromConfigName(TEST);
-    }) : serverConfig.init();
+  ? app.listen(serverConfig.configs[TEST].port, async () => {
+      serverConfig.addToServer[ADMIN];
+      Logs.booting(infos.serverListening, serverConfig.configs[TEST].port);
+      serverConfig.createKnexConnectionFromConfigName(TEST);
+    })
+  : serverConfig.init();

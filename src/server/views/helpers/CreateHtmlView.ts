@@ -8,6 +8,7 @@
 
 import koa from "koa";
 import { serverConfig } from "../../configuration";
+import { getMetrics } from "../../db/monitoring";
 import { EextensionsType } from "../../enums";
 import { IKeyString, Iuser } from "../../types";
 import { addCssFile } from "../css";
@@ -282,13 +283,21 @@ export class CreateHtmlView {
     };
 
     public infos = async (): Promise<string> => {
+      const infos = await getMetrics("all");
+      console.log(infos["get_extensions"]);
+      
         return `<!DOCTYPE html> <html> ${this.head(
             "Infos",
             "user"
-        )} <body> <div class="login-html"> <div class="table-wrapper"> <table class="fl-table"> <tbody>TODO</tbody></table> </div> ${this.foot([
+        )} <body> <div class="login-html"> <div class="table-wrapper"> <table class="fl-table"> <tbody>
+        Version : ${infos["versionFull"][0]["version"]}<br>
+        Extensions : ${infos["get_extensions"][0]["extension"]}<br>
+        Uptime : ${infos["get_uptime"][0]["pg_postmaster_start_time"]}<br>
+        Size : ${infos["dump_pgdatabase_size"].filter((e: any) => e.datname === this.ctx._config.name)[0]["size"]}<br>
+        </tbody></table> </div> ${this.foot([
             { href: this.ctx._linkBase + `/${this.ctx._config.apiVersion}/`, class: "button-submit", name: "Root" },
             { href: this.ctx._linkBase + `/${this.ctx._config.apiVersion}/Query`, class: "button", name: "Query" },
-            { href: `${this.ctx._config.webSite}`, class: "button-logout", name: "Documentation" }
+            { href: this.ctx._linkBase.split(this.ctx._config.name)[0], class: "button-logout", name: "Documentation" }
         ])} </div> </body> </html> `;
     };
 

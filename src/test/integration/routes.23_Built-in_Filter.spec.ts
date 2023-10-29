@@ -56,6 +56,21 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             });
     });
 
+
+    // it("Odata Built-in operator eq null", (done) => {
+    //     chai.request(server)
+    //     .get("/test/v1.0/Observations?$filter=result eq null")
+    //     .end((err, res) => {
+    //             should.not.exist(err);
+    //             res.status.should.equal(200);
+    //             res.type.should.equal("application/json");
+    //             res.body.value.length.should.eql(3);
+    //             res.body.should.include.keys("@iot.count", "value");
+    //             done();
+    //         });
+    // });
+
+
     it("Odata Built-in operator ne", (done) => {
         const infos = {
             api: "{get} Observations ne",

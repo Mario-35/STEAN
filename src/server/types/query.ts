@@ -18,6 +18,7 @@ export interface Iquery {
     method?: string;
     options: string;
     version: string;
+    services: string[];
     host: string;
     datas?: JSON;
     results?: JSON | string;

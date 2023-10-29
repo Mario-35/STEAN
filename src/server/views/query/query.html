@@ -13,7 +13,6 @@
     <link rel="stylesheet" href="logs.css">
     <script src="gui.js"></script>
     <script src="splitter.js"></script>
-    <script src="echarts.js"></script>
     <script src="prettyJs.js"></script>
     <script>
       (function(e, t, n) {
@@ -46,15 +45,15 @@
                     <div class="field">
                       <label for="entity">Entity :</label>
                       <br>
-                      <select class="patrom-select width100" tabindex="1" name="entity" id="entity"></select>
+                      <select class="patrom-select width100" tabindex="1" name="entityOption" id="entityOption"></select>
                     </div>
                   </div>
                   <!-- Id -->
                   <div class="patrom-col col-span-6">
                     <div class="field">
-                      <label for="id">Id :</label>
+                      <label for="idOption">Id :</label>
                       <br>
-                      <input id="nb" type="text" class="patrom-text-input width100">
+                      <input id="idOption" type="text" class="patrom-text-input width100">
                     </div>
                   </div>
                 </div>
@@ -62,25 +61,25 @@
                   <!-- Sub Entity -->
                   <div class="patrom-col col-span-6">
                     <div class="field">
-                      <label for="subentity">SubEntity :</label>
+                      <label for="subentityOption">SubEntity :</label>
                       <br>
-                      <select class="patrom-select width100" tabindex="1" name="subentity" id="subentity"></select>
+                      <select class="patrom-select width100" tabindex="1" name="subentityOption" id="subentityOption"></select>
                     </div>
                   </div>
                   <!-- Operation -->
                   <div class="patrom-col col-span-3">
                     <div class="field">
-                      <label for="Operation">Verb :</label>
+                      <label for="methodOption">Verb :</label>
                       <br>
-                      <select class="patrom-select width100" tabindex="1" name="method" id="method"></select>
+                      <select class="patrom-select width100" tabindex="1" name="8" id="methodOption"></select>
                     </div>
                   </div>
                   <!-- Result -->
                   <div class="patrom-col col-span-3">
                     <div class="field">
-                      <label for="queryResultFormat">Result :</label>
+                      <label for="resultFormatOption">Result :</label>
                       <br>
-                      <select class="patrom-select width100" tabindex="1" name="queryResultFormat" id="queryResultFormat"></select>
+                      <select class="patrom-select width100" tabindex="1" name="resultFormatOption" id="resultFormatOption"></select>
                     </div>
                   </div>
                 </div>
@@ -160,17 +159,17 @@
                   <!-- Expand -->
                   <div class="patrom-col col-span-6">
                     <div class="field">
-                      <label for="queryExpand">Expand :</label>
+                      <label for="expandOption">Expand :</label>
                       <br>
-                      <select class="patrom-multiselect width100" id="queryExpand"></select>
+                      <select class="patrom-multiselect width100" id="expandOption"></select>
                     </div>
                   </div>
                   <!-- Sub Expand -->
                   <div class="patrom-col col-span-6">
                     <div class="field">
-                      <label for="querySubExpand">Sub Expand :</label>
+                      <label for="subExpandOption">Sub Expand :</label>
                       <br>
-                      <select class="patrom-select width100" tabindex="1" name="subExpand" id="querySubExpand"></select>
+                      <select class="patrom-select width100" tabindex="1" name="subExpand" id="subExpandOption"></select>
                     </div>
                   </div>
                 </div>
@@ -184,12 +183,12 @@
                 <div class="patrom-row">
                   <!-- Property -->
                   <div class="patrom-col col-span-5">
-                      <label for="queryProperty">Property : </label>
-                      <select class="patrom-select width100" tabindex="1" id="queryProperty"></select>
+                      <label for="propertyOption">Property : </label>
+                      <select class="patrom-select width100" tabindex="1" id="propertyOption"></select>
                   </div>
                   <!-- Only Value -->
                   <div class="patrom-col col-span-1">
-                    <label class="patrom-checkbox-labeled">Only value<input type="checkbox" id="onlyValue">
+                    <label class="patrom-checkbox-labeled">Only value<input type="checkbox" id="onlyValueOption">
                       <span class="checkmark"></span>
                     </label>
                   </div>
@@ -206,25 +205,25 @@
                   <!-- Select -->
                   <div class="patrom-col col-span-6">
                     <div class="field">
-                      <label for="querySelect">Select :</label>
-                      <select class="patrom-multiselect" id="querySelect"></select>
+                      <label for="selectOption">Select :</label>
+                      <select class="patrom-multiselect" id="selectOption"></select>
                     </div>
                   </div>
                   <!-- Order -->
                   <div class="patrom-col col-span-6">
                     <div class="field">
-                      <label for="queryOrderBy">Order :</label>
-                      <select class="patrom-multiselect" id="queryOrderBy" selectAll="true" orderby="true"></select>
+                      <label for="orderbyOption">Order :</label>
+                      <select class="patrom-multiselect" id="orderbyOption" selectAll="true" orderby="true"></select>
                     </div>
                   </div>
                 </div>
                 <div class="patrom-row">
                   <!-- Count -->
                   <div class="patrom-col col-span-3">
-                    <label class="patrom-checkbox-labeled">Count<input type="checkbox" id="count">
+                    <label class="patrom-checkbox-labeled">Count<input type="checkbox" id="countOption">
                       <span class="checkmark"></span>
                     </label>
-                  </div>
+                  </div>                  
                 </div>
                 <!-- query-builder -->
                 <div class="patrom-row">
@@ -234,30 +233,10 @@
                 </div>
               </div>
             </div>
-            <!-- MultiDatastream Options -->
-            <div class="patrom-tab">
-              <input class="patrom-tab-check" type="checkbox" name="multiDatastreamTab" id="chck6">
-              <label class="patrom-tab-label" for="chck6">MultiDatastream Options</label>
-              <div class="patrom-tab-content">
-                <!-- splitResult -->
-                <div class="patrom-row">
-                  <div class="patrom-col col-span-6">
-                    <label class="patrom-checkbox-labeled">Split result : <input type="checkbox" id="splitResultOption">
-                      <span class="checkmark"></span>
-                    </label>
-                  </div>
-                  <div class="patrom-col col-span-6">
-                    <div class="field">
-                      <input id="splitResultOptionName" type="text" class="patrom-text-input">
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
             <!-- Observations Options -->
             <div class="patrom-tab">
-              <input class="patrom-tab-check" type="checkbox" name="observationsTab" id="chck7">
-              <label class="patrom-tab-label" for="chck7">Observations Options</label>
+              <input class="patrom-tab-check" type="checkbox" name="observationsTab" id="chck6">
+              <label class="patrom-tab-label" for="chck6">Observations Options</label>
               <div class="patrom-tab-content">
                 <div class="patrom-row">
                   <!-- Date Min -->
@@ -285,11 +264,11 @@
                       <input id="intervalOption" type="text" class="patrom-text-input" placeholder=" (1 week, 1 day, 15 minutes ...)">
                     </div>
                   </div>
+                  <!-- valueskeys -->
                   <div class="patrom-col col-span-3">
-                    <button type="button" id="btnLimit" class="patrom-button">Date limits</button>
-                  </div>
-                  <div class="patrom-col col-span-1">
-                    <button type="button" id="btnCreateDateFilter" class="patrom-button">?</button>
+                    <label class="patrom-checkbox-labeled">valueskeys<input type="checkbox" id="valueskeysOption">
+                      <span class="checkmark"></span>
+                    </label>
                   </div>
                 </div>
 
@@ -327,8 +306,8 @@
             </div>
             <!-- Import File  -->
             <div class="patrom-tab">
-              <input class="patrom-tab-check" type="checkbox" name= "importTab" id="chck8">
-              <label class="patrom-tab-label" for="chck8">Import File</label>
+              <input class="patrom-tab-check" type="checkbox" name= "importTab" id="chck7">
+              <label class="patrom-tab-label" for="chck7">Import File</label>
               <div class="patrom-tab-content">
                 <div class="patrom-row">
                   <div class="patrom-col col-span-12">
@@ -345,8 +324,8 @@
             </div>
             <!-- Admin -->
             <div class="patrom-tab">
-              <input class="patrom-tab-check" type="checkbox" name="AdminTab" id="chck9">
-              <label class="patrom-tab-label" for="chck9">Admin</label>
+              <input class="patrom-tab-check" type="checkbox" name="AdminTab" id="chck8">
+              <label class="patrom-tab-label" for="chck8">Admin</label>
               <div class="patrom-tab-content">
                 <div class="patrom-row">
                   <!-- Metrics  -->
@@ -361,48 +340,54 @@
             </div>
           </div>
           <!-- END ACCORDION -->
-        </form>
+        
         <!-- OPTIONS -->
         <div class="patrom-row">
           <div class="patrom-col col-span-12">
             <input id="queryOptions" type="text" class="patrom-text-input fullWidth">
           </div>
         </div>
+        <!-- DATAS HIDE  -->
+        <textarea spellcheck="false" class="blakkAll shj-lang-json" id="datas" name="datas" placeholder="Input json..." rows="6"></textarea>
         <hr>
+      </form>
+
+        
         <!-- ICONS BUTTONS  -->
-
-          <div class="patrom-row center">
-            <div class="patrom-col col-span-12">
-                <div class="patrom-button-bar">
-                    <div class="patrom-button-bar__item">
-                        <button class="patrom-button-bar__button" id="btnClear">clear</button>
+        <div class="patrom-row center">
+          <div class="patrom-col col-span-12">
+              <div class="patrom-button-bar">
+                  <div class="patrom-button-bar__item">
+                      <button class="patrom-button-bar__button" id="btnRoot">root</button>
                     </div>
-                    &nbsp;
-                    <div class="patrom-button-bar__item">
-                        <button class="patrom-button-bar__button" id="btnPostTemplate">Template</button>
+                  &nbsp;
+                  <div class="patrom-button-bar__item">
+                      <button class="patrom-button-bar__button" id="btnClear">clear</button>
                     </div>
-                    &nbsp;
-                    <div class="patrom-button-bar__item">
-                        <button class="patrom-button-bar__button" id="btnShowLinks">urls</button>
-                    </div>
-                    &nbsp;
-                    <div class="patrom-button-bar__item">
-                        <button class="patrom-button patrom-button--success" id="go">Query</button>
-                        <button type="submit" class="patrom-button patrom-button--success" id="submit">Import file</button>
-                    </div>
+                  &nbsp;
+                  <div class="patrom-button-bar__item">
+                      <button class="patrom-button-bar__button" id="btnPostTemplate">Template</button>
                   </div>
-            </div>
-            </div>
-          <!-- DATAS HIDE  -->
-          <textarea spellcheck="false" class="blakkAll shj-lang-json" id="datas" name="datas" placeholder="Input json..." rows="6"></textarea>
-          <hr>
-          <!-- JSON DATAS -->
-          <div id="jsonDatasContainer" onpaste="jsonDatasPasteEvent(event)" ondrop="jsonDatasPasteEvent(event)">
-            <div contenteditable spellcheck="false" id="jsonDatas" class='blakkAll shj-lang-json'></div>
-          </div>
-        <!-- BUTTONS ICONS -->
-        <!-- <div class="rowButtons"> -->
+                  &nbsp;
+                  <div class="patrom-button-bar__item">
+                    <button class="patrom-button-bar__button" id="btnShowLinks">urls</button>
+                  </div>
+                  &nbsp;
+                  <div class="patrom-button-bar__item">
+                      <button class="patrom-button patrom-button--success" id="go">Query</button>
+                      <button type="submit" class="patrom-button patrom-button--success" id="submit">Import file</button>
+                  </div>
+                </div>
+              </div>
+        </div>
+        <hr>
 
+        <!-- JSON DATAS -->
+        <div id="jsonDatasContainer" onpaste="jsonDatasPasteEvent(event)" ondrop="jsonDatasPasteEvent(event)">
+          <div contenteditable spellcheck="false" id="jsonDatas" class='blakkAll shj-lang-json'></div>
+        </div>
+
+        <!-- BUTTONS ICONS -->
         <div class="patrom-row left">
             <div class="patrom-col col-span-12">
                 <div class="patrom-row left">
@@ -450,7 +435,11 @@
 
             <div class="patrom-row">
               <!-- Expand -->
-              <div class="patrom-col col-span-10">
+              <div class="patrom-col col-span-4">
+                <select class="patrom-select width100" tabindex="1" name="service" id="services"></select>
+              </div>
+
+              <div class="patrom-col col-span-4">
                 
                 <div class="version"> 
                   Ver. @version@ by <a href="mailto:mario.adam@inrae.fr">@ADAM mario</a>
@@ -473,6 +462,7 @@
     </div>
     <div id="modalOverlay"></div>
     </div>
+    <script src="refresh.js"></script>
     <script src="helper.js"></script>
     <script src="queryBuilder.js"></script>
     <script src="url.js"></script>

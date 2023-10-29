@@ -171,7 +171,7 @@ describe("endpoint : ObservedProperties", () => {
                     res.type.should.equal("application/json");
                     res.body.should.include.keys("value");
                     res.body.value[0].should.include.keys(testsKeys);
-                    res.body["@iot.count"].should.eql("1");
+                    res.body["@iot.count"].should.eql(1);
                     res.body.value.length.should.eql(1);
                     res.body.value[0]["@iot.id"].should.eql(id);
                     res.body.value[0]["@iot.selfLink"].should.contain(`/ObservedProperties(${id})`);
@@ -239,7 +239,7 @@ describe("endpoint : ObservedProperties", () => {
                         should.not.exist(err);
                         res.status.should.equal(200);
                         res.type.should.equal("application/json");
-                        res.body["@iot.count"].should.eql("2");
+                        res.body["@iot.count"].should.eql(2);
                         const id = Number(res.body.value[0]["@iot.id"]);
                         res.body.value[0]["@iot.selfLink"].should.contain(`/${name}(${id})`);
                         res.body.value[0]["Thing@iot.navigationLink"].should.contain(`/${name}(${id})/Thing`);

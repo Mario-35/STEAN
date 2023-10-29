@@ -9,7 +9,7 @@
 import { createSql, getColumnsList } from ".";
 import { _DB } from "../../../db/constants";
 import { isSingular } from "../../../db/helpers";
-import { getEntityName } from "../../../helpers";
+import { getEntityName, isNull } from "../../../helpers";
 import { Logs } from "../../../logger";
 import { queryAsJson } from "../../../db/queries";
 import { IpgQuery } from "../../../types";
@@ -29,7 +29,7 @@ export function createPgQuery(main: PgVisitor, element: PgVisitor): IpgQuery | u
     const realEntity = element.relation ? element.relation : element.getEntity() ;
     if (realEntity) {
         // create select column
-        if (element.select.trim() == "") element.select = "*";
+        // if (element.select.trim() == "") element.select = "*";
         const select: string[] | undefined = getColumnsList(realEntity, main, element); 
         if (select) {
             const realEntityName = getEntityName(realEntity);
@@ -65,8 +65,7 @@ export function createPgQuery(main: PgVisitor, element: PgVisitor): IpgQuery | u
                     from: _DB[realEntityName].table , 
                     where: element.where, 
                     groupBy: element.groupBy.join(",\n\t"),
-                    // orderby: isObservation(realEntityName) === true ? `${element.orderby},"observation"."phenomenonTime", "observation"."id"` : `${element.orderby}, "id"`,
-                    orderby: element.orderby,
+                    orderby: isNull(element.orderby) ? _DB[realEntityName].orderBy : element.orderby,
                     skip: element.skip,
                     limit: element.limit
                 };

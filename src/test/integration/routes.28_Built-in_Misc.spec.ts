@@ -51,7 +51,7 @@ describe("Odata BuiltInMisc", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body["@iot.count"].should.eql("5");
+                res.body["@iot.count"].should.eql(5);
                 res.body.value.length.should.eql(5);
                 res.body["value"][0]["@iot.id"].should.eql(3);
                 res.body["value"][0]["phenomenonTime"].should.eql('2016-11-18T03:00:00');
@@ -69,7 +69,7 @@ describe("Odata BuiltInMisc", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body["@iot.count"].should.eql("17");
+                res.body["@iot.count"].should.eql(17);
                 res.body.value.length.should.eql(17);
                 res.body["value"][0]["@iot.id"].should.eql(3);
                 res.body["value"][0]["phenomenonTime"].should.eql('2016-11-18T02:30:00');
@@ -86,7 +86,7 @@ describe("Odata BuiltInMisc", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body["@iot.count"].should.eql("241");
+                res.body["@iot.count"].should.eql(241);
                 res.body.value.length.should.eql(241);
                 res.body["value"][0]["@iot.id"].should.eql(3);
                 res.body["value"][0]["phenomenonTime"].should.eql('2016-11-18T02:16:00');
@@ -103,7 +103,7 @@ describe("Odata BuiltInMisc", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body["@iot.count"].should.eql("6045");
+                res.body["@iot.count"].should.eql(6045);
                 res.body.value.length.should.eql(6045);
                 res.body["value"][0]["@iot.id"].should.eql(85);
                 res.body["value"][0]["phenomenonTime"].should.eql('2000-05-02T02:00:00');

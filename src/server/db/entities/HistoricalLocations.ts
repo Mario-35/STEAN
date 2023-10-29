@@ -9,7 +9,7 @@
 import koa from "koa";
 import { Common } from "./common";
 export class HistoricalLocations extends Common {
-    constructor(ctx: koa.Context) {
-         super(ctx);
-    }
+  constructor(ctx: koa.Context) {
+    super(ctx);
+  }
 }

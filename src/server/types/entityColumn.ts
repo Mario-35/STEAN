@@ -11,7 +11,7 @@ import { IKeyString } from ".";
 export interface IentityColumn {
     [key: string]: {
         readonly create: string;
-        readonly alias?: string;
+        columnAlias(test?: boolean[]): string;
         readonly unique?: boolean;
         readonly test?: string;
         readonly dataList?: IKeyString;

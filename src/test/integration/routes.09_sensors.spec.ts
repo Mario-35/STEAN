@@ -222,7 +222,6 @@ describe("endpoint : Sensors", () => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
-                    // res.body["@iot.count"].should.eql("2");
                     const id = Number(res.body.value[0]["@iot.id"]);
                     res.body.value[0]["@iot.selfLink"].should.contain(`/${name}(${id})`);
                     res.body.value[0]["Thing@iot.navigationLink"].should.contain(`/${name}(${id})/Thing`);

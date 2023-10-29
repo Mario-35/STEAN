@@ -4,7 +4,7 @@ import { TEST } from "../../server/constants";
 import { Ientity } from "../../server/types";
 const conf = require("../../server/configuration/test.json");
 const apidocJson = require("../apidoc.json");
-export const identification = { "username": conf[TEST].pg_user, "password": conf[TEST].pg_password };
+export const identification = { "username": conf[TEST].pg.user, "password": conf[TEST].pg.password };
 
 let nb = 0;
 export function getNB(message: string): string {nb +=1; return `${message} ${String(nb)}`;} 

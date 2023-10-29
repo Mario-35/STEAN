@@ -16,11 +16,11 @@ chai.use(chaiHttp);
 
 describe("Create ApiDoc", () => {
     describe(`source ${path.resolve(__dirname, "../../test")}`, () => {
-        it(`write : ${path.resolve(__dirname, "../../apidoc")}`, async (done) => {
+        it(`write : ${path.resolve(__dirname, "../../server/apidoc")}`, async (done) => {
             try {
                 const doc = createDoc({
                     src: path.resolve(__dirname, "../../test"),
-                    dest: path.resolve(__dirname, "../../apidoc"),
+                    dest: path.resolve(__dirname, "../../server/apidoc"),
                     template: path.resolve(__dirname, "../../template"),
                     silent: false
                 });

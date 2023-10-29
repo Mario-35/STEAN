@@ -15,12 +15,12 @@
 import { Knex } from "knex";
 
 export const knexQueryToSqlString = (query: Knex.QueryBuilder): string => {
-    const tempSqlNative = query.toSQL().toNative();
-    let sql = tempSqlNative.sql;
+  const tempSqlNative = query.toSQL().toNative();
+  let sql = tempSqlNative.sql;
 
-    tempSqlNative.bindings.forEach((Element: Knex.Value, index: number) => {
-        sql = sql.split(`$${index + 1}`).join(<string>Element);
-    });
+  tempSqlNative.bindings.forEach((Element: Knex.Value, index: number) => {
+    sql = sql.split(`$${index + 1}`).join(<string>Element);
+  });
 
-    return sql;
+  return sql;
 };

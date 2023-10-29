@@ -8,7 +8,8 @@
 
 /* eslint-disable quotes */
 
-export const triggers = [`CREATE OR REPLACE FUNCTION func_trigger_after_insert_or_update_thing_location()
+export const triggers = [
+  `CREATE OR REPLACE FUNCTION func_trigger_after_insert_or_update_thing_location()
   RETURNS trigger AS
     $$
     DECLARE t_id integer;    
@@ -49,6 +50,5 @@ export const triggers = [`CREATE OR REPLACE FUNCTION func_trigger_after_insert_o
   BEGIN
     EXECUTE 'EXPLAIN (FORMAT JSON) ' || query INTO plan;  
     RETURN (plan->0->'Plan'->>'Plan Rows')::bigint;
-  END;$$;`
-
+  END;$$;`,
 ];

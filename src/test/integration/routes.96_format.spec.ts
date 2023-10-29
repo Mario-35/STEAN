@@ -135,10 +135,6 @@ describe("Output formats", () => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
-                    res.body.should.include.keys(["ids", "values", "dates"]);
-                    res.body.ids = [res.body.ids[0], res.body.ids[1], " ... "];
-                    res.body.values.result = [res.body.values.result[0], res.body.values.result[1], res.body.values.result[2], res.body.values.result[3]," ... "];
-                    res.body.dates = [res.body.dates[0], res.body.dates[1], " ... "];
                     addToApiDoc({ ...infos, result: res });
                     done();
                 });

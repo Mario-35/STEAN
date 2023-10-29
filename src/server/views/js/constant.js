@@ -37,18 +37,17 @@ let jsonViewer = undefined;
 // replace at execution
 const _PARAMS={};
 
-function entityList() {
+function getEntityList() {
     return Object.keys(_PARAMS._DATAS).filter((elem) => _PARAMS._DATAS[elem].order > 0).sort((a, b) => (_PARAMS._DATAS[a].order > _PARAMS._DATAS[b].order ? 1 : -1)) ; 
   }
   
-function columnsList(input) {
+function getColumnsList(input) {
     const ent = getEntityName(input);
     return ent ? Object.keys(_PARAMS._DATAS[ent].columns) : undefined;
 }
 
-function relationsList(input) {
+function getRelationsList(input) {
     const ent = getEntityName(input);
     return ent ? Object.keys(_PARAMS._DATAS[ent].relations) : undefined;
 }
-const winActives = () => Object.entries(wins).filter(e => e === true).length > 0;
-// const wianActives = () => Object.entries(wins).filter(e => e === true).length < 1;
+const getWinActives = () => Object.entries(wins).filter(e => e === true).length > 0;

@@ -9,12 +9,8 @@
 import koa from "koa";
 import { decodeToken } from ".";
 
- 
- export const userAuthenticated = (ctx: koa.Context): boolean => {
-     const token = decodeToken(ctx);
-     if (token && +token.id > 0) return true;
-     return false;
- };
- 
-
- 
+export const userAuthenticated = (ctx: koa.Context): boolean => {
+  const token = decodeToken(ctx);
+  if (token && +token.id > 0) return true;
+  return false;
+};

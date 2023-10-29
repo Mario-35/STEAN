@@ -8,4 +8,5 @@
 
 import { Ientity } from "../../types";
 
-export const columnList = (input: Ientity) => Object.keys(input.columns).filter((word) => !word.includes("_"));
+export const columnList = (input: Ientity) =>
+  Object.keys(input.columns).filter((word) => !word.includes("_"));

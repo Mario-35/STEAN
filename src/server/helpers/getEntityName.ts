@@ -15,14 +15,18 @@ import { _DB } from "../db/constants";
  */
 
 export function getEntityName(search: string): string | undefined {
-    const testString: string | undefined = search
-        .match(/[a-zA-Z_]/g)
-        ?.join("")
-        .trim();
+  const testString: string | undefined = search
+    .match(/[a-zA-Z_]/g)
+    ?.join("")
+    .trim();
 
-    return testString
-        ? _DB.hasOwnProperty(testString)
-            ? testString
-            : Object.keys(_DB).filter((elem: string) => _DB[elem].table == testString.toLowerCase() || _DB[elem].singular == testString)[0]
-        : undefined;
+  return testString
+    ? _DB.hasOwnProperty(testString)
+      ? testString
+      : Object.keys(_DB).filter(
+          (elem: string) =>
+            _DB[elem].table == testString.toLowerCase() ||
+            _DB[elem].singular == testString
+        )[0]
+    : undefined;
 }

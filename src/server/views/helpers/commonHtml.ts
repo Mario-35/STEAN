@@ -9,8 +9,7 @@
 /* eslint-disable quotes */
 
 import { Logs } from "../../logger";
-import util from "util";
-import { cleanUrl, removeQuotes } from "../../helpers";
+import { cleanUrl, removeQuotes, replacer } from "../../helpers";
 import { addCssFile, listaddCssFiles } from "../css";
 import { addJsFile, listaddJsFiles } from "../js";
 import { APP_VERSION } from "../../constants";
@@ -47,10 +46,6 @@ export const commonHtml = (input: string, params: Iquery): string => {
         params.methods.push("POST");
         params.methods.push("PATCH");
     } 
-    // else {
-    //     delete params._DATAS["CreateObservations"];
-    //     delete params._DATAS["CreateFile"];
-    // }
 
     if (params.user.canDelete) params.methods.push("DELETE");
 
@@ -80,8 +75,8 @@ export const commonHtml = (input: string, params: Iquery): string => {
     listaddJsFiles().forEach((item: string) => {  
         replaceInResult(`<script src="${fileWithOutMin(item)}"></script>`, `<script>${addJsFile(item)}</script>`);
     });
-
-    return result.join("").replace("_PARAMS={}", "_PARAMS=" + util.inspect(params, { showHidden: false, depth: null }))
+    
+    return result.join("").replace("_PARAMS={}", "_PARAMS=" + JSON.stringify(params, replacer))
         .replace("// @start@", start)
         .replace("@version@", APP_VERSION)
         .replace("@action@", action);

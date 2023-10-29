@@ -11,11 +11,13 @@ import { EextensionsType } from "../enums";
 
 export interface Ientity {
     readonly name: string; // Entity Name
+    readonly count: string; // Entity Name
     readonly lora: boolean; // Is extend of SensorThings standard
     readonly clone?: string;
     readonly singular: string;
     readonly table: string;
     readonly order: number;
+    readonly orderBy: string;
     readonly columns: IentityColumn;
     readonly canPost: boolean;
     readonly relations: { [key: string]: IentityRelation };

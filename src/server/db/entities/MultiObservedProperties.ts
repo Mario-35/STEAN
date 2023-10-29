@@ -10,7 +10,7 @@ import koa from "koa";
 import { Common } from "./common";
 
 export class MultiObservedProperties extends Common {
-    constructor(ctx: koa.Context) {
-         super(ctx);
-    }
+  constructor(ctx: koa.Context) {
+    super(ctx);
+  }
 }

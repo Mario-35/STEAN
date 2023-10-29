@@ -18,48 +18,82 @@ import { EextensionsType } from "../../enums";
 // import { QUOTEDCOMA } from "../../constants";
 
 export class Observations extends Common {
-    constructor(ctx: koa.Context) {
-         super(ctx);
-    }
+  constructor(ctx: koa.Context) {
+    super(ctx);
+  }
 
-    async prepareInputResult(dataInput: object): Promise<object> {
-        Logs.whereIam();   
-        // IF MultiDatastream
-        if ((dataInput["MultiDatastream"] && dataInput["MultiDatastream"] != null) || ( this.ctx._odata.parentEntity && this.ctx._odata.parentEntity.startsWith("MultiDatastream"))) {
-            // get search ID
-            const searchID: bigint | undefined = dataInput["MultiDatastream"] && dataInput["MultiDatastream"] != null ? BigInt(dataInput["MultiDatastream"]["@iot.id"]) : getBigIntFromString(this.ctx._odata.parentId);
-            
-            if (!searchID) this.ctx.throw(404, { code: 404, detail: msg(errors.noFound, "MultiDatastreams") });
-            // Search uint keys
-            const tempSql = await Common.dbContext.raw(queryMultiDatastreamsUnitsKeys(searchID));
-                const multiDatastream = tempSql.rows[0];
-                if (dataInput["result"] && typeof dataInput["result"] == "object") {
-                    Logs.debug("result : keys", `${Object.keys(dataInput["result"]).length} : ${multiDatastream["keys"].length}`);
-                    if (Object.keys(dataInput["result"]).length != multiDatastream["keys"].length) {
-                        this.ctx.throw(400, {
-                            code: 400, 
-                            detail: msg(errors.sizeResultUnitOfMeasurements, String(Object.keys(dataInput["result"]).length), multiDatastream["keys"].length)
-                        });
-                    }
-                dataInput["result"] = {
-                    "value": Object.values(dataInput["result"]),
-                    "valueskeys": dataInput["result"]
-                };
-            }
-        } else if (dataInput["result"] && typeof dataInput["result"] != "object") dataInput["result"] = this.ctx._config.extensions.includes(EextensionsType.numeric) ? dataInput["result"] : {"value": dataInput["result"]};
-        return dataInput;
-    }
-    
-    async add(dataInput: object): Promise<IreturnResult | undefined> {
-        Logs.whereIam();
-        if (dataInput) dataInput = await this.prepareInputResult(dataInput);
-        return await super.add(dataInput);
-    }
-    
-    async update(idInput: bigint, dataInput: object | undefined): Promise<IreturnResult | undefined> {
-        Logs.whereIam();
-        if (dataInput) dataInput = await this.prepareInputResult(dataInput);
-        if (dataInput) dataInput["validTime"] = await getDBDateNow(Common.dbContext);
-        return await super.update(idInput, dataInput);
-    }
+  async prepareInputResult(dataInput: object): Promise<object> {
+    Logs.whereIam();
+    // IF MultiDatastream
+    if (
+      (dataInput["MultiDatastream"] && dataInput["MultiDatastream"] != null) ||
+      (this.ctx._odata.parentEntity &&
+        this.ctx._odata.parentEntity.startsWith("MultiDatastream"))
+    ) {
+      // get search ID
+      const searchID: bigint | undefined =
+        dataInput["MultiDatastream"] && dataInput["MultiDatastream"] != null
+          ? BigInt(dataInput["MultiDatastream"]["@iot.id"])
+          : getBigIntFromString(this.ctx._odata.parentId);
+
+      if (!searchID)
+        this.ctx.throw(404, {
+          code: 404,
+          detail: msg(errors.noFound, "MultiDatastreams"),
+        });
+      // Search uint keys
+      const tempSql = await Common.dbContext.raw(
+        queryMultiDatastreamsUnitsKeys(searchID)
+      );
+      const multiDatastream = tempSql.rows[0];
+      if (dataInput["result"] && typeof dataInput["result"] == "object") {
+        Logs.debug(
+          "result : keys",
+          `${Object.keys(dataInput["result"]).length} : ${
+            multiDatastream["keys"].length
+          }`
+        );
+        if (
+          Object.keys(dataInput["result"]).length !=
+          multiDatastream["keys"].length
+        ) {
+          this.ctx.throw(400, {
+            code: 400,
+            detail: msg(
+              errors.sizeResultUnitOfMeasurements,
+              String(Object.keys(dataInput["result"]).length),
+              multiDatastream["keys"].length
+            ),
+          });
+        }
+        dataInput["result"] = {
+          value: Object.values(dataInput["result"]),
+          valueskeys: dataInput["result"],
+        };
+      }
+    } else if (dataInput["result"] && typeof dataInput["result"] != "object")
+      dataInput["result"] = this.ctx._config.extensions.includes(
+        EextensionsType.numeric
+      )
+        ? dataInput["result"]
+        : { value: dataInput["result"] };
+    return dataInput;
+  }
+
+  async add(dataInput: object): Promise<IreturnResult | undefined> {
+    Logs.whereIam();
+    if (dataInput) dataInput = await this.prepareInputResult(dataInput);
+    return await super.add(dataInput);
+  }
+
+  async update(
+    idInput: bigint,
+    dataInput: object | undefined
+  ): Promise<IreturnResult | undefined> {
+    Logs.whereIam();
+    if (dataInput) dataInput = await this.prepareInputResult(dataInput);
+    if (dataInput)
+      dataInput["validTime"] = await getDBDateNow(Common.dbContext);
+    return await super.update(idInput, dataInput);
+  }
 }

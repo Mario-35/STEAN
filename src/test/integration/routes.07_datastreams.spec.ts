@@ -189,7 +189,7 @@ describe("endpoint : Datastream", () => {
                     res.type.should.equal("application/json");
                     res.body.should.include.keys("value");
                     res.body.value[0].should.include.keys(testsKeys);
-                    res.body["@iot.count"].should.eql("3");
+                    res.body["@iot.count"].should.eql(3);
                     res.body.value.length.should.eql(3);
                     res.body.value[0]["@iot.id"].should.eql(8);
                     res.body.value[0]["@iot.selfLink"].should.contain("/Datastreams(8)");
@@ -278,7 +278,7 @@ describe("endpoint : Datastream", () => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
-                    res.body["@iot.count"].should.eql("1");
+                    res.body["@iot.count"].should.eql(1);
                     const id = res.body.value[0]["@iot.id"];
                     res.body.value[0]["@iot.selfLink"].should.contain(`/${name}s(${id})`);
                     res.body.value[0]["Locations@iot.navigationLink"].should.contain(`/${name}s(${id})/Locations`);
@@ -297,7 +297,7 @@ describe("endpoint : Datastream", () => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
-                    res.body["@iot.count"].should.eql("1");
+                    res.body["@iot.count"].should.eql(1);
                     const id = res.body.value[0]["@iot.id"];
                     res.body.value[0]["@iot.selfLink"].should.contain(`/Sensors(${id})`);
                     res.body.value[0]["Datastreams@iot.navigationLink"].should.contain(`/Sensors(${id})/Datastreams`);
@@ -314,7 +314,7 @@ describe("endpoint : Datastream", () => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
-                    res.body["@iot.count"].should.eql("1");
+                    res.body["@iot.count"].should.eql(1);
                     const id = res.body.value[0]["@iot.id"];
                     res.body.value[0]["@iot.selfLink"].should.contain(`/ObservedProperties(${id})`);
                     res.body.value[0]["Datastreams@iot.navigationLink"].should.contain(`/ObservedProperties(${id})/Datastreams`);

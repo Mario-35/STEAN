@@ -13,11 +13,11 @@ const serverConfig = require("../server/configuration/test.json");
 export const dbTest = knex({
     client: "pg",
     connection: {
-        host: serverConfig[TEST].pg_host,
-        user: serverConfig[TEST].pg_user,
-        password: serverConfig[TEST].pg_password,
+        host: serverConfig[TEST].pg.host,
+        user: serverConfig[TEST].pg.user,
+        password: serverConfig[TEST].pg.password,
         database: "test",
-        port: serverConfig[TEST].pg_port
+        port: serverConfig[TEST].pg.port
     },
     pool: {
         min: 0,

@@ -18,7 +18,7 @@ const addToApiDoc = (input: IApiInput) => {
     docs.push(prepareToApiDoc(input, "Token"));
 };
 
-fs.mkdirSync(path.resolve(__dirname, "../apiDocs/"), {
+fs.mkdirSync(path.resolve(__dirname, "../server/apiDocs/"), {
     recursive: true
 });
 

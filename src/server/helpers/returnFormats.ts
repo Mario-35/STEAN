@@ -1,11 +1,10 @@
 /**
  * returnFormats.
-*
-* @copyright 2020-present Inrae
-* @author mario.adam@inrae.fr
-*
-*/
-
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
 
 import { Parser } from "json2csv";
 import koa from "koa";
@@ -18,167 +17,230 @@ import { PgVisitor } from "../odata";
 import { isGraph } from "../db/helpers";
 import { _DB } from "../db/constants";
 import { Eformats } from "../enums";
-import { countId, queryAsDataArray, queryAsJson, queryInterval } from "../db/queries";
+import {
+  queryAsDataArray,
+  queryAsJson,
+  queryGraphDatastream,
+  queryGraphMultiDatastream,
+  queryInterval,
+} from "../db/queries";
 
 const defaultFunction = (input: string | object) => input;
 const defaultForwat = (input: PgVisitor): string => input.sql;
 const generateFields = (input: PgVisitor): string[] => {
-  let fields:string[] = [];
-  if (isGraph(input)) {    
-    const table = _DB[input.parentEntity ? input.parentEntity: input.getEntity()].table;
-    fields = [`(SELECT ${table}."description" FROM ${table} WHERE ${table}."id" = ${input.parentId ? input.parentId: input.id}) AS title, `];
-  } 
+  let fields: string[] = [];
+  if (isGraph(input)) {
+    const table =
+      _DB[input.parentEntity ? input.parentEntity : input.getEntity()].table;
+    fields = [
+      `(SELECT ${table}."description" FROM ${table} WHERE ${table}."id" = ${
+        input.parentId ? input.parentId : input.id
+      }) AS title, `,
+    ];
+  }
   return fields;
+};
+
+
+const generateGrahSql = (input: PgVisitor) => {
+  input.blanks = ["id", "step as date", "result"];
+  if (isGraph(input)) input.blanks.push("concat"); 
+  const table =
+    _DB[input.parentEntity ? input.parentEntity : input.getEntity()].table;
+  const id = input.parentId ? input.parentId : input.id;
+  return queryAsJson({
+    query:
+      table === _DB.Datastreams.table
+        ? queryGraphDatastream(table, id, queryInterval(input))
+        : queryGraphMultiDatastream(
+            table,
+            id,
+            input.splitResult,
+            queryInterval(input)
+          ),
+    singular: false,
+    count: false,
+  });
 };
 
 const _returnFormats: { [key in Eformats]: IreturnFormat } = {
   xlsx: {
-    name : "xlsx",
+    name: "xlsx",
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    format : defaultFunction,
-    generateSql:defaultForwat
+    format: defaultFunction,
+    generateSql: defaultForwat,
   }, // IMPORTANT TO HAVE THIS BEFORE GRAPH
   json: {
-    name : "json",
+    name: "json",
     type: "application/json",
-    format : defaultFunction,
-    generateSql(input: PgVisitor) {      
-    return (input.interval) 
-      ? queryInterval(input)
-      : queryAsJson({query: input.sql, singular: false, count: true, mario: input.count === true ? countId(_DB[input.entity].table) : undefined, fields: generateFields(input)});
+    format: defaultFunction,
+    generateSql(input: PgVisitor) {
+      return input.interval
+        ? queryAsJson({
+          query: queryInterval(input),
+          singular: false,
+          count: true,
+        })
+        : queryAsJson({
+            query: input.sql,
+            singular: false,
+            count: true,
+            fullCount:
+              input.count === true ? _DB[input.entity].count : undefined,
+            fields: generateFields(input),
+          });
     },
   }, // IMPORTANT TO HAVE THIS BEFORE GRAPH
   graphDatas: {
-    name : "graphDatas",
+    name: "graphDatas",
     type: "application/json",
-    format : defaultFunction,
-    generateSql(input: PgVisitor) { 
-      input.blanks = ["id", "step as date", "result"];
-      return queryInterval(input);
+    format: defaultFunction,
+    generateSql(input: PgVisitor) {
+      return generateGrahSql(input);
     },
   },
   graph: {
-    name : "graph",
+    name: "graph",
     type: "text/html;charset=utf8",
     format(input: string | object, ctx: koa.Context): string | object {
-      const edit = "async function editDataClicked(id, params) { new Observation({ title: `${params.seriesName}`, date: params.name, value : params.data.toString(), id: id }); } ";
-      return `<!DOCTYPE text/html>
-                <html lang="fr">
-                    <head>
-                      <style>${addCssFile("query.css")}</style>
-                        <!-- htmlmin:ignore --><script>${addJsFile("echarts.js")}</script><!-- htmlmin:ignore -->
-                    </head>
-                    <body>
-                      <div id="graphContainer" style="background-color: rgb(240, 242, 243);">
-                        <div id="graph" style="width:100%; height:100%;">
-                        </div>
-                      </div>
-                      <script>
-                        const linkBase = "${ctx._linkBase}/${ctx._config.apiVersion}";
-                        const value = ${JSON.stringify(input, null, 2)};
-                        ${addJsFile("graph.js")}
-                        showGraph(value);
-                        ${edit}                              
-                      </script>
-                    </body>
-                </html>`;  
-    }, 
-    generateSql(input: PgVisitor) { 
-      input.blanks = ["id", "step as date", "result"];
-      return queryInterval(input);
+      input = input[0]["results"];
+      const graphNames: string[] = [];
+      const formatedDatas: string[] = [];
+      const height = String(100 / Object.entries(input).length).split(".")[0];
+      if (typeof input === "object") {
+        Object.entries(input).forEach((element: object, index: number) => {
+          graphNames.push(
+            `<button type="button" id="btngraph${index}" onclick="graph${index}.remove(); btngraph${index}.remove()"">X</button> 
+            <div id="graph${index}" style="width:95%; height:${height}%;"></div>`
+          );
+          const infos = element[1]["description"]
+            ? `${[
+                element[1]["description"],
+                element[1]["name"],
+                element[1]["symbol"],
+              ].join('","')}`
+            : `${element[1]["infos"].split("|").join('","')}`;
+          const formatedData = `const value${index} = [${element[1]["datas"]}]; 
+          const infos${index} = ["${infos}"];`;
+          formatedDatas.push(`
+                ${formatedData}
+                showGraph("graph${index}", infos${index}, value${index})`);
+        });
+      }
+      return `<html lang="fr"> <head>
+      <style>${addCssFile("dygraph.css")}</style> <!-- htmlmin:ignore --><script>${addJsFile( "dygraph.js" )}</script><!-- htmlmin:ignore -->
+      ${graphNames.join("")}
+       
+        <script>
+        ${addJsFile("graph.js")}
+          const linkBase = "${ctx._linkBase}/${ctx._config.apiVersion}";
+          ${formatedDatas.join("")}                             
+        </script>`;
+    },
+    generateSql(input: PgVisitor) {
+      return generateGrahSql(input);
     },
   },
   dataArray: {
-    name : "dataArray",
+    name: "dataArray",
     type: "application/json",
-    format : defaultFunction,      
-    generateSql(input: PgVisitor) {        
+    format: defaultFunction,
+    generateSql(input: PgVisitor) {
       return queryAsDataArray(input);
-    }
+    },
   },
   csv: {
-    name : "csv",
+    name: "csv",
     type: "text/csv",
-    format :(input: string | object) => {
-      const opts = { delimiter: ";", includeEmptyRows: true, escapedQuote: "",header: false};            
+    format: (input: string | object) => {
+      const opts = {
+        delimiter: ";",
+        includeEmptyRows: true,
+        escapedQuote: "",
+        header: false,
+      };
       if (input && input[0].dataArray)
-      try {
-        const parser = new Parser(opts);
-        input[0].dataArray.unshift(input[0].component);
-        return parser.parse(input[0].dataArray);
-      } catch (e) {
-        if (e instanceof Error) {
-                  Logs.error(e.message);
-                  return e.message;
-              }
-            }
-            return "No datas";
+        try {
+          const parser = new Parser(opts);
+          input[0].dataArray.unshift(input[0].component);
+          return parser.parse(input[0].dataArray);
+        } catch (e) {
+          if (e instanceof Error) {
+            Logs.error(e.message);
+            return e.message;
+          }
+        }
+      return "No datas";
     },
-    generateSql(input: PgVisitor) { 
-    return queryAsDataArray(input);}
+    generateSql(input: PgVisitor) {
+      return queryAsDataArray(input);
+    },
   },
   txt: {
-    name : "txt",
+    name: "txt",
     type: "text/plain",
-    format :(input: string | object) => Object.entries(input).length > 0 ? util.inspect(input, { showHidden: true, depth: 4 }) : JSON.stringify(input),
-    generateSql(input: PgVisitor) {  
-      return queryAsJson({query: input.sql, singular: false, count: false});
+    format: (input: string | object) =>
+      Object.entries(input).length > 0
+        ? util.inspect(input, { showHidden: true, depth: 4 })
+        : JSON.stringify(input),
+    generateSql(input: PgVisitor) {
+      return queryAsJson({ query: input.sql, singular: false, count: false });
     },
   },
   sql: {
-    name : "sql",
+    name: "sql",
     type: "text/plain",
-    format : defaultFunction,
-    generateSql:defaultForwat,
+    format: defaultFunction,
+    generateSql: defaultForwat,
   },
   html: {
-    name : "html",
+    name: "html",
     type: "text/html;charset=utf8",
-    format : defaultFunction,
-    generateSql:defaultForwat,
+    format: defaultFunction,
+    generateSql: defaultForwat,
   },
   css: {
-    name : "css",
+    name: "css",
     type: "text/css;charset=utf8",
-    format : defaultFunction,
-    generateSql:defaultForwat,
+    format: defaultFunction,
+    generateSql: defaultForwat,
   },
   js: {
-    name : "js",
+    name: "js",
     type: "application/javascript;charset=utf8",
-    format : defaultFunction,
-    generateSql:defaultForwat,
+    format: defaultFunction,
+    generateSql: defaultForwat,
   },
   png: {
-    name : "png",
+    name: "png",
     type: "image/png",
-    format : defaultFunction,
-    generateSql:defaultForwat,
+    format: defaultFunction,
+    generateSql: defaultForwat,
   },
   jpeg: {
-    name : "jpeg",
+    name: "jpeg",
     type: "image/jpeg",
-    format : defaultFunction,
-    generateSql:defaultForwat,
+    format: defaultFunction,
+    generateSql: defaultForwat,
   },
   jpg: {
-          name : "jpg",
-          type: "image/jpeg",
-          format : defaultFunction,
-    generateSql:defaultForwat,
+    name: "jpg",
+    type: "image/jpeg",
+    format: defaultFunction,
+    generateSql: defaultForwat,
   },
   icon: {
-    name : "icon",
+    name: "icon",
     type: "image/x-icon",
-    format : defaultFunction,
-    generateSql:defaultForwat,
+    format: defaultFunction,
+    generateSql: defaultForwat,
   },
   ico: {
-    name : "ico",
+    name: "ico",
     type: "image/x-icon",
-    format : defaultFunction,
-    generateSql:defaultForwat,
-  }
+    format: defaultFunction,
+    generateSql: defaultForwat,
+  },
 };
 
 export const returnFormats = Object.freeze(_returnFormats);

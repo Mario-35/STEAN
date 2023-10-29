@@ -7,13 +7,9 @@
  */
 import koa from "koa";
 import { Common } from "./common";
-import { serverConfig } from "../../configuration";
-import { ADMIN } from "../../constants";
- 
+
 export class Logs extends Common {
-    constructor(ctx: koa.Context) {         
-         super(ctx);
-        Common.dbContext = serverConfig.db(ADMIN);    
-    }
+  constructor(ctx: koa.Context) {
+    super(ctx);
+  }
 }
- 

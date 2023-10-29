@@ -16,17 +16,26 @@ import { Knex } from "knex";
  * @returns boolean
  */
 
-export const verifyId = async (dbContext: Knex | Knex.Transaction, idInput: bigint | bigint[], tableSearch: string): Promise<boolean> => {
-    try {
-        const query: Knex.QueryBuilder = dbContext(tableSearch);
-        if (typeof idInput == "bigint") {
-            const returnValue = await query.select("id").where({ id: idInput }).first();
-            return returnValue ? true : false;
-        } else {
-            const returnValue = await query.count().whereIn("id", idInput.map(String));
-            return Object.values(idInput).length == returnValue[0].count;
-        }
-    } catch (error) {
-        return false;
+export const verifyId = async (
+  dbContext: Knex | Knex.Transaction,
+  idInput: bigint | bigint[],
+  tableSearch: string
+): Promise<boolean> => {
+  try {
+    const query: Knex.QueryBuilder = dbContext(tableSearch);
+    if (typeof idInput == "bigint") {
+      const returnValue = await query
+        .select("id")
+        .where({ id: idInput })
+        .first();
+      return returnValue ? true : false;
+    } else {
+      const returnValue = await query
+        .count()
+        .whereIn("id", idInput.map(String));
+      return Object.values(idInput).length == returnValue[0].count;
     }
+  } catch (error) {
+    return false;
+  }
 };

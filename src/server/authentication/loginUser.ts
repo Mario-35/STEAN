@@ -14,24 +14,32 @@ import { _DBADMIN } from "../db/constants";
 import { decrypt } from "../helpers";
 import { Iuser } from "../types";
 
-export const loginUser = async (ctx: koa.Context): Promise<Iuser | undefined> => {
-    if (ctx.request.body["username"] && ctx.request.body["password"]) {
-        return await serverConfig.db(ADMIN)
-            .table(_DBADMIN.Users.table)
-            .where("username", ctx.request.body["username"])
-            .first()
-            .then((user: Iuser) => {        
-                if (user && ctx.request.body && ctx.request.body["password"].match(decrypt(user.password)) !== null) {
-                    const token = createToken(user, ctx.request.body["password"]);
-                    ctx.cookies.set("jwt-session", token);
-                    user.token = token;
-                    return Object.freeze(user);
-                }
-            }).catch((error) => {
-                console.error(error);
-                return undefined;
-            });
-    } else {
-        ctx.throw(401);
-    }
+export const loginUser = async (
+  ctx: koa.Context
+): Promise<Iuser | undefined> => {
+  if (ctx.request.body["username"] && ctx.request.body["password"]) {
+    return await serverConfig
+      .db(ADMIN)
+      .table(_DBADMIN.Users.table)
+      .where("username", ctx.request.body["username"])
+      .first()
+      .then((user: Iuser) => {
+        if (
+          user &&
+          ctx.request.body &&
+          ctx.request.body["password"].match(decrypt(user.password)) !== null
+        ) {
+          const token = createToken(user, ctx.request.body["password"]);
+          ctx.cookies.set("jwt-session", token);
+          user.token = token;
+          return Object.freeze(user);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        return undefined;
+      });
+  } else {
+    ctx.throw(401);
+  }
 };
