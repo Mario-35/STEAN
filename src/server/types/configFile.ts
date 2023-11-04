@@ -7,6 +7,7 @@
  */
 
 import { Knex } from "knex";
+import postgres from "postgres";
 import { IdbConnection } from "./dbConnection";
 
 export interface IconfigFile {

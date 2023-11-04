@@ -66,7 +66,7 @@ describe("Identification : Token", () => {
                 apiDescription: "Identification failed.",
                 apiExample: {
                     http: `/v1.0/login`,
-                    curl: `curl -X POST KEYHTTP/login -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' -d 'username=sensorapi&password=mario29'`
+                    curl: `curl -X POST KEYHTTP/login -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' -d 'username=sensorapi&password=mario9'`
                 },
                 apiParamExample: { "username": identification.username, "password": "nowhere" }
             };

@@ -58,7 +58,7 @@ export const createAdminDB = async (): Promise<IKeyString> => {
     });
   // loop to create each admin table
   await asyncForEach(Object.keys(_DBADMIN), async (keyName: string) => {
-    await createTable(serverConfig.db(ADMIN), _DBADMIN[keyName], undefined);
+    await createTable(ADMIN, _DBADMIN[keyName], undefined);
   });
   return returnValue;
 };

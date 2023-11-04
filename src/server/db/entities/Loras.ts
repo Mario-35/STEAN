@@ -6,7 +6,6 @@
  *
  */
 
-import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
 import {
@@ -16,11 +15,12 @@ import {
 } from "../../helpers/index";
 import { DOUBLEQUOTE, QUOTEDCOMA, VOIDTABLE } from "../../constants";
 import { Logs } from "../../logger";
-import { IKeyString, IreturnResult } from "../../types";
+import { IreturnResult } from "../../types";
 import { errors, msg } from "../../messages/";
 import { EdatesType } from "../../enums";
 import { queryMultiDatastreamFromDeveui } from "../queries";
 import { decodeloraDeveuiPayload } from "../../lora";
+import { executeSql } from "../helpers";
 
 export class Loras extends Common {
   synonym: object = {};
@@ -50,35 +50,6 @@ export class Loras extends Common {
     return result;
   }
 
-  async decodeLoraValues(
-    knexInstance: Knex | Knex.Transaction,
-    loraDeveui: string,
-    input: JSON
-  ): Promise<IKeyString> {
-    Logs.debug("decodeLoraValues", loraDeveui);
-    try {
-      return await knexInstance(this.DBST.Decoders.table)
-        .select("code")
-        .whereRaw(
-          `id = (SELECT "decoder_id" FROM "${this.DBST.Loras.table}" WHERE "deveui" = '${loraDeveui}')`
-        )
-        .first()
-        .then((res: object) => {
-          if (res) {
-            try {
-              const F = new Function("input", String(res["code"]));
-              return F(input);
-            } catch (error) {
-              return { error: errors.decoderError };
-            }
-          }
-        });
-    } catch (error) {
-      Logs.error(error);
-    }
-    return { error: errors.decoderError };
-  }
-
   createListQuery(input: string[], columnListString: string): string {
     const tempList = columnListString.split("COLUMN");
     return tempList[0].concat(
@@ -91,8 +62,7 @@ export class Loras extends Common {
 
   async redoAll() {
     Logs.whereIam();
-    Common.dbContext
-      .raw(`SELECT date, datas FROM "log_request" ORDER BY date ASC`)
+    executeSql(this.ctx._config.name, `SELECT date, datas FROM "log_request" ORDER BY date ASC`)
       .then(async (res: object) => {
         await asyncForEach(res["rows"], async (row: object) => {
           try {
@@ -158,7 +128,7 @@ export class Loras extends Common {
     // search for frame and decode payload if found
     if (notNull(this.stean["frame"])) {
       const temp = await decodeloraDeveuiPayload(
-        Common.dbContext,
+        this.ctx._config.name,
         this.stean["deveui"],
         this.stean["frame"]
       );
@@ -173,17 +143,17 @@ export class Loras extends Common {
 
     const searchMulti = queryMultiDatastreamFromDeveui(this.stean["deveui"]);
 
-    const tempSql = await Common.dbContext.raw(
+    const tempSql = await executeSql(this.ctx._config.name, 
       `SELECT id, _default_foi, thing_id, ${searchMulti}`
     );
-    const multiDatastream = tempSql.rows[0];
+    const multiDatastream = tempSql["rows"][0];
     let datastream = undefined;
 
     if (!multiDatastream) {
-      const tempSql = await Common.dbContext.raw(
+      const tempSql = await executeSql(this.ctx._config.name, 
         `SELECT id, _default_foi, thing_id FROM "${this.DBST.Datastreams.table}" WHERE "${this.DBST.Datastreams.table}".id = (SELECT "${this.DBST.Loras.table}"."datastream_id" FROM "${this.DBST.Loras.table}" WHERE "${this.DBST.Loras.table}"."deveui" = '${this.stean["deveui"]}')`
       );
-      datastream = tempSql.rows[0];
+      datastream = tempSql["rows"][0];
       if (!datastream) {
         const errorMessage = errors.noStreamDeveui + this.stean["deveui"];
         if (silent) return this.createReturnResult({ body: errorMessage });
@@ -326,8 +296,7 @@ export class Loras extends Common {
                   "(SELECT observation1.COLUMN FROM observation1), "
                 )} (SELECT multidatastream1.id FROM multidatastream1) AS multidatastream, (SELECT multidatastream1.thing_id FROM multidatastream1) AS thing)
                  SELECT coalesce(json_agg(t), '[]') AS result FROM result1 AS t`;
-      this.logQuery(sql);
-      return await Common.dbContext.raw(sql).then(async (res: object) => {
+      return await executeSql(this.ctx._config.name, sql).then(async (res: object) => {
         const tempResult = res["rows"][0].result[0];
         if (tempResult.id != null) {
           const result = {
@@ -366,7 +335,7 @@ export class Loras extends Common {
       const getFeatureOfInterest = getBigIntFromString(
         dataInput["FeatureOfInterest"]
       );
-      const searchFOI = await Common.dbContext.raw(
+      const searchFOI = await executeSql(this.ctx._config.name, 
         getFeatureOfInterest
           ? `SELECT coalesce((SELECT "id" FROM "featureofinterest" WHERE "id" = ${getFeatureOfInterest}), ${getFeatureOfInterest}) AS id `
           : `SELECT id FROM ${this.DBST.FeaturesOfInterest.table} WHERE id =${datastream._default_foi}`
@@ -433,8 +402,7 @@ export class Loras extends Common {
                     )} (SELECT datastream1.id from datastream1) AS datastream, (select datastream1.thing_id from datastream1) AS thing)
                 SELECT coalesce(json_agg(t), '[]') AS result FROM result1 AS t`;
 
-      this.logQuery(sql);
-      return await Common.dbContext.raw(sql).then(async (res: object) => {
+      return await executeSql(this.ctx._config.name, sql).then(async (res: object) => {
         const tempResult = res["rows"][0].result[0];
         if (tempResult.id != null) {
           const result = {

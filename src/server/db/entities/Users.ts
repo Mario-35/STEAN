@@ -16,6 +16,7 @@ import { errors } from "../../messages/";
 import { EuserRights } from "../../enums";
 import { _DBADMIN } from "../constants";
 import { ADMIN } from "../../constants";
+import { executeSql } from "../helpers";
 
 export class Users extends Common {
   constructor(ctx: koa.Context) {
@@ -28,12 +29,7 @@ export class Users extends Common {
       this.ctx._user?.PDCUAS[EuserRights.SuperAdmin] === true ||
       this.ctx._user?.PDCUAS[EuserRights.Admin] === true
     ) {
-      const temp = await serverConfig
-        .db(ADMIN)
-        .table("user")
-        .select(Object.keys(_DBADMIN.Users.columns))
-        .orderBy("id");
-
+      const temp = await executeSql(ADMIN, `SELECT ${Object.keys(_DBADMIN.Users.columns)} FROM "user" ORDERBY "id"`);
       hidePasswordIn(temp);
       return this.createReturnResult({
         body: temp,

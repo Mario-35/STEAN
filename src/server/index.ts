@@ -86,6 +86,6 @@ export const server = isTest()
   ? app.listen(serverConfig.configs[TEST].port, async () => {
       serverConfig.addToServer[ADMIN];
       Logs.booting(infos.serverListening, serverConfig.configs[TEST].port);
-      serverConfig.createKnexConnectionFromConfigName(TEST);
+      serverConfig.createDbConnectionFromConfigName(TEST);
     })
   : serverConfig.init();

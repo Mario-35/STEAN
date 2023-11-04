@@ -13,14 +13,13 @@ import koa from "koa";
 import { Common } from "./common";
 import { Logs } from "../../logger";
 import { IcsvColumn, IcsvFile, IreturnResult } from "../../types";
-import { createColumnHeaderName } from "../helpers";
+import { createColumnHeaderName, executeSql } from "../helpers";
 import copyFrom from "pg-copy-streams";
 import fs from "fs";
 import { errors, infos, msg } from "../../messages/";
-
-// import { db } from "..";
 import * as entities from "../entities/index";
 import { returnFormats } from "../../helpers";
+import { serverConfig } from "../../configuration";
 
 export class CreateFile extends Common {
   constructor(ctx: koa.Context) {
@@ -29,7 +28,6 @@ export class CreateFile extends Common {
 
   streamCsvFileInPostgreSqlFileInDatastream = async (
     ctx: koa.Context,
-    knex: Knex | Knex.Transaction,
     paramsFile: IcsvFile
   ): Promise<IreturnResult | undefined> => {
     Logs.head("streamCsvFileInPostgreSqlFileInDatastream");
@@ -54,8 +52,7 @@ export class CreateFile extends Common {
       ctx._log = undefined;
 
       const objectDatastream = new entities[this.DBST.Datastreams.name](
-        ctx,
-        Common.dbContext
+        ctx
       );
       const myDatas = {
         name: `${this.DBST.Datastreams.name} import file ${nameOfFile}`,
@@ -92,9 +89,7 @@ export class CreateFile extends Common {
             ? returnValueError.body[0]
             : {};
           if (returnValueError.body)
-            await Common.dbContext.raw(
-              `DELETE FROM "${this.DBST.Observations.table}" WHERE "datastream_id" = ${returnValueError.body["@iot.id"]}`
-            );
+            await executeSql(ctx._config.name, `DELETE FROM "${this.DBST.Observations.table}" WHERE "datastream_id" = ${returnValueError.body["@iot.id"]}`);
           return returnValueError;
         }
       } finally {
@@ -104,6 +99,16 @@ export class CreateFile extends Common {
 
     returnValue = await createDataStream();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+    // await executeSql(ctx._config.name, `CREATE TABLE public.${paramsFile.tempTable}(
+    //   id serial4 NOT NULL,
+    //   "date" varchar(255) NULL,
+    //   "hour" varchar(255) NULL,
+    //   value1 varchar(255) NULL,
+    //   CONSTRAINT ${paramsFile.tempTable}_pkey PRIMARY KEY (id)
+    // );`);
+    const knex = await serverConfig.db(ctx._config.name);
+
     await knex.schema
       .createTable(paramsFile.tempTable, (table: any) => {
         table.increments("id").unsigned().notNullable().primary();
@@ -190,7 +195,6 @@ export class CreateFile extends Common {
       };
       const temp = await this.streamCsvFileInPostgreSqlFileInDatastream(
         this.ctx,
-        Common.dbContext,
         paramsFile
       );
       return this.createReturnResult({

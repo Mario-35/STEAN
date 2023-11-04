@@ -10,7 +10,7 @@ import koa from "koa";
 import { Common } from "./common";
 import { Logs } from "../../logger";
 import { IcsvColumn, IcsvFile, IreturnResult, IstreamInfos } from "../../types";
-import { getStreamInfos, streamCsvFileInPostgreSql } from "../helpers";
+import { executeSql, getStreamInfos, streamCsvFileInPostgreSql } from "../helpers";
 import { asyncForEach } from "../../helpers";
 import { errors, msg } from "../../messages/";
 // import { QUOTEDCOMA } from "../../constants";
@@ -105,7 +105,7 @@ export class CreateObservations extends Common {
         Object.keys(datasJson["columns"]),
         async (key: string) => {
           const tempStreamInfos = await getStreamInfos(
-            Common.dbContext,
+            this.ctx._config.name,
             datasJson["columns"][key] as JSON
           );
           if (tempStreamInfos) {
@@ -138,13 +138,13 @@ export class CreateObservations extends Common {
         stream: streamInfos,
       };
 
-      await streamCsvFileInPostgreSql(this.ctx, Common.dbContext, paramsFile)
+      await streamCsvFileInPostgreSql(this.ctx, this.ctx._config.name, paramsFile)
         .then(async (res) => {
           Logs.debug("streamCsvFileInPostgreSql", "OK");
           if (res) {
             Logs.result("query", res);
             // Execute query
-            const returnResult = await Common.dbContext.raw(res);
+            const returnResult = await executeSql(this.ctx._config.name, res);
             // All is done create results return
             Logs.debug("SQL Executing", "Ok");
             returnValue.push(
@@ -167,7 +167,7 @@ export class CreateObservations extends Common {
         });
     } else {
       /// classic Create
-      const dataStreamId = await getStreamInfos(Common.dbContext, dataInput);
+      const dataStreamId = await getStreamInfos(this.ctx._config.name, dataInput);
       if (!dataStreamId)
         this.ctx.throw(404, { code: 404, detail: errors.noStream });
       else {
@@ -183,10 +183,7 @@ export class CreateObservations extends Common {
             String(dataStreamId.id),
             ...elem,
           ]);
-          await Common.dbContext
-            .raw(
-              `INSERT INTO "observation" (${keys}) VALUES (${values}) RETURNING id`
-            )
+          await executeSql(this.ctx._config.name, `INSERT INTO "observation" (${keys}) VALUES (${values}) RETURNING id`)
             .then((res: any) => {
               returnValue.push(
                 this.linkBase.replace("Create", "") +
@@ -203,9 +200,7 @@ export class CreateObservations extends Common {
                   dataInput["duplicate"] &&
                   dataInput["duplicate"].toUpperCase() === "DELETE"
                 ) {
-                  await Common.dbContext
-                    .raw(
-                      `delete FROM "observation" WHERE 1=1 ` +
+                  await executeSql(this.ctx._config.name, `delete FROM "observation" WHERE 1=1 ` +
                         keys
                           .map((e, i) => `AND ${e} = ${values[i]}`)
                           .join(" ") +

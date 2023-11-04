@@ -6,12 +6,13 @@
  *
  */
 
-import { Knex } from "knex";
+import { executeSql } from ".";
+import { serverConfig } from "../../configuration";
 import { Logs } from "../../logger";
 import { Ientity, IKeyString } from "../../types";
 
 export const createTable = async (
-  connectionDb: Knex | Knex.Transaction,
+  configName: string,
   tableEntity: Ientity,
   doAfter: string | undefined
 ): Promise<IKeyString> => {
@@ -24,19 +25,18 @@ export const createTable = async (
   const returnValue: IKeyString = {};
 
   let insertion = "";
-  if (!connectionDb) {
+  if (!serverConfig.db(configName)) {
     Logs.error("connection Error");
     return { error: "connection Error" };
   }
 
   // create postgis
-  returnValue[`${tab()}Create postgis`] = await connectionDb
-    .raw("CREATE EXTENSION IF NOT EXISTS postgis;")
+   
+  returnValue[`${tab()}Create postgis`] = await executeSql(configName,"CREATE EXTENSION IF NOT EXISTS postgis;")
     .then(() => "✔")
     .catch((error: Error) => error.message);
 
-  returnValue[`${tab()}Create tablefunc`] = await connectionDb
-    .raw("CREATE EXTENSION IF NOT EXISTS tablefunc;")
+  returnValue[`${tab()}Create tablefunc`] = await executeSql(configName,"CREATE EXTENSION IF NOT EXISTS tablefunc;")
     .then(() => "✔")
     .catch((error: Error) => error.message);
 
@@ -57,8 +57,7 @@ export const createTable = async (
 
   if (tableEntity.table.trim() != "")
     returnValue[String(`Create table ${tableEntity.table}`)] =
-      await connectionDb
-        .raw(`CREATE TABLE "${tableEntity.table}" (${insertion});`)
+      await executeSql(configName,`CREATE TABLE "${tableEntity.table}" (${insertion});`)
         .then(() => "✔")
         .catch((error: Error) => error.message);
 
@@ -73,16 +72,14 @@ export const createTable = async (
 
   if (tabTemp.length > 0)
     returnValue[`${tab()}Create indexes for ${tableEntity.name}`] =
-      await connectionDb
-        .raw(tabTemp.join(";"))
+      await executeSql(configName,tabTemp.join(";"))
         .then(() => "✔")
         .catch((error: Error) => error.message);
 
   // CREATE CONSTRAINTS
   if (tableEntity.constraints && tabConstraints.length > 0)
     returnValue[`${tab()}Create constraints for ${tableEntity.table}`] =
-      await connectionDb
-        .raw(tabConstraints.join(" "))
+      await executeSql(configName,tabConstraints.join(" "))
         .then(() => "✔")
         .catch((error: Error) => error.message);
 
@@ -90,8 +87,7 @@ export const createTable = async (
   if (tableEntity.after) {
     if (tableEntity.after.toUpperCase().startsWith("INSERT"))
       returnValue[`${tab()}Something to do after for ${tableEntity.table}`] =
-        await connectionDb
-          .raw(tableEntity.after)
+        await executeSql(configName,tableEntity.after)
           .then(() => "✔")
           .catch((error: Error) => {
             console.log(error);
@@ -101,8 +97,7 @@ export const createTable = async (
 
   // CREATE SOMETHING AFTER (migration)
   if (doAfter) {
-    returnValue[`${tab()} doAfter ${tableEntity.table}`] = await connectionDb
-      .raw(doAfter)
+    returnValue[`${tab()} doAfter ${tableEntity.table}`] = await executeSql(configName,doAfter)
       .then(() => "✔")
       .catch((error: Error) => error.message);
   }

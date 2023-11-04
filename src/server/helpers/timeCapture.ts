@@ -1,3 +1,11 @@
+/**
+ * TimeCapture.
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+
 export class TimeCapture {
     static start: number;
     static last: number;

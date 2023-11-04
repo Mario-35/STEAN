@@ -11,9 +11,9 @@ import copyFrom from "pg-copy-streams";
 import { Logs } from "../../logger";
 import { IcsvColumn, IcsvFile } from "../../types";
 import readline from "readline";
-import { Knex } from "knex";
 import koa from "koa";
 import { _DB } from "../constants";
+import { serverConfig } from "../../configuration";
 
 /**
  *
@@ -109,13 +109,13 @@ export const createColumnHeaderName = async (
 
 export const streamCsvFileInPostgreSql = async (
   ctx: koa.Context,
-  knex: Knex | Knex.Transaction,
+  configName: string,
   paramsFile: IcsvFile
 ): Promise<string | undefined> => {
   Logs.whereIam();
   let returnValue = undefined;
   const sqlRequest = await dateSqlRequest(paramsFile);
-
+  const knex = serverConfig.db(configName);
   if (sqlRequest) {
     // Create temp table
     await knex.schema

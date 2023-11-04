@@ -1,6 +1,7 @@
 import Excel from "exceljs";
 import koa from "koa";
 import path from "path";
+import { createInsertValues, executeSql } from ".";
 import { serverConfig } from "../../configuration";
 import { EextensionsType } from "../../enums";
 import { asyncForEach } from "../../helpers";
@@ -79,21 +80,13 @@ const createColumnsList = async (ctx: koa.Context, entity: string) => {
       if (_DB[entity].columns[column].create !== "") {
         // IF JSON create column-key  note THAT is limit 200 firts items
         if (_DB[entity].columns[column].create.startsWith("json")) {
-          const tempSqlResult = await serverConfig
-            .db(ctx._config.name)
-            .raw(
-              `select distinct jsonb_object_keys("${column}") AS "${column}" from "${_DB[entity].table}" LIMIT 200`
-            )
+          const tempSqlResult = await executeSql(ctx._config.name, `select distinct jsonb_object_keys("${column}") AS "${column}" from "${_DB[entity].table}" LIMIT 200`)
             .catch(async (e) => {
               if (e.code === "22023") {
-                return await serverConfig
-                  .db(ctx._config.name)
-                  .raw(
-                    `select distinct jsonb_object_keys("${column}"[0]) AS "${column}" from "${_DB[entity].table}" LIMIT 200`
-                  );
+                return await executeSql(ctx._config.name, `select distinct jsonb_object_keys("${column}"[0]) AS "${column}" from "${_DB[entity].table}" LIMIT 200`);
               } else Logs.error(e);
             });
-            if (tempSqlResult["rows"] && tempSqlResult["rows"].length > 0) {
+            if (tempSqlResult && tempSqlResult["rows"] && tempSqlResult["rows"].length > 0) {
               tempSqlResult["rows"].forEach((e: any) => {
                 myclos.push(
                   `"${column}"->>'${e[column]}' AS "${column}-${e[column]}"`
@@ -127,9 +120,7 @@ export const exportToXlsx = async (ctx: koa.Context) => {
     ),
     async (entity: string) => {
       const cols = await createColumnsList(ctx, entity);
-      const temp = await serverConfig
-        .db(ctx._config.name)
-        .raw(`select ${cols.join(",")} from "${_DB[entity].table}" LIMIT 200`);
+      const temp = await executeSql(ctx._config.name, `select ${cols.join(",")} from "${_DB[entity].table}" LIMIT 200`);
       await addToFile(workbook, entity, temp);
     }
   );
@@ -165,23 +156,14 @@ export const importOnglet = async (
         });
         let ret = undefined;
         try {
-          ret = await serverConfig
-            .db(ctx._config.name)
-            .table(_DB[table].table)
-            .insert(temp)
-            .returning("id");
+          ret = await executeSql(ctx._config.name, `INSERT INTO "${_DB[table].table}" ${createInsertValues(temp, _DB[table].name)}`);
           console.log(ret);
           // row.getCell(0).value = ret[0];
         } catch (error: any) {
           if (error.code === "23505") {
-            ret = await serverConfig
-              .db(ctx._config.name)
-              .table(_DB[table].table)
-              .select("id")
-              .where({ name: temp["name"] })
-              .first();
+            ret = await executeSql(ctx._config.name, `SELECT "id" FROM ${_DB[table].table}" WHERE "name" = '${temp["name"]}' LIMIT 1`);
             console.log(row.getCell(1).value);
-            row.getCell(1).value = +ret.id + 100;
+            row.getCell(1).value = +ret["id"] + 100;
             console.log(
               row.getCell(1).value +
                 ":" +

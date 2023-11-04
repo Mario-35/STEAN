@@ -10,10 +10,7 @@ import { Logs } from "../logger";
 import { errors } from "../messages";
 import { ILoraDecoder } from "../types";
 
-export const decodingPayload = (
-  decoder: { name: string; code: string; nomenclature: string },
-  payload: string
-): ILoraDecoder => {
+export const decodingPayload = ( decoder: { name: string; code: string; nomenclature: string }, payload: string ): ILoraDecoder => {
   Logs.head("decodingPayload");
   try {
     const F = new Function(

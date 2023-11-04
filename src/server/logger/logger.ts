@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import util from "util";
 import { TIMESTAMP, _DEBUG } from "../constants";
 import fs from "fs";
@@ -25,11 +24,11 @@ export class Logger {
     )}`;
   }
 
-  private log(input: string) {
+  private log<T>(input: T) {
     console.log(input);
   }
 
-  logAll(input: any, colors?: boolean) {
+  logAll<T>(input: T, colors?: boolean) {
     return typeof input === "object"
       ? util.inspect(input, {
           showHidden: false,
@@ -51,7 +50,7 @@ export class Logger {
       );
   }
 
-  bootingResult(cle: string, infos?: any) {
+  bootingResult<T>(cle: string, infos?: T) {
     if (!isTest())
       this.log(
         `${this.col(EColor.FgGreen)}     <--${this.col(
@@ -62,7 +61,7 @@ export class Logger {
       );
   }
 
-  head(cle: string, infos?: any) {
+  head<T>(cle: string, infos?: T) {
     if (_DEBUG)
       this.log(
         infos
@@ -105,7 +104,7 @@ export class Logger {
       );
   }
 
-  debug(cle: string, infos: any) {
+  debug<T>(cle: string, infos: T) {
     if (_DEBUG)
       this.log(
         `${this.col(EColor.FgGreen)} ${cle} ${this.col(
@@ -117,7 +116,7 @@ export class Logger {
       );
   }
 
-  result(cle: string, infos?: any) {
+  result<T>(cle: string, infos?: T) {
     if (_DEBUG)
       this.log(
         `${this.col(EColor.FgGreen)}     >>${this.col(
@@ -128,7 +127,7 @@ export class Logger {
       );
   }
 
-  infoSystem(cle: string, infos?: any) {
+  infoSystem<T>(cle: string, infos?: T) {
     if (_DEBUG)
       this.log(
         `${this.col(EColor.FgCyan)} ${cle} ${this.col(
@@ -140,7 +139,7 @@ export class Logger {
       );
   }
 
-  error(cle: unknown, infos?: any) {
+  error<T>(cle: unknown, infos?: T) {
     if(!isProduction()) console.log(cle);    
     if (_DEBUG)
       this.log(
@@ -159,7 +158,7 @@ export class Logger {
       );
   }
 
-  env(testDebug: boolean, cle: string, infos?: any) {
+  env<T>(testDebug: boolean, cle: string, infos?: T) {
     if (_DEBUG)
       this.log(
         `${this.col(EColor.FgCyan)} ${cle} ${this.col(
@@ -179,11 +178,11 @@ export class Logger {
       );
   }
 
-  logQuery(input: any, full?: boolean) {
+  logQuery<T>(input: T, full?: boolean) {
     if (_DEBUG) this.log(full && full == true ? this.logAll(input) : input);
   }
 
-  writeError(ctx: Koa.Context | undefined, ...data: any[]) {
+  writeError<T>(ctx: Koa.Context | undefined, ...data: T[]) {
     const errFile = fs.createWriteStream("errorFile.md", { flags: "a" });
     if (ctx) {
       errFile.write(`# ${TIMESTAMP()} : ${ctx.request.url}\n`);

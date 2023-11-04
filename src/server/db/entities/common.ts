@@ -7,19 +7,16 @@
  */
 
  import koa from "koa";
- import { Knex } from "knex";
  import { isNull, returnFormats } from "../../helpers/index";
  import { Logs } from "../../logger";
  import { Ientity, IreturnResult } from "../../types";
- import { knexQueryToSqlString, removeKeyFromUrl, verifyId } from "../helpers";
- import { serverConfig } from "../../configuration";
+ import { executeSql, removeKeyFromUrl, verifyId } from "../helpers";
  import { errors } from "../../messages/";
  import { _DBFILTERED } from "../constants";
  
  // Connon class
  export class Common {
    readonly ctx: koa.Context;
-   static dbContext: Knex | Knex.Transaction;
    public nextLinkBase: string;
    public linkBase: string;
    public DBST: { [key: string]: Ientity };
@@ -27,7 +24,7 @@
    constructor(ctx: koa.Context) {
      Logs.whereIam();
      this.ctx = ctx;
-     Common.dbContext = serverConfig.db(ctx._config.name);
+    //  this.ctx._config.name = serverConfig.db(ctx._config.name);
      this.nextLinkBase = removeKeyFromUrl(
        `${this.ctx._odata.options.rootBase}${
          this.ctx.href.split(`${ctx._config.apiVersion}/`)[1]
@@ -68,13 +65,6 @@
      // }
      // console.log(input);
      return input;
-   }
- 
-   // Log full Query
-   logQuery(input: Knex.QueryBuilder | string): void {
-     const queryString =
-       typeof input === "string" ? input : knexQueryToSqlString(input);
-     Logs.query(`\n${queryString}`);
    }
  
    // create a blank ReturnResult
@@ -129,19 +119,14 @@
  
      if (isNull(sql)) return;
  
-     this.logQuery(sql);
- 
      if (this.ctx._odata.resultFormat === returnFormats.sql)
        return this.createReturnResult({ body: sql });
      if (this.ctx._odata.resultFormat === returnFormats.graph) {
-       const tmp = await Common.dbContext.raw(sql);
-       return await this.createReturnResult({ body: tmp["rows"] });
+       const tmp = await executeSql(this.ctx._config.name, sql);
+       return this.createReturnResult({ body: tmp["rows"] });
      }
-     // if (this.ctx._odata.resultFormat === returnFormats.sql) return this.createReturnResult({ body: sql });
- 
      // build return result
-     return await Common.dbContext
-       .raw(sql)
+     return executeSql(this.ctx._config.name, sql)
        .then(async (res: object) => {
          const nb = Number(res["rows"][0].count);
          if (nb > 0 && res["rows"][0]) {
@@ -162,23 +147,19 @@
    }
  
    // Return one item
-   async getSingle(
-     idInput: bigint | string
-   ): Promise<IreturnResult | undefined> {
+   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
      Logs.whereIam();
      // create query
      const sql = this.ctx._odata.asGetSql();
  
      if (isNull(sql)) return;
  
-     this.logQuery(sql);
- 
      if (this.ctx._odata.resultFormat === returnFormats.sql)
        return this.createReturnResult({ body: sql });
  
      // build return result
-     return await Common.dbContext
-       .raw(sql)
+     return executeSql(this.ctx._config.name, sql)
        .then((res: object) => {
          if (this.ctx._odata.select && this.ctx._odata.onlyValue)
            return this.createReturnResult({
@@ -214,15 +195,12 @@
  
      if (!dataInput) return;
      // create query
-     const sql = this.ctx._odata.asPostSql(dataInput, Common.dbContext);
- 
-     this.logQuery(sql);
+     const sql = this.ctx._odata.asPostSql(dataInput, this.ctx._config.name);
  
      if (this.ctx._odata.resultFormat === returnFormats.sql)
        return this.createReturnResult({ body: sql });
      // build return result
-     return await Common.dbContext
-       .raw(sql)
+     return await executeSql(this.ctx._config.name, sql)
        .then((res: object) => {
          if (res["rows"]) {
            if (res["rows"][0].duplicate)
@@ -249,11 +227,7 @@
      dataInput: object | undefined
    ): Promise<IreturnResult | undefined> {
      Logs.whereIam();
-     const testIfId = await verifyId(
-       Common.dbContext,
-       BigInt(idInput),
-       this.DBST[this.constructor.name].table
-     );
+     const testIfId = await verifyId( this.ctx._config.name, BigInt(idInput), this.DBST[this.constructor.name].table );
  
      if (testIfId === false)
        this.ctx.throw(404, { code: 404, detail: errors.noId + idInput });
@@ -261,16 +235,13 @@
      dataInput = this.formatDataInput(dataInput);
      if (!dataInput) return;
      // create query
-     const sql = this.ctx._odata.asPatchSql(dataInput, Common.dbContext);
- 
-     this.logQuery(sql);
+     const sql = this.ctx._odata.asPatchSql(dataInput, this.ctx._config.name);
  
      if (this.ctx._odata.resultFormat === returnFormats.sql)
        return this.createReturnResult({ body: sql });
  
      // build return result
-     return await Common.dbContext
-       .raw(sql)
+     return await executeSql(this.ctx._config.name, sql)
        .then((res: object) => {
          if (res["rows"]) {
            if (res["rows"][0].results[0]) res["rows"][0].results[0];
@@ -297,8 +268,7 @@
        this.ctx._odata.resultFormat === returnFormats.sql
          ? { id: BigInt(idInput), body: sql }
          : {
-             id: await Common.dbContext
-               .raw(sql)
+             id: await executeSql(this.ctx._config.name, sql)
                .then((res) => BigInt(res["rows"][0].id))
                .catch(() => BigInt(0)),
            }

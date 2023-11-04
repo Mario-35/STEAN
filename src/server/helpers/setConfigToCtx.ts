@@ -1,5 +1,5 @@
 /**
- * getconfigCtx.
+ * setConfigToCtx.
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
@@ -9,73 +9,11 @@
 import koa from "koa";
 import { serverConfig } from "../configuration";
 import querystring from "querystring";
-import cookieModule from "cookie";
-import cookieParser from "cookie-parser";
-import { APP_KEY, API_VERSION, TEST, setDebug } from "../constants";
+import { API_VERSION, TEST, setDebug } from "../constants";
 import { errors } from "../messages";
-import { getUserId, isTest } from ".";
+import { createBearerToken, getUserId, isTest } from ".";
 
-const getCookie = (serializedCookies: string, key: string) =>
-  cookieModule.parse(serializedCookies)[key] ?? false;
 
-const bearerToken = (ctx: koa.Context) => {
-  const queryKey = "access_token";
-  const bodyKey = "access_token";
-  const headerKey = "Bearer";
-  const cookie = true;
-
-  if (cookie && !APP_KEY) {
-    throw new Error(errors.tokenMissing);
-  }
-
-  const { body, header, query } = ctx.request;
-
-  let count = 0;
-  let token;
-
-  if (query && query[queryKey]) {
-    token = query[queryKey];
-    count += 1;
-  }
-
-  if (body && body[bodyKey]) {
-    token = body[bodyKey];
-    count += 1;
-  }
-
-  if (header) {
-    if (header.authorization) {
-      const parts = header.authorization.split(" ");
-      if (parts.length === 2 && parts[0] === headerKey) {
-        [, token] = parts;
-        count += 1;
-      }
-    }
-
-    // cookie
-    if (cookie && header.cookie) {
-      const plainCookie = getCookie(header.cookie, "jwt-session"); // seeks the key
-      if (plainCookie) {
-        const cookieToken = cookieParser.signedCookie(plainCookie, APP_KEY);
-
-        if (cookieToken) {
-          token = cookieToken;
-          count += 1;
-        }
-      }
-    }
-  }
-
-  // RFC6750 states the access_token MUST NOT be provided
-  // in more than one place in a single request.
-  if (count > 1) {
-    ctx.throw(400, "token_invalid", {
-      message: errors.tokenInvalid,
-    });
-  }
-
-  ctx.request["token"] = token;
-};
 const getVersionFromUrl = (input: string) =>
   input
     .replace(/[//]+/g, "/")
@@ -87,7 +25,7 @@ const getConfigFromPort = (port: number | undefined): string | undefined => {
     const databaseName = isTest()
       ? [TEST]
       : Object.keys(serverConfig.configs).filter(
-          (word) => (word != "test" && serverConfig.configs[word].port) == port
+          (word) => (word != TEST && serverConfig.configs[word].port) == port
         );
     if (databaseName && databaseName.length === 1) return databaseName[0];
   }
@@ -105,7 +43,7 @@ const getNameFromUrl = (
 };
 
 export const setConfigToCtx = (ctx: koa.Context): void => {
-  bearerToken(ctx);
+  createBearerToken(ctx);
   setDebug(ctx.request.url.includes("$debug=true"));
 
   let configName = getConfigFromPort(ctx.req.socket.localPort);
@@ -116,7 +54,6 @@ export const setConfigToCtx = (ctx: koa.Context): void => {
     configName = configName || serverConfig.getConfigNameFromName(name);
     if (configName) ctx._config = serverConfig.configs[configName];
     else return;
-    // else throw new Error(msg(errors.notPresentInConfigName, name));
   }
 
   ctx.querystring = decodeURIComponent(querystring.unescape(ctx.querystring));

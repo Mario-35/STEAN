@@ -15,14 +15,6 @@ import { addCssFile } from "../css";
 
 export class CreateHtmlView {
     private ctx: koa.Context;
-    private userHeader: IKeyString = Object.freeze({
-      "canPost": "post",
-      "canDelete": "Delete",
-      "canCreateUser": "Create User",
-      "canCreateDb": "Create DB",
-      "admin": "admin",
-      "superAdmin": "Super Admin"
-  });
 
     constructor(ctx: koa.Context) {
         this.ctx = ctx;
@@ -300,9 +292,4 @@ export class CreateHtmlView {
             { href: this.ctx._linkBase.split(this.ctx._config.name)[0], class: "button-logout", name: "Documentation" }
         ])} </div> </body> </html> `;
     };
-
-    public admin = (user: Iuser, Host: string, version: string): string => {
-        return `<!DOCTYPE html> <html> <head> <title>Admin</title> <style> var crudApp=new function(){this.users={},this.userHeader=${this.userHeader},this.category=["Business","Computers","Programming","Science"],this.col=[],this.loadDatas=async function(){document.ctx.includes("/Admin")?document.ctx.split("/Admin")[0]:document.ctx.includes("/admin")&&document.ctx.split("/admin")[0];let t=await fetch("/all",{method:"GET",headers:{"Content-Type":"application/json"}});try{var e=await t.text();this.users=JSON.parse(e)}catch(t){console.log("Error",t.message)}},this.createTable=async function(){await this.loadDatas(),this.col=Object.keys(this.users[0]).filter(t=>"id"!=t.toLowerCase());var t=document.createElement("table");t.setAttribute("class","fl-table"),t.setAttribute("id","usersTable");for(var e=t.insertRow(-1),i=0;i<this.col.length;i++){var s=document.createElement("th");const t=this.userHeader[this.col[i]]?this.userHeader[this.col[i]]:this.col[i];s.innerHTML=t,e.appendChild(s)}this.td=document.createElement("td"),e.appendChild(this.td);var n=document.createElement("input");n.setAttribute("type","button"),n.setAttribute("value","Add"),n.setAttribute("id","New"+r),n.setAttribute("class","btn_submit _submit"),n.setAttribute("onclick","crudApp.CreateNew()"),this.td.appendChild(n);for(var r=0;r<this.users.length;r++){e=t.insertRow(-1);for(var a=0;a<this.col.length;a++){var d=e.insertCell(-1);const t=this.users[r][this.col[a]];d.innerHTML="true"==t.toString()?"✔":"false"==t.toString()?"✖":t.toString()}this.td=document.createElement("td"),e.appendChild(this.td);var c=document.createElement("input");c.setAttribute("type","button"),c.setAttribute("value","Edit"),c.setAttribute("id","Edit"+r),c.setAttribute("class","btn_go _go"),c.setAttribute("onclick",`;
-    };
-
   }

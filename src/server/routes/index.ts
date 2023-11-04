@@ -9,7 +9,7 @@
 import Koa from "koa";
 import { decodeToken } from "../authentication";
 import { _DEBUG } from "../constants";
-import { configCtx, isProduction, setConfigToCtx } from "../helpers";
+import { configCtx, isDev, setConfigToCtx } from "../helpers";
 import { Logs, writeToLog } from "../logger";
 export { protectedRoutes } from "./protected";
 export { unProtectedRoutes } from "./unProtected";
@@ -33,8 +33,8 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
       if (ctx._config.extensions.includes("logs")) await writeToLog(ctx);
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    if (!isProduction()) console.log(error);
+  } catch (error: any) {    
+    if (isDev()) console.log(error);
     
     if (error.message && error.message.includes("|")) {
       const temp = error.message.split("|");
@@ -43,8 +43,7 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
       if (temp[2]) error.detai = temp[2];
     }
     if (ctx._config && ctx._config.extensions.includes("logs"))
-      writeToLog(ctx, error);
-      
+      writeToLog(ctx, error);      
      const tempError = {
         code: error.statusCode,
         message: error.message,

@@ -6,15 +6,15 @@
  *
  */
 
-import { Knex } from "knex";
 import { getEntityName } from "../../helpers";
 import { Logs } from "../../logger";
 import { queryAsJson } from "../queries";
 import { IstreamInfos } from "../../types";
 import { _DB, _STREAM } from "../constants";
+import { executeSql } from ".";
 
 export const getStreamInfos = async (
-  conn: Knex | Knex.Transaction,
+  configName: string,
   input: JSON
 ): Promise<IstreamInfos | undefined> => {
   Logs.whereIam();
@@ -38,8 +38,7 @@ export const getStreamInfos = async (
     const query = `SELECT "id", "observationType", "_default_foi" FROM "${
       _DB[streamEntity].table
     }" WHERE id = ${BigInt(streamId)} LIMIT 1`;
-    return await conn
-      .raw(queryAsJson({ query: query, singular: true, count: false }))
+    return executeSql(configName, queryAsJson({ query: query, singular: true, count: false }))
       .then((res: object) => {
         const temp = res["rows"][0].results;
         return {

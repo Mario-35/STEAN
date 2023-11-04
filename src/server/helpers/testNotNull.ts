@@ -6,7 +6,7 @@
  *
  */
 
-export const isNull = (input: any): boolean => {
+export const isNull = <T>(input: T): boolean => {
     switch (typeof input) {
         case "string":
             if(input && input != "" && input != null) return true;

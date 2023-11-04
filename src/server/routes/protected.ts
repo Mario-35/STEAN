@@ -15,7 +15,7 @@ import {
   checkPassword,
   emailIsValid,
   isAllowedTo,
-  testRoutes,
+  getRouteFromPath,
 } from "./helpers";
 import { Logs } from "../logger";
 import { IKeyString, IreturnResult, Iuser } from "../types";
@@ -27,14 +27,14 @@ import { createOdata } from "../odata";
 import { errors, infos, msg } from "../messages";
 import { EuserRights } from "../enums";
 import { loginUser } from "../authentication";
-import { serverConfig } from "../configuration";
 import { ADMIN } from "../constants";
+import { executeSql } from "../db/helpers";
 
 export const protectedRoutes = new Router<DefaultState, Context>();
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
-  switch (testRoutes(ctx.path).toUpperCase()) {
-    case "LOGIN":
+  switch (getRouteFromPath(ctx.path).toUpperCase()) { case "LOGIN":
       if (ctx.request["token"]) ctx.redirect(`${ctx._rootName}status`);
       await loginUser(ctx).then((user: Iuser | undefined) => {
         if (user) {
@@ -64,12 +64,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
       if (isObject && body["username"].trim() === "") {
         why["username"] = msg(errors.empty, "username");
       } else {
-        const user = await serverConfig
-          .db(ADMIN)
-          .table("user")
-          .select("username")
-          .where({ username: ctx.request.body["username"] })
-          .first();
+        const user = await await executeSql(ADMIN, `SELECT "username" FROM "user" WHERE username = '${ctx.request.body["username"]}' LIMIT 1`);
         if (user) why["username"] = errors.alreadyPresent;
       }
       // Email

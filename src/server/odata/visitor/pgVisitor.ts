@@ -10,7 +10,7 @@
 import { convertResult, _DB } from "../../db/constants";
 import { isGraph, isObservation } from "../../db/helpers";
 import { getEntityName, removeQuotes, returnFormats } from "../../helpers";
-import { IKeyString, IreturnFormat } from "../../types";
+import { Icontext, IKeyString, IreturnFormat } from "../../types";
 import { Token } from "../parser/lexer";
 import { Literal } from "../parser/literal";
 import { SQLLiteral } from "../parser/sqlLiteral";
@@ -18,7 +18,6 @@ import { SqlOptions } from "../parser/sqlOptions";
 import koa from "koa";
 import { Logs } from "../../logger";
 import { createGetSql, createPostSql, oDatatoDate } from "./helper";
-import { Knex } from "knex";
 import { errors, msg } from "../../messages/";
 import { EextensionsType } from "../../enums";
 
@@ -141,45 +140,45 @@ export class PgVisitor {
     return this;
   }
 
-  protected VisitRessourcesResourcePath(node: Token, context: any) {
+  protected VisitRessourcesResourcePath(node: Token, context: Icontext) {
     if (node.value.resource && node.value.resource.type == "EntitySetName") {
       this.entity = node.value.resource.raw;
     }
     if (node.value.navigation)
       this.VisitRessources(node.value.navigation, context);
   }
-
-  protected VisitRessourcesEntitySetName(node: Token, context: any) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected VisitRessourcesEntitySetName(node: Token, context: Icontext) {
     this.entity = node.value.raw;
   }
-
-  protected VisitRessourcesRefExpression(node: Token, context: any) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected VisitRessourcesRefExpression(node: Token, context: Icontext) {
     if (node.type == "RefExpression" && node.raw == "/$ref")
       this.onlyRef = true;
   }
-
-  protected VisitRessourcesValueExpression(node: Token, context: any) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected VisitRessourcesValueExpression(node: Token, context: Icontext) {
     if (node.type == "ValueExpression" && node.raw == "/$value")
       this.onlyValue = true;
   }
-
-  protected VisitRessourcesCollectionNavigation(node: Token, context: any) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected VisitRessourcesCollectionNavigation(node: Token, context: Icontext) {
     if (node.value.path) this.VisitRessources(node.value.path, context);
   }
-
-  protected VisitRessourcesCollectionNavigationPath(node: Token, context: any) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected VisitRessourcesCollectionNavigationPath(node: Token, context: Icontext) {
     if (node.value.predicate)
       this.VisitRessources(node.value.predicate, context);
     if (node.value.navigation)
       this.VisitRessources(node.value.navigation, context);
   }
-
-  protected VisitRessourcesSimpleKey(node: Token, context: any) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected VisitRessourcesSimpleKey(node: Token, context: Icontext) {
     if (node.value.value.type === "KeyPropertyValue")
       this.VisitRessources(node.value.value, context);
   }
-
-  protected VisitRessourcesKeyPropertyValue(node: Token, context: any) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected VisitRessourcesKeyPropertyValue(node: Token, context: Icontext) {
     this.id = this.options.loraId
       ? this.options.loraId
       : this.options.name
@@ -192,12 +191,12 @@ export class PgVisitor {
       : `id = ${this.id}`;
   }
 
-  protected VisitRessourcesSingleNavigation(node: Token, context: any) {
+  protected VisitRessourcesSingleNavigation(node: Token, context: Icontext) {
     if (node.value.path && node.value.path.type === "PropertyPath")
       this.VisitRessources(node.value.path, context);
   }
-
-  protected VisitRessourcesPropertyPath(node: Token, context: any) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected VisitRessourcesPropertyPath(node: Token, context: Icontext) {
     let tempNode = node;
     if (node.type == "PropertyPath") {
       if (_DB[this.entity].relations[node.value.path.raw]) {
@@ -234,7 +233,7 @@ export class PgVisitor {
     }
   }
 
-  protected VisitRessourcesODataUri(node: Token, context: any) {
+  protected VisitRessourcesODataUri(node: Token, context: Icontext) {
     this.VisitRessources(node.value.resource, context);
     this.VisitRessources(node.value.query, context);
   }
@@ -247,17 +246,17 @@ export class PgVisitor {
     }
   }
 
-  asPatchSql(datas: object, knexInstance: Knex | Knex.Transaction): string {
+  asPatchSql(datas: object, configName: string): string {
     try {
-      return createPostSql(datas, knexInstance, this);
+      return createPostSql(datas, configName, this);
     } catch (error) {
       return "";
     }
   }
 
-  asPostSql(datas: object, knexInstance: Knex | Knex.Transaction): string {
+  asPostSql(datas: object, configName: string): string {
     try {
-      return createPostSql(datas, knexInstance, this);
+      return createPostSql(datas, configName, this);
     } catch (error) {
       return "";
     }
@@ -353,8 +352,8 @@ export class PgVisitor {
     }
     return this;
   }
-
-  protected VisitExpand(node: Token, context: any) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected VisitExpand(node: Token, context: Icontext) {
     node.value.items.forEach((item: Token) => {
       const expandPath = item.value.path.raw;
 
@@ -370,21 +369,21 @@ export class PgVisitor {
     });
   }
 
-  protected VisitEntity(node: Token, context: any) {
+  protected VisitEntity(node: Token, context: Icontext) {
     this.Visit(node.value.path, context);
     if (node.value.options)
       node.value.options.forEach((item: Token) => this.Visit(item, context));
     // this.splitResult = node.value.split;
   }
 
-  protected VisitSplitResult(node: Token, context: any) {
+  protected VisitSplitResult(node: Token, context: Icontext) {
     this.Visit(node.value.path, context);
     if (node.value.options)
       node.value.options.forEach((item: Token) => this.Visit(item, context));
     this.splitResult = removeQuotes(node.value).split(",");
   }
 
-  protected VisitInterval(node: Token, context: any) {
+  protected VisitInterval(node: Token, context: Icontext) {
     this.Visit(node.value.path, context);
     if (node.value.options)
       node.value.options.forEach((item: Token) => this.Visit(item, context));
@@ -392,34 +391,34 @@ export class PgVisitor {
     if (this.interval) this.noLimit();
   }
 
-  protected VisitPayload(node: Token, context: any) {
+  protected VisitPayload(node: Token, context: Icontext) {
     this.Visit(node.value.path, context);
     if (node.value.options)
       node.value.options.forEach((item: Token) => this.Visit(item, context));
     this.payload = node.value;
   }
 
-  protected VisitresultFormat(node: Token, context: any) {
+  protected VisitresultFormat(node: Token, context: Icontext) {
     this.Visit(node.value.path, context);
     if (node.value.options)
       node.value.options.forEach((item: Token) => this.Visit(item, context));
   }
 
-  protected VisitDebug(node: Token, context: any) {
-    this.Visit(node.value.path, context);
-    if (node.value.options)
-      node.value.options.forEach((item: Token) => this.Visit(item, context));
-    // do Nothing
-  }
-
-  protected VisitRedo(node: Token, context: any) {
+  protected VisitDebug(node: Token, context: Icontext) {
     this.Visit(node.value.path, context);
     if (node.value.options)
       node.value.options.forEach((item: Token) => this.Visit(item, context));
     // do Nothing
   }
 
-  protected VisitResultFormat(node: Token, context: any) {
+  protected VisitRedo(node: Token, context: Icontext) {
+    this.Visit(node.value.path, context);
+    if (node.value.options)
+      node.value.options.forEach((item: Token) => this.Visit(item, context));
+    // do Nothing
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected VisitResultFormat(node: Token, context: Icontext) {
     if (node.value.format) this.resultFormat = returnFormats[node.value.format];
     //ATTTENTION
     if (
@@ -437,36 +436,36 @@ export class PgVisitor {
     }
   }
 
-  protected VisitExpandItem(node: Token, context: any) {
+  protected VisitExpandItem(node: Token, context: Icontext) {
     this.Visit(node.value.path, context);
     if (node.value.options)
       node.value.options.forEach((item: Token) => this.Visit(item, context));
   }
-
-  protected VisitExpandPath(node: Token, context: any) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected VisitExpandPath(node: Token, context: Icontext) {
     this.navigationProperty = node.raw;
   }
 
   // Start loop process
-  protected VisitQueryOptions(node: Token, context: any) {
+  protected VisitQueryOptions(node: Token, context: Icontext) {
     node.value.options.forEach((option: any) => this.Visit(option, context));
   }
-
-  protected VisitInlineCount(node: Token, context: any) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected VisitInlineCount(node: Token, context: Icontext) {
     this.count = Literal.convert(node.value.value, node.value.raw);
   }
-
-  protected VisitValuesKeys(node: Token, context: any) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected VisitValuesKeys(node: Token, context: Icontext) {
     this.valuesKeys = Literal.convert(node.value.value, node.value.raw);
   }
 
-  protected VisitFilter(node: Token, context: any) {
+  protected VisitFilter(node: Token, context: Icontext) {
     if (this.where.trim() != "") this.where += " AND ";
     context.target = "where";
     this.Visit(node.value, context);
   }
 
-  protected VisitOrderBy(node: Token, context: any) {
+  protected VisitOrderBy(node: Token, context: Icontext) {
     context.target = "orderby";
     node.value.items.forEach((item: Token, i: number) => {
       this.Visit(item, context);
@@ -474,72 +473,73 @@ export class PgVisitor {
     });
   }
 
-  protected VisitOrderByItem(node: Token, context: any) {
+  protected VisitOrderByItem(node: Token, context: Icontext) {
     this.Visit(node.value.expr, context);
     this.orderby += node.value.direction > 0 ? " ASC" : " DESC";
   }
-
-  protected VisitSkip(node: Token, context: any) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected VisitSkip(node: Token, context: Icontext) {
     this.skip = +node.value.raw;
   }
-
-  protected VisitTop(node: Token, context: any) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected VisitTop(node: Token, context: Icontext) {
     this.limit = +node.value.raw;
   }
-
-  protected VisitLog(node: Token, context: any) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected VisitLog(node: Token, context: Icontext) {
     this.idLog = node.value.raw;
   }
 
-  protected VisitSelect(node: Token, context: any) {
+  protected VisitSelect(node: Token, context: Icontext) {
     context.target = "select";
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
     node.value.items.forEach((item: Token, i: number) => {
       this.Visit(item, context);
     });
   }
 
-  protected VisitSelectItem(node: Token, context: any) {
+  protected VisitSelectItem(node: Token, context: Icontext) {
     context.identifier = node.raw;
-    this[context.target] += `"${node.raw}",`;
+    if(context.target) this[context.target] += `"${node.raw}",`;
     this.showRelations = false;
   }
 
-  protected VisitAndExpression(node: Token, context: any) {
+  protected VisitAndExpression(node: Token, context: Icontext) {
     this.Visit(node.value.left, context);
     this.where += " AND ";
     this.Visit(node.value.right, context);
   }
 
-  protected VisitOrExpression(node: Token, context: any) {
+  protected VisitOrExpression(node: Token, context: Icontext) {
     this.Visit(node.value.left, context);
     this.where += " OR ";
     this.Visit(node.value.right, context);
   }
 
-  protected VisitNotExpression(node: Token, context: any) {
+  protected VisitNotExpression(node: Token, context: Icontext) {
     this.where += " NOT ";
     this.Visit(node.value, context);
   }
 
-  protected VisitBoolParenExpression(node: Token, context: any) {
+  protected VisitBoolParenExpression(node: Token, context: Icontext) {
     this.where += "(";
     this.Visit(node.value, context);
     this.where += ")";
   }
 
-  protected VisitCommonExpression(node: Token, context: any) {
+  protected VisitCommonExpression(node: Token, context: Icontext) {
     this.Visit(node.value, context);
   }
 
-  protected VisitFirstMemberExpression(node: Token, context: any) {
+  protected VisitFirstMemberExpression(node: Token, context: Icontext) {
     this.Visit(node.value, context);
   }
 
-  protected VisitMemberExpression(node: Token, context: any) {
+  protected VisitMemberExpression(node: Token, context: Icontext) {
     this.Visit(node.value, context);
   }
 
-  protected VisitPropertyPathExpression(node: Token, context: any) {
+  protected VisitPropertyPathExpression(node: Token, context: Icontext) {
     if (node.value.current && node.value.next) {
       // deterwine if its column AND JSON
       if (
@@ -560,14 +560,14 @@ export class PgVisitor {
     } else this.Visit(node.value, context);
   }
 
-  protected VisitSingleNavigationExpression(node: Token, context: any) {
+  protected VisitSingleNavigationExpression(node: Token, context: Icontext) {
     if (node.value.current && node.value.next) {
       this.Visit(node.value.current, context);
       this.Visit(node.value.next, context);
     } else this.Visit(node.value, context);
   }
 
-  protected VisitLesserThanExpression(node: Token, context: any) {
+  protected VisitLesserThanExpression(node: Token, context: Icontext) {
     const addDate = this.addDateTypeToWhere(node, "<");
     if (addDate) this.where += addDate;
     else {
@@ -577,7 +577,7 @@ export class PgVisitor {
     }
   }
 
-  protected VisitLesserOrEqualsExpression(node: Token, context: any) {
+  protected VisitLesserOrEqualsExpression(node: Token, context: Icontext) {
     const addDate = this.addDateTypeToWhere(node, "<=");
     if (addDate) this.where += addDate;
     else {
@@ -593,7 +593,7 @@ export class PgVisitor {
       if (testIsDate) return `"${node.value.left.raw}"${testIsDate}`;
     }
   }
-  protected VisitGreaterThanExpression(node: Token, context: any) {
+  protected VisitGreaterThanExpression(node: Token, context: Icontext) {
     const addDate = this.addDateTypeToWhere(node, ">");
     if (addDate) this.where += addDate;
     else {
@@ -603,7 +603,7 @@ export class PgVisitor {
     }
   }
 
-  protected VisitGreaterOrEqualsExpression(node: Token, context: any) {
+  protected VisitGreaterOrEqualsExpression(node: Token, context: Icontext) {
     const addDate = this.addDateTypeToWhere(node, ">=");
     if (addDate) this.where += addDate;
     else {
@@ -617,7 +617,7 @@ export class PgVisitor {
     return Object.assign({}, this.parameters);
   }
 
-  protected VisitODataIdentifier(node: Token, context: any) {
+  protected VisitODataIdentifier(node: Token, context: Icontext) {
     node.value.name =
       node.value.name === "result"
         ? convertResult(this.numeric)
@@ -655,7 +655,7 @@ export class PgVisitor {
         }
       }
     if (!context.key)
-      this[context.target] +=
+      if(context.target) this[context.target] +=
         node.value.name.includes("->") || node.value.name.includes("::")
           ? node.value.name
           : `"${node.value.name}"`;
@@ -670,7 +670,7 @@ export class PgVisitor {
     }
   }
 
-  protected VisitEqualsExpression(node: Token, context: any): void {
+  protected VisitEqualsExpression(node: Token, context: Icontext): void {
     const addDate = this.addDateTypeToWhere(node, "=");
     if (addDate) this.where += addDate;
     else {
@@ -681,14 +681,14 @@ export class PgVisitor {
     }
   }
 
-  protected VisitNotEqualsExpression(node: Token, context: any): void {
+  protected VisitNotEqualsExpression(node: Token, context: Icontext): void {
     this.Visit(node.value.left, context);
     this.where += " <> ";
     this.Visit(node.value.right, context);
     this.where = this.where.replace(/<> null$/, "IS NOT NULL");
   }
 
-  protected VisitLiteral(node: Token, context: any): void {
+  protected VisitLiteral(node: Token, context: Icontext): void {
     if (context.relation && context.table && context.target == "where") {
       this.where += `(SELECT "${context.table}"."id" FROM "${
         context.table
@@ -702,14 +702,14 @@ export class PgVisitor {
           : SQLLiteral.convert(node.value, node.raw);
   }
 
-  protected VisitInExpression(node: Token, context: any): void {
+  protected VisitInExpression(node: Token, context: Icontext): void {
     this.Visit(node.value.left, context);
     this.where += " IN (";
     this.Visit(node.value.right, context);
     this.where += ":list)";
   }
 
-  protected VisitArrayOrObject(node: Token, context: any): void {
+  protected VisitArrayOrObject(node: Token, context: Icontext): void {
     this.where += context.literal = SQLLiteral.convert(node.value, node.raw);
   }
 
@@ -743,7 +743,7 @@ export class PgVisitor {
      END`;
     return column;
   }
-  protected VisitMethodCallExpression(node: Token, context: any) {
+  protected VisitMethodCallExpression(node: Token, context: Icontext) {
     const method = node.value.method;
     const params = node.value.parameters || [];
 

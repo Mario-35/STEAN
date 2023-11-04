@@ -17,7 +17,7 @@ import { EuserRights } from "../enums";
 import { ADMIN, API_VERSION, TEST, _READY } from "../constants";
 import { createQueryHtml } from "../views/query";
 import { CreateHtmlView, createIqueryFromContext } from "../views/helpers/";
-import { isAdmin, isAllowedTo, testRoutes } from "./helpers";
+import { isAdmin, isAllowedTo, getRouteFromPath } from "./helpers";
 import { DefaultState, Context } from "koa";
 import { createOdata } from "../odata";
 import { infos } from "../messages";
@@ -27,7 +27,6 @@ import {
   ensureAuthenticated,
   getAuthenticatedUser,
 } from "../authentication";
-import { createAdminHtml } from "../views/admin";
 import { serverConfig } from "../configuration";
 import { createDatabase } from "../db/createDb";
 import { exportToXlsx, importToXlsx } from "../db/helpers/export";
@@ -43,7 +42,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       : false
     : true;
   let returnToBody: any = undefined;
-  switch (testRoutes(ctx.path).toUpperCase()) {
+  switch (getRouteFromPath(ctx.path).toUpperCase()) {
     case ctx._config.apiVersion.toUpperCase():
       const expectedResponse: object[] = [];
       if (isAdmin(ctx) && !adminWithSuperAdminAccess) ctx.throw(401);
@@ -175,15 +174,6 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         ctx.type = returnFormats.json.type;
         ctx.body = await getMetrics(returnToBody);
       }
-      return;
-
-    case "ADMIN":
-      if (ensureAuthenticated(ctx)) {
-        ctx.set("script-src", "self");
-        ctx.set("Content-Security-Policy", "self");
-        ctx.type = returnFormats.html.type;
-        ctx.body = await createAdminHtml(ctx, true);
-      } else ctx.redirect(`${ctx._rootName}login`);
       return;
 
     case "USER":

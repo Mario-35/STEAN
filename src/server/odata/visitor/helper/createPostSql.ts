@@ -6,7 +6,6 @@
  *
  */
 
-import { Knex } from "knex";
 import { VOIDTABLE } from "../../../constants";
 import { getBigIntFromString, getEntityName } from "../../../helpers";
 import { Logs } from "../../../logger";
@@ -16,8 +15,8 @@ import { PgVisitor } from "../PgVisitor";
 import { _DB } from "../../../db/constants";
 import { createPgQuery } from ".";
 import { queryAsJson } from "../../../db/queries";
-
-export function createPostSql(datas: object, knexInstance: Knex | Knex.Transaction, main: PgVisitor): string {
+import { createInsertValues, createUpdateValues } from "../../../db/helpers";
+export function createPostSql(datas: object, configName: string, main: PgVisitor): string {
     let sqlResult = "";
     const queryMaker: {
         [key: string]: {
@@ -86,30 +85,16 @@ export function createPostSql(datas: object, knexInstance: Knex | Knex.Transacti
                     `, ${element} AS (select "id" from "${queryMaker[element].table}" where "id" = ${searchId})`
                     );
                 } else {
-                    const query = knexInstance(queryMaker[element].table);
                     returnValue.push(`, ${element} AS (`);
                     if (main.id) {
-                        if (queryMaker[element].type == EoperationType.Association)
-                        returnValue.push(
-                            query
-                            .insert(queryMaker[element].datas)
-                            .onConflict(Object.keys(queryMaker[element].datas))
-                            .merge(queryMaker[element].datas)
-                            .whereRaw(`${queryMaker[element].table}.${queryMaker[element].keyId} = ${BigInt(main.id).toString()}`)
-                            .toString()
-                            );
-                            else
-                            returnValue.push(
-                                query
-                                .update(queryMaker[element].datas)
-                                .whereRaw(`${queryMaker[element].table}.${queryMaker[element].keyId} = ${BigInt(main.id).toString()}`)
-                                .toString()
-                                );
-                            } else returnValue.push(query.insert(queryMaker[element].datas).toString());
-                            
-                            returnValue.push(`RETURNING ${postEntity.table == queryMaker[element].table ? allFields : queryMaker[element].keyId})`);
-                        }
-                    });
+                        if (queryMaker[element].type == EoperationType.Association) 
+                            returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${createInsertValues(queryMaker[element].datas)} on conflict ("${Object.keys(queryMaker[element].datas).join('","')}") do update set ${createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = ${BigInt(main.id).toString()}`);
+                        else
+                            returnValue.push(`UPDATE "${queryMaker[element].table}" set ${createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = ${BigInt(main.id).toString()}`);
+                    } else returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${createInsertValues(queryMaker[element].datas)}`);                            
+                        returnValue.push(`RETURNING ${postEntity.table == queryMaker[element].table ? allFields : queryMaker[element].keyId})`);
+                }
+            });
         // format object quotes
         return returnValue.join("\n").replace(/\'@/g, "").replace(/\@'/g, "");
     };
@@ -342,16 +327,10 @@ export function createPostSql(datas: object, knexInstance: Knex | Knex.Transacti
         sqlResult = queryMakerToString(
             main.id
             ? root && Object.entries(root).length > 0
-            ? `WITH ${postEntity.table} AS (${knexInstance(postEntity.table)
-                .update(root)
-                // TODO is good conversion ?
-                .where({ id: main.id.toString() })
-                .toString()} RETURNING ${allFields})`
-                : `WITH ${postEntity.table} AS (${knexInstance(postEntity.table).select().where({ id: main.id.toString() }).toString()})`
-                : `WITH ${postEntity.table} AS (${knexInstance(postEntity.table).insert(root).toString()} RETURNING ${allFields})`
+            ? `WITH ${postEntity.table} AS (UPDATE "${postEntity.table}" set ${createUpdateValues(root)} WHERE "id" = ${main.id.toString()} RETURNING ${allFields})`
+                : `WITH ${postEntity.table} AS (SELECT * FROM "${postEntity.table}" WHERE "id" = ${main.id.toString()})`
+                : `WITH ${postEntity.table} AS (INSERT INTO "${postEntity.table}" ${createInsertValues(root)} RETURNING ${allFields})`
                 );
-
-
             }
     const temp = createPgQuery(main, main); 
     sqlResult += queryAsJson({

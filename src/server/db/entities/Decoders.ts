@@ -12,6 +12,7 @@ import { Common } from "./common";
 import { Logs } from "../../logger";
 import { asyncForEach } from "../../helpers";
 import { decodingPayload } from "../../lora";
+import { executeSql } from "../helpers";
 
 export class Decoders extends Common {
   constructor(ctx: koa.Context) {
@@ -22,13 +23,7 @@ export class Decoders extends Common {
     Logs.whereIam();
     if (this.ctx._odata.payload) {
       const result = {};
-      const decoders = await Common.dbContext(this.DBST.Decoders.table).select(
-        "id",
-        "name",
-        "code",
-        "nomenclature",
-        "synonym"
-      );
+      const decoders = await executeSql(this.ctx._config.name, `SELECT "id", "name", "code", "nomenclature", "synonym" FROM "${this.DBST.Decoders.table}"`);
       await asyncForEach(
         // Start connectionsening ALL entries in config file
         Object(decoders),
@@ -55,9 +50,7 @@ export class Decoders extends Common {
   ): Promise<IreturnResult | undefined> {
     Logs.whereIam();
     if (this.ctx._odata.payload) {
-      const decoder = await Common.dbContext(this.DBST.Decoders.table)
-        .select("id", "name", "code", "nomenclature", "synonym")
-        .where({ id: this.ctx._odata.id });
+      const decoder = await executeSql(this.ctx._config.name, `SELECT "id", "name", "code", "nomenclature", "synonym" FROM "${this.DBST.Decoders.table}" WHERE id = this.ctx._odata.id`);
       return decoder[0]
         ? this.createReturnResult({
             body: decodingPayload(

@@ -78,7 +78,7 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
   await asyncForEach(
     serverConfig.configs[configName].entities,
     async (keyName: string) => {
-      await createTable(dbConnection, _DB[keyName], undefined);
+      await createTable(configName, _DB[keyName], undefined);
     }
   );
 

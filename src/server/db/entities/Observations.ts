@@ -8,7 +8,7 @@
 
 import koa from "koa";
 import { Common } from "./common";
-import { getDBDateNow } from "../helpers";
+import { executeSql, getDBDateNow } from "../helpers";
 import { Logs } from "../../logger";
 import { IreturnResult } from "../../types";
 import { getBigIntFromString } from "../../helpers";
@@ -42,10 +42,10 @@ export class Observations extends Common {
           detail: msg(errors.noFound, "MultiDatastreams"),
         });
       // Search uint keys
-      const tempSql = await Common.dbContext.raw(
+      const tempSql = await executeSql(this.ctx._config.name, 
         queryMultiDatastreamsUnitsKeys(searchID)
       );
-      const multiDatastream = tempSql.rows[0];
+      const multiDatastream = tempSql["rows"][0];
       if (dataInput["result"] && typeof dataInput["result"] == "object") {
         Logs.debug(
           "result : keys",
@@ -93,7 +93,7 @@ export class Observations extends Common {
     Logs.whereIam();
     if (dataInput) dataInput = await this.prepareInputResult(dataInput);
     if (dataInput)
-      dataInput["validTime"] = await getDBDateNow(Common.dbContext);
+      dataInput["validTime"] = await getDBDateNow(this.ctx._config.name);
     return await super.update(idInput, dataInput);
   }
 }

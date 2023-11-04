@@ -1,12 +1,12 @@
-import { Knex } from "knex";
 import koa from "koa";
+import { executeSql } from ".";
 import { serverConfig } from "../../configuration";
 import { asyncForEach, isNull } from "../../helpers";
 import { decodeloraDeveuiPayload } from "../../lora";
 import { _DB } from "../constants";
 
 const getSortedKeys = async (
-  knexInstance: Knex | Knex.Transaction,
+  connectionName: string,
   inputID: string,
   synonym: object
 ): Promise<any> => {
@@ -14,8 +14,8 @@ const getSortedKeys = async (
     FROM ( SELECT jsonb_array_elements("unitOfMeasurements") AS units ) AS tmp) 
         FROM "${_DB.MultiDatastreams.table}" 
         WHERE "${_DB.MultiDatastreams.table}".id = ${inputID}`;
-  const tempQuery = await knexInstance.raw(tempSql);
-  const multiDatastream = tempQuery.rows[0];
+  const tempQuery = await executeSql(connectionName, tempSql);
+  const multiDatastream = tempQuery["rows"][0];
   const listOfSortedValues: { [key: string]: number | null } = {};
 
   multiDatastream.keys.forEach((element: string, formatedDatas: object) => {
@@ -78,7 +78,7 @@ export const remadeResult = async (
       } else if (!isNull(elem["multidatastream_id"])) {
         if (isNull(elem["result"])) {
           const sortedKeys = await getSortedKeys(
-            serverConfig.db(ctx._config.name),
+            ctx._config.name,
             elem["multidatastream_id"],
             {}
           );
@@ -104,7 +104,7 @@ export const remadeResult = async (
 
           if (deveui && payload) {
             const decodedPayload = await decodeloraDeveuiPayload(
-              serverConfig.db(ctx._config.name),
+              ctx._config.name,
               deveui.toUpperCase(),
               payload.toUpperCase()
             );
@@ -123,7 +123,7 @@ export const remadeResult = async (
               console.log(decodedPayload);
             } else if (decodedPayload.result.messages.length > 0) {
               const sortedKeys = await getSortedKeys(
-                serverConfig.db(ctx._config.name),
+                ctx._config.name,
                 elem["multidatastream_id"],
                 {}
               );

@@ -62,13 +62,13 @@ class Configuration {
       return a & a;
     }, 0);
   }
-
+  
   // return the connection
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   db(name: string): Knex<any, unknown[]> {
-    if (!this.configs[name].db) this.createKnexConnectionFromConfigName(name);
+    if (!this.configs[name].db) this.createDbConnectionFromConfigName(name);
     return (
-      this.configs[name].db || this.createKnexConnection(this.configs[name].pg)
+      this.configs[name].db || this.createDbConnection(this.configs[name].pg)
     );
   }
 
@@ -87,7 +87,7 @@ class Configuration {
 
   // return knex connection from Connection
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private createKnexConnection(input: IdbConnection): Knex<any, unknown[]> {
+  private createDbConnection(input: IdbConnection): Knex<any, unknown[]> {
     return knex({
       client: "pg",
       connection: {
@@ -102,8 +102,8 @@ class Configuration {
 
   // create, affect and return kenx connection from and in config by is name
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  createKnexConnectionFromConfigName(input: string): Knex<any, unknown[]> {
-    const temp = this.createKnexConnection(this.configs[input].pg);
+  createDbConnectionFromConfigName(input: string): Knex<any, unknown[]> {
+    const temp = this.createDbConnection(this.configs[input].pg);
     this.configs[input].db = temp;
     return temp;
   }
@@ -462,7 +462,7 @@ class Configuration {
           `${infos.db} ${infos.create} [${this.configs[connectName].pg.database}]`,
           "OK"
         );
-        this.createKnexConnectionFromConfigName(connectName);
+        this.createDbConnectionFromConfigName(connectName);
         return true;
       })
       .catch((err: Error) => {

@@ -6,11 +6,11 @@
  *
  */
 
-import { Knex } from "knex";
+import { executeSql } from ".";
 
 export const getDBDateNow = async (
-  conn: Knex | Knex.Transaction
+  configName: string
 ): Promise<string> => {
-  const tempQuery = await conn.raw("SELECT current_timestamp;");
+  const tempQuery = await executeSql(configName, "SELECT current_timestamp;");
   return tempQuery["rows"][0]["current_timestamp"];
 };

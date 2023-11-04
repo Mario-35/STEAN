@@ -6,34 +6,24 @@
  *
  */
 
-import { Knex } from "knex";
+import { executeSql } from ".";
 
 /**
  *
- * @param dbContext koa db connection
+ * @param configName name of actual service config name
  * @param idInput bigint or bigint[]
  * @param tableSearch name of the table to search ID(s)
  * @returns boolean
  */
 
-export const verifyId = async (
-  dbContext: Knex | Knex.Transaction,
-  idInput: bigint | bigint[],
-  tableSearch: string
-): Promise<boolean> => {
+export const verifyId = async ( configName: string, idInput: bigint | bigint[], tableSearch: string ): Promise<boolean> => {
   try {
-    const query: Knex.QueryBuilder = dbContext(tableSearch);
     if (typeof idInput == "bigint") {
-      const returnValue = await query
-        .select("id")
-        .where({ id: idInput })
-        .first();
-      return returnValue ? true : false;
+      const temp = await executeSql(configName, `SELECT id FROM "${tableSearch}" WHERE "id" = ${idInput} LIMIT 1`);
+      return temp["rowCount"] <= 0 ? false : true;
     } else {
-      const returnValue = await query
-        .count()
-        .whereIn("id", idInput.map(String));
-      return Object.values(idInput).length == returnValue[0].count;
+      const temp = await executeSql(configName, `SELECT count(id) FROM "${tableSearch}" WHERE "id" IN (${idInput.map(String)})`);
+      return Object.values(idInput).length == temp[0].count;
     }
   } catch (error) {
     return false;
