@@ -40,11 +40,7 @@ export class apiAccess {
     if (this.myEntity) return await this.myEntity.getAll();
   }
 
-  async getSingle(
-    idInput: bigint | string,
-    propertyName?: string,
-    onlyValue?: boolean
-  ): Promise<IreturnResult | undefined> {
+  async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
     Logs.whereIam();
     if (this.myEntity) return await this.myEntity.getSingle(idInput);
   }

@@ -1,5 +1,5 @@
 import util from "util";
-import { TIMESTAMP, _DEBUG } from "../constants";
+import { TIMESTAMP, _DEBUG, _WEB } from "../constants";
 import fs from "fs";
 import Koa from "koa";
 import { EColor } from "../enums";
@@ -38,16 +38,31 @@ export class Logger {
       : input;
   }
 
+  create(cle: string, value: string | number) {
+    if (!isProduction()) this.log(
+      `${this.col(EColor.FgWhite)} -->${this.col(
+        EColor.FgCyan
+      )} ${cle} ${this.col(EColor.FgWhite)} ${this.logAll(
+        value,
+        this.debugFile
+      )}${this.col(EColor.Reset)}`
+    );
+  }
+
   booting(cle: string, value: string | number) {
     if (!isTest())
       this.log(
-        `${this.col(EColor.FgYellow)} -->${this.col(
+        `${this.col(EColor.FgYellow)} 💡${this.col(
           EColor.FgCyan
         )} ${cle} ${this.col(EColor.FgWhite)} ${this.logAll(
           value,
           this.debugFile
-        )} ${this.col(EColor.FgYellow)} …${this.col(EColor.Reset)}`
+        )}${this.col(EColor.Reset)}`
       );
+  }
+
+  url<T>(link: string) {
+      this.log( `${_WEB} ${this.col(EColor.FgMario)} : ${this.col( EColor.FgCyan )} ${link}${this.col(EColor.Reset)}` );
   }
 
   bootingResult<T>(cle: string, infos?: T) {

@@ -43,7 +43,7 @@ export const triggers = [
     RETURNS timestamptz LANGUAGE sql STABLE AS
   'SELECT timestamp_ceil($1, extract(epoch FROM $2)::int)';`,
 
-  `CREATE or replace FUNCTION row_estimator(query text) RETURNS bigint
+  `CREATE OR REPLACE FUNCTION row_estimator(query text) RETURNS bigint
     LANGUAGE plpgsql AS
   $$DECLARE
     plan jsonb;

@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import koa from 'koa';
 import { serverConfig } from '../../configuration';
 import { asyncForEach } from '../../helpers';
+import { Logs } from '../../logger';
 
 // const events = require('events');
 const readline = require('readline');
@@ -40,7 +41,7 @@ export const remadeLog = async (ctx: koa.Context): Promise<object> => {
                     if (srch) {
                         const essai = line.split(srch)[1];                    
                         try {
-                            if (essai.includes(`', `)) await serverConfig.db(ctx._config.name).raw(`INSERT INTO public.log_request OVERRIDING SYSTEM VALUE VALUES (${date},'${essai.split(`', `)[0]}');`);
+                            if (essai.includes(`', `)) await serverConfig.db(ctx._config.name)`INSERT INTO public.log_request OVERRIDING SYSTEM VALUE VALUES (${date},'${essai.split(`', `)[0]}');`;
                             else {
                                 console.log("=======================================");
                                 console.log(essai);
@@ -48,7 +49,7 @@ export const remadeLog = async (ctx: koa.Context): Promise<object> => {
                             
                         } catch (error) {
                             console.log("================== error =====================");
-                            console.log(error);
+                            Logs.error(error);
                             console.log(line);
                             return;
                         }
@@ -63,7 +64,7 @@ export const remadeLog = async (ctx: koa.Context): Promise<object> => {
                     // });
                 }) .on('error', async (error: unknown) => {
                     console.log(`=====================error /temp${e}.sql ==============================`);
-                    console.log(error);
+                    Logs.error(error);
                 });
 
             });

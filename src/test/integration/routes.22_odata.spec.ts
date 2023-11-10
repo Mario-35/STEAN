@@ -12,10 +12,10 @@ import chai from "chai";
 import chaiHttp from "chai-http";
 import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult, apiInfos } from "./constant";
 import { server } from "../../server/index";
-import { dbTest } from "../dbTest";
 import { testsKeys as things_testsKeys } from "./routes.04_things.spec";
 import { testsKeys as datastreams_testsKeys } from "./routes.07_datastreams.spec";
 import { testsKeys as sensors_testsKeys } from "./routes.09_sensors.spec";
+import { count, executeQuery } from "./executeQuery";
 
 chai.use(chaiHttp);
 
@@ -225,17 +225,14 @@ describe("Odata", () => {
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") }
         };
-        dbTest("thing")
-            .count()
-            .then((result) => {
-                const nb = Number(result[0]["count"]) > 200 ? 200 : Number(result[0]["count"]);
+        executeQuery(count("thing")).then((result) => {
                 chai.request(server)
                     .get(`/test${infos.apiExample.http}`)
                     .end((err, res) => {
                         should.not.exist(err);
                         res.status.should.equal(200);
                         res.type.should.equal("application/json");
-                        res.body.value.length.should.eql(nb);
+                        res.body.value.length.should.eql(result["count"]);
                         res.body.should.include.keys("@iot.count", "value");
                         res.body.value[0].should.include.keys("description", "name");
                         addToApiDoc({ ...infos, result: limitResult(res) });
@@ -255,17 +252,14 @@ describe("Odata", () => {
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") }
         };
-        dbTest("thing")
-            .count()
-            .then((result) => {
-                const nb = Number(result[0]["count"]) > 200 ? 200 : Number(result[0]["count"]);
+        executeQuery(count("thing")).then((result) => {
                 chai.request(server)
                     .get(`/test${infos.apiExample.http}`)
                     .end((err, res) => {
                         should.not.exist(err);
                         res.status.should.equal(200);
                         res.type.should.equal("application/json");
-                        res.body.value.length.should.eql(nb);
+                        res.body.value.length.should.eql(result["count"]);
                         res.body.should.include.keys("@iot.count", "value");
                         res.body.value[0].should.include.keys("description", "name");
                         addToApiDoc({ ...infos, result: limitResult(res) });
@@ -309,17 +303,14 @@ describe("Odata", () => {
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") }
         };
-        dbTest("observation")
-            .count()
-            .then((result) => {
-                const nb = Number(result[0]["count"]);
+        executeQuery(count("observation")).then((result) => {
                 chai.request(server)
                     .get(`/test${infos.apiExample.http}`)
                     .end((err, res) => {
                         should.not.exist(err);
                         res.status.should.equal(200);
                         res.type.should.equal("application/json");
-                        res.body.value.length.should.eql(nb - 3);
+                        res.body.value.length.should.eql(result["count"] - 3);
                         res.body.should.include.keys("@iot.count", "value");
                         addToApiDoc({ ...infos, result: limitResult(res) });
                         done();

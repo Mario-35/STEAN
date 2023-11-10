@@ -24,17 +24,12 @@ const getConfigFromPort = (port: number | undefined): string | undefined => {
   if (port) {
     const databaseName = isTest()
       ? [TEST]
-      : Object.keys(serverConfig.configs).filter(
-          (word) => (word != TEST && serverConfig.configs[word].port) == port
-        );
+      : Object.keys(serverConfig.configs).filter( (word) => (word != TEST && serverConfig.configs[word].port) == port );
     if (databaseName && databaseName.length === 1) return databaseName[0];
   }
 };
 
-const getNameFromUrl = (
-  input: string,
-  version?: string
-): string | undefined => {
+const getNameFromUrl = ( input: string, version?: string ): string | undefined => {
   version = version || getVersionFromUrl(input);
   return input
     .split(version)[0]

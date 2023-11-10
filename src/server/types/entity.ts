@@ -12,7 +12,6 @@ import { EextensionsType } from "../enums";
 export interface Ientity {
     readonly name: string; // Entity Name
     readonly count: string; // Entity Name
-    readonly lora: boolean; // Is extend of SensorThings standard
     readonly clone?: string;
     readonly singular: string;
     readonly table: string;
@@ -24,5 +23,5 @@ export interface Ientity {
     readonly constraints?: IKeyString;
     readonly indexes?: IKeyString;
     readonly after?: string;
-    readonly essai: EextensionsType[];
+    readonly extensions: EextensionsType[];
 }

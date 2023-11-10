@@ -31,10 +31,10 @@ import {
     nbColor
 } from "./constant";
 import { server } from "../../server/index";
-import { dbTest } from "../dbTest";
 import { _DB } from "../../server/db/constants";
 import { Ientity } from "../../server/types";
 import { testsKeys as datastreams_testsKeys } from "./routes.07_datastreams.spec";
+import { count, executeQuery, last } from "./executeQuery";
 
 export const testsKeys = ["@iot.id", "@iot.selfLink", "Datastreams@iot.navigationLink", "name", "description", "definition"];
 
@@ -59,7 +59,7 @@ addToApiDoc({
 });
 
 describe("endpoint : ObservedProperties", () => {
-    let myId = "";
+    const myId = "";
     const temp = listOfColumns(entity);
     const success = temp.success;
     const params = temp.params;
@@ -90,10 +90,8 @@ describe("endpoint : ObservedProperties", () => {
                 },
                 apiSuccess: ["{number} id @iot.id", "{relation} selfLink @iot.selfLink", ...success]
             };
-            dbTest("observedproperty")
-                .count()
-                .then((result) => {
-                    const nb = Number(result[0]["count"]) > 200 ? 200 : Number(result[0]["count"]);
+            executeQuery(count(entity.table)).then((result) => {
+                    const nb = result["count"] > 200 ? 200 : result["count"];
                     chai.request(server)
                         .get(`/test/v1.0/${entity.name}`)
                         .end((err, res) => {
@@ -359,12 +357,7 @@ describe("endpoint : ObservedProperties", () => {
 
     describe(`{patch} ${entity.name} ${nbColorTitle}[10.3]`, () => {
         it(`Return updated ${entity.name} ${nbColor}[10.3.1]`, (done) => {
-            dbTest("observedproperty")
-                .select("*")
-                .orderBy("id")
-                .then((items) => {
-                    const itemObject = items[items.length - 1];
-                    myId = itemObject.id;
+            executeQuery(last(entity.table, true)).then((result) => {
                     const datas = {
                         name: `New PM 2.5 ${getNB(entity.name)}`,
                     };
@@ -374,7 +367,7 @@ describe("endpoint : ObservedProperties", () => {
                         apiDescription: `Patch a ${entity.singular}.${showHide(`Patch${entity.name}`, apiInfos["10.3"])}`,
                         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_2",
                         apiExample: {
-                            http: `/v1.0/${entity.name}(${myId})`,
+                            http: `/v1.0/${entity.name}(${result["id"]})`,
                             curl: defaultPatch("curl", "KEYHTTP", datas),
                             javascript: defaultPatch("javascript", "KEYHTTP", datas),
                             python: defaultPatch("python", "KEYHTTP", datas)
@@ -390,7 +383,7 @@ describe("endpoint : ObservedProperties", () => {
                             res.status.should.equal(200);
                             res.type.should.equal("application/json");
                             res.body.should.include.keys(testsKeys);
-                            res.body.name.should.not.eql(itemObject.name);
+                            res.body.name.should.not.eql(result["name"]);
                             addToApiDoc({ ...infos, result: limitResult(res) });
                             done();
                         });
@@ -416,20 +409,14 @@ describe("endpoint : ObservedProperties", () => {
 
     describe(`{delete} ${entity.name} ${nbColorTitle}[10.4]`, () => {
         it(`Delete ${entity.name} return no content with code 204 ${nbColor}[10.4.1]`, (done) => {
-            dbTest("observedproperty")
-                .select("*")
-                .orderBy("id")
-                .then((items) => {
-                    const thingObject = items[items.length - 1];
-                    myId = thingObject.id;
-                    const lengthBeforeDelete = items.length;
+            executeQuery(`SELECT (SELECT count(id) FROM "${entity.table}")::int as count, (${last(entity.table)})::int as id `).then((beforeDelete) => {                    
                     const infos = {
                         api: `{delete} ${entity.name} Delete one`,
                         apiName: `Delete${entity.name}`,
                         apiDescription: `Delete a ${entity.singular}.${showHide(`Delete${entity.name}`, apiInfos["10.4"])}`,
                         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_3",
                         apiExample: {
-                            http: `/v1.0/${entity.name}(${myId})`,
+                            http: `/v1.0/${entity.name}(${beforeDelete["id"]})`,
                             curl: defaultDelete("curl", "KEYHTTP"),
                             javascript: defaultDelete("javascript", "KEYHTTP"),
                             python: defaultDelete("python", "KEYHTTP")
@@ -441,12 +428,9 @@ describe("endpoint : ObservedProperties", () => {
                         .end((err: Error, res: any) => {
                             should.not.exist(err);
                             res.status.should.equal(204);
-                            dbTest("observedproperty")
-                                .select("*")
-                                .orderBy("id")
-                                .then((newItems) => {
-                                    newItems.length.should.eql(lengthBeforeDelete - 1);
-                                    addToApiDoc({ ...infos, result: limitResult(res) });
+                            executeQuery(`SELECT count(id)::int FROM "${entity.table}"`).then((afterDelete) => {                                 
+                                afterDelete["count"].should.eql(beforeDelete["count"] - 1);
+                                     addToApiDoc({ ...infos, result: limitResult(res) });
                                     done();
                                 });
                         });

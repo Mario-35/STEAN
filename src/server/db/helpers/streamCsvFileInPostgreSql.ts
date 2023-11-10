@@ -7,41 +7,28 @@
  */
 
 import fs from "fs";
-import copyFrom from "pg-copy-streams";
 import { Logs } from "../../logger";
 import { IcsvColumn, IcsvFile } from "../../types";
 import readline from "readline";
 import koa from "koa";
 import { _DB } from "../constants";
+import { createReadStream } from 'fs';
+import { addAbortSignal } from 'stream';
 import { serverConfig } from "../../configuration";
-
-/**
- *
- * @param knex knex transaction
- * @param tableName tempTableName
- * @param filename csv file to import
- * @param sql SQL request to import
- * @param logger logger instance
- * @returns results infos
- */
+import { executeSql } from ".";
 
 interface ICsvImport {
   dateSql: string;
   columns: string[];
 }
 
-const dateSqlRequest = async (
-  paramsFile: IcsvFile
-): Promise<ICsvImport | undefined> => {
+const dateSqlRequest = async ( paramsFile: IcsvFile ): Promise<ICsvImport | undefined> => {
   const returnValue: ICsvImport = { dateSql: "", columns: [] };
   const fileStream = fs.createReadStream(paramsFile.filename);
   const regexDate = /^[0-9]{2}[\/][0-9]{2}[\/][0-9]{4}$/g;
   const regexHour = /^[0-9]{2}[:][0-9]{2}[:][0-9]{2}$/g;
   const regexDateHour =
     /^[0-9]{2}[\/][0-9]{2}[\/][0-9]{4} [0-9]{2}[:][0-9]{2}$/g;
-  // TODO More easier
-  // const regexDateHourComplete = /^[0-9]{2}[\/][0-9]{2}[\/][0-9]{4} [0-9]{2}[:][0-9]{2}[:][0-9]{2}$/g;
-
   const rl = readline.createInterface({
     input: fileStream,
     crlfDelay: Infinity,
@@ -107,107 +94,63 @@ export const createColumnHeaderName = async (
   }
 };
 
-export const streamCsvFileInPostgreSql = async (
-  ctx: koa.Context,
-  configName: string,
-  paramsFile: IcsvFile
-): Promise<string | undefined> => {
+export const streamCsvFileInPostgreSql = async ( ctx: koa.Context, configName: string, paramsFile: IcsvFile ): Promise<string | undefined> => {
   Logs.whereIam();
   let returnValue = undefined;
   const sqlRequest = await dateSqlRequest(paramsFile);
-  const knex = serverConfig.db(configName);
   if (sqlRequest) {
-    // Create temp table
-    await knex.schema
-      .createTable(paramsFile.tempTable, (table) => {
-        table.increments("id").unsigned().notNullable().primary();
-        sqlRequest.columns.forEach((value) => table.string(value));
-      })
-      .catch((err: Error) => ctx.throw(400, { detail: err.message }));
+    const controller = new AbortController();
+    const readable = createReadStream(paramsFile.filename);
+    const cols:string[] = [];
+    sqlRequest.columns.forEach((value) => cols.push(`"${value}" varchar(255) NULL`));
+    const createTable = `CREATE TABLE public."${paramsFile.tempTable}" ( id serial4 NOT NULL, ${cols}, CONSTRAINT ${paramsFile.tempTable}_pkey PRIMARY KEY (id));`;
+    await executeSql(ctx._config.name, createTable, true);
+    const writable = serverConfig.db(configName).unsafe(`COPY ${paramsFile.tempTable}  (${sqlRequest.columns.join( "," )}) FROM STDIN WITH(FORMAT csv, DELIMITER ';'${ paramsFile.header })`).writable();
+  
+    readable
+      .pipe(addAbortSignal(controller.signal, await writable))
+      .on('error', () => {
+        Logs.error('ABORTED-STREAM'); // this executed
+      });
+      
+    const fileImport = paramsFile.filename.split("/").reverse()[0];
+    const dateImport = new Date().toLocaleString();
 
-    Logs.debug("Create Table", paramsFile.tempTable);
-
-    // Setup stream
-    await new Promise<void>(async (resolve, reject) => {
-      // Init transaction
-      await knex
-        .transaction(async (tx) => {
-          // Get connection
-          const client = await tx.client
-            .acquireConnection()
-            .catch((err: Error) => reject(err));
-          // create Stream
-          const stream = client
-            .query(
-              copyFrom.from(
-                `COPY ${paramsFile.tempTable} (${sqlRequest.columns.join(
-                  ","
-                )}) FROM STDIN WITH (FORMAT csv, DELIMITER ';'${
-                  paramsFile.header
-                })`
-              )
-            )
-            .on("error", (err: Error) => {
-              Logs.error("stream error", err);
-              tx.rollback();
-              reject(err);
-            });
-
-          const fileStream = fs.createReadStream(paramsFile.filename);
-          const dateImport = new Date().toLocaleString();
-          const fileImport = paramsFile.filename.split("/").reverse()[0];
-
-          fileStream.on("error", (err: Error) => {
-            Logs.error("fileStream error", err);
-            tx.rollback();
-            reject(err);
-          });
-
-          fileStream.on("end", async () => {
-            // stream finshed so COPY
-            Logs.debug("COPY TO ", paramsFile.tempTable);
-            const scriptSql: string[] = [];
-            const scriptSqlResult: string[] = [];
-            // make import query
-            Object.keys(paramsFile.columns).forEach(
-              async (myColumn: string, index: number) => {
-                const csvColumn: IcsvColumn = paramsFile.columns[myColumn];
-                const valueSql = `json_build_object('value', CASE "${paramsFile.tempTable}".value${csvColumn.column} WHEN '---' THEN NULL ELSE cast(REPLACE(value${csvColumn.column},',','.') AS float) END)`;
-                scriptSql.push(
-                  `${index == 0 ? "WITH" : ","} updated${
-                    index + 1
-                  } AS (INSERT into "${
-                    _DB.Observations.table
-                  }" ("${csvColumn.stream.type?.toLowerCase()}_id", "featureofinterest_id", "phenomenonTime","resultTime", "result", "resultQuality") SELECT ${
-                    csvColumn.stream.id
-                  }, ${csvColumn.stream.FoId},  ${sqlRequest.dateSql}, ${
-                    sqlRequest.dateSql
-                  },${valueSql}, '{"import": "${fileImport}","date": "${dateImport}"}'  FROM "${
-                    paramsFile.tempTable
-                  }" ON CONFLICT DO NOTHING returning 1)`
-                );
-                scriptSqlResult.push(
-                  index == 0
-                    ? ` SELECT (SELECT count(*) FROM ${paramsFile.tempTable}) AS total, (SELECT count(updated1) FROM updated1`
-                    : ` UNION SELECT count(updated${index + 1}) FROM updated${
-                        index + 1
-                      }`
-                );
-              }
-            );
-            scriptSqlResult.push(") AS inserted");
-            scriptSql.push(scriptSqlResult.join(""));
-            returnValue = scriptSql.join("");
-            tx.commit();
-            resolve();
-          });
-          // launch stream
-          fileStream.pipe(stream);
-        })
-        .catch((err: Error) => reject(err));
-    }).catch((err: Error) => {
-      ctx.throw(400, { detail: err.message });
-    });
-  }
+    // stream finshed so COPY
+    Logs.debug("COPY TO ", paramsFile.tempTable);
+    const scriptSql: string[] = [];
+    const scriptSqlResult: string[] = [];
+    // make import query
+    Object.keys(paramsFile.columns).forEach(
+      async (myColumn: string, index: number) => {
+        const csvColumn: IcsvColumn = paramsFile.columns[myColumn];
+        const valueSql = `json_build_object('value', CASE "${paramsFile.tempTable}".value${csvColumn.column} WHEN '---' THEN NULL ELSE cast(REPLACE(value${csvColumn.column},',','.') AS float) END)`;
+        scriptSql.push(
+          `${index == 0 ? "WITH" : ","} updated${
+            index + 1
+          } AS (INSERT into "${
+            _DB.Observations.table
+          }" ("${csvColumn.stream.type?.toLowerCase()}_id", "featureofinterest_id", "phenomenonTime","resultTime", "result", "resultQuality") SELECT ${
+            csvColumn.stream.id
+          }, ${csvColumn.stream.FoId},  ${sqlRequest.dateSql}, ${
+            sqlRequest.dateSql
+          },${valueSql}, '{"import": "${fileImport}","date": "${dateImport}"}'  FROM "${
+            paramsFile.tempTable
+          }" ON CONFLICT DO NOTHING returning 1)`
+        );
+        scriptSqlResult.push(
+          index == 0
+            ? ` SELECT (SELECT count(*) FROM ${paramsFile.tempTable}) AS total, (SELECT count(updated1) FROM updated1`
+            : ` UNION SELECT count(updated${index + 1}) FROM updated${ index + 1 }`
+        );
+      }
+    );
+    scriptSqlResult.push(") AS inserted");
+    scriptSql.push(scriptSqlResult.join(""));
+    returnValue = scriptSql.join("");
+    return returnValue;
+  }   
   return returnValue;
 };
+
+

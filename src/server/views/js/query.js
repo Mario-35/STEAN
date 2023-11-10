@@ -11,9 +11,7 @@ const testNull = (input) => (input.value == "<empty string>" || input.value.trim
 
 function setChecked(objName, state) {
 	const elemId = getElement(objName);
-	console.log(elemId);
-	if (elemId) elemId.checked = state;
-	console.log();															
+	if (elemId) elemId.checked = state;														
 }
 
 function getIfChecked(objName) {
@@ -159,7 +157,7 @@ function init() {
 	if (isDebug) console.log(_PARAMS);
 	new SplitterBar(container, first, two);
 	wait(false);
-	const tempEntity = _PARAMS.entity && _PARAMS.entity != "" ? _PARAMS.entity : "Things";
+	const tempEntity = _PARAMS.entity || "Things";
 	populateSelect(entityOption, getEntityList(), tempEntity);
 	const subs = getRelationsList(tempEntity);
 	populateSelect(subentityOption, subs, subs.includes(_PARAMS.subentityOption) ? _PARAMS.subentityOption : _NONE, true);
@@ -178,10 +176,7 @@ function init() {
 	if (_PARAMS.datas) datas.json_value = _PARAMS.datas;
 	queryOptions.value = _PARAMS.options;
 
-	// decodeOptions();
-// console.log(window.location.href);
-
-	decodeUrl(window.location.href);
+	// decodeUrl(window.location.href);
 	jsonViewer = new JSONViewer();
 }
 

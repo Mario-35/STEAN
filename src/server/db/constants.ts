@@ -9,19 +9,11 @@
 /* eslint-disable quotes */
 
 import koa from "koa";
-import {
-  EextensionsType,
-  EdatesType,
-  Eentities,
-  EobservationType,
-  Erelations,
-} from "../enums";
+import { EextensionsType, EdatesType, Eentities, EobservationType, Erelations, } from "../enums";
 import { Ientity } from "../types";
 const makeIDAlias = (table: string) => `"${table}"."id" AS "@iot.id"`;
-const makeCount = (table: string) =>
-  `SELECT count(DISTINCT id) from "${table}" AS count`;
-export const _RIGHTS =
-  "SUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION NOBYPASSRLS CONNECTION LIMIT -1";
+const makeCount = (table: string) => `SELECT count(DISTINCT id) from "${table}" AS count`;
+export const _RIGHTS = "SUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION NOBYPASSRLS CONNECTION LIMIT -1";
 export type _STREAM = "Datastream" | "MultiDatastream" | undefined;
 export const convertResult = (numeric: boolean) =>
   numeric
@@ -29,9 +21,7 @@ export const convertResult = (numeric: boolean) =>
     : `CASE 
     WHEN jsonb_typeof("result"-> 'value') = 'number' then "result"->'value' 
     END::numeric
-    `;
-// WHEN jsonb_typeof("result"-> 'array') =  (array["result"-> 'value'])[1]
-// const defaultFunction = (input: string) => input;
+  `;
 
 const dbDatas: { [key in Eentities]: Ientity } = {
   Things: {
@@ -39,8 +29,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     singular: "Thing",
     table: "thing",
     order: 10,
-    essai: [EextensionsType.base],
-    lora: false,
+    extensions: [EextensionsType.base],
     orderBy: `"id"`,
     count: makeCount("thing"),
     columns: {
@@ -127,8 +116,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     singular: "FeatureOfInterest",
     table: "featureofinterest",
     order: 4,
-    essai: [EextensionsType.base],
-    lora: false,
+    extensions: [EextensionsType.base],
     orderBy: `"id"`,
     count: makeCount("featureofinterest"),
     columns: {
@@ -212,8 +200,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     singular: "Location",
     table: "location",
     order: 6,
-    essai: [EextensionsType.base],
-    lora: false,
+    extensions: [EextensionsType.base],
     orderBy: `"id"`,
     count: makeCount("location"),
     columns: {
@@ -283,7 +270,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         type: Erelations.belongsToMany,
         expand: `"thing"."id" in (select "thing_location"."thing_id" from "thing_location" where "thing_location"."location_id" = "location"."id")`,
         link: `"thing"."id" in (select "thing_location"."thing_id" from "thing_location" where "thing_location"."location_id" = $ID)`,
-
         entityName: "Things",
         tableName: "thing_location",
         relationKey: "location_id",
@@ -294,11 +280,9 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         type: Erelations.belongsToMany,
         expand: `"historical_location"."id" in (select "historical_location"."id" from "historical_location" where "historical_location"."thing_id" in (select "thing_location"."thing_id" from "thing_location" where "thing_location"."location_id" = "location"."id"))`,
         link: `"historical_location"."id" in (select "historical_location"."id" from "historical_location" where "historical_location"."thing_id" in (select "thing_location"."thing_id" from "thing_location" where "thing_location"."location_id" = $ID))`,
-
         entityName: "HistoricalLocation",
         tableName: "location_historical_location",
         relationKey: "location_id",
-        // entityColumn: "location_id",
         entityColumn: "id",
         tableKey: "id",
       },
@@ -310,8 +294,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     singular: "HistoricalLocation",
     table: "historical_location",
     order: 5,
-    essai: [EextensionsType.base],
-    lora: false,
+    extensions: [EextensionsType.base],
     orderBy: `"id"`,
     count: makeCount("historical_location"),
     columns: {
@@ -374,8 +357,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     singular: "locationHistoricalLocation",
     table: "location_historical_location",
     order: -1,
-    essai: [EextensionsType.base],
-    lora: false,
+    extensions: [EextensionsType.base],
     orderBy: `"location_id"`,
     count: makeCount("location_historical_location"),
     columns: {
@@ -415,8 +397,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     singular: "ObservedProperty",
     table: "observedproperty",
     order: 8,
-    essai: [EextensionsType.base],
-    lora: false,
+    extensions: [EextensionsType.base],
     orderBy: `"id"`,
     count: makeCount("observedproperty"),
     columns: {
@@ -467,7 +448,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         // expand: "err: 501 : Not Implemented.",
         expand: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."observedproperty_id" = "observedproperty"."id")`,
         link: `"datastream"."id" in (SELECT "datastream"."id" FROM "datastream" WHERE "datastream"."observedproperty_id" = $ID)`,
-
         entityName: "Datastreams",
         tableName: "datastream",
         relationKey: "observedproperty_id",
@@ -478,7 +458,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         type: Erelations.hasMany,
         expand: `"multidatastream"."id" in (SELECT "multi_datastream_observedproperty"."multidatastream_id" FROM "multi_datastream_observedproperty" WHERE "multi_datastream_observedproperty"."observedproperty_id" = "observedproperty"."id")`,
         link: `"multidatastream"."id" in (SELECT "multi_datastream_observedproperty"."multidatastream_id" FROM "multi_datastream_observedproperty" WHERE "multi_datastream_observedproperty"."observedproperty_id" = $ID)`,
-
         entityName: "MultiDatastreams",
         tableName: "multi_datastream_observedproperty",
         relationKey: "observedproperty_id",
@@ -493,8 +472,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     singular: "Sensor",
     table: "sensor",
     order: 9,
-    essai: [EextensionsType.base],
-    lora: false,
+    extensions: [EextensionsType.base],
     orderBy: `"id"`,
     count: makeCount("sensor"),
     columns: {
@@ -538,7 +516,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         type: "text",
       },
       properties: {
-        // Not in Sensor 1.1
         create: "jsonb NULL",
         columnAlias() {
           return `"properties"`;
@@ -566,24 +543,12 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         type: Erelations.hasMany,
         expand: `"multidatastream"."id" in (select "multidatastream"."id" from "multidatastream" where "multidatastream"."id" = "sensor"."id")`,
         link: `"multidatastream"."id" in (select "multidatastream"."id" from "multidatastream" where "multidatastream"."sensor_id" = $ID)`,
-
         entityName: "MultiDatastreams",
         tableName: "multidatastream",
         relationKey: "sensor_id",
         entityColumn: "id",
         tableKey: "id",
-      },
-      // ,
-      // Loras: {
-      //     type: Erelations.belongsTo,
-      //     expand: `"lora"."id" = (select "lora"."id" from "lora" where "lora"."sensor_id" = "sensor"."id")`,
-      //     link: `"lora"."id" = (select "lora"."id" from "lora" where "lora"."sensor_id" = $ID)`,
-      //     entityName: "Loras",
-      //     tableName: "lora",
-      //     relationKey: "sensor_id",
-      //     entityColumn: "id",
-      //     tableKey: "id"
-      // }
+      }
     },
   },
 
@@ -592,8 +557,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     singular: "Datastream",
     table: "datastream",
     order: 1,
-    essai: [EextensionsType.base],
-    lora: false,
+    extensions: [EextensionsType.base],
     orderBy: `"id"`,
     count: makeCount("datastream"),
     columns: {
@@ -784,8 +748,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     singular: "MultiDatastream",
     table: "multidatastream",
     order: 2,
-    essai: [EextensionsType.multiDatastream],
-    lora: false,
+    extensions: [EextensionsType.multiDatastream],
     orderBy: `"id"`,
     count: makeCount("multidatastream"),
     columns: {
@@ -974,8 +937,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     singular: "MultiDatastreamObservedProperty",
     table: "multi_datastream_observedproperty",
     order: -1,
-    essai: [EextensionsType.multiDatastream],
-    lora: false,
+    extensions: [EextensionsType.multiDatastream],
     orderBy: `"multidatastream_id"`,
     count: makeCount("multi_datastream_observedproperty"),
     columns: {
@@ -1015,8 +977,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     singular: "Observation",
     table: "observation",
     order: 7,
-    essai: [EextensionsType.base],
-    lora: false,
+    extensions: [EextensionsType.base],
     orderBy: `"phenomenonTime"`,
     count: makeCount("observation"),
     columns: {
@@ -1160,8 +1121,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     singular: "HistoricalObservation",
     table: "historical_observation",
     order: -1,
-    essai: [EextensionsType.base],
-    lora: false,
+    extensions: [EextensionsType.base],
     orderBy: `"id"`,
     count: makeCount("historical_observation"),
     columns: {
@@ -1220,8 +1180,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     singular: "ThingLocation",
     table: "thing_location",
     order: -1,
-    essai: [EextensionsType.base],
-    lora: false,
+    extensions: [EextensionsType.base],
     orderBy: `"thing_id"`,
     count: makeCount("thing_location"),
     columns: {
@@ -1260,8 +1219,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     singular: "Decoder",
     table: "decoder",
     order: 12,
-    essai: [EextensionsType.lora],
-    lora: true,
+    extensions: [EextensionsType.lora],
     orderBy: `"id"`,
     count: makeCount("decoder"),
     columns: {
@@ -1333,8 +1291,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     singular: "Lora",
     table: "lora",
     order: 11,
-    essai: [EextensionsType.lora],
-    lora: true,
+    extensions: [EextensionsType.lora],
     orderBy: `"id"`,
     count: makeCount("lora"),
     columns: {
@@ -1451,8 +1408,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     table: "logs",
     order: -1,
     canPost: true,
-    essai: [EextensionsType.logger],
-    lora: true,
+    extensions: [EextensionsType.logger],
     orderBy: `"date DESC"`,
     count: makeCount("logs"),
     columns: {
@@ -1536,8 +1492,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     table: "user",
     order: 21,
     canPost: true,
-    essai: [EextensionsType.admin],
-    lora: true,
+    extensions: [EextensionsType.admin],
     orderBy: `"name"`,
     count: makeCount("user"),
     columns: {
@@ -1611,93 +1566,12 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     relations: {},
   },
 
-  // Logs: {
-  //     name: "Logs",
-  //     singular: "Log_request",
-  //     table: "log_request",
-  //     order: 22,
-  //     canPost: true,
-  //     essai:[EextensionsType.logger, EextensionsType.admin],
-  //     lora: true,
-  //     orderBy: `"date DESC"`,
-  //     count: makeCount("log_request"),
-  //     columns: {
-  //         id: {
-  //             create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-  //             columnAlias() {return makeIDAlias("log_request");},
-  //             type : "number"
-  //         },
-  //         entityid: {
-  //             create: "BIGINT",
-  //             columnAlias() {return `"entityid"`;},
-  //             type : "number"
-  //         },
-  //         replayid: {
-  //             create: "BIGINT",
-  //             columnAlias() {return `"replayid"`;},
-  //             type : "number"
-  //         },
-  //         date: {
-  //             create: "timestamptz DEFAULT CURRENT_TIMESTAMP",
-  //             columnAlias() {return `"date"`;},
-  //             type : "date"
-  //         },
-  //         user_id: {
-  //             create: "BIGINT",
-  //             columnAlias() {return `"user_id"`;},
-  //             type : "number"
-  //         },
-  //         method: {
-  //             create: "text",
-  //             columnAlias() {return `"method"`;},
-  //             type : "text"
-  //         },
-  //         code: {
-  //             create: "INT",
-  //             columnAlias() {return `"code"`;},
-  //             type : "number"
-  //         },
-  //         url: {
-  //             create: "text NOT NULL",
-  //             columnAlias() {return `"url"`;},
-  //             type : "text"
-  //         },
-  //         datas: {
-  //             create: "jsonb NULL",
-  //             columnAlias() {return `"datas"`;},
-  //             type : "json"
-  //         },
-  //         port: {
-  //             create: "INT NULL",
-  //             columnAlias() {return `"port"`;},
-  //             type : "number"
-  //         },
-  //         database: {
-  //             create: "text NULL",
-  //             columnAlias() {return `"database"`;},
-  //             type : "text"
-  //         },
-  //         return: {
-  //             create: "text NULL",
-  //             columnAlias() {return `"return"`;},
-  //             type : "json"
-  //         },
-  //         error: {
-  //             create: "text NULL",
-  //             columnAlias() {return `"error"`;},
-  //             type : "text"
-  //         },
-  //     },
-  //     relations: {}
-  // },
-
   Configs: {
     name: "Configs",
     singular: "Config",
-    table: "config",
+    table: "",
     order: -1,
-    essai: [EextensionsType.logger, EextensionsType.admin],
-    lora: false,
+    extensions: [EextensionsType.logger, EextensionsType.admin],
     orderBy: `"name"`,
     count: makeCount("config"),
     columns: {},
@@ -1712,8 +1586,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     singular: "CreateObservation",
     table: "",
     order: 0,
-    essai: [EextensionsType.base],
-    lora: false,
+    extensions: [EextensionsType.base],
     orderBy: "",
     count: "",
     columns: {},
@@ -1728,8 +1601,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     singular: "CreateFile",
     table: "",
     order: 0,
-    essai: [EextensionsType.base],
-    lora: false,
+    extensions: [EextensionsType.base],
     orderBy: "",
     count: "",
     columns: {},
@@ -1747,15 +1619,6 @@ export const _DBFILTERED = (input: koa.Context | string[]) =>
         Object.entries(_DB).filter(([k, v]) => input.includes(k))
       )
     : Object.fromEntries(
-        Object.entries(_DB).filter(
-          ([k, v]) =>
-            input._config.entities.includes(k) ||
-            (_DB[k].essai.includes(EextensionsType.logger) &&
-              input._user.id > 0)
-        )
+        Object.entries(_DB).filter( ([k, v]) => input._config.entities.includes(k) || (_DB[k].extensions.includes(EextensionsType.logger) && input._user.id > 0) )
       );
-export const _DBADMIN = Object.fromEntries(
-  Object.entries(_DB).filter(([k, v]) =>
-    v.essai.includes(EextensionsType.admin)
-  )
-);
+export const _DBADMIN = Object.fromEntries( Object.entries(_DB).filter(([k, v]) => v.extensions.includes(EextensionsType.admin) ) );

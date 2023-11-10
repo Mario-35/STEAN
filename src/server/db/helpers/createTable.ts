@@ -6,16 +6,12 @@
  *
  */
 
-import { executeSql } from ".";
 import { serverConfig } from "../../configuration";
+import { _OK } from "../../constants";
 import { Logs } from "../../logger";
 import { Ientity, IKeyString } from "../../types";
 
-export const createTable = async (
-  configName: string,
-  tableEntity: Ientity,
-  doAfter: string | undefined
-): Promise<IKeyString> => {
+export const createTable = async ( configName: string, tableEntity: Ientity, doAfter: string | undefined ): Promise<IKeyString> => {
   if (!tableEntity) return {};
 
   const space = 5;
@@ -29,17 +25,7 @@ export const createTable = async (
     Logs.error("connection Error");
     return { error: "connection Error" };
   }
-
-  // create postgis
-   
-  returnValue[`${tab()}Create postgis`] = await executeSql(configName,"CREATE EXTENSION IF NOT EXISTS postgis;")
-    .then(() => "✔")
-    .catch((error: Error) => error.message);
-
-  returnValue[`${tab()}Create tablefunc`] = await executeSql(configName,"CREATE EXTENSION IF NOT EXISTS tablefunc;")
-    .then(() => "✔")
-    .catch((error: Error) => error.message);
-
+  
   Object.keys(tableEntity.columns).forEach((column) => {
     if (tableEntity.columns[column].create.trim() != "")
       tabInsertion.push(`"${column}" ${tableEntity.columns[column].create}`);
@@ -57,8 +43,8 @@ export const createTable = async (
 
   if (tableEntity.table.trim() != "")
     returnValue[String(`Create table ${tableEntity.table}`)] =
-      await executeSql(configName,`CREATE TABLE "${tableEntity.table}" (${insertion});`)
-        .then(() => "✔")
+    await serverConfig.db(configName).unsafe(`CREATE TABLE "${tableEntity.table}" (${insertion});`)
+        .then(() => _OK)
         .catch((error: Error) => error.message);
 
   const indexes = tableEntity.indexes;
@@ -72,33 +58,33 @@ export const createTable = async (
 
   if (tabTemp.length > 0)
     returnValue[`${tab()}Create indexes for ${tableEntity.name}`] =
-      await executeSql(configName,tabTemp.join(";"))
-        .then(() => "✔")
+    await serverConfig.db(configName).unsafe(tabTemp.join(";"))
+        .then(() => _OK)
         .catch((error: Error) => error.message);
 
   // CREATE CONSTRAINTS
   if (tableEntity.constraints && tabConstraints.length > 0)
     returnValue[`${tab()}Create constraints for ${tableEntity.table}`] =
-      await executeSql(configName,tabConstraints.join(" "))
-        .then(() => "✔")
+      await serverConfig.db(configName).unsafe(tabConstraints.join(" "))
+        .then(() => _OK)
         .catch((error: Error) => error.message);
 
   // CREATE SOMETHING AFTER
   if (tableEntity.after) {
     if (tableEntity.after.toUpperCase().startsWith("INSERT"))
       returnValue[`${tab()}Something to do after for ${tableEntity.table}`] =
-        await executeSql(configName,tableEntity.after)
-          .then(() => "✔")
+      await serverConfig.db(configName).unsafe(tableEntity.after)
+          .then(() => _OK)
           .catch((error: Error) => {
-            console.log(error);
+            Logs.error(error);
             return error.message;
           });
   }
 
   // CREATE SOMETHING AFTER (migration)
   if (doAfter) {
-    returnValue[`${tab()} doAfter ${tableEntity.table}`] = await executeSql(configName,doAfter)
-      .then(() => "✔")
+    returnValue[`${tab()} doAfter ${tableEntity.table}`] = await serverConfig.db(configName).unsafe(doAfter)
+      .then(() => _OK)
       .catch((error: Error) => error.message);
   }
 

@@ -17,8 +17,8 @@ export const getAuthenticatedUser = async (
 ): Promise<Iuser | undefined> => {
   const token = decodeToken(ctx);
   if (token && token.id > 0) {
-    const user = await userAccess.getSingle(String(token.id));
-    if (token.password.match(decrypt(user.password)) !== null) {
+    const user = await userAccess.getSingle(String(token.id));    
+    if (user && token.password.match(decrypt(user["password"])) !== null) {
       return Object.freeze(user);
     }
   }

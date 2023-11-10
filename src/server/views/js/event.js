@@ -269,8 +269,6 @@ function addToResultList(key, value, plus) {
 
 
 function prepareForm() {
-	console.log("============> prepareForm");
-	console.log(importFile);
 	if (importFile === true) {
 		const text = jsonDatas.innerText.replace(/[^\x00-\x7F]/g, '');
 		datas.innerText = text;

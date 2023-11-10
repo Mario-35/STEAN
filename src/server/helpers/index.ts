@@ -7,7 +7,6 @@
  */
 
 import koa from "koa";
-console.log(process.env.NODE_ENV);
 
 export const removeQuotes = (input: string): string => input.replace(/['"]+/g, "");
 export const isTest = () => process.env.NODE_ENV?.trim() === "test" || false;

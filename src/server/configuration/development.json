@@ -21,9 +21,7 @@
         "apiVersion": "v1.0",
         "date_format": "DD/MM/YYYY HH24:MI:SS",
         "webSiteDoc": "https://api.geosas.fr/test/",
-        "alias": "adam,mario",
-        "lora": true,
-        "multiDatastream": true
+        "alias": "adam,mario"
     },   
     "lora": {
         "name": "lora",
@@ -43,26 +41,7 @@
         "forceHttps": false,
         "alias": [],
         "extensions": [ "multiDatastream", "lora", "logs" ]
-    },
-    "agrhys": {
-        "name": "agrhys",
-        "port": 8029,
-        "pg": {
-          "host": "localhost",
-          "port": 5432,
-          "user": "sensorapi",
-          "password": "mario29",
-          "database": "agrhys",
-          "retry": 2
-        },
-        "apiVersion": "v1.0",
-        "date_format": "DD/MM/YYYY HH24:MI:SS",
-        "webSite": "no web site",
-        "nb_page": 200,
-        "forceHttps": false,
-        "alias": [],
-        "extensions": [ "multiDatastream" ]
-      }
+    }
 }
 
 

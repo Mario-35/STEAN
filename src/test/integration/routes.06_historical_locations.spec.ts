@@ -29,10 +29,10 @@ import {
     nbColor
 } from "./constant";
 import { server } from "../../server/index";
-import { dbTest } from "../dbTest";
 import { _DB } from "../../server/db/constants";
 import { Ientity } from "../../server/types";
 import { testsKeys as locations_testsKeys } from "./routes.05_locations.spec";
+import { count, executeQuery, last } from "./executeQuery";
 
 const testsKeys = ["@iot.selfLink", "@iot.id", "Things@iot.navigationLink", "Locations@iot.navigationLink", "time"];
 
@@ -87,13 +87,11 @@ describe("endpoint : HistoricalLocations", () => {
                 apiSuccess: ["{number} id @iot.id", "{relation} selfLink @iot.selfLink", ...success]
             };
 
-            dbTest(entity.table)
-                .count()
-                .then((result) => {
+            executeQuery(count(entity.table)).then((result) => {
                     chai.request(server)
                         .get(`/test${infos.apiExample.http}`)
                         .end((err, res) => {
-                            const nb = Number(result[0]["count"]) > 200 ? 200 : Number(result[0]["count"]);
+                            const nb = result["count"] > 200 ? 200 : result["count"];
                             should.not.exist(err);
                             res.status.should.equal(200);
                             res.type.should.equal("application/json");
@@ -273,11 +271,7 @@ describe("endpoint : HistoricalLocations", () => {
 
     describe(`{patch} ${entity.name} ${nbColorTitle}[10.3]`, () => {
         it(`Return updated ${entity.name} ${nbColor}[10.3.1]`, (done) => {
-            dbTest(entity.table)
-                .select("*")
-                .orderBy("id")
-                .then((locations) => {
-                    const locationObject = locations[locations.length - 1];
+            executeQuery(last(entity.table)).then((locations) => {
                     const datas = {
                         "time": "2015-02-07T19:22:11.297Z"
                     };
@@ -287,7 +281,7 @@ describe("endpoint : HistoricalLocations", () => {
                         apiDescription: `Patch a ${entity.singular}.${showHide(`Patch${entity.name}`, apiInfos["10.3"])}`,
                         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_2",
                         apiExample: {
-                            http: `/v1.0/${entity.name}(${locationObject.id})`,
+                            http: `/v1.0/${entity.name}(${locations["id"]})`,
                             curl: defaultPatch("curl", "KEYHTTP", datas),
                             javascript: defaultPatch("javascript", "KEYHTTP", datas),
                             python: defaultPatch("python", "KEYHTTP", datas)
@@ -331,19 +325,14 @@ describe("endpoint : HistoricalLocations", () => {
 
     describe(`{delete} ${entity.name} ${nbColorTitle}[10.4]`, () => {
         it(`Delete ${entity.name} return no content with code 204 ${nbColor}[10.4.1]`, (done) => {
-            dbTest(entity.table)
-                .select("*")
-                .orderBy("id")
-                .then((locations) => {
-                    const locationObject = locations[locations.length - 1];
-                    const lengthBeforeDelete = locations.length;
-                    const infos = {
+            executeQuery(`SELECT (SELECT count(id) FROM "${entity.table}")::int as count, (${last(entity.table)})::int as id `).then((beforeDelete) => {                    
+                const infos = {
                         api: `{delete} ${entity.name} Delete one`,
                         apiName: `Delete${entity.name}`,
                         apiDescription: `Delete a ${entity.singular}.${showHide(`Delete${entity.name}`, apiInfos["10.4"])}`,
                         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_3",
                         apiExample: {
-                            http: `/v1.0/${entity.name}(${locationObject.id})`,
+                            http: `/v1.0/${entity.name}(${beforeDelete["id"]})`,
                             curl: defaultDelete("curl", "KEYHTTP"),
                             javascript: defaultDelete("javascript", "KEYHTTP"),
                             python: defaultDelete("python", "KEYHTTP")
@@ -355,11 +344,8 @@ describe("endpoint : HistoricalLocations", () => {
                         .end((err: Error, res: any) => {
                             should.not.exist(err);
                             // res.status.should.equal(204);
-                            dbTest(entity.table)
-                                .select("*")
-                                .orderBy("id")
-                                .then((updatedLocations) => {
-                                    updatedLocations.length.should.eql(lengthBeforeDelete - 1);
+                            executeQuery(`SELECT count(id)::int FROM "${entity.table}"`).then((afterDelete) => {                                 
+                                afterDelete["count"].should.eql(beforeDelete["count"] - 1);
                                     addToApiDoc({ ...infos, result: limitResult(res) });
                                     done();
                                 });
@@ -377,7 +363,6 @@ describe("endpoint : HistoricalLocations", () => {
                     res.type.should.equal("application/json");
                     docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4).replace(Number.MAX_SAFE_INTEGER.toString(), "1");
                     generateApiDoc(docs, `apiDoc${entity.name}.js`);
-                    
                     done();
                 });
         });

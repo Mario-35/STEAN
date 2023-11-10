@@ -20,5 +20,4 @@ export const queryGraphDatastream = (table: string, id: string | bigint, query: 
       id = ${id}
   ) AS infos, 
   STRING_AGG(concat, ',') AS datas 
-FROM 
-  (${query}) AS nop`;
+FROM  (${query}) AS nop`;

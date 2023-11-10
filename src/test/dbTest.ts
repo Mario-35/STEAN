@@ -1,28 +1,13 @@
 /**
  * Knex.js database sensorthings client and query builder for PostgreSQL.
  *
- * @see https://knexjs.org/
+ * @see https://github.com/porsager/postgres
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  */
 
-import knex from "knex";
+import postgres from "postgres";
 import { TEST } from "../server/constants";
-const serverConfig = require("../server/configuration/test.json");
+const config = require("../server/configuration/test.json");
 
-export const dbTest = knex({
-    client: "pg",
-    connection: {
-        host: serverConfig[TEST].pg.host,
-        user: serverConfig[TEST].pg.user,
-        password: serverConfig[TEST].pg.password,
-        database: "test",
-        port: serverConfig[TEST].pg.port
-    },
-    pool: {
-        min: 0,
-        log: (err: string, level: string) => {
-            console.log(`${level} : ${err}`);
-        }
-    }
-});
+export const dbTest = postgres(`postgres://${config["test"].pg.user}:${config["test"].pg.password}@${config["test"].pg.host}:${config["test"].pg.port || 5432}/${TEST}`,{});

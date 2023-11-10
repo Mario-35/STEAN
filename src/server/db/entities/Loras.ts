@@ -62,7 +62,7 @@ export class Loras extends Common {
 
   async redoAll() {
     Logs.whereIam();
-    executeSql(this.ctx._config.name, `SELECT date, datas FROM "log_request" ORDER BY date ASC`)
+    executeSql(this.ctx._config.name, `SELECT date, datas FROM "log_request" ORDER BY date ASC`, true)
       .then(async (res: object) => {
         await asyncForEach(res["rows"], async (row: object) => {
           try {
@@ -126,16 +126,11 @@ export class Loras extends Common {
     }
 
     // search for frame and decode payload if found
-    if (notNull(this.stean["frame"])) {
-      const temp = await decodeloraDeveuiPayload(
-        this.ctx._config.name,
-        this.stean["deveui"],
-        this.stean["frame"]
-      );
+    if (notNull(this.stean["frame"])) { const temp = await decodeloraDeveuiPayload( this.ctx._config.name, this.stean["deveui"], this.stean["frame"] );
       if (temp.error) {
         if (silent) return this.createReturnResult({ body: temp.error });
         else this.ctx.throw(400, { code: 400, detail: temp.error });
-      }
+      }      
       this.stean["decodedPayload"] = temp["result"];
       if (this.stean["decodedPayload"].valid === false)
         this.ctx.throw(400, { code: 400, detail: errors.InvalidPayload });
@@ -143,17 +138,13 @@ export class Loras extends Common {
 
     const searchMulti = queryMultiDatastreamFromDeveui(this.stean["deveui"]);
 
-    const tempSql = await executeSql(this.ctx._config.name, 
-      `SELECT id, _default_foi, thing_id, ${searchMulti}`
-    );
-    const multiDatastream = tempSql["rows"][0];
+    const multiDatastream = await executeSql(this.ctx._config.name, `SELECT id, _default_foi, thing_id, ${searchMulti}`, true);
+    
     let datastream = undefined;
 
     if (!multiDatastream) {
-      const tempSql = await executeSql(this.ctx._config.name, 
-        `SELECT id, _default_foi, thing_id FROM "${this.DBST.Datastreams.table}" WHERE "${this.DBST.Datastreams.table}".id = (SELECT "${this.DBST.Loras.table}"."datastream_id" FROM "${this.DBST.Loras.table}" WHERE "${this.DBST.Loras.table}"."deveui" = '${this.stean["deveui"]}')`
-      );
-      datastream = tempSql["rows"][0];
+      const tempSql = await executeSql(this.ctx._config.name, `SELECT id, _default_foi, thing_id FROM "${this.DBST.Datastreams.table}" WHERE "${this.DBST.Datastreams.table}".id = (SELECT "${this.DBST.Loras.table}"."datastream_id" FROM "${this.DBST.Loras.table}" WHERE "${this.DBST.Loras.table}"."deveui" = '${this.stean["deveui"]}')`, true);
+      datastream = tempSql[0];
       if (!datastream) {
         const errorMessage = errors.noStreamDeveui + this.stean["deveui"];
         if (silent) return this.createReturnResult({ body: errorMessage });
@@ -162,10 +153,7 @@ export class Loras extends Common {
     }
     this.stean["formatedDatas"] = {};
 
-    if (
-      this.stean["decodedPayload"] &&
-      notNull(this.stean["decodedPayload"]["datas"])
-    )
+    if ( this.stean["decodedPayload"] && notNull(this.stean["decodedPayload"]["datas"]) )
       Object.keys(this.stean["decodedPayload"]["datas"]).forEach((key) => {
         this.stean["formatedDatas"][key.toLowerCase()] =
           this.stean["decodedPayload"]["datas"][key];
@@ -191,7 +179,7 @@ export class Loras extends Common {
     if (multiDatastream) {
       Logs.debug("multiDatastream", multiDatastream);
       const listOfSortedValues: { [key: string]: number | null } = {};
-      multiDatastream.keys.forEach((element: string) => {
+      multiDatastream["keys"].forEach((element: string) => {
         listOfSortedValues[element] = null;
         const searchStr = element
           .toLowerCase()
@@ -222,7 +210,7 @@ export class Loras extends Common {
         Object.values(listOfSortedValues).filter((word) => word != null)
           .length < 1
       ) {
-        const errorMessage = `${errors.dataNotCorresponding} [${multiDatastream.keys}]`;
+        const errorMessage = `${errors.dataNotCorresponding} [${multiDatastream["keys"]}]`;
         if (silent) return this.createReturnResult({ body: errorMessage });
         else this.ctx.throw(400, { code: 400, detail: errorMessage });
       }
@@ -237,13 +225,13 @@ export class Loras extends Common {
 
         Logs.debug(
           "data : Keys",
-          `${tempLength} : ${multiDatastream.keys.length}`
+          `${tempLength} : ${multiDatastream["keys"].length}`
         );
-        if (tempLength != multiDatastream.keys.length) {
+        if (tempLength != multiDatastream["keys"].length) {
           const errorMessage = msg(
             errors.sizeListKeys,
             String(tempLength),
-            multiDatastream.keys.length
+            multiDatastream["keys"].length
           );
           if (silent) return this.createReturnResult({ body: errorMessage });
           else this.ctx.throw(400, { code: 400, detail: errorMessage });
@@ -296,15 +284,16 @@ export class Loras extends Common {
                   "(SELECT observation1.COLUMN FROM observation1), "
                 )} (SELECT multidatastream1.id FROM multidatastream1) AS multidatastream, (SELECT multidatastream1.thing_id FROM multidatastream1) AS thing)
                  SELECT coalesce(json_agg(t), '[]') AS result FROM result1 AS t`;
-      return await executeSql(this.ctx._config.name, sql).then(async (res: object) => {
-        const tempResult = res["rows"][0].result[0];
-        if (tempResult.id != null) {
+      return await executeSql(this.ctx._config.name, sql, true).then(async (res: object) => {
+        // TODO MULTI 
+        const tempResult = res[0][0];
+        if (tempResult.id != null) {          
           const result = {
             "@iot.id": tempResult.id,
             "@iot.selfLink": `${this.ctx._odata.options.rootBase}Observations(${tempResult.id})`,
             phenomenonTime: `"${tempResult.phenomenonTime}"`,
             resultTime: `"${tempResult.resultTime}"`,
-            result: res["rows"][0].result[0]["result"]["value"],
+            result: tempResult["result"]["value"],
           };
 
           Object.keys(this.DBST["Observations"].relations).forEach((word) => {
@@ -338,7 +327,8 @@ export class Loras extends Common {
       const searchFOI = await executeSql(this.ctx._config.name, 
         getFeatureOfInterest
           ? `SELECT coalesce((SELECT "id" FROM "featureofinterest" WHERE "id" = ${getFeatureOfInterest}), ${getFeatureOfInterest}) AS id `
-          : `SELECT id FROM ${this.DBST.FeaturesOfInterest.table} WHERE id =${datastream._default_foi}`
+          : `SELECT id FROM ${this.DBST.FeaturesOfInterest.table} WHERE id =${datastream._default_foi}`,
+          true
       );
 
       if (searchFOI["rows"].length < 1) {
@@ -402,8 +392,8 @@ export class Loras extends Common {
                     )} (SELECT datastream1.id from datastream1) AS datastream, (select datastream1.thing_id from datastream1) AS thing)
                 SELECT coalesce(json_agg(t), '[]') AS result FROM result1 AS t`;
 
-      return await executeSql(this.ctx._config.name, sql).then(async (res: object) => {
-        const tempResult = res["rows"][0].result[0];
+      return await executeSql(this.ctx._config.name, sql, true).then(async (res: object) => {
+        const tempResult = res["rows"].result[0];
         if (tempResult.id != null) {
           const result = {
             "@iot.id": tempResult.id,

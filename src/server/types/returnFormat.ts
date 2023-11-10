@@ -12,8 +12,7 @@ import { PgVisitor } from "../odata";
  export interface IreturnFormat {
     name: string; 
     type: string; 
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    format(input: string | Object, ctx?: koa.Context): string | Object;
+    format(input: string | object, ctx?: koa.Context): string | object;
     generateSql(input: PgVisitor): string ;
 }
 

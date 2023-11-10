@@ -5,38 +5,19 @@
  * @author mario.adam@inrae.fr
  *
  */
-import fs from "fs";
-import {
-  ADMIN,
-  API_VERSION,
-  APP_NAME,
-  APP_VERSION,
-  DEFAULT_DB,
-  NODE_ENV,
-  setDebug,
-  setReady,
-  TIMESTAMP,
-  _DEBUG,
-} from "../constants";
-import { Logs } from "../logger";
-import {
-  asyncForEach,
-  decrypt,
-  encrypt,
-  hidePasswordIn,
-  isTest,
-  unikeList,
-} from "../helpers";
-import util from "util";
-import { app } from "..";
-import knex, { Knex } from "knex";
-import { createDatabase } from "../db/helpers";
-import pg from "pg";
-import update from "./update.json";
+import { ADMIN, API_VERSION, APP_NAME, APP_VERSION, DEFAULT_DB, NODE_ENV, setDebug, setReady, TIMESTAMP, _DEBUG, _NOTOK, _OK, _WEB, } from "../constants";
+import { asyncForEach, decrypt, hidePasswordIn, isTest, unikeList, } from "../helpers";
+import { IconfigFile, IdbConnection } from "../types";
 import { errors, infos, msg } from "../messages";
-import { IconfigFile, IdbConnection, Iuser } from "../types";
+import { createDatabase} from "../db/helpers";
 import { _DB } from "../db/constants";
+import { app } from "..";
+import { Logs } from "../logger";
 import { EextensionsType } from "../enums";
+import fs from "fs";
+import util from "util";
+import update from "./update.json";
+import postgres from "postgres";
 
 // class to create configs environements
 class Configuration {
@@ -56,6 +37,22 @@ class Configuration {
     });
   }
 
+  async executeQueries(title: string, boot?: boolean): Promise<void> {
+    try {
+      await asyncForEach(
+        Object.keys(Configuration.queries),
+        async (connectName: string) => {
+          await this.db(connectName).begin(sql => {
+            Configuration.queries[connectName].forEach(async (query: string) => {await sql.unsafe(query);});
+            boot && boot === true ? Logs.booting(connectName, _OK) : Logs.debug(connectName, _NOTOK);
+          });
+        }
+      );
+    } catch (error) {
+      Logs.error(error);
+    }
+  }
+
   hashCode(s: string): number {
     return s.split("").reduce((a, b) => {
       a = (a << 5) - a + b.charCodeAt(0);
@@ -64,45 +61,37 @@ class Configuration {
   }
   
   // return the connection
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  db(name: string): Knex<any, unknown[]> {
+  db(name: string): postgres.Sql<Record<string, unknown>> {
     if (!this.configs[name].db) this.createDbConnectionFromConfigName(name);
     return (
       this.configs[name].db || this.createDbConnection(this.configs[name].pg)
     );
   }
 
-  dbAdminFor(name: string): Knex<any, unknown[]> {
-    return knex({
-      client: "pg",
-      connection: {
-        ...this.configs[name].pg,
-        database: DEFAULT_DB,
-        application_name: `${APP_NAME} ${APP_VERSION}`,
-      },
-      pool: { min: 0, max: 7 },
-      debug: false,
-    });
+  dbAdminFor(name: string): postgres.Sql<Record<string, unknown>> {
+    const input = this.configs[name].pg;
+    return postgres(`postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${DEFAULT_DB}`,
+    {
+      // debug: true,
+      connection           : {
+        application_name   : `${APP_NAME} ${APP_VERSION}`,
+      }
+    }
+  );
   }
 
-  // return knex connection from Connection
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private createDbConnection(input: IdbConnection): Knex<any, unknown[]> {
-    return knex({
-      client: "pg",
-      connection: {
-        ...input,
-        application_name: `${APP_NAME} ${APP_VERSION}`,
+  // return postgres.js connection from Connection
+  private createDbConnection(input: IdbConnection): postgres.Sql<Record<string, unknown>> {
+    return postgres(`postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${input.database}`, {
+      // debug: true,
+      connection           : {
+        application_name   : `${APP_NAME} ${APP_VERSION}`,
       },
-      pool: { min: 0, max: 7 },
+    },
+  );
 
-      debug: false,
-    });
   }
-
-  // create, affect and return kenx connection from and in config by is name
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  createDbConnectionFromConfigName(input: string): Knex<any, unknown[]> {
+  createDbConnectionFromConfigName(input: string): postgres.Sql<Record<string, unknown>> {
     const temp = this.createDbConnection(this.configs[input].pg);
     this.configs[input].db = temp;
     return temp;
@@ -118,35 +107,10 @@ class Configuration {
     Configuration.queries = {};
   }
 
-  async executeQueries(title: string, boot?: boolean): Promise<void> {
-    try {
-      await asyncForEach(
-        Object.keys(Configuration.queries),
-        async (connectName: string) => {
-          await this.db(connectName)
-            .raw(Configuration.queries[connectName].join(";"))
-            .then(() => {
-              Configuration.queries[connectName] = [];
-              boot && boot === true
-                ? Logs.booting(connectName, "✔")
-                : Logs.debug(connectName, "✔");
-            })
-            .catch((err: Error) => Logs.error(err.message));
-        }
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
   // initialisation serve NOT IN TEST
   async afterAll(): Promise<void> {
     // Updates database after init
-    if (
-      update &&
-      update["afterAll"] &&
-      Object.entries(update["afterAll"]).length > 0
-    ) {
+    if ( update && update["afterAll"] && Object.entries(update["afterAll"]).length > 0 ) {
       Logs.head("afterAll");
       this.clearQueries();
       try {
@@ -159,15 +123,11 @@ class Configuration {
           });
         await this.executeQueries("afterAll", true);
       } catch (error) {
-        console.log(error);
+        Logs.error(error);
       }
     }
 
-    if (
-      update &&
-      update["decoders"] &&
-      Object.entries(update["decoders"]).length > 0
-    ) {
+    if ( update && update["decoders"] && Object.entries(update["decoders"]).length > 0 ) {
       Logs.head("decoders");
       this.clearQueries();
       Object.keys(this.configs)
@@ -179,14 +139,17 @@ class Configuration {
         .forEach((connectName: string) => {
           Object.keys(update["decoders"]).forEach((name: string) => {
             const hash = this.hashCode(update["decoders"][name]);
-            this.addToQueries(
-              connectName,
-              `update decoder set code='${update["decoders"][name]}', hash = '${hash}' where name = '${name}' and hash <> '${hash}' `
-            );
+            this.addToQueries( connectName, `update decoder set code='${update["decoders"][name]}', hash = '${hash}' where name = '${name}' and hash <> '${hash}' ` );
           });
         });
       await this.executeQueries("decoders", true);
     }
+    Object.keys(this.configs).forEach((connectName: string) => this.db(connectName).unsafe("vacuum").then(
+      () => {
+        Logs.booting(connectName, `Vacuum ${_OK}️`);
+      }).catch(() => {
+        Logs.booting(connectName, `Vacuum ${_NOTOK}`);
+      }));
   }
 
   // initialisation serve NOT IN TEST
@@ -204,7 +167,7 @@ class Configuration {
         try {
           await this.addToServer(key);
         } catch (error) {
-          console.log(error);
+          Logs.error(error);
           status = false;
         }
       }
@@ -233,44 +196,38 @@ class Configuration {
   }
 
   // create user in admin DB
-  private async createUser(connectName: string) {
-    const user: Iuser = {
-      username: this.configs[connectName].pg.user,
-      email: "default@email.com",
-      password: encrypt(this.configs[connectName].pg.password),
-      database: "all",
-      // database: this.configs[connectName].pg.database,
-      canPost: true,
-      canDelete: true,
-      canCreateUser: true,
-      canCreateDb: true,
-      superAdmin: false,
-      admin: true,
-    };
-    await this.db(ADMIN)
-      .table("user")
-      .count()
-      .where({ username: user.username })
-      .then(async (res: object) => {
-        // recreate if exist because if you change key encrypt have to change
-        if (res[0].count == 1) {
-          Logs.booting(infos.updateUser, `${user.username} for ${connectName}`);
-          await this.db(ADMIN)
-            .table("user")
-            .update(user)
-            .where({ username: user.username });
-        } else {
-          Logs.booting(
-            infos.createAdminUser,
-            `${user.username} for ${connectName}`
-          );
-          await this.db(ADMIN).table("user").insert(user);
-        }
-      })
-      .catch((err: Error) => {
-        Logs.error(err);
-      });
-  }
+  // private async createUser(connectName: string) {
+  //   const user: Iuser = {
+  //     username: this.configs[connectName].pg.user,
+  //     email: "default@email.com",
+  //     password: encrypt(this.configs[connectName].pg.password),
+  //     database: "all",
+  //     // database: this.configs[connectName].pg.database,
+  //     canPost: true,
+  //     canDelete: true,
+  //     canCreateUser: true,
+  //     canCreateDb: true,
+  //     superAdmin: false,
+  //     admin: true,
+  //   };
+  //   await executeSqlValues(ADMIN, `SELECT count(id) FROM "user" WHERE username = '${user.username}'`)
+  //     .then(async (res: object) => {
+  //       // recreate if exist because if you change key encrypt have to change
+  //       if (res[0].count == 1) {
+  //         Logs.booting(infos.updateUser, `${user.username} for ${connectName}`);
+  //         await executeSqlValues(ADMIN, `UPDATE "user" SET ${createUpdateValues(user, _DB.Users.name)} WHERE username = '${user.username}'`);
+  //       } else {
+  //         Logs.booting(
+  //           infos.createAdminUser,
+  //           `${user.username} for ${connectName}`
+  //         );
+  //         await executeSqlValues(ADMIN, `INSERT INTO "user" ${createInsertValues(user, _DB.Users.name)}`);
+  //       }
+  //     })
+  //     .catch((err: Error) => {
+  //       Logs.error(err);
+  //     });
+  // }
 
   // return config name from config name
   getConfigNameFromDatabase(input: string): string | undefined {
@@ -371,7 +328,7 @@ class Configuration {
           goodDbName === "admin" ? EextensionsType.admin : EextensionsType.base,
           EextensionsType.logger,
           ...extensions,
-        ].some((r) => _DB[e].essai.includes(r))
+        ].some((r) => _DB[e].extensions.includes(r))
       ),
       db: undefined,
     };
@@ -394,7 +351,7 @@ class Configuration {
       JSON.stringify(Configuration.jsonConfiguration, null, 4),
       (err) => {
         if (err) {
-          console.error(err);
+          Logs.error(err);
           return false;
         }
       }
@@ -408,8 +365,8 @@ class Configuration {
   async addToServer(key: string): Promise<boolean> {
     await this.isDbExist(key, true)
       .then(async (res: boolean) => {
-        await serverConfig.createUser(key);
-        Logs.bootingResult(`\x1b[37mDatabase => ${key}\x1b[39m on line`, res);
+        // await serverConfig.createUser(key);
+        Logs.bootingResult(`\x1b[37mDatabase => ${key}\x1b[39m on line`, res ? _WEB : _NOTOK);
         const port = this.configs[key].port;
         if (port > 0) {
           if (Configuration.ports.includes(port))
@@ -430,38 +387,17 @@ class Configuration {
       })
       .catch((error: Error) => {
         Logs.error(errors.unableFindCreate, this.configs[key].pg.database);
-        console.log(error);
+        Logs.error(error);
         process.exit(111);
       });
     return false;
-  }
-
-  // Wait postgres connection
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async waitConnection(
-    configName: string
-  ): Promise<Knex<any, unknown[]> | undefined> {
-    const connection = this.configs[configName].pg;
-    return await this.pgwait(connection).then(async (test) => {
-      if (test === true) {
-        return this.configs[configName]
-          ? await this.db(configName)
-              .raw("select 1+1 AS result")
-              .then(() => this.configs[configName].db)
-              .catch(() => undefined)
-          : undefined;
-      }
-    });
   }
 
   // test in boolean exist if not and create is true then create DB
   private async tryToCreateDB(connectName: string): Promise<boolean> {
     return await createDatabase(connectName)
       .then(async () => {
-        Logs.bootingResult(
-          `${infos.db} ${infos.create} [${this.configs[connectName].pg.database}]`,
-          "OK"
-        );
+        Logs.bootingResult( `${infos.db} ${infos.create} [${this.configs[connectName].pg.database}]`, _OK );
         this.createDbConnectionFromConfigName(connectName);
         return true;
       })
@@ -471,36 +407,22 @@ class Configuration {
       });
   }
 
-  private async isDbExist(
-    connectName: string,
-    create: boolean
-  ): Promise<boolean> {
+  private async isDbExist( connectName: string, create: boolean ): Promise<boolean> {
     Logs.booting(infos.dbExist, this.configs[connectName].pg.database);
-    return await this.db(connectName)
-      .raw("select 1+1 AS result")
+    return await this.db(connectName)`select 1+1 AS result`
       .then(async () => {
-        const listTempTables = await this.db(connectName).raw(
-          "SELECT array_agg(table_name) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'temp%';"
-        );
-        const tables = listTempTables.rows[0].array_agg;
-        if (tables)
+        const listTempTables = await this.db(connectName)`SELECT array_agg(table_name) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'temp%';`;
+        const tables = listTempTables[0]["array_agg"];
+        if (tables != null)
           Logs.bootingResult(
             `delete temp tables ==> \x1b[33m${connectName}\x1b[32m`,
-            await this.db(connectName)
-              .raw(`DROP TABLE ${tables.slice(0, -1).slice(1).split(",")}`)
-              .then(() => "✔")
+            await this.db(connectName).begin(sql => {
+              tables.forEach(async (table: string) => {await sql.unsafe(`DROP TABLE ${table}`);});
+            }).then(() => _OK)
               .catch((err: Error) => err.message)
           );
-        if (
-          update &&
-          update["beforeAll"] &&
-          Object.entries(update["beforeAll"]).length > 0
-        ) {
-          if (
-            update &&
-            update["beforeAll"] &&
-            Object.entries(update["beforeAll"]).length > 0
-          ) {
+        if ( update && update["beforeAll"] && Object.entries(update["beforeAll"]).length > 0 ) {
+          if ( update && update["beforeAll"] && Object.entries(update["beforeAll"]).length > 0 ) {
             Logs.head("beforeAll");
             try {
               Object.keys(this.configs)
@@ -512,7 +434,7 @@ class Configuration {
                 });
               await this.executeQueries("beforeAll", true);
             } catch (error) {
-              console.log(error);
+              Logs.error(error);
             }
           }
         }
@@ -532,33 +454,6 @@ class Configuration {
         } else Logs.error(err);
         return returnResult;
       });
-  }
-
-  // wait postgres connection
-  private async pgwait(options: IdbConnection): Promise<boolean> {
-    const pool = new pg.Pool({ ...options, database: DEFAULT_DB });
-    let passage = 1;
-
-    const connect = async (): Promise<boolean> => {
-      try {
-        await pool.query("SELECT 1");
-        Logs.bootingResult(
-          msg(infos.dbOnline, options.database || "none"),
-          TIMESTAMP()
-        );
-        await pool.end();
-        return true;
-      } catch (e) {
-        return false;
-      }
-    };
-    let testConnection = false;
-    const end = Number(Date.now()) + options.retry * 1000;
-    do {
-      testConnection = await connect();
-      passage += passage;
-    } while (testConnection === false && Number(Date.now()) < end);
-    return testConnection;
   }
 }
 

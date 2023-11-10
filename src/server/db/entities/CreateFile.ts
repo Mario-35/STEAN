@@ -6,32 +6,26 @@
  *
  */
 
-// TODOCLEAN
-
-import { Knex } from "knex";
 import koa from "koa";
 import { Common } from "./common";
 import { Logs } from "../../logger";
 import { IcsvColumn, IcsvFile, IreturnResult } from "../../types";
 import { createColumnHeaderName, executeSql } from "../helpers";
-import copyFrom from "pg-copy-streams";
-import fs from "fs";
 import { errors, infos, msg } from "../../messages/";
 import * as entities from "../entities/index";
 import { returnFormats } from "../../helpers";
+import { createReadStream } from 'fs';
+import { addAbortSignal } from 'stream';
 import { serverConfig } from "../../configuration";
+// const { finished } = require('node:stream/promises');
 
 export class CreateFile extends Common {
   constructor(ctx: koa.Context) {
     super(ctx);
   }
 
-  streamCsvFileInPostgreSqlFileInDatastream = async (
-    ctx: koa.Context,
-    paramsFile: IcsvFile
-  ): Promise<IreturnResult | undefined> => {
+  streamCsvFileInPostgreSqlFileInDatastream = async ( ctx: koa.Context, paramsFile: IcsvFile ): Promise<string | undefined> => {
     Logs.head("streamCsvFileInPostgreSqlFileInDatastream");
-    let returnValue: IreturnResult | undefined = undefined;
     const headers = await createColumnHeaderName(paramsFile.filename);
 
     if (!headers) {
@@ -89,7 +83,7 @@ export class CreateFile extends Common {
             ? returnValueError.body[0]
             : {};
           if (returnValueError.body)
-            await executeSql(ctx._config.name, `DELETE FROM "${this.DBST.Observations.table}" WHERE "datastream_id" = ${returnValueError.body["@iot.id"]}`);
+            await executeSql(ctx._config.name, `DELETE FROM "${this.DBST.Observations.table}" WHERE "datastream_id" = ${returnValueError.body["@iot.id"]}`, true);
           return returnValueError;
         }
       } finally {
@@ -97,111 +91,60 @@ export class CreateFile extends Common {
       }
     };
 
-    returnValue = await createDataStream();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-
-    // await executeSql(ctx._config.name, `CREATE TABLE public.${paramsFile.tempTable}(
-    //   id serial4 NOT NULL,
-    //   "date" varchar(255) NULL,
-    //   "hour" varchar(255) NULL,
-    //   value1 varchar(255) NULL,
-    //   CONSTRAINT ${paramsFile.tempTable}_pkey PRIMARY KEY (id)
-    // );`);
-    const knex = await serverConfig.db(ctx._config.name);
-
-    await knex.schema
-      .createTable(paramsFile.tempTable, (table: any) => {
-        table.increments("id").unsigned().notNullable().primary();
-        headers.forEach((value) => table.string(value));
-      })
-      .catch((err: Error) => ctx.throw(400, { detail: err.message }));
-
-    Logs.debug("Create Table", paramsFile.tempTable);
-
-    await new Promise<Knex.Transaction>((resolve, reject) => {
-      knex
-        .transaction(async (tx: Knex.Transaction) => {
-          const cleanup = (valid: boolean, err?: Error) => {
-            if (valid == true) tx.commit;
-            else tx.rollback;
-            if (err) reject(err);
-            resolve(tx);
-          };
-
-          const client = await tx.client
-            .acquireConnection()
-            .catch((err: Error) => reject(err));
-
-          const stream = client
-            // .query( copyFrom.from( `COPY ${paramsFile.tempTable} FROM STDIN WITH (FORMAT csv)`))
-            .query(
-              copyFrom.from(
-                `COPY ${paramsFile.tempTable} (${headers.join(
-                  ","
-                )}) FROM STDIN WITH (FORMAT csv, DELIMITER ';'${
-                  paramsFile.header
-                })`
-              )
-            )
-
-            .on("error", (err: Error) => {
-              Logs.error(errors.stream, err);
-              reject(err);
-            });
-
-          const fileStream = fs.createReadStream(paramsFile.filename);
-          fileStream.on("error", (err: Error) => {
-            Logs.error(errors.fileStream, err);
-            cleanup(false, err);
-          });
-
-          fileStream.on("end", async (tx: Knex.Transaction) => {
-            Logs.debug("COPY TO ", paramsFile.tempTable);
-            if (
-              returnValue &&
-              returnValue.body &&
-              returnValue.body["@iot.id"]
-            ) {
-              await client.query(
-                `INSERT INTO "${
-                  this.DBST.Observations.table
-                }" ("datastream_id", "phenomenonTime", "resultTime", "result") SELECT '${String(
-                  returnValue.body["@iot.id"]
-                )}', '2021-09-17T14:56:36+02:00', '2021-09-17T14:56:36+02:00', json_build_object('value',ROW_TO_JSON(p)) FROM (SELECT * FROM ${
-                  paramsFile.tempTable
-                }) AS p`
-              );
-              cleanup(true);
-              return returnValue;
-            }
-          });
-          fileStream.pipe(stream);
+    const returnValue = await createDataStream();
+    
+      const controller = new AbortController();
+      const readable = createReadStream(paramsFile.filename);
+      const cols:string[] = [];
+      headers.forEach((value) => cols.push(`"${value}" varchar(255) NULL`));
+  
+      const createTable = `CREATE TABLE public."${paramsFile.tempTable}" (
+        id serial4 NOT NULL,
+        "date" varchar(255) NULL,
+        "hour" varchar(255) NULL,
+        ${cols}, 
+        CONSTRAINT ${paramsFile.tempTable}_pkey PRIMARY KEY (id));`;
+        await executeSql(ctx._config.name, createTable, true);
+      const writable = serverConfig.db(ctx._config.name).unsafe(`COPY ${paramsFile.tempTable}  (${headers.join( "," )}) FROM STDIN WITH(FORMAT csv, DELIMITER ';'${ paramsFile.header })`).writable();
+      return await new Promise<string | undefined>(async (resolve, reject) => {
+      
+      readable
+        .pipe(addAbortSignal(controller.signal, await writable))
+        .on('close', async () => {
+          const sql = `INSERT INTO "${ this.DBST.Observations.table }" 
+                    ("datastream_id", "phenomenonTime", "resultTime", "result") 
+                    SELECT '${String(
+                      returnValue.body["@iot.id"]
+                    )}', '2021-09-17T14:56:36+02:00', '2021-09-17T14:56:36+02:00', json_build_object('value',ROW_TO_JSON(p)) FROM (SELECT * FROM ${
+                      paramsFile.tempTable
+                    }) AS p`;
+          await serverConfig.db(this.ctx._config.name).unsafe(sql);          
+          resolve(returnValue["body"]);
         })
-        .catch((err: Error) => reject(err));
-    });
-    return returnValue;
+        .on('error', (err) => {
+          Logs.error('ABORTED-STREAM');
+          reject(err);
+        });
+        
+      // await finished(stream);
+      });
   };
 
   async add(dataInput: object): Promise<IreturnResult | undefined> {
     Logs.head(msg(infos.classConstructor, this.constructor.name, `add`));
     if (this.ctx._datas) {
       const myColumns: IcsvColumn[] = [];
-      const paramsFile: IcsvFile = {
-        tempTable: `temp${Date.now().toString()}`,
-        filename: this.ctx._datas["file"],
-        columns: myColumns,
-        header: ", HEADER",
-        stream: [], // only for interface
-      };
-      const temp = await this.streamCsvFileInPostgreSqlFileInDatastream(
-        this.ctx,
-        paramsFile
-      );
-      return this.createReturnResult({
-        body: temp?.body,
-      });
+        return this.createReturnResult({
+          body: await this.streamCsvFileInPostgreSqlFileInDatastream( this.ctx, {
+            tempTable: `temp${Date.now().toString()}`,
+            filename: this.ctx._datas["file"],
+            columns: myColumns,
+            header: ", HEADER",
+            stream: [], // only for interface
+          }),
+        });      
     } else {
-      console.log("fini else");
+      Logs.error("No Datas");
       return;
     }
   }

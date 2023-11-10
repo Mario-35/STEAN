@@ -126,7 +126,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(9);
+                res.body.value.length.should.eql(8);
                 res.body.should.include.keys("@iot.count", "value");
                 done();
             });

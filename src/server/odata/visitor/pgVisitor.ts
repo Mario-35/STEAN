@@ -49,6 +49,7 @@ export class PgVisitor {
   onlyRef = false;
   onlyValue = false;
   numeric = false;
+  returnNull = false;
   navigationProperty: string;
   resultFormat: IreturnFormat = returnFormats.json;
   includes: PgVisitor[] = [];
@@ -107,34 +108,23 @@ export class PgVisitor {
     Logs.head("verifyRessources");
     // TODO REMOVE AFTER ALL
 
+    if (!ctx._config.extensions.includes(_DB[this.entity].extensions)) {
+      this.returnNull = true;
+      return;
+    }
+
     if (this.entity.toUpperCase() === "LORA") this.setEntity("Loras");
     if (this.parentEntity) {
       if (!_DB[this.parentEntity].relations[this.entity])
-        ctx.throw(40, {
-          detail: msg(errors.invalid, "path") + this.entity.trim(),
-        });
-    } else if (!_DB[this.entity])
-      ctx.throw(404, {
-        detail: msg(errors.invalid, "path") + this.entity.trim(),
-      });
+        ctx.throw(404, { detail: msg(errors.invalid, "path") + this.entity.trim(), });
+    } else if (!_DB[this.entity]) ctx.throw(404, { detail: msg(errors.invalid, "path") + this.entity.trim(), });
   };
-
-  // verifyRessources = (ctx: koa.Context): void => {
-  //     Logs.head("verifyRessources");
-  //     if (["Configs","Logs"].includes(this.entity) && ctx.method === "GET") return;
-  //     if (this.parentEntity) {
-  //         if (!ctx._config.entities.includes(this.entity)) ctx.throw(40, { detail: msg(errors.invalid, "path" ) + this.entity.trim() });
-  //     } else if (!ctx._config.entities.includes(this.entity)) ctx.throw(404, { detail: msg(errors.invalid, "path" ) + this.entity.trim() });
-
-  // };
 
   VisitRessources(node: Token, context?: any) {
     const ressource = this[`VisitRessources${node.type}`];
     if (ressource) ressource.call(this, node, context);
     else {
-      console.log(
-        `Ressource Not Found ============> VisitRessources${node.type}`
-      );
+      Logs.error( `Ressource Not Found ============> VisitRessources${node.type}` );
       throw new Error(`Unhandled node type: ${node.type}`);
     }
     return this;
@@ -270,7 +260,7 @@ export class PgVisitor {
     Logs.head("Start PgVisitor");
     const temp = this.Visit(node);
     Logs.infos("PgVisitor", temp);
-    this.verifyQuery(ctx);
+    this.verifyQuery(ctx);    
     return temp;
   }
 
@@ -311,19 +301,11 @@ export class PgVisitor {
         ctx.throw(400, { detail: msg(errors.invalid, "entity") + elems[0] });
     });
 
-    if (
-      isObservation(this.entity) === true &&
-      this.splitResult !== undefined &&
-      Number(this.parentId) == 0
-    ) {
+    if ( isObservation(this.entity) === true && this.splitResult !== undefined && Number(this.parentId) == 0 ) {
       ctx.throw(400, { detail: errors.splitNotAllowed });
     }
 
-    if (
-      this.resultFormat === returnFormats.dataArray &&
-      BigInt(this.id) > 0 &&
-      !this.parentEntity
-    ) {
+    if ( this.resultFormat === returnFormats.dataArray && BigInt(this.id) > 0 && !this.parentEntity ) {
       ctx.throw(400, { detail: errors.dataArrayNotAllowed });
     }
   };
@@ -338,7 +320,7 @@ export class PgVisitor {
         visitor.call(this, node, context);
       } else {
         Logs.error(`Node error =================> Visit${node.type}`);
-        console.log(node);
+        Logs.error(node);
         throw new Error(`Unhandled node type: ${node.type}`);
       }
     }

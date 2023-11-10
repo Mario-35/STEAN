@@ -36,37 +36,35 @@ const addConfigToFile = async (
   
 };
 
-const addToFile = async (
-  workbook: Excel.Workbook,
-  name: string,
-  input: object
-) => {
-  const worksheet = workbook.addWorksheet(name);
-  const cols: Partial<Excel.Column>[] = [
-    { key: "insertId", header: "insertId" },
-  ];
-  input["fields"]
-    .map((e: object) => e["name"])
-    .forEach((temp: string) => {
-      cols.push({ key: temp, header: temp });
-    });
-  worksheet.columns = cols;
-  worksheet.columns.forEach((sheetColumn) => {
-    sheetColumn.font = {
-      size: 12,
-    };
-    sheetColumn.width = 30;
-  });
-
-  if (input["rows"] && input["rows"].length > 0) {
-    if (Object.keys(input["rows"]).length > 0) {
-      worksheet.getRow(1).font = {
-        bold: true,
-        size: 13,
-      };
-      Object(input["rows"]).forEach((item: any) => {
-        worksheet.addRow(item);
+const addToFile = async ( workbook: Excel.Workbook, name: string, input: object ) => {
+  if (input && input[0]) {
+    const worksheet = workbook.addWorksheet(name);
+    const cols: Partial<Excel.Column>[] = [
+      { key: "insertId", header: "insertId" },
+    ];
+    // console.log("============================================");
+    // console.log(input[0]);
+    
+    Object.keys(input[0]).forEach((temp: string) => {
+        cols.push({ key: temp, header: temp });
       });
+      
+    worksheet.columns = cols;
+    worksheet.columns.forEach((sheetColumn) => {
+      sheetColumn.font = {
+        size: 12,
+      };
+      sheetColumn.width = 30;
+    });
+  
+    if (Object.values(input).length > 0) {
+        worksheet.getRow(1).font = {
+          bold: true,
+          size: 13,
+        };
+        Object.values(input).forEach((item: any) => {
+          worksheet.addRow(item);
+        });
     }
   }
 };
@@ -80,24 +78,21 @@ const createColumnsList = async (ctx: koa.Context, entity: string) => {
       if (_DB[entity].columns[column].create !== "") {
         // IF JSON create column-key  note THAT is limit 200 firts items
         if (_DB[entity].columns[column].create.startsWith("json")) {
-          const tempSqlResult = await executeSql(ctx._config.name, `select distinct jsonb_object_keys("${column}") AS "${column}" from "${_DB[entity].table}" LIMIT 200`)
+          const tempSqlResult = await serverConfig.db(ctx._config.name).unsafe(`select distinct jsonb_object_keys("${column}") AS "${column}" from "${_DB[entity].table}" LIMIT 200`)
             .catch(async (e) => {
               if (e.code === "22023") {
-                return await executeSql(ctx._config.name, `select distinct jsonb_object_keys("${column}"[0]) AS "${column}" from "${_DB[entity].table}" LIMIT 200`);
+                return await serverConfig.db(ctx._config.name).unsafe(`select distinct jsonb_object_keys("${column}"[0]) AS "${column}" from "${_DB[entity].table}" LIMIT 200`);
               } else Logs.error(e);
-            });
-            if (tempSqlResult && tempSqlResult["rows"] && tempSqlResult["rows"].length > 0) {
-              tempSqlResult["rows"].forEach((e: any) => {
-                myclos.push(
-                  `"${column}"->>'${e[column]}' AS "${column}-${e[column]}"`
-                );
+            });            
+            if (tempSqlResult && tempSqlResult.length > 0) {
+              tempSqlResult.forEach((e: any ) => {
+                myclos.push( `"${column}"->>'${e[column]}' AS "${column}-${e[column]}"` );
               });
             }
-            
         } else myclos.push(`"${column}"`);
       }
     }
-  );  
+  );    
   return myclos;
 };
 
@@ -116,11 +111,12 @@ export const exportToXlsx = async (ctx: koa.Context) => {
           EextensionsType.base,
           EextensionsType.multiDatastream,
           EextensionsType.lora,
-        ].some((r) => _DB[entity].essai.includes(r))
+        ].some((r) => _DB[entity].extensions.includes(r))
     ),
     async (entity: string) => {
-      const cols = await createColumnsList(ctx, entity);
-      const temp = await executeSql(ctx._config.name, `select ${cols.join(",")} from "${_DB[entity].table}" LIMIT 200`);
+      const cols = await createColumnsList(ctx, entity);      
+      const temp = await serverConfig.db(ctx._config.name).unsafe(`select ${cols} from "${_DB[entity].table}" LIMIT 200`);
+      
       await addToFile(workbook, entity, temp);
     }
   );
@@ -156,12 +152,12 @@ export const importOnglet = async (
         });
         let ret = undefined;
         try {
-          ret = await executeSql(ctx._config.name, `INSERT INTO "${_DB[table].table}" ${createInsertValues(temp, _DB[table].name)}`);
+          ret = await executeSql(ctx._config.name, `INSERT INTO "${_DB[table].table}" ${createInsertValues(temp, _DB[table].name)}`, true);
           console.log(ret);
           // row.getCell(0).value = ret[0];
         } catch (error: any) {
           if (error.code === "23505") {
-            ret = await executeSql(ctx._config.name, `SELECT "id" FROM ${_DB[table].table}" WHERE "name" = '${temp["name"]}' LIMIT 1`);
+            ret = await executeSql(ctx._config.name, `SELECT "id" FROM ${_DB[table].table}" WHERE "name" = '${temp["name"]}' LIMIT 1`, true);
             console.log(row.getCell(1).value);
             row.getCell(1).value = +ret["id"] + 100;
             console.log(

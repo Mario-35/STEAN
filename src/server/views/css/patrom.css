@@ -1,7 +1,7 @@
 /**
 * Patrom theme 
 * @copyright 2023-present Inrae
-* 23/09/2023 17:47:50
+* 10/11/2023 11:46:50
 * @author mario.adam@inrae.fr
 *
 */
@@ -1191,7 +1191,7 @@ body {
   .patrom-tab-label {
     display: flex;
     justify-content: space-between;
-    padding: 10px;
+    padding: 5px;
     background-color: var(--background-color);
     font-weight: bold;
     cursor: pointer;
@@ -1221,7 +1221,7 @@ body {
   .patrom-tab-close {
     display: flex;
     justify-content: flex-end;
-    padding: 10px;
+    padding: 5px;
     font-size: 0.75em;
     background: var(--background-color);
     cursor: pointer;
@@ -1428,6 +1428,7 @@ body {
   -moz-appearance: none;
   appearance: none;
   border: none;
+  display: none;
 }
 
 input[type=checkbox].orderby:checked:after {

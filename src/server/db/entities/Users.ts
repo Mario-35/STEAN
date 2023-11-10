@@ -29,7 +29,7 @@ export class Users extends Common {
       this.ctx._user?.PDCUAS[EuserRights.SuperAdmin] === true ||
       this.ctx._user?.PDCUAS[EuserRights.Admin] === true
     ) {
-      const temp = await executeSql(ADMIN, `SELECT ${Object.keys(_DBADMIN.Users.columns)} FROM "user" ORDERBY "id"`);
+      const temp = await executeSql(ADMIN, `SELECT ${Object.keys(_DBADMIN.Users.columns)} FROM "user" ORDER BY "id"`, true);
       hidePasswordIn(temp);
       return this.createReturnResult({
         body: temp,

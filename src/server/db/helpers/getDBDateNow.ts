@@ -8,9 +8,4 @@
 
 import { executeSql } from ".";
 
-export const getDBDateNow = async (
-  configName: string
-): Promise<string> => {
-  const tempQuery = await executeSql(configName, "SELECT current_timestamp;");
-  return tempQuery["rows"][0]["current_timestamp"];
-};
+export const getDBDateNow = async ( configName: string ): Promise<string> => await executeSql(configName, "SELECT current_timestamp;", true).then((res: object) => res[0]);

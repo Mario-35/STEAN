@@ -250,7 +250,7 @@ export class CreateHtmlView {
               </html>`;
     };
 
-    public status = (user: Iuser): string => {
+    public status = (user: Iuser): string => {  
       const config = serverConfig.getConfigNameFromDatabase(user.database);  
         return `<!DOCTYPE html> <html> ${this.head(
             "Status",
@@ -275,9 +275,7 @@ export class CreateHtmlView {
     };
 
     public infos = async (): Promise<string> => {
-      const infos = await getMetrics("all");
-      console.log(infos["get_extensions"]);
-      
+      const infos = await getMetrics("all");      
         return `<!DOCTYPE html> <html> ${this.head(
             "Infos",
             "user"

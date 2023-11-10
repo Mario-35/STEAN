@@ -43,26 +43,27 @@ export class Observations extends Common {
         });
       // Search uint keys
       const tempSql = await executeSql(this.ctx._config.name, 
-        queryMultiDatastreamsUnitsKeys(searchID)
-      );
-      const multiDatastream = tempSql["rows"][0];
+        queryMultiDatastreamsUnitsKeys(searchID),
+        true
+      );      
+      const multiDatastream = tempSql[0];
       if (dataInput["result"] && typeof dataInput["result"] == "object") {
         Logs.debug(
           "result : keys",
           `${Object.keys(dataInput["result"]).length} : ${
-            multiDatastream["keys"].length
+            multiDatastream.length
           }`
         );
         if (
           Object.keys(dataInput["result"]).length !=
-          multiDatastream["keys"].length
+          multiDatastream.length
         ) {
           this.ctx.throw(400, {
             code: 400,
             detail: msg(
               errors.sizeResultUnitOfMeasurements,
               String(Object.keys(dataInput["result"]).length),
-              multiDatastream["keys"].length
+              multiDatastream.length
             ),
           });
         }

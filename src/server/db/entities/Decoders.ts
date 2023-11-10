@@ -23,7 +23,7 @@ export class Decoders extends Common {
     Logs.whereIam();
     if (this.ctx._odata.payload) {
       const result = {};
-      const decoders = await executeSql(this.ctx._config.name, `SELECT "id", "name", "code", "nomenclature", "synonym" FROM "${this.DBST.Decoders.table}"`);
+      const decoders = await executeSql(this.ctx._config.name, `SELECT "id", "name", "code", "nomenclature", "synonym" FROM "${this.DBST.Decoders.table}"`, true);
       await asyncForEach(
         // Start connectionsening ALL entries in config file
         Object(decoders),
@@ -45,12 +45,10 @@ export class Decoders extends Common {
     } else return await super.getAll();
   }
 
-  async getSingle(
-    idInput: bigint | string
-  ): Promise<IreturnResult | undefined> {
+  async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
     Logs.whereIam();
     if (this.ctx._odata.payload) {
-      const decoder = await executeSql(this.ctx._config.name, `SELECT "id", "name", "code", "nomenclature", "synonym" FROM "${this.DBST.Decoders.table}" WHERE id = this.ctx._odata.id`);
+      const decoder = await executeSql(this.ctx._config.name, `SELECT "id", "name", "code", "nomenclature", "synonym" FROM "${this.DBST.Decoders.table}" WHERE id = this.ctx._odata.id`, true);
       return decoder[0]
         ? this.createReturnResult({
             body: decodingPayload(

@@ -31,9 +31,9 @@ import {
     nbColorTitle
 } from "./constant";
 import { server } from "../../server/index";
-import { dbTest } from "../dbTest";
 import { _DB } from "../../server/db/constants";
 import { Ientity } from "../../server/types";
+import { count, executeQuery, last } from "./executeQuery";
 
 export const testsKeys = [
     "@iot.selfLink",
@@ -103,13 +103,11 @@ describe("endpoint : Locations [8.2.2]", () => {
                 apiSuccess: ["{number} id @iot.id", "{relation} selfLink @iot.selfLink", ...success]
             };
 
-            dbTest(entity.table)
-                .count()
-                .then((result) => {
+            executeQuery(count(entity.table)).then((result) => {
                     chai.request(server)
                         .get(`/test${infos.apiExample.http}`)
                         .end((err, res) => {
-                            const nb = Number(result[0]["count"]) > 200 ? 200 : Number(result[0]["count"]);
+                            const nb = Number(result["count"]) > 200 ? 200 : Number(result["count"]);
                             should.not.exist(err);
                             res.status.should.equal(200);
                             res.type.should.equal("application/json");
@@ -165,11 +163,8 @@ describe("endpoint : Locations [8.2.2]", () => {
         });
 
         it(`Return all ${entity.name} of a specific Thing ${nbColor}[9.2.6]`, (done) => {
-            dbTest("thing_location")
-                .count()
-                .where({ thing_id: 5 })
-                .then((res) => {
-                    const nb = Number(res[0].count);
+            executeQuery(`${count("thing_location")} WHERE "thing_id" = 5`)
+                .then((countThingLocation) => {
                     const infos = {
                         api: `{get} Things(:id)/${entity.name} Get from specific Thing`,
                         apiName: `GetAllFromThing${entity.name}`,
@@ -189,7 +184,7 @@ describe("endpoint : Locations [8.2.2]", () => {
                             should.not.exist(err);
                             res.status.should.equal(200);
                             res.type.should.equal("application/json");
-                            res.body.value.length.should.eql(nb);
+                            res.body.value.length.should.eql(countThingLocation["count"]);
                             res.body.should.include.keys("@iot.count", "value");
                             addToApiDoc({ ...infos, result: limitResult(res) });
                             done();
@@ -356,10 +351,11 @@ describe("endpoint : Locations [8.2.2]", () => {
                     res.status.should.equal(201);
                     res.type.should.equal("application/json");
                     res.body.should.include.keys(testsKeys);
-                    const tempSearch = await dbTest.table("thing_location").select("*").where({ thing_id: 1, location_id: res.body["@iot.id"] });
-                    tempSearch[0].should.include.keys("location_id", "thing_id");
-                    tempSearch[0]["thing_id"].should.eql("1");
-                    tempSearch[0]["location_id"].should.eql(String(res.body["@iot.id"]));
+                    executeQuery(`SELECT * FROM "thing_location" WHERE "thing_id" = 1 AND "location_id" = ${res.body["@iot.id"]}`).then((tempSearch) => {
+                        tempSearch.should.include.keys("location_id", "thing_id");
+                        tempSearch["thing_id"].should.eql(1);
+                        tempSearch["location_id"].should.eql(+res.body["@iot.id"]);
+                    });
                     addToApiDoc({ ...infos, result: res });
                     docs[docs.length - 1].apiErrorExample = myError;
                     done();
@@ -369,11 +365,7 @@ describe("endpoint : Locations [8.2.2]", () => {
 
     describe(`{patch} ${entity.name} ${nbColorTitle}[10.3]`, () => {
         it(`Return updated ${entity.name} ${nbColor}[10.3.1]`, (done) => {
-            dbTest(entity.table)
-                .select("*")
-                .orderBy("id")
-                .then((locations) => {
-                    const locationObject = locations[locations.length - 1];
+            executeQuery(last(entity.table)).then((locations) => {
                     const datas = {
                         name: "My Location has changed",
                         description: "Inrae - Site De Saint-Gilles",
@@ -389,7 +381,7 @@ describe("endpoint : Locations [8.2.2]", () => {
                         apiDescription: `Patch a ${entity.singular}.${showHide(`Patch${entity.name}`, apiInfos["10.3"])}`,
                         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_2",
                         apiExample: {
-                            http: `/v1.0/${entity.name}(${locationObject.id})`,
+                            http: `/v1.0/${entity.name}(${locations["id"]})`,
                             curl: defaultPatch("curl", "KEYHTTP", datas),
                             javascript: defaultPatch("javascript", "KEYHTTP", datas),
                             python: defaultPatch("python", "KEYHTTP", datas)
@@ -406,7 +398,7 @@ describe("endpoint : Locations [8.2.2]", () => {
                             res.type.should.equal("application/json");
                             res.body.should.include.keys(testsKeys);
                             const newLocationObject = res.body;
-                            newLocationObject.should.not.eql(locationObject.name);
+                            newLocationObject.should.not.eql(locations["name"]);
                             addToApiDoc({ ...infos, result: res });
                             done();
                         });
@@ -439,19 +431,14 @@ describe("endpoint : Locations [8.2.2]", () => {
 
     describe(`{delete} ${entity.name} ${nbColorTitle}[10.4]`, () => {
         it(`Delete ${entity.name} return no content with code 204 ${nbColor}[10.4.1]`, (done) => {
-            dbTest(entity.table)
-                .select("*")
-                .orderBy("id")
-                .then((locations) => {
-                    const locationObject = locations[locations.length - 1];
-                    const lengthBeforeDelete = locations.length;
+            executeQuery(`SELECT (SELECT count(id) FROM "${entity.table}")::int as count, (${last(entity.table)})::int as id `).then((beforeDelete) => {                    
                     const infos = {
                         api: `{delete} ${entity.name} Delete one`,
                         apiName: `Delete${entity.name}`,
                         apiDescription: `Delete a ${entity.singular}.${showHide(`Delete${entity.name}`, apiInfos["10.4"])}`,
                         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_3",
                         apiExample: {
-                            http: `/v1.0/${entity.name}(${locationObject.id})`,
+                            http: `/v1.0/${entity.name}(${beforeDelete["id"]})`,
                             curl: defaultDelete("curl", "KEYHTTP"),
                             javascript: defaultDelete("javascript", "KEYHTTP"),
                             python: defaultDelete("python", "KEYHTTP")
@@ -463,14 +450,11 @@ describe("endpoint : Locations [8.2.2]", () => {
                         .end((err: Error, res: any) => {
                             should.not.exist(err);
                             res.status.should.equal(204);
-                            dbTest(entity.table)
-                                .select("*")
-                                .orderBy("id")
-                                .then((updatedLocations) => {
-                                    updatedLocations.length.should.eql(lengthBeforeDelete - 1);
-                                    addToApiDoc({ ...infos, result: res });
-                                    done();
-                                });
+                            executeQuery(`SELECT count(id)::int FROM "${entity.table}"`).then((afterDelete) => {                                 
+                                afterDelete["count"].should.eql(beforeDelete["count"] - 1);
+                                addToApiDoc({ ...infos, result: res });
+                                done();
+                            });
                         });
                 });
         });

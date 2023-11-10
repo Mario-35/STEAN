@@ -19,10 +19,10 @@ import { executeSql } from ".";
 export const verifyId = async ( configName: string, idInput: bigint | bigint[], tableSearch: string ): Promise<boolean> => {
   try {
     if (typeof idInput == "bigint") {
-      const temp = await executeSql(configName, `SELECT id FROM "${tableSearch}" WHERE "id" = ${idInput} LIMIT 1`);
+      const temp = await executeSql(configName, `SELECT id FROM "${tableSearch}" WHERE "id" = ${idInput} LIMIT 1`, true);
       return temp["rowCount"] <= 0 ? false : true;
     } else {
-      const temp = await executeSql(configName, `SELECT count(id) FROM "${tableSearch}" WHERE "id" IN (${idInput.map(String)})`);
+      const temp = await executeSql(configName, `SELECT count(id) FROM "${tableSearch}" WHERE "id" IN (${idInput.map(String)})`, true);
       return Object.values(idInput).length == temp[0].count;
     }
   } catch (error) {

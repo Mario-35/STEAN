@@ -8,6 +8,7 @@
 
 import crypto from "crypto";
 import { APP_KEY } from "../constants";
+import { Logs } from "../logger";
 
 export const encrypt = (text: string): string => {
   const iv = crypto.randomBytes(16);
@@ -33,7 +34,7 @@ export const decrypt = (input: string): string => {
         return decrpyted.toString();
       }
     } catch (error) {
-      console.log(Error);
+      Logs.error(error);
     }
   }
   return input;

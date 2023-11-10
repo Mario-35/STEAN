@@ -6,6 +6,8 @@
  *
  */
 
+import { Logs } from "../../logger";
+
 const numberStr = [
     "one",
     "two",
@@ -51,10 +53,10 @@ const numberStr = [
   const positions = Object.values(geoPos);
   
   const hashCode = (s: string): number =>
-    s.split("").reduce((a, b) => {
+    s ? s.split("").reduce((a, b) => {
       a = (a << 5) - a + b.charCodeAt(0);
       return a & a;
-    }, 0);
+    }, 0) : 0;
   
   const lora = (nb: number) => `8cf9574000002d${nb + 1}d`.toUpperCase();
   
@@ -416,46 +418,46 @@ const numberStr = [
       for (let i = 0; i < 5; i++) {
         result.push(featureofinterest(i));
       }
-      result.push("COMMIT;");
+      
   
       for (let i = 0; i < 7; i++) {
         result.push(sensor(i));
       }
-      result.push("COMMIT;");
+      
   
       for (let i = 0; i < 10; i++) {
         result.push(thing(i));
       }
-      result.push("COMMIT;");
+      
   
       for (let i = 0; i < 10; i++) {
         result.push(thingMulti(i));
       }
-      result.push("COMMIT;");
+      
       for (let i = 0; i < 10; i++) {
         result.push(observedproperty(i));
       }
-      result.push("COMMIT;");
+      
   
       for (let i = 0; i < 10; i++) {
         result.push(datastream(i));
       }
-      result.push("COMMIT;");
+      
   
       for (let i = 0; i < 10; i++) {
         result.push(multiDatastream(i));
       }
-      result.push("COMMIT;");
+      
   
       for (let i = 0; i < 4; i++) {
         result.push(loras(i));
       }
-      result.push("COMMIT;");
+      
   
       datas.forEach((elem: string) => result.push(elem));
-      result.push("COMMIT;");
+      
     } catch (error) {
-      console.log(error);
+      Logs.error(error);
     } finally {
       return result;
     }

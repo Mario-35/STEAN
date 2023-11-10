@@ -110,10 +110,10 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       if (sql) {
         sql = atob(sql);
         const resultSql = sql.includes("log_request")
-          ? await serverConfig.db(ADMIN).raw(sql)
-          : await serverConfig.db(ctx._config.name).raw(sql);
+          ? await serverConfig.db(ADMIN)`${sql}`
+          : await serverConfig.db(ctx._config.name)`${sql}`;
         ctx.status = 201;
-        ctx.body = resultSql.rows;
+        ctx.body = resultSql["rows"];
       }
       return;
 
@@ -191,12 +191,9 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       // create DB test
       Logs.head("reDemo");
       await serverConfig
-        .db(ADMIN)
-        .raw(
-          `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'demo';`
-        )
+        .db(ADMIN)`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'demo';`
         .then(async () => {
-          await serverConfig.db(ADMIN).raw("DROP DATABASE IF EXISTS demo");
+          await serverConfig.db(ADMIN)`DROP DATABASE IF EXISTS demo`;
           returnToBody = await createDatabase("demo");
           if (returnToBody) {
             ctx.status = 201;
@@ -211,12 +208,9 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       // create DB test
       Logs.head("redoAgrhys");
       await serverConfig
-        .db(ADMIN)
-        .raw(
-          `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'agrhys';`
-        )
+        .db(ADMIN)`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'agrhys';`
         .then(async () => {
-          await serverConfig.db(ADMIN).raw("DROP DATABASE IF EXISTS agrhys");
+          await serverConfig.db(ADMIN)`DROP DATABASE IF EXISTS agrhys`;
           returnToBody = await createDatabase("agrhys");
           if (returnToBody) {
             ctx.status = 201;
@@ -244,12 +238,9 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       // create DB test
       Logs.head("GET remove DB test");
       const returnDel = await serverConfig
-        .db(ADMIN)
-        .raw(
-          `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'test';`
-        )
+        .db(ADMIN)`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'test';`
         .then(async () => {
-          await serverConfig.db(ADMIN).raw("DROP DATABASE IF EXISTS test");
+          await serverConfig.db(ADMIN)`DROP DATABASE IF EXISTS test`;
           return true;
         });
       if (returnDel) {
@@ -259,8 +250,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         ctx.status = 400;
         ctx.redirect(`${ctx._rootName}error`);
       }
-      return;
-
+      return;      
       case "QUERY":
         if (!adminWithSuperAdminAccess) ctx.redirect(`${ctx._rootName}login`);
         returnToBody = await createIqueryFromContext(ctx);
@@ -275,8 +265,10 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
   if (ctx.path.includes(`/${API_VERSION}`)) {    
     Logs.head(`unProtected GET ${API_VERSION}`);
     const odataVisitor = await createOdata(ctx);
+    
     if (odataVisitor) ctx._odata = odataVisitor;
     if (ctx._odata) {
+      if (ctx._odata.returnNull === true) { ctx.body = { values: [] }; return; }
       Logs.head(`GET ${API_VERSION}`);
       const objectAccess = new apiAccess(ctx);
       if (objectAccess) {
@@ -297,12 +289,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             ctx.body = ctx._odata.resultFormat.format(datas as object, ctx);
           } else ctx.throw(404);
         // Id requested
-        } else if (
-          (ctx._odata.id &&
-            typeof ctx._odata.id == "bigint" &&
-            ctx._odata.id > 0) ||
-          (typeof ctx._odata.id == "string" && ctx._odata.id != "")
-        ) {
+        } else if ( (ctx._odata.id && typeof ctx._odata.id == "bigint" && ctx._odata.id > 0) || (typeof ctx._odata.id == "string" && ctx._odata.id != "") ) {
           const returnValue: IreturnResult | undefined = await objectAccess.getSingle(ctx._odata.id);
           if (returnValue && returnValue.body) {
             ctx.type = ctx._odata.resultFormat.type;

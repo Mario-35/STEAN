@@ -13,10 +13,7 @@ import { IstreamInfos } from "../../types";
 import { _DB, _STREAM } from "../constants";
 import { executeSql } from ".";
 
-export const getStreamInfos = async (
-  configName: string,
-  input: JSON
-): Promise<IstreamInfos | undefined> => {
+export const getStreamInfos = async ( configName: string, input: JSON ): Promise<IstreamInfos | undefined> => {
   Logs.whereIam();
   const stream: _STREAM = input["Datastream"]
     ? "Datastream"
@@ -38,15 +35,14 @@ export const getStreamInfos = async (
     const query = `SELECT "id", "observationType", "_default_foi" FROM "${
       _DB[streamEntity].table
     }" WHERE id = ${BigInt(streamId)} LIMIT 1`;
-    return executeSql(configName, queryAsJson({ query: query, singular: true, count: false }))
-      .then((res: object) => {
-        const temp = res["rows"][0].results;
-        return {
+    return executeSql(configName, queryAsJson({ query: query, singular: true, count: false }), true)
+      .then((res: object) => {        
+        return res ? {
           type: stream,
-          id: temp["id"],
-          observationType: temp["observationType"],
-          FoId: foiId ? foiId : temp["_default_foi"],
-        };
+          id: res[0]["id"],
+          observationType: res[0]["observationType"],
+          FoId: foiId ? foiId : res[0]["_default_foi"],
+        } : undefined;
       })
       .catch((error) => {
         Logs.error(error);

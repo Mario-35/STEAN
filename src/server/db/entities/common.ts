@@ -24,7 +24,6 @@
    constructor(ctx: koa.Context) {
      Logs.whereIam();
      this.ctx = ctx;
-    //  this.ctx._config.name = serverConfig.db(ctx._config.name);
      this.nextLinkBase = removeKeyFromUrl(
        `${this.ctx._odata.options.rootBase}${
          this.ctx.href.split(`${ctx._config.apiVersion}/`)[1]
@@ -59,11 +58,6 @@
    }
  
    formatDataInput(input: object | undefined): object | undefined {
-     // if (input) {
-     //     input["name"] = this.formatString(input["name"]);
-     //     input["description"] = this.formatString(input["description"]);
-     // }
-     // console.log(input);
      return input;
    }
  
@@ -122,24 +116,19 @@
      if (this.ctx._odata.resultFormat === returnFormats.sql)
        return this.createReturnResult({ body: sql });
      if (this.ctx._odata.resultFormat === returnFormats.graph) {
-       const tmp = await executeSql(this.ctx._config.name, sql);
-       return this.createReturnResult({ body: tmp["rows"] });
+       const tmp = await executeSql(this.ctx._config.name, sql, true);       
+       return this.createReturnResult({ body: tmp[0]});
      }
-     // build return result
-     return executeSql(this.ctx._config.name, sql)
-       .then(async (res: object) => {
-         const nb = Number(res["rows"][0].count);
-         if (nb > 0 && res["rows"][0]) {
-           return this.createReturnResult({
-             id: isNaN(nb) ? undefined : nb,
-             nextLink: this.nextLink(nb),
-             prevLink: this.prevLink(nb),
-             body: res["rows"][0].results,
-           });
-         } else
-           return this.createReturnResult({
-             body: res["rows"][0].results || res["rows"][0],
-           });
+
+    return await executeSql(this.ctx._config.name, sql, true)   
+       .then(async (res: object) => { 
+         return (res[0] > 0) ? 
+            this.createReturnResult({
+              id: isNaN(res[0][0]) ? undefined : +res[0],
+              nextLink: this.nextLink(res[0]),
+              prevLink: this.prevLink(res[0]),
+              body: res[1],
+            }) : this.createReturnResult({ body: res[0] == 0 ? [] : res[0]});
        })
        .catch((err: Error) =>
          this.ctx.throw(400, { code: 400, detail: err.message })
@@ -147,45 +136,42 @@
    }
  
    // Return one item
-   // eslint-disable-next-line @typescript-eslint/no-unused-vars
    async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
-     Logs.whereIam();
-     // create query
-     const sql = this.ctx._odata.asGetSql();
- 
-     if (isNull(sql)) return;
- 
-     if (this.ctx._odata.resultFormat === returnFormats.sql)
-       return this.createReturnResult({ body: sql });
- 
-     // build return result
-     return executeSql(this.ctx._config.name, sql)
-       .then((res: object) => {
-         if (this.ctx._odata.select && this.ctx._odata.onlyValue)
-           return this.createReturnResult({
-             body: String(
-               res["rows"][0][
-                 this.ctx._odata.select == "id"
-                   ? "@iot.id"
-                   : this.ctx._odata.select
-               ]
-             ),
-           });
- 
-         const nb = Number(res["rows"][0].count);
-         if (nb > 0 && res["rows"][0].results[0]) {
-           return this.createReturnResult({
-             id: nb,
-             nextLink: this.nextLink(nb),
-             prevLink: this.prevLink(nb),
-             body: res["rows"][0].results[0],
-           });
-         }
-       })
-       .catch((err: Error) =>
-         this.ctx.throw(400, { code: 400, detail: err.message })
-       );
-   }
+    Logs.whereIam();
+    // create query
+    const sql = this.ctx._odata.asGetSql();
+
+    if (isNull(sql)) return;
+
+    if (this.ctx._odata.resultFormat === returnFormats.sql)
+      return this.createReturnResult({ body: sql });
+
+    // build return result
+    return await executeSql(this.ctx._config.name, sql, true) 
+      .then((res: object) => {           
+        if (this.ctx._odata.select && this.ctx._odata.onlyValue)
+          return this.createReturnResult({
+            body: String(res[
+                this.ctx._odata.select == "id"
+                  ? "@iot.id"
+                  : 0
+              ]),
+          });
+
+        if (res[0] > 0) {          
+          return this.createReturnResult({
+            id: +res[0],
+            nextLink: this.nextLink(res[0]),
+            prevLink: this.prevLink(res[0]),
+            body: res[1][0],
+          });
+        }
+      })
+      .catch((err: Error) =>
+        this.ctx.throw(400, { code: 400, detail: err.message })
+      );
+  }
+
  
    // Post an item
    async add(dataInput: object | undefined): Promise<IreturnResult | undefined> {
@@ -200,23 +186,22 @@
      if (this.ctx._odata.resultFormat === returnFormats.sql)
        return this.createReturnResult({ body: sql });
      // build return result
-     return await executeSql(this.ctx._config.name, sql)
-       .then((res: object) => {
-         if (res["rows"]) {
-           if (res["rows"][0].duplicate)
+     return await executeSql(this.ctx._config.name, sql, true) 
+       .then((res: object) => {    
+         if (res[0]) {
+           if (res[0].duplicate)
              this.ctx.throw(409, {
                code: 409,
                detail: `${this.constructor.name} already exist`,
-               link: `${this.linkBase}(${[res["rows"][0].duplicate]})`,
+               link: `${this.linkBase}(${[res[0].duplicate]})`,
              });
-           if (res["rows"][0].results[0]) res["rows"][0].results[0];
            return this.createReturnResult({
-             body: res["rows"][0].results[0],
+             body: res[0][0],
              query: sql,
            });
          }
        })
-       .catch((err: Error) => {
+       .catch((err: Error) => {        
          this.ctx.throw(400, { code: 400, detail: err["detail"] });
        });
    }
@@ -239,19 +224,17 @@
  
      if (this.ctx._odata.resultFormat === returnFormats.sql)
        return this.createReturnResult({ body: sql });
- 
-     // build return result
-     return await executeSql(this.ctx._config.name, sql)
-       .then((res: object) => {
-         if (res["rows"]) {
-           if (res["rows"][0].results[0]) res["rows"][0].results[0];
+
+       return await executeSql(this.ctx._config.name, sql, true) 
+       .then((res: object) => {    
+         if (res[0]) {
            return this.createReturnResult({
-             body: res["rows"][0].results[0],
+             body: res[0][0],
              query: sql,
            });
          }
        })
-       .catch((err: Error) => {
+       .catch((err: Error) => {        
          this.ctx.throw(400, { code: 400, detail: err["detail"] });
        });
    }
@@ -268,8 +251,8 @@
        this.ctx._odata.resultFormat === returnFormats.sql
          ? { id: BigInt(idInput), body: sql }
          : {
-             id: await executeSql(this.ctx._config.name, sql)
-               .then((res) => BigInt(res["rows"][0].id))
+             id: await executeSql(this.ctx._config.name, sql, true) 
+               .then((res) => res[0])
                .catch(() => BigInt(0)),
            }
      );

@@ -95,7 +95,7 @@ function beautifyDatas(element, source, lang) {
 	}
 }
 
-async function executeSql(e) {
+async function executeSqlValues(e) {
 	wait(true);
 	if (e) e.preventDefault();
 	try {

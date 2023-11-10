@@ -33,9 +33,7 @@ export class Configs extends Common {
     });
   }
 
-  async getSingle(
-    idInput: bigint | string
-  ): Promise<IreturnResult | undefined> {
+  async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
     Logs.whereIam();
     if (!ensureAuthenticated(this.ctx)) this.ctx.throw(401);
     return this.createReturnResult({
@@ -60,7 +58,6 @@ export class Configs extends Common {
   // Delete an item
   async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {
     Logs.whereIam();
-    console.log(idInput);
     return;
   }
 }

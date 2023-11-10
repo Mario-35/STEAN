@@ -6,7 +6,6 @@
  *
  */
 
-import { Knex } from "knex";
 import postgres from "postgres";
 import { IdbConnection } from "./dbConnection";
 
@@ -26,6 +25,6 @@ export interface IconfigFile {
     highPrecision: boolean;
     logFile: string;
     entities: string[];
-    db: Knex<any, unknown[]> | undefined;
+    db: postgres.Sql<Record<string, unknown>> | undefined;
 }
 

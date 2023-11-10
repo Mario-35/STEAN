@@ -1,7 +1,7 @@
 
 {
     "beforeAll": [],
-    "afterAll": ["vacuum"],
+    "afterAll": [],
     "archive": [
         "ALTER TABLE observation ADD COLUMN result jsonb NULL",
         "with values as ( select json_build_object('value', CASE WHEN observation.\"_resultnumber\" IS NOT NULL THEN json_object_agg('result',observation.\"_resultnumber\")->'result' WHEN observation.\"_resultnumbers\" IS NOT NULL THEN ( SELECT json_object_agg(key, value) FROM ( SELECT jsonb_array_elements_text(\"keys\") AS key, unnest(observation.\"_resultnumbers\")::float4 AS value FROM (SELECT (SELECT jsonb_agg(tmp.units -> 'name') AS keys FROM (SELECT jsonb_array_elements(\"unitOfMeasurements\") AS units FROM \"multidatastream\" where id = \"multidatastream_id\" ) AS tmp) ) AS tmp2 ) AS tmp3) WHEN observation.\"_resultjson\" IS NOT NULL THEN json_object_agg('result',observation.\"_resultjson\")->'result' WHEN observation.\"_resulttexts\" IS NOT NULL THEN json_object_agg('result',(SELECT json_object_agg(key, value) FROM ( SELECT replace(unnest(keys), '\"','') AS key, unnest(observation.\"_resulttexts\") AS value FROM ( SELECT keys FROM  string_to_array((select \"unitOfMeasurement\"->'name'::text FROM \"datastream\" WHERE id = coalesce(\"datastream_id\", \"multidatastream_id\"))::text, ',') keys ) AS tmp2 ) AS tmp3 ))->'result' WHEN observation.\"_resulttext\" IS NOT NULL THEN json_object_agg('result',observation.\"_resulttext\")->'result' end) AS updates, id FROM public.observation group by observation.id, observation.\"_resultnumber\", observation.\"_resultjson\", observation.\"_resulttexts\", observation.\"_resultnumbers\", observation.\"_resulttext\", observation.\"multidatastream_id\") update observation set result = values.updates FROM values where observation.id = values.id;"

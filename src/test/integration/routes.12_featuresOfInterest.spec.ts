@@ -29,10 +29,10 @@ import {
     nbColor
 } from "./constant";
 import { server } from "../../server/index";
-import { dbTest } from "../dbTest";
 import { _DB } from "../../server/db/constants";
 import { Ientity } from "../../server/types";
 import { testsKeys as observations_testsKeys } from "./routes.11_observations.spec";
+import { count, executeQuery, last } from "./executeQuery";
 
 const testsKeys = ["@iot.id", "@iot.selfLink", "Observations@iot.navigationLink", "name", "description", "encodingType", "feature"];
 chai.use(chaiHttp);
@@ -58,7 +58,7 @@ addToApiDoc({
     const temp = listOfColumns(entity);
     const success = temp.success;
     const params = temp.params;
-    let myId = "";
+    const myId = "";
     let token = "";
 
     before((done) => {
@@ -86,17 +86,14 @@ addToApiDoc({
                 },
                 apiSuccess: success
             };
-            dbTest("featureofinterest")
-                .count()
-                .then((result) => {
-                    const nb = Number(result[0]["count"]);
+            executeQuery(count(entity.table)).then((result) => {
                     chai.request(server)
                         .get(`/test/v1.0/${entity.name}`)
                         .end((err, res) => {
                             should.not.exist(err);
                             res.status.should.equal(200);
                             res.type.should.equal("application/json");
-                            res.body.value.length.should.eql(nb);
+                            res.body.value.length.should.eql(result["count"]);
                             res.body.should.include.keys("@iot.count", "value");
                             res.body.value[0].should.include.keys(testsKeys);
                             addToApiDoc({ ...infos, result: limitResult(res) });
@@ -254,12 +251,7 @@ addToApiDoc({
 
     describe("PATCH /v1.0/FeaturesOfInterest", () => {
         it("Return updated Feature of interest", (done) => {
-            dbTest("featureofinterest")
-                .select("*")
-                .orderBy("id")
-                .then((items) => {
-                    const itemObject = items[items.length - 1];
-                    myId = itemObject.id;
+            executeQuery(last(entity.table, true)).then((result) => {
                     const datas = {
                         "name": "My New Name",
                         "feature": {
@@ -273,7 +265,7 @@ addToApiDoc({
                         apiDescription: `Patch a ${entity.singular}.${showHide(`Patch${entity.name}`, apiInfos["10.3"])}`,
                         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_2",
                         apiExample: {
-                            http: `/v1.0/${entity.name}(${itemObject.id})`,
+                            http: `/v1.0/${entity.name}(${result["id"]})`,
                             curl: defaultPatch("curl", "KEYHTTP", datas),
                             javascript: defaultPatch("javascript", "KEYHTTP", datas),
                             python: defaultPatch("python", "KEYHTTP", datas)
@@ -290,13 +282,12 @@ addToApiDoc({
                             res.type.should.equal("application/json");
                             res.body.should.include.keys(testsKeys);
                             const newItems = res.body;
-                            newItems.name.should.not.eql(itemObject.name);
+                            newItems.name.should.not.eql(result["name"]);
                             addToApiDoc({
                                 api: `{patch} ${entity.name} Patch one`,
                                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_2",
                                 apiName: `Patch${entity.name}`,
                                 apiDescription: "Patch a sensor.",
-                                // apiParam: _PARAMS.slice(0, 4),
                                 result: res
                             });
                             done();
@@ -327,19 +318,14 @@ addToApiDoc({
 
     describe(`{delete} ${entity.name} ${nbColorTitle}[10.4]`, () => {
         it(`Delete ${entity.name} return no content with code 204 ${nbColor}[10.4.1]`, (done) => {
-            dbTest(entity.table)
-                .select("*")
-                .orderBy("id")
-                .then((items) => {
-                    const thingObject = items[items.length - 1];
-                    const lengthBeforeDelete = items.length;
+            executeQuery(`SELECT (SELECT count(id) FROM "${entity.table}")::int as count, (${last(entity.table)})::int as id `).then((beforeDelete) => {                                  
                     const infos = {
                         api: `{delete} ${entity.name} Delete one`,
                         apiName: `Delete${entity.name}`,
                         apiDescription: `Delete a ${entity.singular}.${showHide(`Delete${entity.name}`, apiInfos["10.4"])}`,
                         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_3",
                         apiExample: {
-                            http: `/v1.0/${entity.name}(${thingObject.id})`,
+                            http: `/v1.0/${entity.name}(${beforeDelete["id"]})`,
                             curl: defaultDelete("curl", "KEYHTTP"),
                             javascript: defaultDelete("javascript", "KEYHTTP"),
                             python: defaultDelete("python", "KEYHTTP")
@@ -351,11 +337,8 @@ addToApiDoc({
                         .end((err: Error, res: any) => {
                             should.not.exist(err);
                             res.status.should.equal(204);
-                            dbTest(entity.table)
-                                .select("*")
-                                .orderBy("id")
-                                .then((updatedThings) => {
-                                    updatedThings.length.should.eql(lengthBeforeDelete - 1);
+                            executeQuery(`SELECT count(id)::int FROM "${entity.table}"`).then((afterDelete) => {                                 
+                                afterDelete["count"].should.eql(beforeDelete["count"] - 1);
                                     addToApiDoc({ ...infos, result: limitResult(res) });
                                     done();
                                 });

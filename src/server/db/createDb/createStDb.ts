@@ -15,6 +15,7 @@ import { testsDatas } from "./testsDatas";
 import { triggers } from "./triggers";
 import { IKeyString } from "../../types";
 import { EextensionsType } from "../../enums";
+import { _NOTOK, _OK } from "../../constants";
 
 export const createSTDB = async (configName: string): Promise<IKeyString> => {
   Logs.head("createDatabase", "createDatabase");
@@ -29,28 +30,20 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
   }
 
   // create blank DATABASE
-  await adminConnection
-    .raw(`CREATE DATABASE ${config.database}`)
+  await adminConnection.unsafe(`CREATE DATABASE ${config.database}`)
     .then(async () => {
-      returnValue[`Create Database`] = `${config.database} ✔`;
+      returnValue[`Create Database`] = `${config.database} ${_OK}`;
       // create USER if not exist
-      await adminConnection
-        .raw(`SELECT COUNT(*) FROM pg_user WHERE usename = '${config.user}';`)
+      await adminConnection.unsafe(`SELECT COUNT(*) FROM pg_user WHERE usename = '${config.user}';`)
         .then(async (res: object) => {
-          if (res["rows"][0].count == 0) {
-            returnValue[`CREATE ROLE ${config.user}`] = await adminConnection
-              .raw(
-                `CREATE ROLE ${config.user} WITH PASSWORD '${config.password}' ${_RIGHTS};`
-              )
-              .then(() => "✔")
+          if (res[0] == 0) {
+            returnValue[`CREATE ROLE ${config.user}`] = await adminConnection.unsafe(`CREATE ROLE ${config.user} WITH PASSWORD '${config.password}' ${_RIGHTS}`)
+              .then(() => _OK)
               .catch((err: Error) => err.message);
           } else {
-            await adminConnection
-              .raw(
-                `ALTER ROLE ${config.user} WITH PASSWORD '${config.password}' ${_RIGHTS};`
-              )
+            await adminConnection.unsafe(`ALTER ROLE ${config.user} WITH PASSWORD '${config.password}' ${_RIGHTS}`)
               .then(() => {
-                returnValue[`Create/Alter ROLE`] = `${config.user} ✔`;
+                returnValue[`Create/Alter ROLE`] = `${config.user} ${_OK}`;
               })
               .catch((err: Error) => {
                 Logs.error(err);
@@ -62,74 +55,69 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
       Logs.error(err);
     });
 
-  const dbConnection = await serverConfig.waitConnection(configName);
-  if (!dbConnection) {
-    returnValue["DROP Error"] = "No DB connection";
+    
+    const dbConnection = serverConfig.db(configName);
+    if (!dbConnection) {
+    returnValue["DROP Error"] = `No DB connection ${_NOTOK}`;
     return returnValue;
   }
+  
+  // create postgis
+  returnValue[`Create postgis`] = await dbConnection.unsafe('CREATE EXTENSION IF NOT EXISTS postgis')
+  .then(() => _OK)
+  .catch((err: Error) => err.message);
 
   // create postgis
-  returnValue[`Create postgis`] = await dbConnection
-    .raw("CREATE EXTENSION IF NOT EXISTS postgis;")
-    .then(() => "✔")
-    .catch((err: Error) => err.message);
-
+  returnValue[`Create tablefunc`] = await dbConnection.unsafe('CREATE EXTENSION IF NOT EXISTS tablefunc')
+  .then(() => _OK)
+  .catch((err: Error) => err.message);
+    
   // loop to create each table
   await asyncForEach(
     serverConfig.configs[configName].entities,
     async (keyName: string) => {
-      await createTable(configName, _DB[keyName], undefined);
+      const res = await createTable(configName, _DB[keyName], undefined);
+      Object.keys(res).forEach((e: string) => Logs.create(e, res[e]));      
     }
   );
-
-  // loop to create triggers
-  await asyncForEach(triggers, async (sql: string) => {
-    returnValue["Create functions & trigger"] = await dbConnection
-      .raw(sql.split("\n").join(""))
-      .then(() => "✔")
-      .catch((error) => {
-        Logs.error(error);
-        return error;
+  
+  await dbConnection.begin(sql => {
+    triggers
+      .forEach(async (query: string) => {        
+        const name = query.includes('FUNCTION') 
+        ? `Create function ${query.split('CREATE OR REPLACE FUNCTION ')[1].split("(")[0]}`
+        : `Create trigger ${query.split('CREATE TRIGGER ')[1].split(" ")[0]}`;
+        await sql.unsafe(query)
+                .then(() => {
+                  Logs.create(name, _OK);
+                }).catch((error: any) => {
+                  Logs.error(name, _NOTOK);
+                });
       });
   });
-
-  if (isTest())
-    await asyncForEach(testsDatas(), async (sql: string) => {
-      returnValue["Feed datas"] = await dbConnection
-        .raw(`${sql}`)
-        .then(() => "✔")
-        .catch((error) => {
-          Logs.error(error);
-          return error;
-        });
+  
+  if (isTest()) await serverConfig.db(configName).begin(sql => {
+    testsDatas().forEach(async (query: string) => {
+      await sql.unsafe(query);
     });
-  else if (
-    serverConfig.configs[configName].extensions.includes(
-      EextensionsType.numeric
-    )
-  ) {
-    await dbConnection
-      .raw(
-        `ALTER TABLE observation ALTER COLUMN result TYPE float4 USING null;`
-      )
-      .catch((error) => {
+  });
+
+  if ( serverConfig.configs[configName].extensions.includes( EextensionsType.numeric ) ) {
+    await dbConnection.unsafe(`ALTER TABLE observation ALTER COLUMN result TYPE float4 USING null;`)
+      .catch((error: any) => {
         Logs.error(error);
         return error;
       });
-    await dbConnection
-      .raw(
-        `ALTER TABLE historical_observation ALTER COLUMN _result TYPE float4 USING null;`
-      )
+    await dbConnection.unsafe(`ALTER TABLE historical_observation ALTER COLUMN _result TYPE float4 USING null;`)
       .catch((error) => {
         Logs.error(error);
         return error;
       });
   }
 
-  await dbConnection
-    .raw(`SELECT COUNT(*) FROM pg_user WHERE usename = '${config.user}';`)
+  await dbConnection.unsafe(`SELECT COUNT(*) FROM pg_user WHERE usename = '${config.user}';`)
     .then(() => {
-      returnValue["Create DB"] = "✔";
+      returnValue["Create DB"] = _OK;
     });
   return returnValue;
 };

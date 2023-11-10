@@ -14,9 +14,7 @@ import { Logs } from "../logger";
  * @returns the bigint extract number
  */
 
-export const getBigIntFromString = (
-  input: string | bigint | number
-): bigint | undefined => {
+export const getBigIntFromString = ( input: string | bigint | number ): bigint | undefined => {
   if (input) {
     try {
       if (typeof input === "string") {

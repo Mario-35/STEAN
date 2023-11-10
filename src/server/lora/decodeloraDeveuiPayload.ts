@@ -13,28 +13,22 @@ import { Logs } from "../logger";
 import { errors } from "../messages";
 import { ILoraDecoder } from "../types";
 
-export const decodeloraDeveuiPayload = async (
-  configName: string,
-  loraDeveui: string,
-  input: string
-): Promise<ILoraDecoder> => {
+export const decodeloraDeveuiPayload = async ( configName: string, loraDeveui: string, input: string ): Promise<ILoraDecoder> => {
   Logs.debug(`decodeLoraPayload deveui : [${loraDeveui}]`, input);
-  return await executeSql(configName, `SELECT "name", "code", "nomenclature", "synonym" FROM "${_DB.Decoders.table}" WHERE id = (SELECT "decoder_id" FROM "${_DB.Loras.table}" WHERE "deveui" = '${loraDeveui}') LIMIT 1`)
+  return await executeSql(configName, `SELECT "name", "code", "nomenclature", "synonym" FROM "${_DB.Decoders.table}" WHERE id = (SELECT "decoder_id" FROM "${_DB.Loras.table}" WHERE "deveui" = '${loraDeveui}') LIMIT 1`, true)
     .then((res: object) => {
-      if (res["rows"]) {
         return decodingPayload(
           {
-            name: res["rows"][0]["name"],
-            code: String(res["rows"][0]["code"]),
-            nomenclature: res["rows"][0]["nomenclature"],
+            name: res["name"],
+            code: String(res["code"]),
+            nomenclature: res["nomenclature"],
           },
           input
         );
-      }
+    }).catch(() => {
       return {
-        decoder: res["name"],
+        decoder: "undefined",
         result: undefined,
-        error: errors.DecodingPayloadError,
-      };
-    });
+        error: errors.DecodingPayloadError};
+      });
 };

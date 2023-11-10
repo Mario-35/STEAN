@@ -470,7 +470,7 @@ class PatromMultiSelect {
 
 		ul = document.createElement('UL');
 		ul.className = this.class.list;
-		ul.classList.add((this.settings.orderby === true) ? "orderby" : "checked");
+		ul.classList.add((this.settings.orderby === true)  ? "orderby" : "checked");
 		ul.style.width = this.settings.width;
 		ul.classList.add('hidden');
 
@@ -592,7 +592,7 @@ class PatromMultiSelect {
 var multiSelects = {};
 	Array.prototype.forEach.call(document.getElementsByClassName("patrom-multiselect"), function(el) {
 	multiSelects[el.id] = new PatromMultiSelect(el);
-});class JSONViewer {
+});class JSONViewer  {
 	constructor() {
 		this.Object_prototype_toString = ({}).toString;
 		this.DatePrototypeAsString = this.Object_prototype_toString.call(new Date);
@@ -600,7 +600,7 @@ var multiSelects = {};
 		this._dom_container.classList.add("json-viewer", "content");
 		this._dom_container.addEventListener('click', this.SimulateClickEventListener);
 		this.rootName = "none";
-	}
+	};
 
 	/**
 	 * Visualise JSON object.
@@ -612,7 +612,7 @@ var multiSelects = {};
 	setRoot( rootName) {
 		this.rootName = rootName || "none";
 	}
-	showJSON(jsonValue, inputMaxLvl, inputColAt) {
+	showJSON(jsonValue,  inputMaxLvl, inputColAt) {
 		// Process only to maxLvl, where 0..n, -1 unlimited
 		var maxLvl = typeof inputMaxLvl === "number" ? inputMaxLvl : -1; // max level
 		// Collapse at level colAt, where 0..n, -1 unlimited
@@ -620,11 +620,11 @@ var multiSelects = {};
 		
 		this._dom_container.innerHTML = "";
 		this.walkJSONTree(this._dom_container, jsonValue, maxLvl, colAt, 0);
-	}
+	};
 
 	getContainer() {
 		return this._dom_container;
-	}
+	};
 
 	SimulateClickEventListener(event) {
 		console.log(event);
@@ -788,7 +788,7 @@ var multiSelects = {};
 			// simple values
 			outputParent.appendChild(this.createSimpleViewOf(value, isDate) );
 		}
-	}
+	};
 
 	isDate(str) {
 		str = str.slice(0, 10);
@@ -830,7 +830,7 @@ var multiSelects = {};
 
 		if (type === "string") {
 			if (this.isUrl(value)) {
-				type = value.includes(this.rootName) ? "url-link" : "url";
+				type = value.includes(this.rootName) ?  "url-link" : "url";
 			  } else if (this.isDate(value)) {
 				type = "date";
 			  } else if (this.isCode(value)) {
@@ -849,7 +849,7 @@ var multiSelects = {};
 		spanEl.className = "type-" + type;
 		spanEl.textContent = asText;
 		return spanEl;
-	}
+	};
 
 	/**
 	 * Create items count element.
@@ -863,7 +863,7 @@ var multiSelects = {};
 		itemsCount.innerHTML = this._getItemsTitle(count);
 
 		return itemsCount;
-	}
+	};
 
 	/**
 	 * Create clickable link.
@@ -878,7 +878,7 @@ var multiSelects = {};
 		linkEl.innerHTML = title || "";
 
 		return linkEl;
-	}
+	};
 
 	/**
 	 * Get correct item|s title for count.
@@ -890,7 +890,7 @@ var multiSelects = {};
 		var itemsTxt = count > 1 || count === 0 ? "items" : "item";
 
 		return (count + " " + itemsTxt);
-	}
+	};
 
 }class ContextMenu {
 	constructor (menu, options) {

@@ -64,7 +64,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
       if (isObject && body["username"].trim() === "") {
         why["username"] = msg(errors.empty, "username");
       } else {
-        const user = await await executeSql(ADMIN, `SELECT "username" FROM "user" WHERE username = '${ctx.request.body["username"]}' LIMIT 1`);
+        const user = await executeSql(ADMIN, `SELECT "username" FROM "user" WHERE username = '${ctx.request.body["username"]}' LIMIT 1`, true);
         if (user) why["username"] = errors.alreadyPresent;
       }
       // Email

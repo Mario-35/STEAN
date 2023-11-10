@@ -15,12 +15,8 @@ export const getMetrics = async (
   name: string
 ): Promise<string[] | { [key: string]: any }> => {
   Logs.whereIam();
-  const sqlTemp = await serverConfig
-    .db(ADMIN)
-    .raw(
-      `SELECT split_part(split_part((SELECT version()), ',', 1), ' ', 2) AS version`
-    );
-  const dbVersion = sqlTemp["rows"][0]["version"];
+  const sqlTemp = await serverConfig.db(ADMIN)`SELECT split_part(split_part((SELECT version()), ',', 1), ' ', 2) AS version`;
+  const dbVersion = sqlTemp["version"];
   const username = "postgres";
   const minVersion = (major: number, minor: number): boolean =>
     Number(`${major}.${minor}`) >= dbVersion ? false : true;
@@ -40,7 +36,7 @@ export const getMetrics = async (
     }, CASE WHEN t.oid IS NOT NULL THEN 'Trigger' WHEN r.oid IS NOT NULL THEN 'Rule' ELSE 'Unknown' END, count(*) OVER (PARTITION BY p.oid) FROM pg_inherits i JOIN pg_class p ON p.oid = i.inhparent JOIN pg_namespace pn ON pn.oid = p.relnamespace JOIN pg_class c ON c.oid = i.inhrelid JOIN pg_namespace cn ON cn.oid = p.relnamespace JOIN pg_constraint con ON con.conrelid= c.oid AND con.contype = 'c' LEFT JOIN pg_trigger t ON t.tgrelid = p.oid LEFT JOIN pg_rewrite r ON r.ev_class = p.oid `,
     get_partitionned_implementation: `SELECT DISTINCT CASE WHEN pro.oid IS NOT NULL THEN pro.prosrc WHEN r.oid IS NOT NULL THEN pg_get_ruledef(r.oid) ELSE 'Unknown' END FROM pg_inherits i JOIN pg_class p ON p.oid = i.inhparent JOIN pg_namespace pn ON pn.oid = p.relnamespace LEFT JOIN pg_trigger t ON t.tgrelid = p.oid LEFT JOIN pg_proc pro ON pro.oid = t.tgfoid LEFT JOIN pg_rewrite r ON r.ev_class = p.oid WHERE p.oid = r.oid`,
     has_pg_buffercache: `SELECT proname FROM pg_proc WHERE proname = 'pg_buffercache_pages';`,
-    is_superuser: `SELECT 1 FROM pg_user WHERE usename='${username}' AND usesuper`,
+    is_superuser: `SELECT 1 FROM pg_user WHERE username='${username}' AND usesuper`,
     dump_pgstatactivity: ` SELECT date_trunc('seconds', now()), datid, datname, ${
       minVersion(9, 2) ? "pid" : "procpid"
     },usesysid, usename, ${minVersion(9, 0) ? "application_name, " : ""}${
@@ -219,13 +215,12 @@ export const getMetrics = async (
     async (operation: string) => {
       if (metrics[operation])
         await serverConfig
-          .db(ADMIN)
-          .raw(metrics[operation])
+          .db(ADMIN)`${metrics[operation]}`
           .then((result) => {
-            res[operation] = result["rows"];
+            res[operation] = result;
           })
           .catch((err) => {
-            console.log(err);
+            Logs.error(err);
           });
     }
   );

@@ -66,7 +66,7 @@ function updateWinSqlQuery(input) {
 			"text": "Execute script",
 			"events": { // Adds eventlisteners to the item (you can use any event there is)
 				"click": function(e) {
-					executeSql(e);
+					executeSqlValues(e);
 				}
 			}
 		},
@@ -92,6 +92,7 @@ function simpleClick(link) {
 		clear();
 		decodeUrl(link);
 		refresh();
+		canGo = true;
 	}
 }
 

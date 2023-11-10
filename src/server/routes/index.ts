@@ -34,7 +34,7 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {    
-    if (isDev()) console.log(error);
+    if (isDev()) Logs.error(error);
     
     if (error.message && error.message.includes("|")) {
       const temp = error.message.split("|");

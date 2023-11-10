@@ -3,7 +3,6 @@ function updateForm() {
 	header("updateForm");
 	toggleShowHide(logout, _PARAMS.user.canPost);
 	buttonGo();
-
 	const tempOptions = getFormatOptions();
 	populateSelect(resultFormatOption, tempOptions, getDefaultValue(resultFormatOption, tempOptions));
 	getElement("actionForm").action = `${optHost.value}/${optVersion.value}/${entityOption.value}${entityOption.value === "CreateObservations" || isObservation() ? "" : `/CreateFile` }`;

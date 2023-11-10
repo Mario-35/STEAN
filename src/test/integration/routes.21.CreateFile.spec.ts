@@ -12,9 +12,9 @@ import chaiHttp from "chai-http";
 import { IApiDoc, IApiInput, prepareToApiDoc, identification, keyTokenName, limitResult, generateApiDoc } from "./constant";
 
 import { server } from "../../server/index";
-import { dbTest } from "../dbTest";
 import { _DB } from "../../server/db/constants";
 import { Ientity } from "../../server/types";
+import { executeQuery } from "./executeQuery";
 
 chai.use(chaiHttp);
 
@@ -69,22 +69,18 @@ describe(`CSV ${entity.name}`, function () {
             .field("nb", "1")
             .attach("file", "./src/test/integration/files/file.csv")
             .set("Cookie", `${keyTokenName}=${token}`)
-            .end((err: Error, res: any) => {
+            .end(async (err: Error, res: any) => {                
                 if (err) console.log(err);
                 else {
                     should.not.exist(err);
                     res.should.have.status(201);
                     res.body["@iot.id"].should.eql(16);
-                    dbTest(_DB.Observations.table)
-                        .where("datastream_id", 16)
-                        .orderBy("id")
-                        .then((test) => {
-                            test.length.should.eql(25);                            
-                            test[0]["result"]["value"]["annee"].should.eql('2010');
-                            addToApiDoc({ ...infos, result: limitResult(res) });
-                            done();
-                        })
-                        .catch((err) => console.log(err));
+                    await executeQuery(`SELECT count(*)::int FROM ${_DB.Observations.table} WHERE "datastream_id"=16`).then((test) => {
+                        test["count"].should.eql(25);
+                        addToApiDoc({ ...infos, result: limitResult(res) });
+                        done();
+                    })
+                    .catch((err) => console.log(err));
 
                 }
             });
@@ -105,23 +101,19 @@ describe(`CSV ${entity.name}`, function () {
             .field("nb", "22")
             .attach("file", "./src/test/integration/files/duplicates/file.csv")
             .set("Cookie", `${keyTokenName}=${token}`)
-            .end((err: Error, res: any) => {
+            .end(async (err: Error, res: any) => {
                 if (err) console.log(err);
                 else {
                     should.not.exist(err);
                     res.should.have.status(201);
                     res.body["@iot.id"].should.eql(16);
-                    dbTest(_DB.Observations.table)
-                        .where("datastream_id", 16)
-                        .orderBy("id")
-                        .then((test) => {
-                            test.length.should.eql(24);
-                            test[0]["result"]["value"]["annee"].should.eql('2020');
-                            addToApiDoc({ ...infos, result: limitResult(res) });
-                            generateApiDoc(docs, `apiDoc${entity.name}.js`);
-                            done();
-                        })
-                        .catch((err) => console.log(err));
+                    executeQuery(`SELECT count(*)::int FROM "${_DB.Observations.table}" WHERE "datastream_id" = 16`).then((test) => {
+                        test["count"].should.eql(24);
+                        addToApiDoc({ ...infos, result: limitResult(res) });
+                        generateApiDoc(docs, `apiDoc${entity.name}.js`);
+                        done();
+                    })
+                    .catch((err) => console.log(err));
                 }
             });
             

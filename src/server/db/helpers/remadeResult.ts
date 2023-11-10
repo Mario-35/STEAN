@@ -2,6 +2,7 @@ import koa from "koa";
 import { executeSql } from ".";
 import { serverConfig } from "../../configuration";
 import { asyncForEach, isNull } from "../../helpers";
+import { Logs } from "../../logger";
 import { decodeloraDeveuiPayload } from "../../lora";
 import { _DB } from "../constants";
 
@@ -14,8 +15,8 @@ const getSortedKeys = async (
     FROM ( SELECT jsonb_array_elements("unitOfMeasurements") AS units ) AS tmp) 
         FROM "${_DB.MultiDatastreams.table}" 
         WHERE "${_DB.MultiDatastreams.table}".id = ${inputID}`;
-  const tempQuery = await executeSql(connectionName, tempSql);
-  const multiDatastream = tempQuery["rows"][0];
+  const tempQuery = await executeSql(connectionName, tempSql, true);
+  const multiDatastream = tempQuery["rows"];
   const listOfSortedValues: { [key: string]: number | null } = {};
 
   multiDatastream.keys.forEach((element: string, formatedDatas: object) => {
@@ -47,14 +48,11 @@ export const remadeResult = async (
 ): Promise<string> => {
   let progression = 1;
   const getObservations = await serverConfig
-    .db(ctx._config.name)
-    .raw(
-      `select * from observation where result->'value' is null or result->'value' = '[null, null, null]' order by id ${
+    .db(ctx._config.name)`select * from observation where result->'value' is null or result->'value' = '[null, null, null]' order by id ${
         step > 0 ? `LIMIT ${step}` : ""
-      }`
-    );
-  await asyncForEach(getObservations.rows, async (elem: object) => {
-    const progressionStep = getObservations.rows.length / 10;
+      }`;
+  await asyncForEach(getObservations["rows"], async (elem: object) => {
+    const progressionStep = getObservations["rows"].length / 10;
     try {
       progression += 1;
       if (progression >= progressionStep) {
@@ -165,23 +163,20 @@ export const remadeResult = async (
         // process.stdout.write(`[${elem["id"]}]`);
         // console.log(`================ WRITE ${elem["id"]} =====================================`);
         await serverConfig
-          .db(ctx._config.name)
-          .raw(
-            `UPDATE "${
+          .db(ctx._config.name)`UPDATE "${
               _DB.Observations.table
             }" SET "result" = '${JSON.stringify(newResult)}' WHERE id = ${
               elem["id"]
-            }`
-          );
+            }`;
       }
     } catch (error) {
-      console.log(error);
+      Logs.error(error);
     }
   });
-  const decodedPayload = await serverConfig.db(ctx._config.name).raw(`select 
+  const decodedPayload = await serverConfig.db(ctx._config.name)`select 
     (select count(*) from observation where result->'value' is null) as "a traiter",
     (select count(*) from observation where result->'value' is null and result is not null) as "avec infos",
     (select count(*) from observation where result->'value' is null and result is null) as "sans infos",
-    (select count(*) from observation where result->'value' = '[null, null, null]') as "Tous null"`);
-  return decodedPayload.rows;
+    (select count(*) from observation where result->'value' = '[null, null, null]') as "Tous null"`;
+  return decodedPayload["rows"];
 };

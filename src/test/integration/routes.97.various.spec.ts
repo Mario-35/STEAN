@@ -26,7 +26,7 @@ describe("Create ApiDoc", () => {
                 });
                 doc.should.not.eql("boolean");
             } catch (error) {
-                console.log(error);
+                console.error(error);
             }
             done();
         });

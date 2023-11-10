@@ -13,9 +13,9 @@ import { IcsvColumn, IcsvFile, IreturnResult, IstreamInfos } from "../../types";
 import { executeSql, getStreamInfos, streamCsvFileInPostgreSql } from "../helpers";
 import { asyncForEach } from "../../helpers";
 import { errors, msg } from "../../messages/";
-// import { QUOTEDCOMA } from "../../constants";
 import { EdatesType, EextensionsType } from "../../enums";
 import util from "util";
+import { _OK } from "../../constants";
 
 // TODOCLEAN
 
@@ -84,9 +84,7 @@ export class CreateObservations extends Common {
     this.ctx.throw(400, { code: 400 });
   }
 
-  async getSingle(
-    idInput: bigint | string
-  ): Promise<IreturnResult | undefined> {
+  async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
     this.ctx.throw(400, { code: 400 });
   }
 
@@ -137,33 +135,30 @@ export class CreateObservations extends Common {
           datasJson["header"] && datasJson["header"] == true ? ", HEADER" : "",
         stream: streamInfos,
       };
-
       await streamCsvFileInPostgreSql(this.ctx, this.ctx._config.name, paramsFile)
         .then(async (res) => {
-          Logs.debug("streamCsvFileInPostgreSql", "OK");
-          if (res) {
+          Logs.debug("streamCsvFileInPostgreSql", _OK);
             Logs.result("query", res);
             // Execute query
-            const returnResult = await executeSql(this.ctx._config.name, res);
-            // All is done create results return
-            Logs.debug("SQL Executing", "Ok");
-            returnValue.push(
-              `Add ${
-                returnResult && returnResult["rows"]
-                  ? +returnResult["rows"][0]["inserted"]
-                  : -1
-              } observations from ${
-                paramsFile.filename.split("/").reverse()[0]
-              }`
-            );
-            total =
-              returnResult && returnResult["rows"]
-                ? +returnResult["rows"][0]["total"]
-                : -1;
-          }
+            if (res) await executeSql(this.ctx._config.name, res, true).then(async (returnResult: object) => {
+              Logs.debug("SQL Executing", _OK);
+              returnValue.push(
+                `Add ${
+                  returnResult && returnResult["inserted"]
+                    ? +returnResult["inserted"]
+                    : -1
+                } observations from ${
+                  paramsFile.filename.split("/").reverse()[0]
+                }`
+              );
+              total =
+                returnResult && returnResult["total"]
+                  ? +returnResult["total"]
+                  : -1;
+            });
         })
         .catch((e: any) => {
-          console.log(e);
+          Logs.error(e);
         });
     } else {
       /// classic Create
@@ -183,12 +178,12 @@ export class CreateObservations extends Common {
             String(dataStreamId.id),
             ...elem,
           ]);
-          await executeSql(this.ctx._config.name, `INSERT INTO "observation" (${keys}) VALUES (${values}) RETURNING id`)
+          await executeSql(this.ctx._config.name, `INSERT INTO "observation" (${keys}) VALUES (${values}) RETURNING id`, true)
             .then((res: any) => {
               returnValue.push(
                 this.linkBase.replace("Create", "") +
                   "(" +
-                  res["rows"][0].id +
+                  res[0]+
                   ")"
               );
               total += 1;
@@ -204,10 +199,10 @@ export class CreateObservations extends Common {
                         keys
                           .map((e, i) => `AND ${e} = ${values[i]}`)
                           .join(" ") +
-                        ` RETURNING id`
+                        ` RETURNING id`, true
                     )
                     .then((res: any) => {
-                      returnValue.push(`delete id ==> ${res["rows"][0].id}`);
+                      returnValue.push(`delete id ==> ${res[0]}`);
                       total += 1;
                     })
                     .catch((error) => {

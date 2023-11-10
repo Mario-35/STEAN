@@ -10,9 +10,7 @@ import { IKeyString } from "../../types";
 import { createAdminDB } from "./createAdminDB";
 import { createSTDB } from "./createStDb";
 
-export const createDatabase = async (
-  configName: string
-): Promise<IKeyString> => {
+export const createDatabase = async ( configName: string ): Promise<IKeyString> => {
   return configName.toUpperCase() === "ADMIN"
     ? await createAdminDB()
     : await createSTDB(configName);

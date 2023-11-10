@@ -6,6 +6,7 @@
  *
  */
 
+import { queryAsDataArray, queryAsJson, queryGraphDatastream, queryGraphMultiDatastream, queryInterval, } from "../db/queries";
 import { Parser } from "json2csv";
 import koa from "koa";
 import { Logs } from "../logger";
@@ -17,13 +18,6 @@ import { PgVisitor } from "../odata";
 import { isGraph } from "../db/helpers";
 import { _DB } from "../db/constants";
 import { Eformats } from "../enums";
-import {
-  queryAsDataArray,
-  queryAsJson,
-  queryGraphDatastream,
-  queryGraphMultiDatastream,
-  queryInterval,
-} from "../db/queries";
 
 const defaultFunction = (input: string | object) => input;
 const defaultForwat = (input: PgVisitor): string => input.sql;
@@ -52,12 +46,7 @@ const generateGrahSql = (input: PgVisitor) => {
     query:
       table === _DB.Datastreams.table
         ? queryGraphDatastream(table, id, queryInterval(input))
-        : queryGraphMultiDatastream(
-            table,
-            id,
-            input.splitResult,
-            queryInterval(input)
-          ),
+        : queryGraphMultiDatastream( table, id, input.splitResult, queryInterval(input) ),
     singular: false,
     count: false,
   });
@@ -76,17 +65,12 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
     format: defaultFunction,
     generateSql(input: PgVisitor) {
       return input.interval
-        ? queryAsJson({
-          query: queryInterval(input),
-          singular: false,
-          count: true,
-        })
+        ? queryAsJson({ query: queryInterval(input), singular: false, count: true })
         : queryAsJson({
             query: input.sql,
             singular: false,
             count: true,
-            fullCount:
-              input.count === true ? _DB[input.entity].count : undefined,
+            fullCount: input.count === true ? _DB[input.entity].count : undefined,
             fields: generateFields(input),
           });
     },
@@ -95,15 +79,12 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
     name: "graphDatas",
     type: "application/json",
     format: defaultFunction,
-    generateSql(input: PgVisitor) {
-      return generateGrahSql(input);
-    },
+    generateSql(input: PgVisitor) { return generateGrahSql(input); },
   },
   graph: {
     name: "graph",
     type: "text/html;charset=utf8",
     format(input: string | object, ctx: koa.Context): string | object {
-      input = input[0]["results"];
       const graphNames: string[] = [];
       const formatedDatas: string[] = [];
       const height = String(100 / Object.entries(input).length).split(".")[0];

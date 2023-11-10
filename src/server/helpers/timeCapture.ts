@@ -22,7 +22,7 @@ export class TimeCapture {
 
     check(message: string) {
         const now = (new Date().getTime());
-        console.log(message, 'START:', now - TimeCapture.start, 'LAST:', now - TimeCapture.last);
+        console.info(message, 'START:', now - TimeCapture.start, 'LAST:', now - TimeCapture.last);
         TimeCapture.last = now;
     }
 }

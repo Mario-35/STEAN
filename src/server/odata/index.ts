@@ -17,22 +17,13 @@ import { queryMultiDatastreamKeys } from "../db/queries";
 export { PgVisitor } from "./visitor/PgVisitor";
 
 const doSomeWarkAfterCreateAst = async (input: PgVisitor, ctx: koa.Context) => {
-  if (
-    input.splitResult &&
-    input.splitResult[0].toUpperCase() == "ALL" &&
-    input.parentId &&
-    <bigint>input.parentId > 0
-  ) {
-    const temp = await serverConfig
-      .db(ctx._config.name)
-      .raw(queryMultiDatastreamKeys(input.parentId));
-    input.splitResult = temp.rows[0]["keys"];
+  if ( input.splitResult && input.splitResult[0].toUpperCase() == "ALL" && input.parentId && <bigint>input.parentId > 0 ) {
+    const temp = await serverConfig.db(ctx._config.name).unsafe(`${queryMultiDatastreamKeys(input.parentId)}`);
+    input.splitResult = temp[0]["keys"];
   }
 };
 
-export const createOdata = async (
-  ctx: koa.Context
-): Promise<PgVisitor | undefined> => {
+export const createOdata = async ( ctx: koa.Context ): Promise<PgVisitor | undefined> => {
   // blonk url if not defined
   const blankUrl = `$top=${ctx._config.nb_page ? ctx._config.nb_page : 200}`;
 
@@ -96,8 +87,7 @@ export const createOdata = async (
 
   if (!urlSrcSplit[1]) urlSrcSplit.push(blankUrl);
 
-  if (urlSrcSplit[0].split("(").length != urlSrcSplit[0].split(")").length)
-    urlSrcSplit[0] += ")";
+  if (urlSrcSplit[0].split("(").length != urlSrcSplit[0].split(")").length) urlSrcSplit[0] += ")";
 
   const astRessources: Token = <Token>resourcePath(<string>urlSrcSplit[0]);
 

@@ -28,9 +28,9 @@ export const createInsertValues = (input : object, entityName?: string): string 
         Object.keys(input).forEach((e: string) => {
             if (input[e]) {
                 keys.push(`"${e}"`);
-                values.push(`'${input[e].replace(/'/g, "\''")}'`);
+                values.push(typeof input[e] === "string" ? `'${input[e].replace(/'/g, "\''")}'` : `${input[e]}` );
             }
-        });
+        }); 
         return `(${keys.join()}) VALUES (${values.join()})`;
     }
 };

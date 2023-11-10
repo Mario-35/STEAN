@@ -31,9 +31,9 @@ import {
     nbColor
 } from "./constant";
 import { server } from "../../server/index";
-import { dbTest } from "../dbTest";
 import { _DB } from "../../server/db/constants";
 import { Ientity } from "../../server/types";
+import { count, executeQuery, last } from "./executeQuery";
 
 export const testsKeys = [
     "@iot.id",
@@ -69,7 +69,7 @@ addToApiDoc({
 });
 
 describe("endpoint : MultiDatastream", () => {
-    let myId = "";
+    const myId = "";
     const myError = "";
     let firstID = 0;
     const temp = listOfColumns(entity);
@@ -102,17 +102,14 @@ describe("endpoint : MultiDatastream", () => {
                 },
                 apiSuccess: ["{number} id @iot.id", "{relation} selfLink @iot.selfLink", ...success]
             };
-            dbTest(_DB.MultiDatastreams.table)
-                .count()
-                .then((result) => {
-                    const nb = Number(result[0]["count"]);
+            executeQuery(count(entity.table)).then((result) => {
                     chai.request(server)
                         .get(`/test/v1.0/${entity.name}`)
                         .end((err, res) => {
                             should.not.exist(err);
                             res.status.should.equal(200);
                             res.type.should.equal("application/json");
-                            res.body.value.length.should.eql(nb);
+                            res.body.value.length.should.eql(result["count"]);
                             res.body.should.include.keys("@iot.count", "value");
                             res.body.value[0].should.include.keys(testsKeys);
                             addToApiDoc({ ...infos, result: limitResult(res) });
@@ -671,12 +668,7 @@ describe("endpoint : MultiDatastream", () => {
 
     describe(`{patch} ${entity.name} ${nbColorTitle}[10.3]`, () => {
         it(`Return updated ${entity.name} ${nbColor}[10.3.1]`, (done) => {
-            dbTest(_DB.MultiDatastreams.table)
-                .select("*")
-                .orderBy("id")
-                .then((items) => {
-                    const itemObject = items[items.length - 1];
-                    myId = itemObject.id;
+            executeQuery(last(entity.table,true)).then((items) => {
                     const datas = {
                         description: "Modification of the description"
                     };
@@ -686,7 +678,7 @@ describe("endpoint : MultiDatastream", () => {
                         apiDescription: `Patch a ${entity.singular}.${showHide(`Patch${entity.name}`, apiInfos["10.3"])}`,
                         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_2",
                         apiExample: {
-                            http: `/v1.0/${entity.name}(${myId})`,
+                            http: `/v1.0/${entity.name}(${items["id"]})`,
                             curl: defaultPatch("curl", "KEYHTTP", datas),
                             javascript: defaultPatch("javascript", "KEYHTTP", datas),
                             python: defaultPatch("python", "KEYHTTP", datas)
@@ -703,7 +695,7 @@ describe("endpoint : MultiDatastream", () => {
                             res.type.should.equal("application/json");
                             res.body.should.include.keys(testsKeys);
                             const newItems = res.body;
-                            newItems.description.should.not.eql(itemObject.description);
+                            newItems.description.should.not.eql(items["description"]);
                             addToApiDoc({ ...infos, result: limitResult(res) });
                             done();
                         });
@@ -739,20 +731,14 @@ describe("endpoint : MultiDatastream", () => {
 
     describe(`{delete} ${entity.name} ${nbColorTitle}[10.4]`, () => {
         it(`Delete ${entity.name} return no content with code 204 ${nbColor}[10.4.1]`, (done) => {
-            dbTest(_DB.MultiDatastreams.table)
-                .select("*")
-                .orderBy("id")
-                .then((items) => {
-                    const thingObject = items[items.length - 1];
-                    myId = thingObject.id;
-                    const lengthBeforeDelete = items.length;
+            executeQuery(`SELECT (SELECT count(id) FROM "${entity.table}")::int as count, (${last(entity.table)})::int as id `).then((beforeDelete) => {                    
                     const infos = {
                         api: `{delete} ${entity.name} Delete one`,
                         apiName: `Delete${entity.name}`,
                         apiDescription: `Delete a ${entity.singular}.${showHide(`Delete${entity.name}`, apiInfos["10.4"])}`,
                         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_3",
                         apiExample: {
-                            http: `/v1.0/${entity.name}(${myId})`,
+                            http: `/v1.0/${entity.name}(${beforeDelete["id"]})`,
                             curl: defaultDelete("curl", "KEYHTTP"),
                             javascript: defaultDelete("javascript", "KEYHTTP"),
                             python: defaultDelete("python", "KEYHTTP")
@@ -764,11 +750,8 @@ describe("endpoint : MultiDatastream", () => {
                         .end((err: Error, res: any) => {
                             should.not.exist(err);
                             res.status.should.equal(204);
-                            dbTest(_DB.MultiDatastreams.table)
-                                .select("*")
-                                .orderBy("id")
-                                .then((newItems) => {
-                                    newItems.length.should.eql(lengthBeforeDelete - 1);
+                            executeQuery(`SELECT count(id)::int FROM "${entity.table}"`).then((afterDelete) => {                                 
+                                afterDelete["count"].should.eql(beforeDelete["count"] - 1);
                                     addToApiDoc({ ...infos, result: limitResult(res) });
                                     done();
                                 });

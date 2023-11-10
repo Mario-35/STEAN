@@ -5,6 +5,9 @@
     input = removeQuotes(input);
     header("decodeUrl", input);
     try {
+      // return true if some works are done (for init to not delete value)
+      let decode = false;
+
       // delete all before
       let myRoot = input;
       let myOptions = input;
@@ -22,6 +25,21 @@
         myPath = splitStr[1];
         myRoot = splitStr[0];
       }
+      // process my path
+      myPath.split('/')
+            .filter((word) => word !== '')
+            .forEach((element, index) => {
+              if (index === 0) {
+                if (element.includes('(')) {
+                  const temp = element.split('(');
+                  entityOption.value = temp[0];
+                  idOption.value = temp[1].replace(')', '');
+                } else entityOption.value = getEntityName(element);          
+              } else if (index === 1) {
+                if (element.includes('?')) queryOptions.value = element;
+                else if (_PARAMS._DATAS[getEntityName(element)]) populateSelect(subentityOption, Object.keys(_PARAMS._DATAS[entityOption.value].relations), element, true);
+              }
+            });
       
       myOptions.split('&').filter(e => e.trim() !== "").forEach((element) => {
         const temp = element.split('=');
@@ -44,12 +62,12 @@
                   element.value = temp[1];
                   break;
               }
-            } else console.log(` Not found ====${temp[0]}================> ${temp}`);
+            }
 
         }
       });
-      // canShowQueryButton();      
-      // return decode;
+      canShowQueryButton();      
+      return decode;
     } catch (error) {
       console.log(error);
         return false;
