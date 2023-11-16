@@ -6,11 +6,9 @@
  *
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { convertResult, _DB } from "../../db/constants";
-import { isGraph, isObservation } from "../../db/helpers";
-import { getEntityName, removeQuotes, returnFormats } from "../../helpers";
-import { Icontext, IKeyString, IreturnFormat } from "../../types";
+import { getEntityName, isGraph, isObservation, removeQuotes, returnFormats } from "../../helpers";
+import { IodataContext, IKeyString, IreturnFormat } from "../../types";
 import { Token } from "../parser/lexer";
 import { Literal } from "../parser/literal";
 import { SQLLiteral } from "../parser/sqlLiteral";
@@ -106,20 +104,18 @@ export class PgVisitor {
 
   verifyRessources = (ctx: koa.Context): void => {
     Logs.head("verifyRessources");
-    // TODO REMOVE AFTER ALL
-
-    if (!ctx._config.extensions.includes(_DB[this.entity].extensions)) {
-      this.returnNull = true;
-      return;
-    }
-
-    if (this.entity.toUpperCase() === "LORA") this.setEntity("Loras");
-    if (this.parentEntity) {
-      if (!_DB[this.parentEntity].relations[this.entity])
-        ctx.throw(404, { detail: msg(errors.invalid, "path") + this.entity.trim(), });
-    } else if (!_DB[this.entity]) ctx.throw(404, { detail: msg(errors.invalid, "path") + this.entity.trim(), });
+    // if (!serverConfig.configs[this.configName].entities.includes(_DB[this.entity].name)) {
+    //   this.returnNull = true;
+    //   // return;
+    // }
+    // if (this.entity.toUpperCase() === "LORA") this.setEntity("Loras");
+    // if (this.parentEntity) {
+    //   if (!_DB[this.parentEntity].relations[this.entity])
+    //     ctx.throw(404, { detail: msg(errors.invalid, "path") + this.entity.trim(), });
+    // } else if (!_DB[this.entity]) ctx.throw(404, { detail: msg(errors.invalid, "path") + this.entity.trim(), });
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   VisitRessources(node: Token, context?: any) {
     const ressource = this[`VisitRessources${node.type}`];
     if (ressource) ressource.call(this, node, context);
@@ -130,7 +126,7 @@ export class PgVisitor {
     return this;
   }
 
-  protected VisitRessourcesResourcePath(node: Token, context: Icontext) {
+  protected VisitRessourcesResourcePath(node: Token, context: IodataContext) {
     if (node.value.resource && node.value.resource.type == "EntitySetName") {
       this.entity = node.value.resource.raw;
     }
@@ -138,37 +134,37 @@ export class PgVisitor {
       this.VisitRessources(node.value.navigation, context);
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected VisitRessourcesEntitySetName(node: Token, context: Icontext) {
+  protected VisitRessourcesEntitySetName(node: Token, context: IodataContext) {
     this.entity = node.value.raw;
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected VisitRessourcesRefExpression(node: Token, context: Icontext) {
+  protected VisitRessourcesRefExpression(node: Token, context: IodataContext) {
     if (node.type == "RefExpression" && node.raw == "/$ref")
       this.onlyRef = true;
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected VisitRessourcesValueExpression(node: Token, context: Icontext) {
+  protected VisitRessourcesValueExpression(node: Token, context: IodataContext) {
     if (node.type == "ValueExpression" && node.raw == "/$value")
       this.onlyValue = true;
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected VisitRessourcesCollectionNavigation(node: Token, context: Icontext) {
+  protected VisitRessourcesCollectionNavigation(node: Token, context: IodataContext) {
     if (node.value.path) this.VisitRessources(node.value.path, context);
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected VisitRessourcesCollectionNavigationPath(node: Token, context: Icontext) {
+  protected VisitRessourcesCollectionNavigationPath(node: Token, context: IodataContext) {
     if (node.value.predicate)
       this.VisitRessources(node.value.predicate, context);
     if (node.value.navigation)
       this.VisitRessources(node.value.navigation, context);
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected VisitRessourcesSimpleKey(node: Token, context: Icontext) {
+  protected VisitRessourcesSimpleKey(node: Token, context: IodataContext) {
     if (node.value.value.type === "KeyPropertyValue")
       this.VisitRessources(node.value.value, context);
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected VisitRessourcesKeyPropertyValue(node: Token, context: Icontext) {
+  protected VisitRessourcesKeyPropertyValue(node: Token, context: IodataContext) {
     this.id = this.options.loraId
       ? this.options.loraId
       : this.options.name
@@ -181,12 +177,12 @@ export class PgVisitor {
       : `id = ${this.id}`;
   }
 
-  protected VisitRessourcesSingleNavigation(node: Token, context: Icontext) {
+  protected VisitRessourcesSingleNavigation(node: Token, context: IodataContext) {
     if (node.value.path && node.value.path.type === "PropertyPath")
       this.VisitRessources(node.value.path, context);
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected VisitRessourcesPropertyPath(node: Token, context: Icontext) {
+  protected VisitRessourcesPropertyPath(node: Token, context: IodataContext) {
     let tempNode = node;
     if (node.type == "PropertyPath") {
       if (_DB[this.entity].relations[node.value.path.raw]) {
@@ -223,7 +219,7 @@ export class PgVisitor {
     }
   }
 
-  protected VisitRessourcesODataUri(node: Token, context: Icontext) {
+  protected VisitRessourcesODataUri(node: Token, context: IodataContext) {
     this.VisitRessources(node.value.resource, context);
     this.VisitRessources(node.value.query, context);
   }
@@ -301,7 +297,7 @@ export class PgVisitor {
         ctx.throw(400, { detail: msg(errors.invalid, "entity") + elems[0] });
     });
 
-    if ( isObservation(this.entity) === true && this.splitResult !== undefined && Number(this.parentId) == 0 ) {
+    if (isObservation(this.entity) === true && this.splitResult !== undefined && Number(this.parentId) == 0 ) {
       ctx.throw(400, { detail: errors.splitNotAllowed });
     }
 
@@ -310,6 +306,7 @@ export class PgVisitor {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Visit(node: Token, context?: any) {
     this.ast = this.ast || node;
     context = context || { target: "where" };
@@ -335,7 +332,7 @@ export class PgVisitor {
     return this;
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected VisitExpand(node: Token, context: Icontext) {
+  protected VisitExpand(node: Token, context: IodataContext) {
     node.value.items.forEach((item: Token) => {
       const expandPath = item.value.path.raw;
 
@@ -351,21 +348,21 @@ export class PgVisitor {
     });
   }
 
-  protected VisitEntity(node: Token, context: Icontext) {
+  protected VisitEntity(node: Token, context: IodataContext) {
     this.Visit(node.value.path, context);
     if (node.value.options)
       node.value.options.forEach((item: Token) => this.Visit(item, context));
     // this.splitResult = node.value.split;
   }
 
-  protected VisitSplitResult(node: Token, context: Icontext) {
+  protected VisitSplitResult(node: Token, context: IodataContext) {
     this.Visit(node.value.path, context);
     if (node.value.options)
       node.value.options.forEach((item: Token) => this.Visit(item, context));
     this.splitResult = removeQuotes(node.value).split(",");
   }
 
-  protected VisitInterval(node: Token, context: Icontext) {
+  protected VisitInterval(node: Token, context: IodataContext) {
     this.Visit(node.value.path, context);
     if (node.value.options)
       node.value.options.forEach((item: Token) => this.Visit(item, context));
@@ -373,34 +370,34 @@ export class PgVisitor {
     if (this.interval) this.noLimit();
   }
 
-  protected VisitPayload(node: Token, context: Icontext) {
+  protected VisitPayload(node: Token, context: IodataContext) {
     this.Visit(node.value.path, context);
     if (node.value.options)
       node.value.options.forEach((item: Token) => this.Visit(item, context));
     this.payload = node.value;
   }
 
-  protected VisitresultFormat(node: Token, context: Icontext) {
+  protected VisitresultFormat(node: Token, context: IodataContext) {
     this.Visit(node.value.path, context);
     if (node.value.options)
       node.value.options.forEach((item: Token) => this.Visit(item, context));
   }
 
-  protected VisitDebug(node: Token, context: Icontext) {
+  protected VisitDebug(node: Token, context: IodataContext) {
     this.Visit(node.value.path, context);
     if (node.value.options)
       node.value.options.forEach((item: Token) => this.Visit(item, context));
     // do Nothing
   }
 
-  protected VisitRedo(node: Token, context: Icontext) {
+  protected VisitRedo(node: Token, context: IodataContext) {
     this.Visit(node.value.path, context);
     if (node.value.options)
       node.value.options.forEach((item: Token) => this.Visit(item, context));
     // do Nothing
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected VisitResultFormat(node: Token, context: Icontext) {
+  protected VisitResultFormat(node: Token, context: IodataContext) {
     if (node.value.format) this.resultFormat = returnFormats[node.value.format];
     //ATTTENTION
     if (
@@ -418,36 +415,37 @@ export class PgVisitor {
     }
   }
 
-  protected VisitExpandItem(node: Token, context: Icontext) {
+  protected VisitExpandItem(node: Token, context: IodataContext) {
     this.Visit(node.value.path, context);
     if (node.value.options)
       node.value.options.forEach((item: Token) => this.Visit(item, context));
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected VisitExpandPath(node: Token, context: Icontext) {
+  protected VisitExpandPath(node: Token, context: IodataContext) {
     this.navigationProperty = node.raw;
   }
 
   // Start loop process
-  protected VisitQueryOptions(node: Token, context: Icontext) {
+  protected VisitQueryOptions(node: Token, context: IodataContext) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     node.value.options.forEach((option: any) => this.Visit(option, context));
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected VisitInlineCount(node: Token, context: Icontext) {
+  protected VisitInlineCount(node: Token, context: IodataContext) {
     this.count = Literal.convert(node.value.value, node.value.raw);
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected VisitValuesKeys(node: Token, context: Icontext) {
+  protected VisitValuesKeys(node: Token, context: IodataContext) {
     this.valuesKeys = Literal.convert(node.value.value, node.value.raw);
   }
 
-  protected VisitFilter(node: Token, context: Icontext) {
+  protected VisitFilter(node: Token, context: IodataContext) {
     if (this.where.trim() != "") this.where += " AND ";
     context.target = "where";
     this.Visit(node.value, context);
   }
 
-  protected VisitOrderBy(node: Token, context: Icontext) {
+  protected VisitOrderBy(node: Token, context: IodataContext) {
     context.target = "orderby";
     node.value.items.forEach((item: Token, i: number) => {
       this.Visit(item, context);
@@ -455,24 +453,24 @@ export class PgVisitor {
     });
   }
 
-  protected VisitOrderByItem(node: Token, context: Icontext) {
+  protected VisitOrderByItem(node: Token, context: IodataContext) {
     this.Visit(node.value.expr, context);
     this.orderby += node.value.direction > 0 ? " ASC" : " DESC";
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected VisitSkip(node: Token, context: Icontext) {
+  protected VisitSkip(node: Token, context: IodataContext) {
     this.skip = +node.value.raw;
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected VisitTop(node: Token, context: Icontext) {
+  protected VisitTop(node: Token, context: IodataContext) {
     this.limit = +node.value.raw;
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected VisitLog(node: Token, context: Icontext) {
+  protected VisitLog(node: Token, context: IodataContext) {
     this.idLog = node.value.raw;
   }
 
-  protected VisitSelect(node: Token, context: Icontext) {
+  protected VisitSelect(node: Token, context: IodataContext) {
     context.target = "select";
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
     node.value.items.forEach((item: Token, i: number) => {
@@ -480,48 +478,48 @@ export class PgVisitor {
     });
   }
 
-  protected VisitSelectItem(node: Token, context: Icontext) {
+  protected VisitSelectItem(node: Token, context: IodataContext) {
     context.identifier = node.raw;
     if(context.target) this[context.target] += `"${node.raw}",`;
     this.showRelations = false;
   }
 
-  protected VisitAndExpression(node: Token, context: Icontext) {
+  protected VisitAndExpression(node: Token, context: IodataContext) {
     this.Visit(node.value.left, context);
     this.where += " AND ";
     this.Visit(node.value.right, context);
   }
 
-  protected VisitOrExpression(node: Token, context: Icontext) {
+  protected VisitOrExpression(node: Token, context: IodataContext) {
     this.Visit(node.value.left, context);
     this.where += " OR ";
     this.Visit(node.value.right, context);
   }
 
-  protected VisitNotExpression(node: Token, context: Icontext) {
+  protected VisitNotExpression(node: Token, context: IodataContext) {
     this.where += " NOT ";
     this.Visit(node.value, context);
   }
 
-  protected VisitBoolParenExpression(node: Token, context: Icontext) {
+  protected VisitBoolParenExpression(node: Token, context: IodataContext) {
     this.where += "(";
     this.Visit(node.value, context);
     this.where += ")";
   }
 
-  protected VisitCommonExpression(node: Token, context: Icontext) {
+  protected VisitCommonExpression(node: Token, context: IodataContext) {
     this.Visit(node.value, context);
   }
 
-  protected VisitFirstMemberExpression(node: Token, context: Icontext) {
+  protected VisitFirstMemberExpression(node: Token, context: IodataContext) {
     this.Visit(node.value, context);
   }
 
-  protected VisitMemberExpression(node: Token, context: Icontext) {
+  protected VisitMemberExpression(node: Token, context: IodataContext) {
     this.Visit(node.value, context);
   }
 
-  protected VisitPropertyPathExpression(node: Token, context: Icontext) {
+  protected VisitPropertyPathExpression(node: Token, context: IodataContext) {
     if (node.value.current && node.value.next) {
       // deterwine if its column AND JSON
       if (
@@ -542,14 +540,14 @@ export class PgVisitor {
     } else this.Visit(node.value, context);
   }
 
-  protected VisitSingleNavigationExpression(node: Token, context: Icontext) {
+  protected VisitSingleNavigationExpression(node: Token, context: IodataContext) {
     if (node.value.current && node.value.next) {
       this.Visit(node.value.current, context);
       this.Visit(node.value.next, context);
     } else this.Visit(node.value, context);
   }
 
-  protected VisitLesserThanExpression(node: Token, context: Icontext) {
+  protected VisitLesserThanExpression(node: Token, context: IodataContext) {
     const addDate = this.addDateTypeToWhere(node, "<");
     if (addDate) this.where += addDate;
     else {
@@ -559,7 +557,7 @@ export class PgVisitor {
     }
   }
 
-  protected VisitLesserOrEqualsExpression(node: Token, context: Icontext) {
+  protected VisitLesserOrEqualsExpression(node: Token, context: IodataContext) {
     const addDate = this.addDateTypeToWhere(node, "<=");
     if (addDate) this.where += addDate;
     else {
@@ -575,7 +573,7 @@ export class PgVisitor {
       if (testIsDate) return `"${node.value.left.raw}"${testIsDate}`;
     }
   }
-  protected VisitGreaterThanExpression(node: Token, context: Icontext) {
+  protected VisitGreaterThanExpression(node: Token, context: IodataContext) {
     const addDate = this.addDateTypeToWhere(node, ">");
     if (addDate) this.where += addDate;
     else {
@@ -585,7 +583,7 @@ export class PgVisitor {
     }
   }
 
-  protected VisitGreaterOrEqualsExpression(node: Token, context: Icontext) {
+  protected VisitGreaterOrEqualsExpression(node: Token, context: IodataContext) {
     const addDate = this.addDateTypeToWhere(node, ">=");
     if (addDate) this.where += addDate;
     else {
@@ -599,7 +597,7 @@ export class PgVisitor {
     return Object.assign({}, this.parameters);
   }
 
-  protected VisitODataIdentifier(node: Token, context: Icontext) {
+  protected VisitODataIdentifier(node: Token, context: IodataContext) {
     node.value.name =
       node.value.name === "result"
         ? convertResult(this.numeric)
@@ -652,7 +650,7 @@ export class PgVisitor {
     }
   }
 
-  protected VisitEqualsExpression(node: Token, context: Icontext): void {
+  protected VisitEqualsExpression(node: Token, context: IodataContext): void {
     const addDate = this.addDateTypeToWhere(node, "=");
     if (addDate) this.where += addDate;
     else {
@@ -663,14 +661,14 @@ export class PgVisitor {
     }
   }
 
-  protected VisitNotEqualsExpression(node: Token, context: Icontext): void {
+  protected VisitNotEqualsExpression(node: Token, context: IodataContext): void {
     this.Visit(node.value.left, context);
     this.where += " <> ";
     this.Visit(node.value.right, context);
     this.where = this.where.replace(/<> null$/, "IS NOT NULL");
   }
 
-  protected VisitLiteral(node: Token, context: Icontext): void {
+  protected VisitLiteral(node: Token, context: IodataContext): void {
     if (context.relation && context.table && context.target == "where") {
       this.where += `(SELECT "${context.table}"."id" FROM "${
         context.table
@@ -684,14 +682,14 @@ export class PgVisitor {
           : SQLLiteral.convert(node.value, node.raw);
   }
 
-  protected VisitInExpression(node: Token, context: Icontext): void {
+  protected VisitInExpression(node: Token, context: IodataContext): void {
     this.Visit(node.value.left, context);
     this.where += " IN (";
     this.Visit(node.value.right, context);
     this.where += ":list)";
   }
 
-  protected VisitArrayOrObject(node: Token, context: Icontext): void {
+  protected VisitArrayOrObject(node: Token, context: IodataContext): void {
     this.where += context.literal = SQLLiteral.convert(node.value, node.raw);
   }
 
@@ -725,7 +723,7 @@ export class PgVisitor {
      END`;
     return column;
   }
-  protected VisitMethodCallExpression(node: Token, context: Icontext) {
+  protected VisitMethodCallExpression(node: Token, context: IodataContext) {
     const method = node.value.method;
     const params = node.value.parameters || [];
 

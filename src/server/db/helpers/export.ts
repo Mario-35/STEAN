@@ -1,7 +1,8 @@
 import Excel from "exceljs";
 import koa from "koa";
 import path from "path";
-import { createInsertValues, executeSql } from ".";
+import postgres from "postgres";
+import { createInsertValues, executeSql, getEntitesListFromContext } from ".";
 import { serverConfig } from "../../configuration";
 import { EextensionsType } from "../../enums";
 import { asyncForEach } from "../../helpers";
@@ -85,7 +86,7 @@ const createColumnsList = async (ctx: koa.Context, entity: string) => {
               } else Logs.error(e);
             });            
             if (tempSqlResult && tempSqlResult.length > 0) {
-              tempSqlResult.forEach((e: any ) => {
+              tempSqlResult.forEach((e: Iterable<postgres.Row> ) => {
                 myclos.push( `"${column}"->>'${e[column]}' AS "${column}-${e[column]}"` );
               });
             }
@@ -104,7 +105,7 @@ export const exportToXlsx = async (ctx: koa.Context) => {
   workbook.modified = new Date(Date.now());
   addConfigToFile(workbook, serverConfig.getConfigExport(ctx._config.name));
   await asyncForEach(
-    ctx._config.entities.filter(
+    getEntitesListFromContext(ctx).filter(
       (entity: string) =>
         _DB[entity].table !== "" &&
         [
@@ -145,40 +146,28 @@ export const importOnglet = async (
         names = Object.assign({}, row.values.toString().split(","));
         // names = names.filter(e => e !== "" && e !== "id");
       } else {
-        Object.keys(names).forEach((name: string, index: number) => {
+        Object.keys(names).forEach((name: string) => {
           if (!["", "id", "insertId"].includes(names[name])) {
             temp[names[name]] = row.getCell(+name).value;
           }
         });
-        let ret = undefined;
-        try {
-          ret = await executeSql(ctx._config.name, `INSERT INTO "${_DB[table].table}" ${createInsertValues(temp, _DB[table].name)}`, true);
-          console.log(ret);
-          // row.getCell(0).value = ret[0];
-        } catch (error: any) {
-          if (error.code === "23505") {
-            ret = await executeSql(ctx._config.name, `SELECT "id" FROM ${_DB[table].table}" WHERE "name" = '${temp["name"]}' LIMIT 1`, true);
-            console.log(row.getCell(1).value);
-            row.getCell(1).value = +ret["id"] + 100;
-            console.log(
-              row.getCell(1).value +
-                ":" +
-                row.getCell(2).value +
-                ":" +
-                row.getCell(3).value +
-                ":" +
-                row.getCell(4).value +
-                ":" +
-                row.getCell(5).value +
-                ":"
-            );
-          }
-        }
-        result.push(temp);
+          await executeSql(ctx._config.name, `INSERT INTO "${_DB[table].table}" ${createInsertValues(temp, _DB[table].name)}`, true)
+          .then((res: object) => {
+            console.log(res);
+          }).catch(async (error: Error) => {
+            if (error["code"] === "23505") {
+              await executeSql(ctx._config.name, `SELECT "id" FROM ${_DB[table].table}" WHERE "name" = '${temp["name"]}' LIMIT 1`, true).then(
+                (res: object) => {
+                  console.log(row.getCell(1).value);
+                  row.getCell(1).value = +res["id"] + 100;
+                  console.log( row.getCell(1).value + ":" + row.getCell(2).value + ":" + row.getCell(3).value + ":" + row.getCell(4).value + ":" + row.getCell(5).value + ":");
+                });
+            }
+          });
+          result.push(temp);
       }
     }
   );
-
   console.log(ids);
 };
 

@@ -18,6 +18,7 @@ export interface Ientity {
     readonly order: number;
     readonly orderBy: string;
     readonly columns: IentityColumn;
+    readonly visible: boolean;
     readonly canPost: boolean;
     readonly relations: { [key: string]: IentityRelation };
     readonly constraints?: IKeyString;

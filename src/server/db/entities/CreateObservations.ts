@@ -45,8 +45,7 @@ export class CreateObservations extends Common {
 
   createListColumnsValues(
     type: "COLUMNS" | "VALUES",
-    input: string[],
-    observationType?: string
+    input: string[]
   ): string[] {
     const res: string[] = [];
     const separateur = type === "COLUMNS" ? '"' : "'";
@@ -85,6 +84,7 @@ export class CreateObservations extends Common {
   }
 
   async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
+    Logs.whereIam(idInput);
     this.ctx.throw(400, { code: 400 });
   }
 
@@ -140,7 +140,7 @@ export class CreateObservations extends Common {
           Logs.debug("streamCsvFileInPostgreSql", _OK);
             Logs.result("query", res);
             // Execute query
-            if (res) await executeSql(this.ctx._config.name, res, true).then(async (returnResult: object) => {
+            if (res) await executeSql(this.ctx._config.name, res, false).then(async (returnResult: object) => {
               Logs.debug("SQL Executing", _OK);
               returnValue.push(
                 `Add ${
@@ -157,8 +157,8 @@ export class CreateObservations extends Common {
                   : -1;
             });
         })
-        .catch((e: any) => {
-          Logs.error(e);
+        .catch((error: Error) => {
+          Logs.error(error);
         });
     } else {
       /// classic Create
@@ -170,8 +170,7 @@ export class CreateObservations extends Common {
           const keys = [`"${dataStreamId.type?.toLowerCase()}_id"`].concat(
             this.createListColumnsValues(
               "COLUMNS",
-              dataInput["components"],
-              dataStreamId.observationType
+              dataInput["components"]
             )
           );
           const values = this.createListColumnsValues("VALUES", [
@@ -179,7 +178,7 @@ export class CreateObservations extends Common {
             ...elem,
           ]);
           await executeSql(this.ctx._config.name, `INSERT INTO "observation" (${keys}) VALUES (${values}) RETURNING id`, true)
-            .then((res: any) => {
+            .then((res: object) => {
               returnValue.push(
                 this.linkBase.replace("Create", "") +
                   "(" +
@@ -201,7 +200,7 @@ export class CreateObservations extends Common {
                           .join(" ") +
                         ` RETURNING id`, true
                     )
-                    .then((res: any) => {
+                    .then((res: object) => {
                       returnValue.push(`delete id ==> ${res[0]}`);
                       total += 1;
                     })
@@ -226,14 +225,13 @@ export class CreateObservations extends Common {
     }
   }
 
-  async update(
-    idInput: bigint | string,
-    dataInput: object | undefined
-  ): Promise<IreturnResult | undefined> {
+  async update( idInput: bigint | string, dataInput: object | undefined ): Promise<IreturnResult | undefined> {
+    Logs.whereIam(idInput || dataInput);
     this.ctx.throw(400, { code: 400 });
   }
 
   async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {
+    Logs.whereIam(idInput);
     this.ctx.throw(400, { code: 400 });
   }
 }

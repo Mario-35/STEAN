@@ -7,7 +7,7 @@
  */
 
 
-export interface Icontext {
+export interface IodataContext {
     key?: string;
     target?: string | undefined;
     identifier?: string;

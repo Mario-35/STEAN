@@ -11,7 +11,7 @@ import { Common } from "./common";
 import { Logs } from "../../logger";
 import { IconfigFile, IreturnResult } from "../../types";
 import { serverConfig } from "../../configuration";
-import { hideKeysInJson } from "../../helpers";
+import { hideKeysInJson, hidePasswordIn } from "../../helpers";
 import { ensureAuthenticated } from "../../authentication";
 
 export class Configs extends Common {
@@ -29,7 +29,7 @@ export class Configs extends Common {
         result[elem] = { ...serverConfig.configs[elem] };
       });
     return this.createReturnResult({
-      body: hideKeysInJson(result, ["entities"]),
+      body: hidePasswordIn(result)
     });
   }
 
@@ -57,7 +57,7 @@ export class Configs extends Common {
 
   // Delete an item
   async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {
-    Logs.whereIam();
+    Logs.whereIam(idInput);
     return;
   }
 }

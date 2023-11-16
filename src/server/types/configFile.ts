@@ -24,7 +24,6 @@ export interface IconfigFile {
     alias: string[];
     highPrecision: boolean;
     logFile: string;
-    entities: string[];
     db: postgres.Sql<Record<string, unknown>> | undefined;
 }
 

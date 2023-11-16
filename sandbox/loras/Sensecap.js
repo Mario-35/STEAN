@@ -1,5 +1,7 @@
 const createStringFunction = require("./helper/createStringFunction.js");
 const message = require("./helper/message.js");
+const values = require("./values/Sensecap.json");
+
 
 const _NAME = "Sensecap";
 
@@ -9,6 +11,23 @@ function decode(bytes, nomenclature) {
         for (var e = [], t = 0; t < bytes.length; t += 2) e.push(bytes.substring(t, t + 2));
         bytes = e;
     }
+
+    function isSpecialDataId (dataID) {
+        switch (dataID) {
+          case 0:
+          case 1:
+          case 2:
+          case 3:
+          case 4:
+          case 7:
+          case 9:
+          case 0x120:
+            return true;
+          default:
+            return false;
+        }
+      }
+      
     function Decoder (bytes) {
         // init
         var bytesString = bytes.map(v => v.toString(16).padStart(2, '0')).join('');
@@ -198,7 +217,7 @@ function decode(bytes, nomenclature) {
     // util
     function strTo10SysNub (str) {
         var arr = littleEndianTransform(str);
-        return parseInt(arr.toString()
+        return parseInt(arr.toString('utf8')
             .replace(/,/g, ""), 16);
     }
 
@@ -238,55 +257,18 @@ function decode(bytes, nomenclature) {
     return Decoder(bytes);
 }
 
-const srcValue = {
-    "gps": [],
-    "data": {
-      "humidity": 0.2,
-      "temperature": 22.694
-    },
-    "date": "2023-08-26T23:30:57+02:00",
-    "lora": {
-      "freq": 868.1,
-      "lsnr": -1.5,
-      "rssi": -117,
-      "data_rate": "SF9BW125"
-    },
-    "deveui": "2CF7F12031500125",
-    "gateway": {
-      "best": "7076FF005606085E",
-      "number": 3
-    },
-    "lorawan": {
-      "adr": true,
-      "fcnt": 22068,
-      "port": 2,
-      "type": "confirmed_data_up",
-      "devaddr": "00500125"
-    },
-    "sensor_id": "2CF7F12031500125",
-    "timestamp": "2023-08-26T23:30:57+02:00",
-    "formatedDatas": {
-      "humidity": 0.2,
-      "temperature": 22.694
-    },
-    "decodedPayload": {
-      "error": "Decoding Payload error"
-    },
-    "payload_ciphered": null,
-    "payload_deciphered": "010610A6580000010710C80000007FF0"
-};
 
 const nomenclature = {"4097": "Air Temperature", "4098": "Air Humidity", "4099": "Light Intensity", "4100": "CO2", "4101": "Barometric Pressure", "4102": "Soil Temperature", "4103": "Soil Moisture", "4104": "Wind Direction", "4105": "Wind Speed", "4106": "pH", "4107": "Light Quantum", "4108": "Electrical Conductivity", "4109": "Dissolved Oxygen", "4110": "Soil Volumetric Water Content", "4113": "Rainfall Hourly", "4115": "Distance", "4116": "Water Leak", "4117": "Liguid Level", "4118": "NH3", "4119": "H2S", "4120": "Flow Rate", "4121": "Total Flow", "4122": "Oxygen Concentration", "4123": "Water Eletrical Conductivity", "4124": "Water Temperature", "4125": "Soil Heat Flux", "4126": "Sunshine Duration", "4127": "Total Solar Radiation", "4128": "Water Surface Evaporation", "4129": "Photosynthetically Active Radiation(PAR)", "4130": "Accelerometer", "4131": "Sound Intensity", "4133": "Soil Tension", "4134": "Salinity", "4135": "TDS", "4136": "Leaf Temperature", "4137": "Leaf Wetness", "4138": "Soil Moisture-10cm", "4139": "Soil Moisture-20cm", "4140": "Soil Moisture-30cm", "4141": "Soil Moisture-40cm", "4142": "Soil Temperature-10cm", "4143": "Soil Temperature-20cm", "4144": "Soil Temperature-30cm", "4145": "Soil Temperature-40cm", "4146": "PM2.5", "4147": "PM10", "4148": "Noise", "4150": "AccelerometerX", "4151": "AccelerometerY", "4152": "AccelerometerZ", "4157": "Ammonia ion", "4165": "Measurement1", "4166": "Measurement2", "4167": "Measurement3", "4168": "Measurement4", "4169": "Measurement5", "4170": "Measurement6", "4171": "Measurement7", "4172": "Measurement8", "4173": "Measurement9", "4174": "Measurement10", "4175": "AI Detection No.01", "4176": "AI Detection No.02", "4177": "AI Detection No.03", "4178": "AI Detection No.04", "4179": "AI Detection No.05", "4180": "AI Detection No.06", "4181": "AI Detection No.07", "4182": "AI Detection No.08", "4183": "AI Detection No.09", "4184": "AI Detection No.10", "4190": "UV Index", "4191": "Peak Wind Gust", "4192": "Sound Intensity", "4193": "Light Intensity", "4195": "TVOC", "4196": "Soil moisture intensity", "5100": "Switch"};
 
-const F = new Function(["input", "nomenclature"], createStringFunction(decode.toString()));
+const F = new Function(["input", "nomenclature"], createStringFunction(decode.toString('utf8')));
 
-  console.log(message(`START ${_NAME}`));
-  const test = F(srcValue["payload_deciphered"], nomenclature);
-  console.log(test);
+Object(values).forEach((e, i) => {
+	const test = F(e["payload_deciphered"], nomenclature);
+	if(i === 0 && !process.env.NODE_ENV) console.log(test);
+	if (test["datas"] && test["datas"][nomenclature["4102"]] === e["data"]["temperature"]) 
+	console.log(message(`Test ${_NAME} : ${i + 1} ==> OK`)); 
+	else console.log(message());
+});    
+  module.exports = createStringFunction(decode.toString('utf8'));
 
-  if (test["datas"] && test["datas"][nomenclature["4102"]] === srcValue["data"]["temperature"]) 
-    console.log(message("OK")); 
-    else console.log(message());
-    
-  module.exports = createStringFunction(decode.toString());
 

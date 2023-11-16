@@ -16,7 +16,7 @@ import { errors } from "../../messages/";
 import { EuserRights } from "../../enums";
 import { _DBADMIN } from "../constants";
 import { ADMIN } from "../../constants";
-import { executeSql } from "../helpers";
+import { executeSql, getSelectColumnList } from "../helpers";
 
 export class Users extends Common {
   constructor(ctx: koa.Context) {
@@ -25,14 +25,10 @@ export class Users extends Common {
 
   async getAll(): Promise<IreturnResult | undefined> {
     Logs.whereIam();
-    if (
-      this.ctx._user?.PDCUAS[EuserRights.SuperAdmin] === true ||
-      this.ctx._user?.PDCUAS[EuserRights.Admin] === true
-    ) {
-      const temp = await executeSql(ADMIN, `SELECT ${Object.keys(_DBADMIN.Users.columns)} FROM "user" ORDER BY "id"`, true);
-      hidePasswordIn(temp);
+    if (this.ctx._user?.PDCUAS[EuserRights.SuperAdmin] === true || this.ctx._user?.PDCUAS[EuserRights.Admin] === true ) {
+      const temp = await executeSql(ADMIN, `SELECT ${getSelectColumnList(_DBADMIN.Users)} FROM "user" ORDER BY "id"`, true);      
       return this.createReturnResult({
-        body: temp,
+        body: hidePasswordIn(temp),
       });
     } else this.ctx.throw(401, { code: 401, detail: errors[401] });
   }

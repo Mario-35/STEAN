@@ -13,7 +13,7 @@ import { Ientity, IKeyString } from "../../types";
 
 export const createTable = async ( configName: string, tableEntity: Ientity, doAfter: string | undefined ): Promise<IKeyString> => {
   if (!tableEntity) return {};
-
+Logs.head(`CreateTable [${tableEntity.table}] for ${configName}`);
   const space = 5;
   const tab = () => " ".repeat(space);
   const tabInsertion: string[] = [];

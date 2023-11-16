@@ -8,9 +8,9 @@
 
 import { serverConfig } from "../../../configuration";
 import { _DB } from "../../../db/constants";
-import { columnList, isCsvOrArray, isGraph, isObservation } from "../../../db/helpers";
+import { getColumnList } from "../../../db/helpers";
 import { EextensionsType } from "../../../enums";
-import { getEntityName, removeQuotes } from "../../../helpers";
+import { getEntityName, isCsvOrArray, isGraph, isObservation, removeQuotes } from "../../../helpers";
 import { Ientity } from "../../../types";
 import { PgVisitor } from "../PgVisitor";
 
@@ -30,7 +30,7 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
     // create columns list
     let cols = isSelect 
         ? element.select.split(",").filter((word: string) => word.trim() != "")
-        : columnList(tempEntity);
+        : getColumnList(tempEntity);
 
     if (element.splitResult) cols = cols.filter(e => e != "result");
 

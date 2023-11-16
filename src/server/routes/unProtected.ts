@@ -7,14 +7,15 @@
  */
 
 import Router from "koa-router";
+import fs from "fs";
+import { decodeToken, ensureAuthenticated, getAuthenticatedUser, } from "../authentication";
+import { ADMIN, API_VERSION, TEST, _READY } from "../constants";
+import { getUrlId, getUrlKey, returnFormats } from "../helpers";
 import { apiAccess, userAccess } from "../db/dataAccess";
 import { _DB } from "../db/constants";
-import { getUrlId, getUrlKey, returnFormats } from "../helpers";
-import fs from "fs";
 import { Logs } from "../logger";
 import { IreturnResult } from "../types";
 import { EuserRights } from "../enums";
-import { ADMIN, API_VERSION, TEST, _READY } from "../constants";
 import { createQueryHtml } from "../views/query";
 import { CreateHtmlView, createIqueryFromContext } from "../views/helpers/";
 import { isAdmin, isAllowedTo, getRouteFromPath } from "./helpers";
@@ -22,18 +23,13 @@ import { DefaultState, Context } from "koa";
 import { createOdata } from "../odata";
 import { infos } from "../messages";
 import { getMetrics } from "../db/monitoring";
-import {
-  decodeToken,
-  ensureAuthenticated,
-  getAuthenticatedUser,
-} from "../authentication";
 import { serverConfig } from "../configuration";
 import { createDatabase } from "../db/createDb";
 import { exportToXlsx, importToXlsx } from "../db/helpers/export";
 import { remadeResult } from "../db/helpers/remadeResult";
-import { remadeLog } from "../db/queries";
+import { replayPayload } from "../db/queries";
+import { getEntitesListFromContext } from "../db/helpers";
 export const unProtectedRoutes = new Router<DefaultState, Context>();
-
 // ALl others
 unProtectedRoutes.get("/(.*)", async (ctx) => {
   const adminWithSuperAdminAccess = isAdmin(ctx)
@@ -44,9 +40,9 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
   let returnToBody: any = undefined;
   switch (getRouteFromPath(ctx.path).toUpperCase()) {
     case ctx._config.apiVersion.toUpperCase():
-      const expectedResponse: object[] = [];
+      const expectedResponse: object[] = [];      
       if (isAdmin(ctx) && !adminWithSuperAdminAccess) ctx.throw(401);
-      ctx._config.entities
+        getEntitesListFromContext(ctx)
         .filter((elem: string) => _DB[elem].order > 0)
         .sort((a, b) => (_DB[a].order > _DB[b].order ? 1 : -1))
         .forEach((value: string) => {
@@ -161,7 +157,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       return;
 
     case "TOOL":
-      returnToBody = await remadeLog(ctx);
+      returnToBody = await replayPayload();
       if (returnToBody) {
         ctx.type = returnFormats.json.type;
         ctx.body = returnToBody;
@@ -264,8 +260,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
   // API REQUEST
   if (ctx.path.includes(`/${API_VERSION}`)) {    
     Logs.head(`unProtected GET ${API_VERSION}`);
-    const odataVisitor = await createOdata(ctx);
-    
+    const odataVisitor = await createOdata(ctx);    
     if (odataVisitor) ctx._odata = odataVisitor;
     if (ctx._odata) {
       if (ctx._odata.returnNull === true) { ctx.body = { values: [] }; return; }

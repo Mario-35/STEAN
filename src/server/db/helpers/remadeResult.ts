@@ -106,41 +106,43 @@ export const remadeResult = async (
               deveui.toUpperCase(),
               payload.toUpperCase()
             );
-            console.log(decodedPayload);
-
-            if (decodedPayload.error) {
-              console.log(
-                "================ ERROR ====================================="
-              );
+            if (decodedPayload) {
               console.log(decodedPayload);
-            } else if (decodedPayload.result.valid === false) {
-              console.log(
-                "================ Invalid ====================================="
-              );
-              console.log(elem);
-              console.log(decodedPayload);
-            } else if (decodedPayload.result.messages.length > 0) {
-              const sortedKeys = await getSortedKeys(
-                ctx._config.name,
-                elem["multidatastream_id"],
-                {}
-              );
-              const cleanDatas = {};
-              console.log(sortedKeys);
-              Object.keys(decodedPayload.result.datas).forEach((key) => {
-                cleanDatas[key.toLowerCase()] =
-                  decodedPayload.result.datas[key];
-              });
-              Object.keys(sortedKeys).forEach((key) => {
-                sortedKeys[key] = cleanDatas[key] ? cleanDatas[key] : null;
-              });
-              newResult = {
-                date: elem["result"]["date"],
-                valueskeys: sortedKeys,
-                value: Object.values(sortedKeys),
-                DevEUI: deveui.toUpperCase(),
-                payload: payload,
-              };
+  
+              if (decodedPayload.error) {
+                console.log(
+                  "================ ERROR ====================================="
+                );
+                console.log(decodedPayload);
+              } else if (decodedPayload.result.valid === false) {
+                console.log(
+                  "================ Invalid ====================================="
+                );
+                console.log(elem);
+                console.log(decodedPayload);
+              } else if (decodedPayload.result.messages.length > 0) {
+                const sortedKeys = await getSortedKeys(
+                  ctx._config.name,
+                  elem["multidatastream_id"],
+                  {}
+                );
+                const cleanDatas = {};
+                console.log(sortedKeys);
+                Object.keys(decodedPayload.result.datas).forEach((key) => {
+                  cleanDatas[key.toLowerCase()] =
+                    decodedPayload.result.datas[key];
+                });
+                Object.keys(sortedKeys).forEach((key) => {
+                  sortedKeys[key] = cleanDatas[key] ? cleanDatas[key] : null;
+                });
+                newResult = {
+                  date: elem["result"]["date"],
+                  valueskeys: sortedKeys,
+                  value: Object.values(sortedKeys),
+                  DevEUI: deveui.toUpperCase(),
+                  payload: payload,
+                };
+            }
             }
           } else {
             console.log(

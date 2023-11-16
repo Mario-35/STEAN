@@ -21,20 +21,12 @@ export const getStreamInfos = async ( configName: string, input: JSON ): Promise
     ? "MultiDatastream"
     : undefined;
   if (!stream) return undefined;
-  const streamEntity = getEntityName(stream);
-  if (!streamEntity) return undefined;
-  const foiId: bigint | undefined = input["FeaturesOfInterest"]
-    ? input["FeaturesOfInterest"]
-    : undefined;
-  const searchKey =
-    input[_DB[streamEntity].name] || input[_DB[streamEntity].singular];
-  const streamId: string | undefined = isNaN(searchKey)
-    ? searchKey["@iot.id"]
-    : searchKey;
+  const streamEntity = getEntityName(stream); if (!streamEntity) return undefined;
+  const foiId: bigint | undefined = input["FeaturesOfInterest"] ? input["FeaturesOfInterest"] : undefined;
+  const searchKey = input[_DB[streamEntity].name] || input[_DB[streamEntity].singular];
+  const streamId: string | undefined = isNaN(searchKey) ? searchKey["@iot.id"] : searchKey;
   if (streamId) {
-    const query = `SELECT "id", "observationType", "_default_foi" FROM "${
-      _DB[streamEntity].table
-    }" WHERE id = ${BigInt(streamId)} LIMIT 1`;
+    const query = `SELECT "id", "observationType", "_default_foi" FROM "${ _DB[streamEntity].table }" WHERE id = ${BigInt(streamId)} LIMIT 1`;
     return executeSql(configName, queryAsJson({ query: query, singular: true, count: false }), true)
       .then((res: object) => {        
         return res ? {

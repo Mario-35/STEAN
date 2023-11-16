@@ -98,6 +98,8 @@ describe("endpoint : Thing [8.2.1]", () => {
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
                 .end((err: Error, res: any) => {
+                    console.log(res.body);
+                    
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");

@@ -15,9 +15,9 @@ import { addCssFile } from "../views/css";
 import { addJsFile } from "../views/js";
 import util from "util";
 import { PgVisitor } from "../odata";
-import { isGraph } from "../db/helpers";
 import { _DB } from "../db/constants";
 import { Eformats } from "../enums";
+import { isGraph } from ".";
 
 const defaultFunction = (input: string | object) => input;
 const defaultForwat = (input: PgVisitor): string => input.sql;

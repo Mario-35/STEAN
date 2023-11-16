@@ -31,7 +31,7 @@
        ["top", "skip"]
      );
      this.linkBase = `${this.ctx._odata.options.rootBase}${this.constructor.name}`;
-     this.DBST = _DBFILTERED(this.ctx);
+     this.DBST = _DBFILTERED(this.ctx);     
    }
  
    // Get a key value
@@ -136,6 +136,7 @@
    }
  
    // Return one item
+   // eslint-disable-next-line @typescript-eslint/no-unused-vars
    async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
     Logs.whereIam();
     // create query

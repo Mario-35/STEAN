@@ -1,6 +1,6 @@
 const createStringFunction = require("./helper/createStringFunction.js");
 const message = require("./helper/message.js");
-
+const values = require("./values/Watteco.json");
 const _NAME = "Watteco";
 
 function decode (bytes) {
@@ -76,44 +76,13 @@ function decode (bytes) {
 	return decoded;
 }
 
-const srcValue = {
-	"data": {
-	  "Data": 4.590106964111328,
-	  "Cause": [],
-	  "Report": "Standard",
-	  "EndPoint": 0,
-	  "ClusterID": "AnalogInput",
-	  "CommandID": "ReportAttributes",
-	  "AttributeID": "PresentValue",
-	  "AttributeType": "SinglePrecision"
-	},
-	"fcnt": 6536,
-	"rxpk": {
-	  "datr": "SF8BW125",
-	  "freq": 867.1,
-	  "lsnr": 1.7999999523163,
-	  "rssi": -116
-	},
-	"frame": "110A000C0055394092E228",
-	"DevEUI": "70b3d5e75e014f06",
-	"deveui": "70B3D5E75E014F06",
-	"DevAddr": "00014f06",
-	"timestamp": 1695116976,
-	"sensorInstallId": "70b3d5e75e014f06"
-  };
-
-
-const nomenclature = {};
-
-const F = new Function(["input", "nomenclature"], createStringFunction(decode.toString()));
-
-  console.log(message(`START ${_NAME}`));
-  const test = F(srcValue["frame"], nomenclature);
-  console.log(test);
-
-  if (test["datas"] && test["datas"] === srcValue["data"]["Data"]) 
-  console.log(message("OK")); 
-  else console.log(message());
-
+const F = new Function(["input", "nomenclature"], createStringFunction(decode.toString('utf8')));
+Object(values).forEach((e, i) => {
+	const test = F(e["frame"], {});
+	if(i === 0 && !process.env.NODE_ENV) console.log(test);
+	if (test["datas"] && test["datas"] === e["data"]["Data"]) 
+	console.log(message(`Test ${_NAME} : ${i + 1} ==> OK`)); 
+	else console.log(message());
+});
   
-  module.exports = createStringFunction(decode.toString());
+module.exports = createStringFunction(decode.toString('utf8'));

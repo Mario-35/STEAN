@@ -33,20 +33,9 @@ export class Loras extends Common {
     Logs.whereIam();
     const result = {};
     const listKeys = ["deveui", "DevEUI", "sensor_id", "frame"];
-    if (notNull(dataInput["payload_deciphered"]))
-      this.stean["frame"] = dataInput["payload_deciphered"].toUpperCase();
-    Object.entries(dataInput).forEach(
-      ([k, v]) =>
-        (result[listKeys.includes(k) ? k.toLowerCase() : k] = listKeys.includes(
-          k
-        )
-          ? v.toUpperCase()
-          : v)
-    );
-    if (!isNaN(dataInput["timestamp"]))
-      result["timestamp"] = new Date(
-        dataInput["timestamp"] * 1000
-      ).toISOString();
+    if (notNull(dataInput["payload_deciphered"])) this.stean["frame"] = dataInput["payload_deciphered"].toUpperCase();
+    Object.entries(dataInput).forEach( ([k, v]) => (result[listKeys.includes(k) ? k.toLowerCase() : k] = listKeys.includes( k ) ? v.toUpperCase() : v) );
+    if (!isNaN(dataInput["timestamp"])) result["timestamp"] = new Date( dataInput["timestamp"] * 1000 ).toISOString();
     return result;
   }
 
@@ -74,10 +63,7 @@ export class Loras extends Common {
       });
     return undefined;
   }
-  async add(
-    dataInput: object,
-    silent?: boolean
-  ): Promise<IreturnResult | undefined> {
+  async add( dataInput: object, silent?: boolean ): Promise<IreturnResult | undefined> {
     Logs.whereIam();
 
     if (dataInput && dataInput["redo"] && dataInput["redo"] === "all") {
@@ -127,18 +113,18 @@ export class Loras extends Common {
 
     // search for frame and decode payload if found
     if (notNull(this.stean["frame"])) { const temp = await decodeloraDeveuiPayload( this.ctx._config.name, this.stean["deveui"], this.stean["frame"] );
-      if (temp.error) {
+      if (!temp) return this.ctx.throw(400, { code: 400, detail: "dons ton cul lulu"});
+      if (temp && temp.error) {
         if (silent) return this.createReturnResult({ body: temp.error });
         else this.ctx.throw(400, { code: 400, detail: temp.error });
       }      
       this.stean["decodedPayload"] = temp["result"];
-      if (this.stean["decodedPayload"].valid === false)
-        this.ctx.throw(400, { code: 400, detail: errors.InvalidPayload });
+      if (this.stean["decodedPayload"].valid === false) this.ctx.throw(400, { code: 400, detail: errors.InvalidPayload });
     }
 
     const searchMulti = queryMultiDatastreamFromDeveui(this.stean["deveui"]);
 
-    const multiDatastream = await executeSql(this.ctx._config.name, `SELECT id, _default_foi, thing_id, ${searchMulti}`, true);
+    const multiDatastream = await executeSql(this.ctx._config.name, `SELECT id, _default_foi, thing_id, ${searchMulti}`, false);
     
     let datastream = undefined;
 
@@ -170,12 +156,14 @@ export class Loras extends Common {
       else this.ctx.throw(400, { code: 400, detail: errors.dataMessage });
     }
 
+    Logs.debug("Formated datas", this.stean["formatedDatas"]);
+
     this.stean["date"] = gedataInputtDate();
     if (!this.stean["date"]) {
       if (silent) return this.createReturnResult({ body: errors.noValidDate });
       else this.ctx.throw(400, { code: 400, detail: errors.noValidDate });
     }
-
+    
     if (multiDatastream) {
       Logs.debug("multiDatastream", multiDatastream);
       const listOfSortedValues: { [key: string]: number | null } = {};
@@ -202,15 +190,13 @@ export class Loras extends Common {
             }
           );
       });
-
+      
       Logs.debug("Values", listOfSortedValues);
-
       // If all datas null
-      if (
-        Object.values(listOfSortedValues).filter((word) => word != null)
-          .length < 1
-      ) {
-        const errorMessage = `${errors.dataNotCorresponding} [${multiDatastream["keys"]}]`;
+
+
+      if ( Object.values(listOfSortedValues).filter((word) => word != null) .length < 1 ) {
+        const errorMessage = `${errors.dataNotCorresponding} [${multiDatastream["keys"]}] with [${Object.keys(this.stean["formatedDatas"])}]`;
         if (silent) return this.createReturnResult({ body: errorMessage });
         else this.ctx.throw(400, { code: 400, detail: errorMessage });
       }
@@ -227,6 +213,8 @@ export class Loras extends Common {
           "data : Keys",
           `${tempLength} : ${multiDatastream["keys"].length}`
         );
+
+
         if (tempLength != multiDatastream["keys"].length) {
           const errorMessage = msg(
             errors.sizeListKeys,

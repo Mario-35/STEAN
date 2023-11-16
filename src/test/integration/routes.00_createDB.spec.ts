@@ -10,12 +10,12 @@ import { server } from "../../server/index";
 
 const should = chai.should();
 
-describe("Create Database.", function () {
+describe("Create Test Database.", function () {
     this.timeout(7500);
     it("Create Database", (done) => {
         chai.request(server)
             .get("/test/v1.0/createDB")
-            .end((err: Error, res: any) => {                   
+            .end((err: Error, res: any) => {     
                 if (err) {
                     console.log(res.body);                    
                     console.error(err);

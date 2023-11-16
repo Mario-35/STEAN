@@ -1,7 +1,6 @@
 const createStringFunction = require("./helper/createStringFunction.js");
 const message = require("./helper/message.js");
 const values = require("./values/RHF1S001.json");
-
 const _NAME = "RHF1S001";
 
 function decode(bytes) {
@@ -14,8 +13,8 @@ function decode(bytes) {
 		messages: []
 	  };
 	  const temp = input.match(/.{1,2}/g);
-	  if (temp != null) {
-		if (temp[0] == "01" || temp[0] == "81") {
+	  if (temp !== null) {
+		if (temp[0] === "01" || temp[0] == "81") {
 		  decoded.messages.push({
 			type: "report_telemetry",
 			measurementName: nomenclature["0610"],
@@ -49,17 +48,15 @@ function decode(bytes) {
   }
   
   
-const nomenclature = { "voltage": "battery voltage", "period": "periods", "0110": "air temperature", "0210": "air humidity", "0310": "light intensity", "0410": "humidity", "0510": "barometric pressure", "0610": "soil temperature", "0700": "battery", "0710": "soil moisture" }; 
+const nomenclature = { "voltage": "battery voltage", "period": "periods", "0110": "air temperature", "0210": "air humidity", "0310": "light intensity", "0410": "humidity", "0510": "barometric pressure", "0610": "soil temperature", "0700": "battery", "0710": "Volumetric Water Content" }; 
 
-const F = new Function(["input", "nomenclature"], createStringFunction(decode.toString()));
-
-console.log(message(`START ${_NAME}`));
+const F = new Function(["input", "nomenclature"], createStringFunction(decode.toString('utf8')));
 Object(values).forEach((e, i) => {
 	const test = F(e["payload_deciphered"], nomenclature);
-	if(i === 0) console.log(test);
+	if(i === 0 && !process.env.NODE_ENV) console.log(test);
 	if (test["messages"] && test["messages"][0] && test["messages"][0]["measurementValue"] === e["data"]["temperature"] && test["messages"][1]["measurementValue"] === e["data"]["humidity"]) 
-	console.log(message(`test : ${i + 1} ==> OK`)); 
+	console.log(message(`Test ${_NAME} : ${i + 1} ==> OK`)); 
 	else console.log(message());
 });
 
-module.exports = createStringFunction(decode.toString());
+module.exports = createStringFunction(decode.toString('utf8'));

@@ -14,5 +14,5 @@ export { queryMultiDatastreamsUnitsKeys } from "./queryMultiDatastreamsUnitsKeys
 export { queryMultiDatastreamKeys } from "./queryMultiDatastreamKeys";
 export { queryGraphMultiDatastream } from "./queryGraphMultiDatastream";
 export { queryGraphDatastream } from "./queryGraphDatastream";
-export { remadeLog } from "./tool";
+export { replayPayload } from "./replayPayload";
 

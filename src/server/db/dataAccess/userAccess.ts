@@ -13,11 +13,9 @@ import { serverConfig } from "../../configuration";
 import { ADMIN } from "../../constants";
 
 const cols = () => Object.keys(_DBADMIN.Users.columns);
-// const cols = () => Object.keys(_DBADMIN.Users.columns).filter( (word) => word.toLowerCase() != "password" );
 
 export const userAccess = {
   getAll: async () => {
-    // return await serverConfig.db(ADMIN).unsafe(`SELECT "${cols().join('","')}" FROM "${_DBADMIN.Users.table}" ORDER BY "id"`);
     const query = await serverConfig.db(ADMIN)<Iuser[]>`SELECT ${serverConfig.db(ADMIN)(cols())} FROM ${serverConfig.db(ADMIN)(_DBADMIN.Users.table)} ORDER BY id`;       
     return query[0];
   },

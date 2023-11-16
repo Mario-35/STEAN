@@ -11,7 +11,7 @@ import { Common } from "./common";
 import { Logs } from "../../logger";
 import { IcsvColumn, IcsvFile, IreturnResult } from "../../types";
 import { createColumnHeaderName, executeSql } from "../helpers";
-import { errors, infos, msg } from "../../messages/";
+import { errors } from "../../messages/";
 import * as entities from "../entities/index";
 import { returnFormats } from "../../helpers";
 import { createReadStream } from 'fs';
@@ -129,9 +129,17 @@ export class CreateFile extends Common {
       // await finished(stream);
       });
   };
-
+  async getAll(): Promise<IreturnResult | undefined> {
+    this.ctx.throw(400, { code: 400 });
+  }
+  
+  async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
+    Logs.whereIam(idInput);
+    this.ctx.throw(400, { code: 400 });
+  }
+    
   async add(dataInput: object): Promise<IreturnResult | undefined> {
-    Logs.head(msg(infos.classConstructor, this.constructor.name, `add`));
+    Logs.whereIam(dataInput);
     if (this.ctx._datas) {
       const myColumns: IcsvColumn[] = [];
         return this.createReturnResult({
@@ -148,4 +156,6 @@ export class CreateFile extends Common {
       return;
     }
   }
+
+
 }

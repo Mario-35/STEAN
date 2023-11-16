@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-export { Icontext } from "./context";
+export { IodataContext } from "./odataContext";
 export { IreturnResult } from "./returnResult";
 export { IreturnFormat } from "./returnFormat";
 export { IcsvFile } from "./csvFile";

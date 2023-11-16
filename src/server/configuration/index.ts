@@ -10,7 +10,6 @@ import { asyncForEach, decrypt, hidePasswordIn, isTest, unikeList, } from "../he
 import { IconfigFile, IdbConnection } from "../types";
 import { errors, infos, msg } from "../messages";
 import { createDatabase} from "../db/helpers";
-import { _DB } from "../db/constants";
 import { app } from "..";
 import { Logs } from "../logger";
 import { EextensionsType } from "../enums";
@@ -18,6 +17,7 @@ import fs from "fs";
 import util from "util";
 import update from "./update.json";
 import postgres from "postgres";
+import { triggers } from "../db/createDb/triggers";
 
 // class to create configs environements
 class Configuration {
@@ -37,15 +37,25 @@ class Configuration {
     });
   }
 
-  async executeQueries(title: string, boot?: boolean): Promise<void> {
+  async executeMultipleQueries(configName: string, queries: string[], infos: string) {
+    await asyncForEach( queries, async (query: string) => {
+      await serverConfig.db(configName).unsafe(query)
+      .then(() => {
+        Logs.create(`${infos} : [${configName}]`, _OK);
+      }).catch((error: Error) => {
+        Logs.error(error);
+        console.log(query);
+      });
+    });
+  }
+
+
+  async executeQueries(title: string): Promise<void> {
     try {
       await asyncForEach(
         Object.keys(Configuration.queries),
         async (connectName: string) => {
-          await this.db(connectName).begin(sql => {
-            Configuration.queries[connectName].forEach(async (query: string) => {await sql.unsafe(query);});
-            boot && boot === true ? Logs.booting(connectName, _OK) : Logs.debug(connectName, _NOTOK);
-          });
+          await this.executeMultipleQueries(connectName, Configuration.queries[connectName], title);
         }
       );
     } catch (error) {
@@ -72,7 +82,7 @@ class Configuration {
     const input = this.configs[name].pg;
     return postgres(`postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${DEFAULT_DB}`,
     {
-      // debug: true,
+      debug: _DEBUG,          
       connection           : {
         application_name   : `${APP_NAME} ${APP_VERSION}`,
       }
@@ -83,7 +93,8 @@ class Configuration {
   // return postgres.js connection from Connection
   private createDbConnection(input: IdbConnection): postgres.Sql<Record<string, unknown>> {
     return postgres(`postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${input.database}`, {
-      // debug: true,
+      debug: _DEBUG,
+      max                  : 20,            
       connection           : {
         application_name   : `${APP_NAME} ${APP_VERSION}`,
       },
@@ -91,6 +102,7 @@ class Configuration {
   );
 
   }
+  
   createDbConnectionFromConfigName(input: string): postgres.Sql<Record<string, unknown>> {
     const temp = this.createDbConnection(this.configs[input].pg);
     this.configs[input].db = temp;
@@ -107,6 +119,19 @@ class Configuration {
     Configuration.queries = {};
   }
 
+  async reCreateTrigger(configName: string) {
+    await asyncForEach( triggers(configName), async (query: string) => {
+      const name = query.split(" */")[0].split("/*")[1].trim();
+      await serverConfig.db(configName).unsafe(query)
+      .then(() => {
+        Logs.create(`[${configName}] ${name}`, _OK);
+      }).catch((error: Error) => {
+        Logs.error(error);
+      });
+    });
+  }
+
+
   // initialisation serve NOT IN TEST
   async afterAll(): Promise<void> {
     // Updates database after init
@@ -116,12 +141,12 @@ class Configuration {
       try {
         Object.keys(this.configs)
           .filter((e) => e != "admin")
-          .forEach((connectName: string) => {
+          .forEach(async (connectName: string) => {
             update["afterAll"].forEach((operation: string) => {
               this.addToQueries(connectName, operation);
             });
           });
-        await this.executeQueries("afterAll", true);
+        await this.executeQueries("afterAll");
       } catch (error) {
         Logs.error(error);
       }
@@ -131,25 +156,15 @@ class Configuration {
       Logs.head("decoders");
       this.clearQueries();
       Object.keys(this.configs)
-        .filter(
-          (e) =>
-            e != "admin" &&
-            this.configs[e].extensions.includes(EextensionsType.lora)
-        )
+        .filter( (e) => e != "admin" && this.configs[e].extensions.includes(EextensionsType.lora) )
         .forEach((connectName: string) => {
           Object.keys(update["decoders"]).forEach((name: string) => {
             const hash = this.hashCode(update["decoders"][name]);
             this.addToQueries( connectName, `update decoder set code='${update["decoders"][name]}', hash = '${hash}' where name = '${name}' and hash <> '${hash}' ` );
           });
         });
-      await this.executeQueries("decoders", true);
-    }
-    Object.keys(this.configs).forEach((connectName: string) => this.db(connectName).unsafe("vacuum").then(
-      () => {
-        Logs.booting(connectName, `Vacuum ${_OK}️`);
-      }).catch(() => {
-        Logs.booting(connectName, `Vacuum ${_NOTOK}`);
-      }));
+      }
+      await this.executeQueries("decoders");
   }
 
   // initialisation serve NOT IN TEST
@@ -283,10 +298,10 @@ class Configuration {
             : input["pg"]
             ? input["pg"]["database"]
             : "ERROR"
-        ) || "ERROR";
+        ) || "ERROR";        
     let extensions = input["extensions"]
-      ? String(input["extensions"]).split(",")
-      : [];
+      ? ["base", ... String(input["extensions"]).split(",")]
+      : ["base"];
     if (input["multiDatastream"] && input["multiDatastream"] === true)
       extensions.push("multiDatastream");
     if (input["lora"] && input["lora"] === true)
@@ -323,13 +338,6 @@ class Configuration {
       extensions: extensions,
       highPrecision: input["highPrecision"] ? input["highPrecision"] : false,
       logFile: input["log"] ? input["log"] : "",
-      entities: Object.keys(_DB).filter((e) =>
-        [
-          goodDbName === "admin" ? EextensionsType.admin : EextensionsType.base,
-          EextensionsType.logger,
-          ...extensions,
-        ].some((r) => _DB[e].extensions.includes(r))
-      ),
       db: undefined,
     };
     if (Object.values(returnValue).includes("ERROR"))
@@ -413,7 +421,7 @@ class Configuration {
       .then(async () => {
         const listTempTables = await this.db(connectName)`SELECT array_agg(table_name) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'temp%';`;
         const tables = listTempTables[0]["array_agg"];
-        if (tables != null)
+        if (tables != null)        
           Logs.bootingResult(
             `delete temp tables ==> \x1b[33m${connectName}\x1b[32m`,
             await this.db(connectName).begin(sql => {
@@ -421,6 +429,7 @@ class Configuration {
             }).then(() => _OK)
               .catch((err: Error) => err.message)
           );
+        if (update["triggers"] && update["triggers"] === true && connectName !== "admin") await this.reCreateTrigger(connectName);
         if ( update && update["beforeAll"] && Object.entries(update["beforeAll"]).length > 0 ) {
           if ( update && update["beforeAll"] && Object.entries(update["beforeAll"]).length > 0 ) {
             Logs.head("beforeAll");
@@ -432,7 +441,8 @@ class Configuration {
                     this.addToQueries(connectName, operation);
                   });
                 });
-              await this.executeQueries("beforeAll", true);
+              await this.executeQueries("beforeAll");
+            // Recreate triggers for this service
             } catch (error) {
               Logs.error(error);
             }

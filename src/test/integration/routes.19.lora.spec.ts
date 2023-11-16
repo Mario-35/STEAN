@@ -455,7 +455,7 @@
                      should.not.exist(err);
                      res.status.should.equal(400);
                      res.type.should.equal("application/json");
-                     res.body["detail"].should.eql("Data not corresponding [soil moisture,soil temperature,battery voltage]");
+                     res.body["detail"].should.include("Data not corresponding");
                      generateApiDoc(docs, `apiDoc${entity.name}.js`);
                      
                      done();

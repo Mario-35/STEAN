@@ -6,11 +6,11 @@
  *
  */
 
-/* eslint-disable quotes */
-
 import koa from "koa";
 import { EextensionsType, EdatesType, Eentities, EobservationType, Erelations, } from "../enums";
 import { Ientity } from "../types";
+import { getEntitesListFromContext } from "./helpers";
+
 const makeIDAlias = (table: string) => `"${table}"."id" AS "@iot.id"`;
 const makeCount = (table: string) => `SELECT count(DISTINCT id) from "${table}" AS count`;
 export const _RIGHTS = "SUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION NOBYPASSRLS CONNECTION LIMIT -1";
@@ -32,6 +32,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     extensions: [EextensionsType.base],
     orderBy: `"id"`,
     count: makeCount("thing"),
+    visible: true,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -82,7 +83,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         type: Erelations.hasMany,
         expand: `"historical_location"."id" in (select "historical_location"."id" from "historical_location" where "historical_location"."thing_id" = "thing"."id")`,
         link: `"historical_location"."id" in (select "historical_location"."id" from "historical_location" where "historical_location"."thing_id" = $ID)`,
-        entityName: "HistoricalLocation",
+        entityName: "HistoricalLocations",
         tableName: "historicalLocation",
         relationKey: "thing_id",
         entityColumn: "id",
@@ -119,6 +120,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     extensions: [EextensionsType.base],
     orderBy: `"id"`,
     count: makeCount("featureofinterest"),
+    visible: true,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -203,6 +205,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     extensions: [EextensionsType.base],
     orderBy: `"id"`,
     count: makeCount("location"),
+    visible: true,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -280,7 +283,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         type: Erelations.belongsToMany,
         expand: `"historical_location"."id" in (select "historical_location"."id" from "historical_location" where "historical_location"."thing_id" in (select "thing_location"."thing_id" from "thing_location" where "thing_location"."location_id" = "location"."id"))`,
         link: `"historical_location"."id" in (select "historical_location"."id" from "historical_location" where "historical_location"."thing_id" in (select "thing_location"."thing_id" from "thing_location" where "thing_location"."location_id" = $ID))`,
-        entityName: "HistoricalLocation",
+        entityName: "HistoricalLocations",
         tableName: "location_historical_location",
         relationKey: "location_id",
         entityColumn: "id",
@@ -297,6 +300,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     extensions: [EextensionsType.base],
     orderBy: `"id"`,
     count: makeCount("historical_location"),
+    visible: true,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -360,6 +364,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     extensions: [EextensionsType.base],
     orderBy: `"location_id"`,
     count: makeCount("location_historical_location"),
+    visible: true,
     columns: {
       location_id: {
         create: "BIGINT NOT NULL",
@@ -400,6 +405,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     extensions: [EextensionsType.base],
     orderBy: `"id"`,
     count: makeCount("observedproperty"),
+    visible: true,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -475,6 +481,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     extensions: [EextensionsType.base],
     orderBy: `"id"`,
     count: makeCount("sensor"),
+    visible: true,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -560,6 +567,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     extensions: [EextensionsType.base],
     orderBy: `"id"`,
     count: makeCount("datastream"),
+    visible: true,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -612,16 +620,44 @@ const dbDatas: { [key in Eentities]: Ientity } = {
       phenomenonTime: {
         create: "",
         columnAlias() {
-          return `CONCAT(\n\t\tto_char((SELECT min("observation"."phenomenonTime") from "observation" where "observation"."datastream_id" = "datastream"."id"),\n\t\t'${EdatesType.date}'),\n\t\t'/',\n\t\tto_char((SELECT max("observation"."phenomenonTime") from "observation" where "observation"."datastream_id" = "datastream"."id"),\n\t\t'${EdatesType.date}')\n\t) AS "phenomenonTime"`;
+          return `CONCAT(\n\t\tto_char("_phenomenonTimeStart",\n\t\t'${EdatesType.date}'),\n\t\t'/',\n\t\tto_char("_phenomenonTimeEnd",\n\t\t'${EdatesType.date}')\n\t) AS "phenomenonTime"`;
         },
         type: "text",
       },
       resultTime: {
         create: "",
         columnAlias() {
-          return `CONCAT(\n\t\tto_char((SELECT min("observation"."resultTime") from "observation" where "observation"."datastream_id" = "datastream"."id"),\n\t\t'${EdatesType.date}'),\n\t\t'/',\n\t\tto_char((SELECT max("observation"."resultTime") from "observation" where "observation"."datastream_id" = "datastream"."id"),\n\t\t'${EdatesType.date}')\n\t) AS "resultTime"`;
+          return `CONCAT(\n\t\tto_char("_resultTimeStart",\n\t\t'${EdatesType.date}'),\n\t\t'/',\n\t\tto_char("_resultTimeEnd",\n\t\t'${EdatesType.date}')\n\t) AS "resultTime"`;
         },
         type: "text",
+      },
+      _phenomenonTimeStart: {
+        create: "timestamptz NULL",
+        columnAlias() {
+          return `"_phenomenonTimeStart"`;
+        },
+        type: "date",
+      },
+      _phenomenonTimeEnd: {
+        create: "timestamptz NULL",
+        columnAlias() {
+          return `_"phenomenonTimeEnd"`;
+        },
+        type: "date",
+      },
+      _resultTimeStart: {
+        create: "timestamptz NULL",
+        columnAlias() {
+          return `"_resultTimeStart"`;
+        },
+        type: "date",
+      },
+      _resultTimeEnd: {
+        create: "timestamptz NULL",
+        columnAlias() {
+          return `"_resultTimeEnd"`;
+        },
+        type: "date",
       },
       thing_id: {
         create: "BIGINT NOT NULL",
@@ -751,6 +787,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     extensions: [EextensionsType.multiDatastream],
     orderBy: `"id"`,
     count: makeCount("multidatastream"),
+    visible: true,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -810,16 +847,44 @@ const dbDatas: { [key in Eentities]: Ientity } = {
       phenomenonTime: {
         create: "",
         columnAlias() {
-          return `CONCAT(to_char((SELECT min("observation"."phenomenonTime") from "observation" where "observation"."multidatastream_id" = "multidatastream"."id"),'${EdatesType.date}'),'/', to_char((SELECT max("observation"."phenomenonTime") from "observation" where "observation"."multidatastream_id" = "multidatastream"."id"),'${EdatesType.date}')) AS "phenomenonTime"`;
+          return `CONCAT(\n\t\tto_char("_phenomenonTimeStart",\n\t\t'${EdatesType.date}'),\n\t\t'/',\n\t\tto_char("_phenomenonTimeEnd",\n\t\t'${EdatesType.date}')\n\t) AS "phenomenonTime"`;
         },
         type: "text",
       },
       resultTime: {
         create: "",
         columnAlias() {
-          return `CONCAT(to_char((SELECT min("observation"."resultTime") from "observation" where "observation"."multidatastream_id" = "multidatastream"."id"),'${EdatesType.date}'),'/', to_char((SELECT max("observation"."resultTime") from "observation" where "observation"."multidatastream_id" = "multidatastream"."id"),'${EdatesType.date}')) AS "resultTime"`;
+          return `CONCAT(\n\t\tto_char("_resultTimeStart",\n\t\t'${EdatesType.date}'),\n\t\t'/',\n\t\tto_char("_resultTimeEnd",\n\t\t'${EdatesType.date}')\n\t) AS "resultTime"`;
         },
         type: "text",
+      },
+      _phenomenonTimeStart: {
+        create: "timestamptz NULL",
+        columnAlias() {
+          return `"_phenomenonTimeStart"`;
+        },
+        type: "date",
+      },
+      _phenomenonTimeEnd: {
+        create: "timestamptz NULL",
+        columnAlias() {
+          return `"_phenomenonTimeEnd"`;
+        },
+        type: "date",
+      },
+      _resultTimeStart: {
+        create: "timestamptz NULL",
+        columnAlias() {
+          return `"_resultTimeStart"`;
+        },
+        type: "date",
+      },
+      _resultTimeEnd: {
+        create: "timestamptz NULL",
+        columnAlias() {
+          return `"_resultTimeEnd"`;
+        },
+        type: "date",
       },
       thing_id: {
         create: "BIGINT NOT NULL",
@@ -940,6 +1005,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     extensions: [EextensionsType.multiDatastream],
     orderBy: `"multidatastream_id"`,
     count: makeCount("multi_datastream_observedproperty"),
+    visible: true,
     columns: {
       multidatastream_id: {
         create: "BIGINT NOT NULL",
@@ -980,6 +1046,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     extensions: [EextensionsType.base],
     orderBy: `"phenomenonTime"`,
     count: makeCount("observation"),
+    visible: true,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -1124,6 +1191,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     extensions: [EextensionsType.base],
     orderBy: `"id"`,
     count: makeCount("historical_observation"),
+    visible: false,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -1183,6 +1251,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     extensions: [EextensionsType.base],
     orderBy: `"thing_id"`,
     count: makeCount("thing_location"),
+    visible: false,
     columns: {
       thing_id: {
         create: "BIGINT NOT NULL",
@@ -1222,6 +1291,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     extensions: [EextensionsType.lora],
     orderBy: `"id"`,
     count: makeCount("decoder"),
+    visible: true,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -1294,6 +1364,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     extensions: [EextensionsType.lora],
     orderBy: `"id"`,
     count: makeCount("lora"),
+    visible: true,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -1411,6 +1482,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     extensions: [EextensionsType.logger],
     orderBy: `"date DESC"`,
     count: makeCount("logs"),
+    visible: true,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -1495,6 +1567,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     extensions: [EextensionsType.admin],
     orderBy: `"name"`,
     count: makeCount("user"),
+    visible: false,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -1574,6 +1647,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     extensions: [EextensionsType.logger, EextensionsType.admin],
     orderBy: `"name"`,
     count: makeCount("config"),
+    visible: false,
     columns: {},
     canPost: true,
     relations: {},
@@ -1589,6 +1663,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     extensions: [EextensionsType.base],
     orderBy: "",
     count: "",
+    visible: true,
     columns: {},
     canPost: true,
     relations: {},
@@ -1604,6 +1679,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     extensions: [EextensionsType.base],
     orderBy: "",
     count: "",
+    visible: true,
     columns: {},
     canPost: true,
     relations: {},
@@ -1613,12 +1689,4 @@ const dbDatas: { [key in Eentities]: Ientity } = {
 };
 
 export const _DB = Object.freeze(dbDatas);
-export const _DBFILTERED = (input: koa.Context | string[]) =>
-  Array.isArray(input)
-    ? Object.fromEntries(
-        Object.entries(_DB).filter(([k, v]) => input.includes(k))
-      )
-    : Object.fromEntries(
-        Object.entries(_DB).filter( ([k, v]) => input._config.entities.includes(k) || (_DB[k].extensions.includes(EextensionsType.logger) && input._user.id > 0) )
-      );
-export const _DBADMIN = Object.fromEntries( Object.entries(_DB).filter(([k, v]) => v.extensions.includes(EextensionsType.admin) ) );
+export const _DBFILTERED = (input: koa.Context) => Object.fromEntries( Object.entries(_DB) .filter( ([k]) => getEntitesListFromContext(input) .includes(k) || (_DB[k].extensions.includes(EextensionsType.logger) && input._user.id > 0))); export const _DBADMIN = Object.fromEntries( Object.entries(_DB).filter(([, v]) => v.extensions.includes(EextensionsType.admin) ) );

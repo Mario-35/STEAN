@@ -11,10 +11,7 @@ import { Logs } from "../../logger";
 
 export const executeSql = async (configName: string, query: string, values: boolean, show?:boolean): Promise<object> => {
     Logs.query(`\n${query}`);
-    if(show) {
-        console.log("===============================================================");
-        console.log(query);
-    }
+    if(show) console.log(query);
     return values && values == true ? 
     new Promise(async function (resolve, reject) {
         await serverConfig.db(configName).unsafe(query).values().then((res: object) => {            

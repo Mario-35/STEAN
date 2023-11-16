@@ -6,11 +6,11 @@
 *
 */
 
-import { _DB } from "../constants";
 function isObject(value: unknown) {
     return typeof value === 'object' && value !== null;
   }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function formatColumnValue(value: any, type: string): string | undefined {
     if (!value) return;
     if (value === void 0) {

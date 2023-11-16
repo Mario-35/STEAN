@@ -20,6 +20,12 @@ import { Iquery } from "../../types";
 export const createIqueryFromContext = async (ctx: koa.Context): Promise<Iquery> => {
     const user = await getAuthenticatedUser(ctx); 
     const metrics = await getMetrics("keys"); 
+    const temp = ctx._config.name === 'admin' === true 
+    ? _DBADMIN 
+    : user && (user.admin === true || user.superAdmin === true) 
+        ? _DB
+        : _DBFILTERED(ctx);
+
     return {
         id: "",
         methods: ["GET"],
@@ -47,11 +53,6 @@ export const createIqueryFromContext = async (ctx: koa.Context): Promise<Iquery>
         admin: ctx._config.name === 'admin',
         metrics: ["all"].concat(metrics as Array<string>),
         services: Object.keys(serverConfig.configs).filter(e => e!== "admin"),
-        _DATAS: ctx._config.name === 'admin' === true 
-            ? _DBADMIN 
-            : user && (user.admin === true || user.superAdmin === true) 
-                ? _DB
-                : _DBFILTERED(ctx)
-
+        _DATAS: Object.fromEntries( Object.entries(temp).filter(([k, v]) => v.visible === true))
     };
 };

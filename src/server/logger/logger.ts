@@ -61,8 +61,8 @@ export class Logger {
       );
   }
 
-  url<T>(link: string) {
-      this.log( `${_WEB} ${this.col(EColor.FgMario)} : ${this.col( EColor.FgCyan )} ${link}${this.col(EColor.Reset)}` );
+  url(link: string) {
+    if (isProduction()) this.log( `${_WEB} ${this.col(EColor.FgMario)} : ${this.col( EColor.FgCyan )} ${link}${this.col(EColor.Reset)}` );
   }
 
   bootingResult<T>(cle: string, infos?: T) {
@@ -171,6 +171,7 @@ export class Logger {
               EColor.Reset
             )}`
       );
+      return cle;
   }
 
   env<T>(testDebug: boolean, cle: string, infos?: T) {
@@ -184,7 +185,9 @@ export class Logger {
         )}${this.col(EColor.Reset)}`
       );
   }
-  whereIam() {
+  // Usefull for id not used ;)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  whereIam(nop?: unknown) {
     if (_DEBUG)
       this.log(
         `${this.col(EColor.FgRed)} ${this.line(4)} ${this.col(EColor.FgCyan)} ${
