@@ -13,11 +13,7 @@ import { EuserRights } from "../enums";
 export const getRouteFromPath = (input: string): string => {
   const result: string | undefined =
     input.trim() != "/"
-      ? input
-          .split("/")
-          .reverse()
-          .filter((word) => word.trim() != "")[0]
-          .toUpperCase()
+      ? input .split("/") .reverse() .filter((word) => word.trim() != "")[0] .toUpperCase()
       : "";      
   return result.includes("(") ? result.split("(")[0] : result;
 };

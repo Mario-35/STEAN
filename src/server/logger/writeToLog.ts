@@ -12,6 +12,7 @@ import { _DB } from "../db/constants";
 // import util from "util";
 import { hidePasswordInJSON } from "../helpers";
 import { createInsertValues, executeSql } from "../db/helpers";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const writeToLog = async ( ctx: koa.Context, ...error: any[] ): Promise<void> => {
   Logs.whereIam();
   if (error.length > 0) Logs.writeError(ctx, error);

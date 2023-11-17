@@ -18,6 +18,7 @@ import util from "util";
 import update from "./update.json";
 import postgres from "postgres";
 import { triggers } from "../db/createDb/triggers";
+import { _DB } from "../db/constants";
 
 // class to create configs environements
 class Configuration {
@@ -282,6 +283,7 @@ class Configuration {
 
   // return IconfigFile Formated for IconfigFile object or name found in json file
   private formatConfig(input: object | string, name?: string): IconfigFile {
+    
     if (typeof input === "string") {
       name = input;
       input = Configuration.jsonConfiguration[input];
@@ -339,6 +341,9 @@ class Configuration {
       highPrecision: input["highPrecision"] ? input["highPrecision"] : false,
       logFile: input["log"] ? input["log"] : "",
       db: undefined,
+      _context: {
+        entities: Object.keys(_DB).filter((e) => [ EextensionsType.base, EextensionsType.logger, ... extensions, ].some((r) => _DB[e].extensions.includes(r))),
+      }
     };
     if (Object.values(returnValue).includes("ERROR"))
       throw new TypeError(

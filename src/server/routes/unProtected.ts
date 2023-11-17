@@ -28,7 +28,6 @@ import { createDatabase } from "../db/createDb";
 import { exportToXlsx, importToXlsx } from "../db/helpers/export";
 import { remadeResult } from "../db/helpers/remadeResult";
 import { replayPayload } from "../db/queries";
-import { getEntitesListFromContext } from "../db/helpers";
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 // ALl others
 unProtectedRoutes.get("/(.*)", async (ctx) => {
@@ -42,7 +41,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
     case ctx._config.apiVersion.toUpperCase():
       const expectedResponse: object[] = [];      
       if (isAdmin(ctx) && !adminWithSuperAdminAccess) ctx.throw(401);
-        getEntitesListFromContext(ctx)
+        ctx._config._context.entities
         .filter((elem: string) => _DB[elem].order > 0)
         .sort((a, b) => (_DB[a].order > _DB[b].order ? 1 : -1))
         .forEach((value: string) => {

@@ -2,17 +2,14 @@ import Excel from "exceljs";
 import koa from "koa";
 import path from "path";
 import postgres from "postgres";
-import { createInsertValues, executeSql, getEntitesListFromContext } from ".";
+import { createInsertValues, executeSql } from ".";
 import { serverConfig } from "../../configuration";
 import { EextensionsType } from "../../enums";
 import { asyncForEach } from "../../helpers";
 import { Logs } from "../../logger";
 import { _DB } from "../constants";
 
-const addConfigToFile = async (
-  workbook: Excel.Workbook,
-  config: object
-) => {
+const addConfigToExcel = async ( workbook: Excel.Workbook, config: object ) => {
   const worksheet = workbook.addWorksheet("Config");
   const cols: Partial<Excel.Column>[] = [
     { key: "key", header: "key" },
@@ -37,18 +34,14 @@ const addConfigToFile = async (
   
 };
 
-const addToFile = async ( workbook: Excel.Workbook, name: string, input: object ) => {
+const addToExcel = async ( workbook: Excel.Workbook, name: string, input: object ) => {
   if (input && input[0]) {
     const worksheet = workbook.addWorksheet(name);
-    const cols: Partial<Excel.Column>[] = [
-      { key: "insertId", header: "insertId" },
-    ];
-    // console.log("============================================");
-    // console.log(input[0]);
+    const cols: Partial<Excel.Column>[] = [ { key: "insertId", header: "insertId" }, ];
     
     Object.keys(input[0]).forEach((temp: string) => {
-        cols.push({ key: temp, header: temp });
-      });
+      cols.push({ key: temp, header: temp });
+    });
       
     worksheet.columns = cols;
     worksheet.columns.forEach((sheetColumn) => {
@@ -72,40 +65,49 @@ const addToFile = async ( workbook: Excel.Workbook, name: string, input: object 
 
 // Create column List
 const createColumnsList = async (ctx: koa.Context, entity: string) => {
-  const myclos: string[] = [];
+  const columnList: string[] = [];
   await asyncForEach(
     Object.keys(_DB[entity].columns),
     async (column: string) => {
+      const createQuery = (input: string) => `select distinct ${input} AS "${column}" from "${_DB[entity].table}" LIMIT 200`;
       if (_DB[entity].columns[column].create !== "") {
         // IF JSON create column-key  note THAT is limit 200 firts items
         if (_DB[entity].columns[column].create.startsWith("json")) {
-          const tempSqlResult = await serverConfig.db(ctx._config.name).unsafe(`select distinct jsonb_object_keys("${column}") AS "${column}" from "${_DB[entity].table}" LIMIT 200`)
+          const tempSqlResult = await serverConfig.db(ctx._config.name).unsafe(createQuery(`jsonb_object_keys("${column}")`))
             .catch(async (e) => {
               if (e.code === "22023") {
-                return await serverConfig.db(ctx._config.name).unsafe(`select distinct jsonb_object_keys("${column}"[0]) AS "${column}" from "${_DB[entity].table}" LIMIT 200`);
+                const tempSqlResult = await serverConfig.db(ctx._config.name).unsafe(createQuery(`jsonb_object_keys("${column}"[0])`)).catch(async (e) => {
+                  if (e.code === "42804") {
+                    const tempSqlResult = await serverConfig.db(ctx._config.name).unsafe(createQuery(`jsonb_object_keys(jsonb_array_elements("${column}"))`));
+                    if (tempSqlResult && tempSqlResult.length > 0) 
+                      tempSqlResult.forEach((e: Iterable<postgres.Row> ) => { columnList.push( `jsonb_array_elements("${column}")->>'${e[column]}' AS "${column}-${e[column]}"`); });
+                  } else Logs.error(e);
+                });    
+                if (tempSqlResult && tempSqlResult.length > 0) 
+                  tempSqlResult.forEach((e: Iterable<postgres.Row> ) => { columnList.push( `"${column}"[0]->>'${e[column]}' AS "${column}-${e[column]}"`); });
               } else Logs.error(e);
             });            
-            if (tempSqlResult && tempSqlResult.length > 0) {
-              tempSqlResult.forEach((e: Iterable<postgres.Row> ) => {
-                myclos.push( `"${column}"->>'${e[column]}' AS "${column}-${e[column]}"` );
-              });
-            }
-        } else myclos.push(`"${column}"`);
+            if (tempSqlResult && tempSqlResult.length > 0) 
+              tempSqlResult.forEach((e: Iterable<postgres.Row> ) => { columnList.push( `"${column}"->>'${e[column]}' AS "${column}-${e[column]}"`); });
+            
+        } else columnList.push(`"${column}"`);
       }
-    }
-  );    
-  return myclos;
+    });    
+  return columnList;
 };
 
 export const exportToXlsx = async (ctx: koa.Context) => {
+  // CReate new workBook
   const workbook = new Excel.Workbook();
   workbook.creator = "Me";
   workbook.lastModifiedBy = "Her";
   workbook.created = new Date(Date.now());
   workbook.modified = new Date(Date.now());
-  addConfigToFile(workbook, serverConfig.getConfigExport(ctx._config.name));
+  // Get configs infos
+  addConfigToExcel(workbook, serverConfig.getConfigExport(ctx._config.name));
+  // Loop on entities
   await asyncForEach(
-    getEntitesListFromContext(ctx).filter(
+    ctx._config._context.entities.filter(
       (entity: string) =>
         _DB[entity].table !== "" &&
         [
@@ -116,22 +118,18 @@ export const exportToXlsx = async (ctx: koa.Context) => {
     ),
     async (entity: string) => {
       const cols = await createColumnsList(ctx, entity);      
-      const temp = await serverConfig.db(ctx._config.name).unsafe(`select ${cols} from "${_DB[entity].table}" LIMIT 200`);
-      
-      await addToFile(workbook, entity, temp);
-    }
-  );
-  ctx.response.attachment(`${ctx._config.name}.xlsx`);
+      const temp = await serverConfig.db(ctx._config.name).unsafe(`select ${cols} from "${_DB[entity].table}" LIMIT 200`);  
+      await addToExcel(workbook, entity, temp);
+  });
+  // Save file
   ctx.status = 200;
+  ctx.response.attachment(`${ctx._config.name}.xlsx`);
   await workbook.xlsx.write(ctx.res);
+  // Close all
   ctx.res.end();
 };
 
-export const importOnglet = async (
-  workbook: Excel.Workbook,
-  table: string,
-  ctx: koa.Context
-) => {
+export const importOnglet = async ( workbook: Excel.Workbook, table: string, ctx: koa.Context ) => {
   const result = [{}];
   const ids: { [key: number]: number } = {};
 
@@ -152,9 +150,8 @@ export const importOnglet = async (
           }
         });
           await executeSql(ctx._config.name, `INSERT INTO "${_DB[table].table}" ${createInsertValues(temp, _DB[table].name)}`, true)
-          .then((res: object) => {
-            console.log(res);
-          }).catch(async (error: Error) => {
+          .then((res: object) => { console.log(res); })
+          .catch(async (error: Error) => {
             if (error["code"] === "23505") {
               await executeSql(ctx._config.name, `SELECT "id" FROM ${_DB[table].table}" WHERE "name" = '${temp["name"]}' LIMIT 1`, true).then(
                 (res: object) => {

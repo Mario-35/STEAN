@@ -19,4 +19,3 @@ export { getStreamInfos } from "./getStreamInfos";
 export { createInsertValues } from "./createInsertValues";
 export { createUpdateValues } from "./createUpdateValues";
 export { formatColumnValue } from "./formatColumnValue";
-export { getEntitesListFromContext, getEntitesListFromConfig } from "./getEntitesList";

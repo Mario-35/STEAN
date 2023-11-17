@@ -9,7 +9,6 @@
 import koa from "koa";
 import { EextensionsType, EdatesType, Eentities, EobservationType, Erelations, } from "../enums";
 import { Ientity } from "../types";
-import { getEntitesListFromContext } from "./helpers";
 
 const makeIDAlias = (table: string) => `"${table}"."id" AS "@iot.id"`;
 const makeCount = (table: string) => `SELECT count(DISTINCT id) from "${table}" AS count`;
@@ -1689,4 +1688,6 @@ const dbDatas: { [key in Eentities]: Ientity } = {
 };
 
 export const _DB = Object.freeze(dbDatas);
-export const _DBFILTERED = (input: koa.Context) => Object.fromEntries( Object.entries(_DB) .filter( ([k]) => getEntitesListFromContext(input) .includes(k) || (_DB[k].extensions.includes(EextensionsType.logger) && input._user.id > 0))); export const _DBADMIN = Object.fromEntries( Object.entries(_DB).filter(([, v]) => v.extensions.includes(EextensionsType.admin) ) );
+export const _DBFILTERED = (input: koa.Context) => Object.fromEntries( Object.entries(_DB) .filter( ([k]) => input._config._context.entities .includes(k))); 
+export const _DBADMIN = Object.fromEntries( Object.entries(_DB).filter(([, v]) => v.extensions.includes(EextensionsType.admin) ) );
+// export const _DBFILTERED = (input: koa.Context) => Object.fromEntries( Object.entries(_DB) .filter( ([k]) => input._config._context.entities .includes(k) || (_DB[k].extensions.includes(EextensionsType.logger) && input._user.id > 0))); export const _DBADMIN = Object.fromEntries( Object.entries(_DB).filter(([, v]) => v.extensions.includes(EextensionsType.admin) ) );

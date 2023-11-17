@@ -53,6 +53,6 @@ export const createIqueryFromContext = async (ctx: koa.Context): Promise<Iquery>
         admin: ctx._config.name === 'admin',
         metrics: ["all"].concat(metrics as Array<string>),
         services: Object.keys(serverConfig.configs).filter(e => e!== "admin"),
-        _DATAS: Object.fromEntries( Object.entries(temp).filter(([k, v]) => v.visible === true))
+        _DATAS: Object.fromEntries( Object.entries(temp).filter(([, v]) => v.visible === true))
     };
 };

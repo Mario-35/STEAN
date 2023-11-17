@@ -6,7 +6,7 @@
  *
  */
 
-import { createTable, getEntitesListFromConfig } from "../helpers";
+import { createTable } from "../helpers";
 import { serverConfig } from "../../configuration";
 import { asyncForEach, isTest } from "../../helpers";
 import { Logs } from "../../logger";
@@ -74,30 +74,12 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
     
   // loop to create each table
   await asyncForEach(
-    getEntitesListFromConfig(configName),
+    serverConfig.configs[configName]._context.entities,
     async (keyName: string) => {
       const res = await createTable(configName, _DB[keyName], undefined);
       Object.keys(res).forEach((e: string) => Logs.create(e, res[e]));      
     }
   );
-  
-  // await dbConnection.begin(sql => {
-  //   triggers
-  //     .forEach(async (query: string) => {        
-  //       const name = query.includes('FUNCTION') 
-  //       ? `Create function ${query.split('CREATE OR REPLACE FUNCTION ')[1].split("(")[0]}`
-  //       : `Create trigger ${query.split('CREATE TRIGGER')[1].split(" ")[0]}`;
-  //       await sql.unsafe(query)
-  //               .then(() => {
-  //                 Logs.create(name, _OK);
-  //               }).catch((error: Error) => {
-  //                 console.log(error);
-                  
-  //                 Logs.error(name, _NOTOK);
-  //               });
-  //     });
-  // });
-  
 
   // loop to create each table
   await asyncForEach( triggers(configName), async (query: string) => {

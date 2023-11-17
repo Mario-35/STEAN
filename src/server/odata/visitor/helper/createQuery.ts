@@ -8,12 +8,12 @@
 
 import { createSql, getColumnsList } from ".";
 import { _DB } from "../../../db/constants";
-import { getEntitesListFromConfig } from "../../../db/helpers";
 import { getEntityName, isNull, isSingular } from "../../../helpers";
 import { Logs } from "../../../logger";
 import { queryAsJson } from "../../../db/queries";
 import { IpgQuery } from "../../../types";
 import { PgVisitor } from "../PgVisitor";
+import { serverConfig } from "../../../configuration";
 
 
 export function createQueryString(main: PgVisitor, element: PgVisitor): string { 
@@ -34,8 +34,7 @@ export function createPgQuery(main: PgVisitor, element: PgVisitor): IpgQuery | u
         if (select) {
             const realEntityName = getEntityName(realEntity);
             if (realEntityName) {
-                const authorisedEntities = getEntitesListFromConfig(main.configName);
-                const relations: string[] = Object.keys(_DB[realEntityName].relations).filter((e: string) => authorisedEntities.includes(_DB[realEntityName].relations[e].entityName));
+                const relations: string[] = Object.keys(_DB[realEntityName].relations).filter((e: string) => serverConfig.configs[main.configName]._context.entities.includes(_DB[realEntityName].relations[e].entityName));
                 element.includes.forEach((item) => {                                
                     const name = item.navigationProperty;                                                
                     const index = relations.indexOf(name);
