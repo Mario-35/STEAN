@@ -18,21 +18,12 @@ export const encrypt = (text: string): string => {
 };
 
 export const decrypt = (input: string): string => {
-  if (typeof input === "string") {
+  input = input.split("\r\n").join("");
+  if (typeof input === "string" && input[32] == ".") {      
     try {
-      const temp = input.split(".");
-      if (temp[0].length == 32) {
-        const decipher = crypto.createDecipheriv(
-          "aes-256-ctr",
-          APP_KEY,
-          Buffer.from(temp[0], "hex").slice(0, 16)
-        );
-        const decrpyted = Buffer.concat([
-          decipher.update(Buffer.from(temp[1], "hex").slice(0, 16)),
-          decipher.final(),
-        ]);
+        const decipher = crypto.createDecipheriv( "aes-256-ctr", APP_KEY, Buffer.from(input.substring(32, 0), "hex") );
+        const decrpyted = Buffer.concat([ decipher.update(Buffer.from(input.slice(33), "hex")), decipher.final(), ]);
         return decrpyted.toString();
-      }
     } catch (error) {
       Logs.error(error);
     }

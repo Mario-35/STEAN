@@ -8,19 +8,41 @@
 
 import koa from "koa";
 import { EextensionsType, EdatesType, Eentities, EobservationType, Erelations, } from "../enums";
-import { Ientity } from "../types";
+import { IcolumnOption, Ientity, IKeyBoolean } from "../types";
 
-const makeIDAlias = (table: string) => `"${table}"."id" AS "@iot.id"`;
+const makeIDAlias = '"id" AS "@iot.id"';
 const makeCount = (table: string) => `SELECT count(DISTINCT id) from "${table}" AS count`;
 export const _RIGHTS = "SUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION NOBYPASSRLS CONNECTION LIMIT -1";
 export type _STREAM = "Datastream" | "MultiDatastream" | undefined;
-export const convertResult = (numeric: boolean) =>
-  numeric
-    ? `result::numeric`
-    : `CASE 
-    WHEN jsonb_typeof("result"-> 'value') = 'number' then "result"->'value' 
-    END::numeric
-  `;
+export const getColumnResult = (numeric: boolean, as: boolean, cast: string = "numeric") => numeric 
+  ? `CASE WHEN jsonb_typeof("result"-> 'value') = 'number' THEN ("result"->>'value')::${cast} END${as === true ? ' AS "result"' : ''}` 
+  : `CASE WHEN jsonb_typeof("result"-> 'value') = 'number' then ("result"->'value')::${cast} END${as === true ? ' AS "result"' : ''}`;
+export const getColumnNameOrAlias = (entity: Ientity, column : string, options: IcolumnOption) => {
+  // console.log("=====================================================");
+  // console.log(options);
+  
+  const result = entity 
+          && column != "" 
+          && entity.columns[column] 
+            ? entity.columns[column].columnAlias(options.test ? {...options.test, ...{"as": options.as}} : {"as": options.as}) 
+            : undefined;
+  // console.log(result);
+  
+  return result ? `${options.table === true && result && result[0] === '"' ? `"${entity.table}".${result}` : result}` : undefined;        
+}; 
+
+export const getAllColumnName = (entity: Ientity, columns : string | string[], options: IcolumnOption): string[] => {
+  const result: string[] = [];
+  if (typeof columns === "string") {
+    columns = columns[0] === "*" ? Object.keys(entity.columns).filter((word) => !word.includes("_")) : columns.split(',');
+  }
+  columns.forEach((column: string) => {
+    const temp = getColumnNameOrAlias(entity, column, options);
+    if (temp) result.push(temp);
+  });
+  
+  return result;
+};
 
 const dbDatas: { [key in Eentities]: Ientity } = {
   Things: {
@@ -36,7 +58,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
         columnAlias() {
-          return makeIDAlias("thing");
+          return makeIDAlias;
         },
         type: "number",
       },
@@ -124,7 +146,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
         columnAlias() {
-          return makeIDAlias("featureofinterest");
+          return makeIDAlias;
         },
         type: "number",
       },
@@ -209,7 +231,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
         columnAlias() {
-          return makeIDAlias("location");
+          return makeIDAlias;
         },
         type: "number",
       },
@@ -304,20 +326,23 @@ const dbDatas: { [key in Eentities]: Ientity } = {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
         columnAlias() {
-          return makeIDAlias("historical_location");
+          return makeIDAlias;
         },
+        type: "bigint"
       },
       time: {
         create: "timestamptz NULL",
         columnAlias() {
           return `"time"`;
         },
+        type: "date"
       },
       thing_id: {
         create: "BIGINT NOT NULL",
         columnAlias() {
           return `"thing_id"`;
         },
+        type: "bigint"
       },
     },
     constraints: {
@@ -370,12 +395,14 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         columnAlias() {
           return `"location_id"`;
         },
+        type: "bigint"
       },
       historical_location_id: {
         create: "BIGINT NOT NULL",
         columnAlias() {
           return `"historical_location_id"`;
         },
+        type: "bigint"
       },
     },
     constraints: {
@@ -409,7 +436,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
         columnAlias() {
-          return makeIDAlias("observedproperty");
+          return makeIDAlias;
         },
         type: "number",
       },
@@ -485,7 +512,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
         columnAlias() {
-          return makeIDAlias("sensor");
+          return makeIDAlias;
         },
         type: "number",
       },
@@ -571,7 +598,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
         columnAlias() {
-          return makeIDAlias("datastream");
+          return makeIDAlias;
         },
         type: "number",
       },
@@ -618,15 +645,15 @@ const dbDatas: { [key in Eentities]: Ientity } = {
       },
       phenomenonTime: {
         create: "",
-        columnAlias() {
-          return `CONCAT(\n\t\tto_char("_phenomenonTimeStart",\n\t\t'${EdatesType.date}'),\n\t\t'/',\n\t\tto_char("_phenomenonTimeEnd",\n\t\t'${EdatesType.date}')\n\t) AS "phenomenonTime"`;
+        columnAlias(test: IKeyBoolean | undefined) {          
+          return `CONCAT(to_char("_phenomenonTimeStart",'${EdatesType.date}'),'/',to_char("_phenomenonTimeEnd",'${EdatesType.date}'))${test && test["as"] === true ? ` AS "phenomenonTime"`: ''}`;
         },
         type: "text",
       },
       resultTime: {
         create: "",
-        columnAlias() {
-          return `CONCAT(\n\t\tto_char("_resultTimeStart",\n\t\t'${EdatesType.date}'),\n\t\t'/',\n\t\tto_char("_resultTimeEnd",\n\t\t'${EdatesType.date}')\n\t) AS "resultTime"`;
+        columnAlias(test: IKeyBoolean | undefined) {
+          return `CONCAT(to_char("_resultTimeStart",'${EdatesType.date}'),'/',to_char("_resultTimeEnd",'${EdatesType.date}'))${test && test["as"] === true ? ` AS "resultTime"`: ''}`;
         },
         type: "text",
       },
@@ -791,7 +818,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
         columnAlias() {
-          return makeIDAlias("multidatastream");
+          return makeIDAlias;
         },
         type: "number",
       },
@@ -834,7 +861,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         columnAlias() {
           return `"multiObservationDataTypes"`;
         },
-        type: "text",
+        type: "text[]",
       },
       observedArea: {
         create: "geometry NULL",
@@ -845,15 +872,15 @@ const dbDatas: { [key in Eentities]: Ientity } = {
       },
       phenomenonTime: {
         create: "",
-        columnAlias() {
-          return `CONCAT(\n\t\tto_char("_phenomenonTimeStart",\n\t\t'${EdatesType.date}'),\n\t\t'/',\n\t\tto_char("_phenomenonTimeEnd",\n\t\t'${EdatesType.date}')\n\t) AS "phenomenonTime"`;
+        columnAlias(test: IKeyBoolean | undefined) {  
+          return `CONCAT(to_char("_phenomenonTimeStart",'${EdatesType.date}'),'/',to_char("_phenomenonTimeEnd",'${EdatesType.date}'))${test && test["as"] === true ? ` AS "phenomenonTime"`: ''}`;
         },
         type: "text",
       },
       resultTime: {
         create: "",
-        columnAlias() {
-          return `CONCAT(\n\t\tto_char("_resultTimeStart",\n\t\t'${EdatesType.date}'),\n\t\t'/',\n\t\tto_char("_resultTimeEnd",\n\t\t'${EdatesType.date}')\n\t) AS "resultTime"`;
+        columnAlias(test: IKeyBoolean | undefined) {  
+          return `CONCAT(to_char("_resultTimeStart",'${EdatesType.date}'),'/',to_char("_resultTimeEnd",'${EdatesType.date}'))${test && test["as"] === true ? ` AS "resultTime"`: ''}`;
         },
         type: "text",
       },
@@ -911,6 +938,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         columnAlias() {
           return `"_default_foi"`;
         },
+        type: "bigint"
       },
     },
     canPost: false,
@@ -1011,12 +1039,14 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         columnAlias() {
           return `"multidatastream_id"`;
         },
+        type: "bigint"
       },
       observedproperty_id: {
         create: "BIGINT NOT NULL",
         columnAlias() {
           return `"observedproperty_id"`;
         },
+        type: "bigint"
       },
     },
     canPost: false,
@@ -1050,7 +1080,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
         columnAlias() {
-          return makeIDAlias("observation");
+          return makeIDAlias;
         },
         type: "number",
       },
@@ -1063,16 +1093,21 @@ const dbDatas: { [key in Eentities]: Ientity } = {
       },
       result: {
         create: "jsonb NULL",
-        columnAlias(test: boolean[] | undefined) {
+        columnAlias(test: IKeyBoolean | undefined) {
           return test
-            ? test[1] === true
-              ? `"result"-> 'valueskeys'->'soil moisture' AS "soil moisture"`
-              : test[0] === true
-              ? `coalesce("result"-> 'valueskeys', "result"-> 'value') AS result`
-              : `"result"-> 'value' AS result`
+            ? test["valuesKeys"] 
+              ? `coalesce("result"-> 'valueskeys', "result"-> 'value')${test && test["as"] === true ? ` AS "result"`: ''}`
+              // : `"result"->'value'${test && test["numeric"] === true ? `::numeric`: ''}${test && test["as"] === true ? ` AS "result"`: ''}`
+              : test["numeric"] && test["numeric"] === true
+              ? `CASE WHEN jsonb_typeof("result"-> 'value') = 'number' THEN ("result"->>'value')::numeric END${test && test["as"] === true ? ` AS "result"`: ''}`
+              : `"result"->'value'${test && test["as"] === true ? ` AS "result"`: ''}`
+              
+              // : `"result"->>'value'::numeric${test && test["as"] === true ? ` AS "result"`: ''}`
             : "result";
+
+
         },
-        type: "number",
+        type: "result",
       },
       resultTime: {
         create: "timestamptz NOT NULL",
@@ -1195,26 +1230,30 @@ const dbDatas: { [key in Eentities]: Ientity } = {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
         columnAlias() {
-          return makeIDAlias("historical_observation");
+          return makeIDAlias;
         },
+        type: "bigint"
       },
       validTime: {
         create: "timestamptz DEFAULT CURRENT_TIMESTAMP",
         columnAlias() {
           return `"validTime"`;
         },
+        type: "date"
       },
       _result: {
         create: "jsonb NULL",
         columnAlias() {
           return `"_result"`;
         },
+        type: "json"
       },
       observation_id: {
         create: "BIGINT NULL",
         columnAlias() {
           return `"observation_id"`;
         },
+        type: "bigint"
       },
     },
     constraints: {
@@ -1257,12 +1296,14 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         columnAlias() {
           return `"thing_id"`;
         },
+        type: "bigint"
       },
       location_id: {
         create: "BIGINT NOT NULL",
         columnAlias() {
           return `"location_id"`;
         },
+        type: "bigint"
       },
     },
     canPost: false,
@@ -1295,7 +1336,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
         columnAlias() {
-          return makeIDAlias("decoder");
+          return makeIDAlias;
         },
         type: "number",
       },
@@ -1368,7 +1409,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
         columnAlias() {
-          return makeIDAlias("lora");
+          return makeIDAlias;
         },
         type: "number",
       },
@@ -1486,7 +1527,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",
         columnAlias() {
-          return makeIDAlias("logs");
+          return makeIDAlias;
         },
         type: "number",
       },
@@ -1573,66 +1614,77 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         columnAlias() {
           return `"id"`;
         },
+        type: "bigint"
       },
       username: {
         create: "text NOT NULL UNIQUE",
         columnAlias() {
           return `"username"`;
         },
+        type: "string"
       },
       email: {
         create: "text NOT NULL",
         columnAlias() {
           return `"email"`;
         },
+        type: "string"
       },
       password: {
         create: "text NOT NULL",
         columnAlias() {
           return `"password"`;
         },
+        type: "string"
       },
       database: {
         create: "text NOT NULL",
         columnAlias() {
           return `"database"`;
         },
+        type: "string"
       },
       canPost: {
         create: "bool NULL",
         columnAlias() {
           return `"canPost"`;
         },
+        type: "boolean"
       },
       canDelete: {
         create: "bool NULL",
         columnAlias() {
           return `"canDelete"`;
         },
+        type: "boolean"
       },
       canCreateUser: {
         create: "bool NULL",
         columnAlias() {
           return `"canCreateUser"`;
         },
+        type: "boolean"
       },
       canCreateDb: {
         create: "bool NULL",
         columnAlias() {
           return `"canCreateDb"`;
         },
+        type: "boolean"
       },
       admin: {
         create: "bool NULL",
         columnAlias() {
           return `"admin"`;
         },
+        type: "boolean"
       },
       superAdmin: {
         create: "bool NULL",
         columnAlias() {
           return `"superAdmin"`;
         },
+        type: "boolean"
       },
     },
     relations: {},
@@ -1687,7 +1739,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
   },
 };
 
-export const _DB = Object.freeze(dbDatas);
+export const _DB = <{ [key in Eentities]: Ientity }>Object.freeze(dbDatas);
 export const _DBFILTERED = (input: koa.Context) => Object.fromEntries( Object.entries(_DB) .filter( ([k]) => input._config._context.entities .includes(k))); 
 export const _DBADMIN = Object.fromEntries( Object.entries(_DB).filter(([, v]) => v.extensions.includes(EextensionsType.admin) ) );
-// export const _DBFILTERED = (input: koa.Context) => Object.fromEntries( Object.entries(_DB) .filter( ([k]) => input._config._context.entities .includes(k) || (_DB[k].extensions.includes(EextensionsType.logger) && input._user.id > 0))); export const _DBADMIN = Object.fromEntries( Object.entries(_DB).filter(([, v]) => v.extensions.includes(EextensionsType.admin) ) );
+

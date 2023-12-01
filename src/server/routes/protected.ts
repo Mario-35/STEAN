@@ -8,15 +8,10 @@
 
 import Router from "koa-router";
 import { apiAccess, userAccess } from "../db/dataAccess";
-import { returnFormats, upload } from "../helpers";
+import { isAllowedTo, returnFormats, upload } from "../helpers";
 import fs from "fs";
 import koa from "koa";
-import {
-  checkPassword,
-  emailIsValid,
-  isAllowedTo,
-  getRouteFromPath,
-} from "./helpers";
+import { checkPassword, emailIsValid, getRouteFromPath, } from "./helpers";
 import { Logs } from "../logger";
 import { IKeyString, IreturnResult, Iuser } from "../types";
 import { DefaultState, Context } from "koa";
@@ -28,7 +23,7 @@ import { errors, infos, msg } from "../messages";
 import { EuserRights } from "../enums";
 import { loginUser } from "../authentication";
 import { ADMIN } from "../constants";
-import { executeSql } from "../db/helpers";
+import { executeSqlValues } from "../db/helpers";
 
 export const protectedRoutes = new Router<DefaultState, Context>();
 
@@ -64,7 +59,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
       if (isObject && body["username"].trim() === "") {
         why["username"] = msg(errors.empty, "username");
       } else {
-        const user = await executeSql(ADMIN, `SELECT "username" FROM "user" WHERE username = '${ctx.request.body["username"]}' LIMIT 1`, true);
+        const user = await executeSqlValues(ADMIN, `SELECT "username" FROM "user" WHERE username = '${ctx.request.body["username"]}' LIMIT 1`);
         if (user) why["username"] = errors.alreadyPresent;
       }
       // Email

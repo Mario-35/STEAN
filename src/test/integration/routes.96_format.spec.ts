@@ -62,7 +62,7 @@ describe("Output formats", () => {
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err: Error, res: any) => {                                        
+                .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");

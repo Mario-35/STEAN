@@ -1,12 +1,12 @@
 {
     "admin": {
-        "key": "my qui ses scions",
         "pg": {
             "host": "localhost",
             "user": "postgres",
             "password": "mario29",
             "database": "admin"
-        }
+        },
+        "log": "tests.log"
     },
     "test": {
         "name": "test",

@@ -22,7 +22,7 @@ export const enum EColor {
     FgMagenta = 35,
     FgCyan = 36,
     FgWhite = 37,
-    FgMario = 39,
+    FgFadeWhite = 39,
     FgGray = 90,
     BgBlack = 40,
     BgRed = 41,

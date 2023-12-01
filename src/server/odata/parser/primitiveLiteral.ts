@@ -183,6 +183,7 @@ namespace PrimitiveLiteral {
             return Lexer.tokenize(value, start, index, "Edm.String", Lexer.TokenType.Literal);
         }
     }
+
     export function durationValue(value: Utils.SourceArray, index: number): Lexer.Token | undefined {
         if (!Utils.equals(value, index, "duration")) return;
         const start = index;
@@ -282,6 +283,97 @@ namespace PrimitiveLiteral {
         if (dayNext === monthNext + 1 || value[dayNext] === 0x54) return;
         return Lexer.tokenize(value, index, dayNext, "Edm.Date", Lexer.TokenType.Literal);
     }
+    export function dateTimePeriodValue(value: Utils.SourceArray, index: number): Lexer.Token | undefined {
+        const yearStartNext = Lexer.year(value, index);
+        if (!yearStartNext) return;
+        if (yearStartNext === index || value[yearStartNext] !== 0x2d) return;
+        const monthStartNext = Lexer.month(value, yearStartNext + 1);
+        if (!monthStartNext) return;
+        if (monthStartNext === yearStartNext + 1 || value[monthStartNext] !== 0x2d) return;
+        const dayStartNext = Lexer.day(value, monthStartNext + 1);
+        if (!dayStartNext) return;
+        if (dayStartNext === monthStartNext + 1 || value[dayStartNext] !== 0x54) return;
+        const hourStartNext = Lexer.hour(value, dayStartNext + 1);
+        if (!hourStartNext) return;
+        let colon = Lexer.COLON(value, hourStartNext);
+        if (hourStartNext === colon || !colon) return;
+        const minuteStartNext = Lexer.minute(value, hourStartNext + 1);
+        if (minuteStartNext === hourStartNext + 1) return;
+        if (!minuteStartNext) return;
+        let end = minuteStartNext;
+        colon = Lexer.COLON(value, minuteStartNext);
+        if (colon) {
+            const secondStartNext = Lexer.second(value, colon);
+            if (secondStartNext) {
+                if (secondStartNext === colon) return;
+                if (value[secondStartNext] === 0x2e) {
+                    const fractionalSecondsStartNext = Lexer.fractionalSeconds(value, secondStartNext + 1);
+                    if (fractionalSecondsStartNext === secondStartNext + 1) return;
+                    if (fractionalSecondsStartNext) end = fractionalSecondsStartNext;
+                } else end = secondStartNext;
+            }
+        }
+        
+        const sign = Lexer.SIGN(value, end);
+        if (value[end] === 0x5a) {
+            end++;
+        } else if (sign) {
+            const zHourStartNext = Lexer.hour(value, sign);
+            if (!zHourStartNext) return;
+        
+            const colon = Lexer.COLON(value, zHourStartNext);
+            if (zHourStartNext === sign || !colon) return;
+            const zMinuteStartNext = Lexer.minute(value, colon);
+            if (!zMinuteStartNext || zMinuteStartNext === colon) return;
+            end = zMinuteStartNext;
+        } else return;
+        if (value[end] === 0x2f) {
+            const yearEndNext = Lexer.year(value, end+1);
+            if (!yearEndNext) return;
+            if (yearEndNext === index || value[yearEndNext] !== 0x2d) return;
+            const monthEndNext = Lexer.month(value, yearEndNext + 1);
+            if (!monthEndNext) return;
+            if (monthEndNext === yearEndNext + 1 || value[monthEndNext] !== 0x2d) return;
+            const dayEndNext = Lexer.day(value, monthEndNext + 1);
+            if (!dayEndNext) return;
+            if (dayEndNext === monthEndNext + 1 || value[dayEndNext] !== 0x54) return;
+            const hourEndNext = Lexer.hour(value, dayEndNext + 1);
+            if (!hourEndNext) return;
+            let colon = Lexer.COLON(value, hourEndNext);
+            if (hourEndNext === colon || !colon) return;
+            const minuteEndNext = Lexer.minute(value, hourEndNext + 1);
+            if (minuteEndNext === hourEndNext + 1) return;
+            if (!minuteEndNext) return;
+            end = minuteEndNext;
+            colon = Lexer.COLON(value, minuteEndNext);
+            if (colon) {
+                const secondEndNext = Lexer.second(value, colon);
+                if (secondEndNext) {
+                    if (secondEndNext === colon) return;
+                    if (value[secondEndNext] === 0x2e) {
+                        const fractionalSecondsEndNext = Lexer.fractionalSeconds(value, secondEndNext + 1);
+                        if (fractionalSecondsEndNext === secondEndNext + 1) return;
+                        if (fractionalSecondsEndNext) end = fractionalSecondsEndNext;
+                    } else end = secondEndNext;
+                }
+            }
+
+            const sign = Lexer.SIGN(value, end);
+            if (value[end] === 0x5a) {
+                end++;
+            } else if (sign) {
+                const zHourEndNext = Lexer.hour(value, sign);
+                if (!zHourEndNext) return;
+
+                const colon = Lexer.COLON(value, zHourEndNext);
+                if (zHourEndNext === sign || !colon) return;
+                const zMinuteEndNext = Lexer.minute(value, colon);
+                if (!zMinuteEndNext || zMinuteEndNext === colon) return;
+                end = zMinuteEndNext;
+            } else return;
+        }
+        return Lexer.tokenize(value, index, end, "Edm.DateTimePeriod", Lexer.TokenType.Literal);
+    }
     export function dateTimeOffsetValue(value: Utils.SourceArray, index: number): Lexer.Token | undefined {
         const yearNext = Lexer.year(value, index);
         if (!yearNext) return;
@@ -327,7 +419,6 @@ namespace PrimitiveLiteral {
             if (!zMinuteNext || zMinuteNext === colon) return;
             end = zMinuteNext;
         } else return;
-
         return Lexer.tokenize(value, index, end, "Edm.DateTimeOffset", Lexer.TokenType.Literal);
     }
     export function timeOfDayValue(value: Utils.SourceArray, index: number): Lexer.Token | undefined {
@@ -661,6 +752,7 @@ namespace PrimitiveLiteral {
             PrimitiveLiteral.booleanValue(value, index) ||
             PrimitiveLiteral.guidValue(value, index) ||
             PrimitiveLiteral.dateValue(value, index) ||
+            PrimitiveLiteral.dateTimePeriodValue(value, index) ||
             PrimitiveLiteral.dateTimeOffsetValue(value, index) ||
             PrimitiveLiteral.timeOfDayValue(value, index) ||
             PrimitiveLiteral.decimalValue(value, index) ||

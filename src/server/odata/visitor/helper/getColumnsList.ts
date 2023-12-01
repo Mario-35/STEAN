@@ -6,58 +6,55 @@
  *
  */
 
-import { serverConfig } from "../../../configuration";
-import { _DB } from "../../../db/constants";
-import { getColumnList } from "../../../db/helpers";
-import { EextensionsType } from "../../../enums";
-import { getEntityName, isCsvOrArray, isGraph, isObservation, removeQuotes } from "../../../helpers";
+
+import { getAllColumnName, _DB } from "../../../db/constants";
+import { getEntityName } from "../../../db/helpers";
+import { isCsvOrArray, isGraph, isObservation, removeQuotes } from "../../../helpers";
+import { Logs } from "../../../logger";
 import { Ientity } from "../../../types";
 import { PgVisitor } from "../PgVisitor";
 
+function extractColumnName(input: string): string{   
+    const elem = input.split(input.includes(' AS ') ? ' AS ' : ".");
+    elem.shift();
+    return elem.join("."); 
+}
+
 export function getColumnsList(tableName: string, main: PgVisitor, element: PgVisitor): string[] | undefined {   
-    const temp = getEntityName(tableName.trim());
-    if (!temp) return;
-    const tempEntity:Ientity = _DB[temp];
-    const csvOrArray = isCsvOrArray(main);
+    Logs.whereIam();
+    const entityName = getEntityName(tableName.trim());
+    if (!entityName) return;
+    const tempEntity:Ientity = _DB[entityName];
     const returnValue: string[] = isGraph(main)
-                                    ? [
-                                    main.interval
-                                    ? `timestamp_ceil("resultTime", interval '${main.interval}') AS srcdate`
-                                    // : `CONCAT('[',SPLIT_PART(EXTRACT(EPOCH FROM "resultTime")::text,'.',1) , ',', result->${main.parentEntity === _DB.MultiDatastreams.name ? "'valueskeys'->src.name" : "'value'"} ,']\n')`]
-                                    : `CONCAT('[new Date("', TO_CHAR("resultTime", 'YYYY/MM/DD HH24:MI'), '"), ', result->${main.parentEntity === _DB.MultiDatastreams.name ? "'valueskeys'->src.name" : "'value'"} ,']')`]
-                                    : csvOrArray ? ["id"] : [];                                    
+                                    ? [ main.interval
+                                            ? `timestamp_ceil("resultTime", interval '${main.interval}') AS srcdate`
+                                            : `CONCAT('[new Date("', TO_CHAR("resultTime", 'YYYY/MM/DD HH24:MI'), '"), ', result->${main.parentEntity === _DB.MultiDatastreams.name ? "'valueskeys'->src.name" : "'value'"} ,']')`
+                                    ] : isCsvOrArray(main) ? ["id"] : [];                                    
+                                    
+    const selfLink = `CONCAT('${main.options.rootBase}${tempEntity.name}(', "${tempEntity.table}"."id", ')') AS "@iot.selfLink"`; 
+    if (element.onlyRef == true ) returnValue.push(selfLink); 
+    if (element.showRelations == true ) returnValue.push(selfLink); 
     const isSelect = (element.select === "*" || element.select === "") ? undefined :true ;
     // create columns list
     let cols = isSelect 
-        ? element.select.split(",").filter((word: string) => word.trim() != "")
-        : getColumnList(tempEntity);
+                    ? element.select.split(",").filter((word: string) => word.trim() != "")
+                    : getAllColumnName(tempEntity, "*", {table: true, as: true, cast: false, numeric: false, test: main.createOptions()});
 
+        
     if (element.splitResult) cols = cols.filter(e => e != "result");
 
-    const selfLink = `CONCAT('${main.options.rootBase}${tempEntity.name}(', "${tempEntity.table}"."id", ')') AS "@iot.selfLink"`; 
-    if (!isGraph(main)) { 
-        // only ref
-        if (main.interval) main.addToBlanks(`CONCAT('${main.options.rootBase}${tempEntity.name}(', coalesce("@iot.id", '0')::text, ')') AS "@iot.selfLink"`); 
-        if (element.onlyRef == true ) returnValue.push(selfLink);   
-        else cols.forEach((elem: string) => {     
-            elem = removeQuotes(elem);
-            if (main.interval) main.addToBlanks(elem);  
-            if (tempEntity.columns.hasOwnProperty(elem)) {              
-                const column = tempEntity.columns[elem].columnAlias(elem === "result" && !serverConfig.configs[main.configName].extensions.includes(EextensionsType.numeric) ? [main.valuesKeys === true] : undefined) ||`"${elem}"`;                
-                if (main.id) returnValue.push(column.replace(/$ID+/g, main.id.toString()) );         
-                else returnValue.push(column && column != "" ? column : `"${elem}"`);                    
-                if (elem === "id" && (element.showRelations == true || csvOrArray)) {
-                    if (csvOrArray) main.addToArrayNames("id");            
-                    else returnValue.push(selfLink);    
-                } else main.addToArrayNames(elem); 
-            } else if (tempEntity.relations[elem]) {
-                const tempTable = getEntityName(elem);
-                const relation = `CONCAT('${main.options.rootBase}${tempEntity.name}(', "${tempEntity.table}"."id", ')/${tempTable}') AS "${tempTable}@iot.navigationLink"`;   
-                returnValue.push(relation);   
-                if (main.interval) main.addToBlanks(relation);  
-            } 
-        });   
-    }
+    cols.forEach(e => {
+        returnValue.push(e);
+        if (main.interval) main.addToBlanks(extractColumnName(e));
+        if (e === "id" && (element.showRelations == true || isCsvOrArray(main))) {
+            if (isCsvOrArray(main)) main.addToArrayNames("id");            
+            else returnValue.push(selfLink);    
+        } else {
+            const temp = extractColumnName(e);
+            main.addToArrayNames(temp === '"@iot.id"' ? '"id"' : temp); 
+        }
+    });
+    if (main.interval) main.addToBlanks(`CONCAT('${main.options.rootBase}${tempEntity.name}(', coalesce("@iot.id", '0')::text, ')') AS "@iot.selfLink"`);
 
     if (isObservation(tempEntity) === true && element.onlyRef === false ) {
         if (main.interval && !isGraph(main)) returnValue.push(`timestamp_ceil("resultTime", interval '${main.interval}') AS srcdate`);

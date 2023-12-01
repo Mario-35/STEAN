@@ -7,6 +7,7 @@
 */
 
 import { formatColumnValue } from ".";
+import { ESCAPE_SIMPLE_QUOTE } from "../../constants";
 import { _DB } from "../constants";
 
 export const createUpdateValues = (input : object, entityName?: string, ): string => {    
@@ -20,7 +21,7 @@ export const createUpdateValues = (input : object, entityName?: string, ): strin
     } else {    
         const result:string[] = [];
         Object.keys(input).forEach((e: string) => {
-            result.push(`"${e}" = '${input[e].replace(/'/g, "\''")}'`);
+            result.push(`"${e}" = '${ESCAPE_SIMPLE_QUOTE(input[e])}'`);
         });
         return result.join();
     }

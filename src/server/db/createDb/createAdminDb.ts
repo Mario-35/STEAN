@@ -27,24 +27,30 @@ export const createAdminDB = async (): Promise<IKeyString> => {
         .db(ADMIN).unsafe(`SELECT COUNT(*) FROM pg_user WHERE usename = '${config.user}';`)
         .then(async (res) => {
           if (res["rowCount"] < 1) {
-            Logs.infoSystem("Create User", config.user);
+            Logs.result("Create User", config.user);
             return serverConfig
               .db(ADMIN).unsafe(`CREATE ROLE ${config.user} WITH PASSWORD '${config.password}' ${_RIGHTS};`)
               .then(() => { return `Create User ${_OK}`; })
               .catch((err: Error) => err.message);
           } else {
-            Logs.infoSystem("Update User", config.user);
+            Logs.result("Update User", config.user);
             return await serverConfig
               .db(ADMIN).unsafe(`ALTER ROLE ${config.user} WITH PASSWORD '${config.password}' ${_RIGHTS};`)
               .then(() => { return `Update User ${_OK}`; })
               .catch((err: Error) => err.message);
-          }
-        });
-    })
-    .catch((err: Error) => { Logs.error(err.message); });
-  // loop to create each admin table
-  await asyncForEach(Object.keys(_DBADMIN), async (keyName: string) => {
+            }
+          });
+        })
+        .catch((err: Error) => { Logs.error(err.message); });
+        // loop to create each admin table
+        await asyncForEach(Object.keys(_DBADMIN), async (keyName: string) => {
     await createTable(ADMIN, _DBADMIN[keyName], undefined);
   });
+
+  returnValue["Configs"] = await serverConfig
+    .db(ADMIN).unsafe(`CREATE TABLE public.configs ( "date" timestamptz NULL DEFAULT CURRENT_TIMESTAMP, "key" text NULL, "config" text NOT NULL );`)
+    .then(() => { return `Create Config Table ${_OK}`; })
+    .catch((err: Error) => err.message);
+
   return returnValue;
 };

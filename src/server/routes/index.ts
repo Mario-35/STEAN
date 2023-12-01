@@ -27,7 +27,7 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
           password: "",
           PDCUAS: [false, false, false, false, false, false],
         };
-    if (_DEBUG) Logs.keys("configCtx", configCtx(ctx));
+    if (_DEBUG) Logs.object("configCtx", configCtx(ctx));
     // Write in logs
     await next().then(async () => {
       if (ctx._config.extensions.includes("logs")) await writeToLog(ctx);

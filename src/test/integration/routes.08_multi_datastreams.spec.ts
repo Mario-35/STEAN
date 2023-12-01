@@ -225,6 +225,64 @@ describe("endpoint : MultiDatastream", () => {
                 });
         });
 
+
+        it(`Return ${entity.name} phenomenonTime search`, (done) => {
+            const infos = {
+                api: `{get} ${entity.name} Get From phenomenonTime search`,
+                apiName: `GetPhenomenonTime${entity.name}`,
+                apiDescription: "Get Datastream(s) from phenomenonTime filter.",
+                apiExample: {
+                    http: `/v1.0/${entity.name}?$filter=phenomenonTime eq 2016-11-18T04:15:15Z/2016-11-18T07:15:15Z`,
+                    curl: defaultGet("curl", "KEYHTTP"),
+                    javascript: defaultGet("javascript", "KEYHTTP"),
+                    python: defaultGet("python", "KEYHTTP")
+                }
+            };
+            chai.request(server)
+                .get(`/test${infos.apiExample.http}`)
+                .end((err: Error, res: any) => {
+                    should.not.exist(err);
+                    res.status.should.equal(200);
+                    res.type.should.equal("application/json");
+                    res.body["@iot.count"].should.eql(1);
+                    res.body.value[0]["@iot.id"].should.eql(4);
+                    addToApiDoc({ ...infos, result: res });
+                    done();
+                });
+        });
+
+        // it(`Return ${entity.name} from an observation filter`, (done) => {
+        //     const infos = {
+        //         api: `{get} ${entity.name} Get From observations filter`,
+        //         apiName: `GetObservationFilter${entity.name}`,
+        //         apiDescription: "Get Datastream(s) from Observations filter.",
+        //         apiExample: {
+        //             http: `/v1.0/${entity.name}?$filter=Observations/result eq '[ 35, 17.5, 11.666666666666666 ]'`,
+        //             curl: defaultGet("curl", "KEYHTTP"),
+        //             javascript: defaultGet("javascript", "KEYHTTP"),
+        //             python: defaultGet("python", "KEYHTTP")
+        //         }
+        //     };
+        //     chai.request(server)
+        //         .get(`/test${infos.apiExample.http}`)
+        //         .end((err: Error, res: any) => {
+        //             console.log(res.body);
+                    
+        //             should.not.exist(err);
+        //             res.status.should.equal(200);
+        //             res.type.should.equal("application/json");
+        //             res.body.should.include.keys("value");
+        //             res.body.value[0].should.include.keys(testsKeys);
+        //             res.body["@iot.count"].should.eql(1);
+        //             res.body.value.length.should.eql(1);
+        //             res.body.value[0]["@iot.id"].should.eql(10);
+        //             res.body.value[0]["@iot.selfLink"].should.contain("/Datastreams(10)");
+        //             addToApiDoc({ ...infos, result: res });
+        //             done();
+        //         });
+        // });
+
+
         it(`Return ${entity.name} Subentity Thing ${nbColor}[9.2.6]`, (done) => {
             const name = "Thing";
             chai.request(server)
@@ -240,6 +298,19 @@ describe("endpoint : MultiDatastream", () => {
                     res.body.value[0]["HistoricalLocations@iot.navigationLink"].should.contain(`/${name}s(${id})/HistoricalLocations`);
                     res.body.value[0]["Datastreams@iot.navigationLink"].should.contain(`/${name}s(${id})/Datastreams`);
                     res.body.value[0]["MultiDatastreams@iot.navigationLink"].should.contain(`/${name}s(${id})/MultiDatastreams`);
+                    done();
+                });
+        });
+
+        it(`Return ${entity.name} phenomenonTime search`, (done) => {
+            chai.request(server)
+                .get(`/test/v1.0/${entity.name}?$filter=phenomenonTime eq 2016-11-18T02:15:15Z/2016-11-18T05:15:15Z`)
+                .end((err: Error, res: any) => {
+                    should.not.exist(err);
+                    res.status.should.equal(200);
+                    res.type.should.equal("application/json");
+                    res.body["@iot.count"].should.eql(1);
+                    res.body.value[0]["@iot.id"].should.eql(2);
                     done();
                 });
         });

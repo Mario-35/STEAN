@@ -258,6 +258,7 @@ namespace NameOrIdentifier {
                 Utils.equals(value, index, "Boolean") ||
                 Utils.equals(value, index, "Byte") ||
                 Utils.equals(value, index, "Date") ||
+                Utils.equals(value, index, "DateTimePeriod") ||
                 Utils.equals(value, index, "DateTimeOffset") ||
                 Utils.equals(value, index, "Decimal") ||
                 Utils.equals(value, index, "Double") ||
@@ -293,6 +294,7 @@ namespace NameOrIdentifier {
         "Edm.Boolean",
         "Edm.Byte",
         "Edm.Date",
+        "Edm.DateTimePeriod",
         "Edm.DateTimeOffset",
         "Edm.Decimal",
         "Edm.Double",

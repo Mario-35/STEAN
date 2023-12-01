@@ -6,6 +6,7 @@
  *
  */
 export { IodataContext } from "./odataContext";
+export { IcolumnOption } from "./columnOption";
 export { IreturnResult } from "./returnResult";
 export { IreturnFormat } from "./returnFormat";
 export { IcsvFile } from "./csvFile";
@@ -22,3 +23,4 @@ export { Iquery } from "./query";
 export { ILoraDecoder } from "./loraDecoder";
 export { IuserToken } from "./userToken";
 export interface IKeyString { [key: string]: string; }
+export interface IKeyBoolean { [key: string]: boolean; }

@@ -10,7 +10,7 @@ import koa from "koa";
 import { Common } from "./common";
 import { Logs } from "../../logger";
 import { IcsvColumn, IcsvFile, IreturnResult, IstreamInfos } from "../../types";
-import { executeSql, getStreamInfos, streamCsvFileInPostgreSql } from "../helpers";
+import { executeSql, executeSqlValues, getStreamInfos, streamCsvFileInPostgreSql } from "../helpers";
 import { asyncForEach } from "../../helpers";
 import { errors, msg } from "../../messages/";
 import { EdatesType, EextensionsType } from "../../enums";
@@ -140,7 +140,7 @@ export class CreateObservations extends Common {
           Logs.debug("streamCsvFileInPostgreSql", _OK);
             Logs.result("query", res);
             // Execute query
-            if (res) await executeSql(this.ctx._config.name, res, false).then(async (returnResult: object) => {
+            if (res) await executeSql(this.ctx._config.name, res).then(async (returnResult: object) => {
               Logs.debug("SQL Executing", _OK);
               returnValue.push(
                 `Add ${
@@ -177,7 +177,7 @@ export class CreateObservations extends Common {
             String(dataStreamId.id),
             ...elem,
           ]);
-          await executeSql(this.ctx._config.name, `INSERT INTO "observation" (${keys}) VALUES (${values}) RETURNING id`, true)
+          await executeSqlValues(this.ctx._config.name, `INSERT INTO "observation" (${keys}) VALUES (${values}) RETURNING id`)
             .then((res: object) => {
               returnValue.push(
                 this.linkBase.replace("Create", "") +
@@ -194,18 +194,18 @@ export class CreateObservations extends Common {
                   dataInput["duplicate"] &&
                   dataInput["duplicate"].toUpperCase() === "DELETE"
                 ) {
-                  await executeSql(this.ctx._config.name, `delete FROM "observation" WHERE 1=1 ` +
+                  await executeSqlValues(this.ctx._config.name, `delete FROM "observation" WHERE 1=1 ` +
                         keys
                           .map((e, i) => `AND ${e} = ${values[i]}`)
                           .join(" ") +
-                        ` RETURNING id`, true
+                        ` RETURNING id`
                     )
                     .then((res: object) => {
                       returnValue.push(`delete id ==> ${res[0]}`);
                       total += 1;
                     })
                     .catch((error) => {
-                      Logs.writeError(undefined, error);
+                      Logs.writeErrorInFile(undefined, error);
                     });
                 }
               } else this.ctx.throw(400, { code: 400, detail: error });

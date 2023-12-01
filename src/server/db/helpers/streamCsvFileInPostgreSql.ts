@@ -104,7 +104,7 @@ export const streamCsvFileInPostgreSql = async ( ctx: koa.Context, configName: s
     const cols:string[] = [];
     sqlRequest.columns.forEach((value) => cols.push(`"${value}" varchar(255) NULL`));
     const createTable = `CREATE TABLE public."${paramsFile.tempTable}" ( id serial4 NOT NULL, ${cols}, CONSTRAINT ${paramsFile.tempTable}_pkey PRIMARY KEY (id));`;
-    await executeSql(ctx._config.name, createTable, true);
+    await executeSql(ctx._config.name, createTable);
     const writable = serverConfig.db(configName).unsafe(`COPY ${paramsFile.tempTable}  (${sqlRequest.columns.join( "," )}) FROM STDIN WITH(FORMAT csv, DELIMITER ';'${ paramsFile.header })`).writable();
   
     readable

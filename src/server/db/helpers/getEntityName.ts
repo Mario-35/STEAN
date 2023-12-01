@@ -6,7 +6,7 @@
  *
  */
 
-import { _DB } from "../db/constants";
+import { _DB } from "../constants";
 
 /**
  *

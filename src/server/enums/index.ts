@@ -14,5 +14,7 @@ export { EobservationType } from "./observationType";
 export { Erelations } from "./relations";
 export { EuserRights } from "./userRights";
 export { EdatesType } from "./datesType";
+export { Elog } from "./logType";
+export { EcolType } from "./colType";
 export { EextensionsType } from "./extensionsType";
 

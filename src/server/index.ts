@@ -85,7 +85,7 @@ app.use(protectedRoutes.routes());
 export const server = isTest()
   ? app.listen(serverConfig.configs[TEST].port, async () => {
       serverConfig.addToServer[ADMIN];
-      Logs.booting(infos.serverListening, serverConfig.configs[TEST].port);
+      Logs.booting(false, infos.serverListening, serverConfig.configs[TEST].port);
       serverConfig.createDbConnectionFromConfigName(TEST);
     })
   : serverConfig.init();

@@ -20,7 +20,7 @@ import { errors, msg } from "../../messages/";
 import { EdatesType } from "../../enums";
 import { queryMultiDatastreamFromDeveui } from "../queries";
 import { decodeloraDeveuiPayload } from "../../lora";
-import { executeSql } from "../helpers";
+import { executeSql, executeSqlValues } from "../helpers";
 
 export class Loras extends Common {
   synonym: object = {};
@@ -51,7 +51,7 @@ export class Loras extends Common {
 
   async redoAll() {
     Logs.whereIam();
-    executeSql(this.ctx._config.name, `SELECT date, datas FROM "log_request" ORDER BY date ASC`, true)
+    executeSqlValues(this.ctx._config.name, `SELECT date, datas FROM "log_request" ORDER BY date ASC`)
       .then(async (res: object) => {
         await asyncForEach(res["rows"], async (row: object) => {
           try {
@@ -124,12 +124,12 @@ export class Loras extends Common {
 
     const searchMulti = queryMultiDatastreamFromDeveui(this.stean["deveui"]);
 
-    const multiDatastream = await executeSql(this.ctx._config.name, `SELECT id, _default_foi, thing_id, ${searchMulti}`, false);
+    const multiDatastream = await executeSql(this.ctx._config.name, `SELECT id, _default_foi, thing_id, ${searchMulti}`);
     
     let datastream = undefined;
 
     if (!multiDatastream) {
-      const tempSql = await executeSql(this.ctx._config.name, `SELECT id, _default_foi, thing_id FROM "${this.DBST.Datastreams.table}" WHERE "${this.DBST.Datastreams.table}".id = (SELECT "${this.DBST.Loras.table}"."datastream_id" FROM "${this.DBST.Loras.table}" WHERE "${this.DBST.Loras.table}"."deveui" = '${this.stean["deveui"]}')`, true);
+      const tempSql = await executeSqlValues(this.ctx._config.name, `SELECT id, _default_foi, thing_id FROM "${this.DBST.Datastreams.table}" WHERE "${this.DBST.Datastreams.table}".id = (SELECT "${this.DBST.Loras.table}"."datastream_id" FROM "${this.DBST.Loras.table}" WHERE "${this.DBST.Loras.table}"."deveui" = '${this.stean["deveui"]}')`);
       datastream = tempSql[0];
       if (!datastream) {
         const errorMessage = errors.noStreamDeveui + this.stean["deveui"];
@@ -272,7 +272,7 @@ export class Loras extends Common {
                   "(SELECT observation1.COLUMN FROM observation1), "
                 )} (SELECT multidatastream1.id FROM multidatastream1) AS multidatastream, (SELECT multidatastream1.thing_id FROM multidatastream1) AS thing)
                  SELECT coalesce(json_agg(t), '[]') AS result FROM result1 AS t`;
-      return await executeSql(this.ctx._config.name, sql, true).then(async (res: object) => {
+      return await executeSqlValues(this.ctx._config.name, sql).then(async (res: object) => {
         // TODO MULTI 
         const tempResult = res[0][0];
         if (tempResult.id != null) {          
@@ -312,11 +312,10 @@ export class Loras extends Common {
       const getFeatureOfInterest = getBigIntFromString(
         dataInput["FeatureOfInterest"]
       );
-      const searchFOI = await executeSql(this.ctx._config.name, 
+      const searchFOI = await executeSqlValues(this.ctx._config.name, 
         getFeatureOfInterest
-          ? `SELECT coalesce((SELECT "id" FROM "featureofinterest" WHERE "id" = ${getFeatureOfInterest}), ${getFeatureOfInterest}) AS id `
-          : `SELECT id FROM ${this.DBST.FeaturesOfInterest.table} WHERE id =${datastream._default_foi}`,
-          true
+          ? `SELECT coalesce((SELECT "id" FROM "${this.DBST.FeaturesOfInterest.table}" WHERE "id" = ${getFeatureOfInterest}), ${getFeatureOfInterest}) AS id `
+          : datastream._default_foi ? `SELECT id FROM "${this.DBST.FeaturesOfInterest.table}" WHERE id = ${datastream._default_foi}` : ""
       );
 
       if (searchFOI["rows"].length < 1) {
@@ -380,7 +379,7 @@ export class Loras extends Common {
                     )} (SELECT datastream1.id from datastream1) AS datastream, (select datastream1.thing_id from datastream1) AS thing)
                 SELECT coalesce(json_agg(t), '[]') AS result FROM result1 AS t`;
 
-      return await executeSql(this.ctx._config.name, sql, true).then(async (res: object) => {
+      return await executeSqlValues(this.ctx._config.name, sql).then(async (res: object) => {
         const tempResult = res["rows"].result[0];
         if (tempResult.id != null) {
           const result = {

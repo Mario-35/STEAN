@@ -10,6 +10,7 @@ import koa from "koa";
 
 
 export const removeQuotes = (input: string): string => input.replace(/['"]+/g, "");
+export const addQuotes = (input: string): string => `"${input}"`;
 export const getUserId = (ctx: koa.Context): number => ctx.state.user && ctx.state.user.id ? ctx.state.user.id : -1;
 export const unikeList = (input: string[]) => [...new Set(input)];
 
@@ -18,7 +19,6 @@ export { encrypt, decrypt } from "./crypto";
 export { cleanUrl } from "./cleanUrl";
 export { cleanStringComma } from "./cleanStringComma";
 export { getBigIntFromString } from "./getBigIntFromString";
-export { getEntityName } from "./getEntityName";
 export { hidePasswordIn, hidePasswordInJSON } from "./hidePasswordIn";
 export { hideKeysInJson } from "./hideKeysInJson";
 export { getUrlId } from "./getUrlId";
@@ -30,4 +30,4 @@ export { configCtx } from "./showconfigCtx";
 export { returnFormats } from "./returnFormats";
 export { upload } from "./upload";
 export { notNull, isNull } from "./notNull";
-export { isTest, isProduction, isDev, isCsvOrArray, isGraph, isObservation, isSingular } from "./tests";
+export { isTest, isProduction, isDev, isCsvOrArray, isGraph, isObservation, isSingular, isAdmin, isAllowedTo } from "./tests";

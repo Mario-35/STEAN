@@ -12,6 +12,7 @@ import querystring from "querystring";
 import { API_VERSION, TEST, setDebug } from "../constants";
 import { errors } from "../messages";
 import { createBearerToken, getUserId, isTest } from ".";
+// import { requestToFile } from "../routes/trace";
 
 
 const getVersionFromUrl = (input: string) =>
@@ -40,7 +41,7 @@ const getNameFromUrl = ( input: string, version?: string ): string | undefined =
 export const setConfigToCtx = (ctx: koa.Context): void => {
   createBearerToken(ctx);
   setDebug(ctx.request.url.includes("$debug=true"));
-
+  // requestToFile(ctx.request.url);
   let configName = getConfigFromPort(ctx.req.socket.localPort);
   const version = getVersionFromUrl(ctx.originalUrl);
   const name = getNameFromUrl(ctx.originalUrl, version);

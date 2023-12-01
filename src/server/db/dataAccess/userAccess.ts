@@ -16,12 +16,14 @@ const cols = () => Object.keys(_DBADMIN.Users.columns);
 
 export const userAccess = {
   getAll: async () => {
-    const query = await serverConfig.db(ADMIN)<Iuser[]>`SELECT ${serverConfig.db(ADMIN)(cols())} FROM ${serverConfig.db(ADMIN)(_DBADMIN.Users.table)} ORDER BY id`;       
+    const query = await serverConfig
+      .db(ADMIN)<Iuser[]>`SELECT ${serverConfig.db(ADMIN)(cols())} FROM ${serverConfig.db(ADMIN)(_DBADMIN.Users.table)} ORDER BY id`;       
     return query[0];
   },
 
   getSingle: async (id: string) => {
-    const query = await serverConfig.db(ADMIN)<Iuser[]>`SELECT ${serverConfig.db(ADMIN)(cols())} FROM ${serverConfig.db(ADMIN)(_DBADMIN.Users.table)} WHERE id = ${+id} LIMIT 1`;       
+    const query = await serverConfig
+      .db(ADMIN)<Iuser[]>`SELECT ${serverConfig.db(ADMIN)(cols())} FROM ${serverConfig.db(ADMIN)(_DBADMIN.Users.table)} WHERE id = ${+id} LIMIT 1`;       
     if (query.length === 1) return query[0];
   },
 

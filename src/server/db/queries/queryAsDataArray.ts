@@ -16,7 +16,7 @@ export const queryAsDataArray = (input: PgVisitor): string =>
       .map((e: string) => removeQuotes(e))
       .join(
         "','"
-      )}']) as "component", count(*) as "dataArray@iot.count", jsonb_agg(allkeys) as "dataArray" FROM (SELECT  json_build_array(${Object.values(
+      )}']) as "component", count(*) as "dataArray@iot.count", jsonb_agg(allkeys) as "dataArray" FROM (SELECT json_build_array(${Object.values(
       input.arrayNames
     ).join()}) as allkeys FROM (${input.sql}) as p) as l`,
     singular: false,

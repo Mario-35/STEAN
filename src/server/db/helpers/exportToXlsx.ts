@@ -1,8 +1,6 @@
 import Excel from "exceljs";
 import koa from "koa";
-import path from "path";
 import postgres from "postgres";
-import { createInsertValues, executeSql } from ".";
 import { serverConfig } from "../../configuration";
 import { EextensionsType } from "../../enums";
 import { asyncForEach } from "../../helpers";
@@ -29,7 +27,10 @@ const addConfigToExcel = async ( workbook: Excel.Workbook, config: object ) => {
   };
 
   Object.keys(config).forEach((item: string) => {
-    worksheet.addRow({key: item, value: config[item]});
+    console.log(typeof config[item]);
+    console.log(config[item]);
+    
+    worksheet.addRow({key: item, value: typeof config[item] === "object" ? Array(config[item]).toString() : config[item]});
   });
   
 };
@@ -37,7 +38,7 @@ const addConfigToExcel = async ( workbook: Excel.Workbook, config: object ) => {
 const addToExcel = async ( workbook: Excel.Workbook, name: string, input: object ) => {
   if (input && input[0]) {
     const worksheet = workbook.addWorksheet(name);
-    const cols: Partial<Excel.Column>[] = [ { key: "insertId", header: "insertId" }, ];
+    const cols: Partial<Excel.Column>[] = [];
     
     Object.keys(input[0]).forEach((temp: string) => {
       cols.push({ key: temp, header: temp });
@@ -104,7 +105,7 @@ export const exportToXlsx = async (ctx: koa.Context) => {
   workbook.created = new Date(Date.now());
   workbook.modified = new Date(Date.now());
   // Get configs infos
-  addConfigToExcel(workbook, serverConfig.getConfigExport(ctx._config.name));
+  addConfigToExcel(workbook, serverConfig.getConfigForExcelExport(ctx._config.name));
   // Loop on entities
   await asyncForEach(
     ctx._config._context.entities.filter(
@@ -127,76 +128,4 @@ export const exportToXlsx = async (ctx: koa.Context) => {
   await workbook.xlsx.write(ctx.res);
   // Close all
   ctx.res.end();
-};
-
-export const importOnglet = async ( workbook: Excel.Workbook, table: string, ctx: koa.Context ) => {
-  const result = [{}];
-  const ids: { [key: number]: number } = {};
-
-  let names: object = {};
-  const worksheet = workbook.getWorksheet(table);
-  worksheet.eachRow(
-    { includeEmpty: true },
-    async (row: Excel.Row, rowNumber: number) => {
-      const temp: object = {};
-      if (rowNumber === 1) {
-        names = row.values.toString().split(",");
-        names = Object.assign({}, row.values.toString().split(","));
-        // names = names.filter(e => e !== "" && e !== "id");
-      } else {
-        Object.keys(names).forEach((name: string) => {
-          if (!["", "id", "insertId"].includes(names[name])) {
-            temp[names[name]] = row.getCell(+name).value;
-          }
-        });
-          await executeSql(ctx._config.name, `INSERT INTO "${_DB[table].table}" ${createInsertValues(temp, _DB[table].name)}`, true)
-          .then((res: object) => { console.log(res); })
-          .catch(async (error: Error) => {
-            if (error["code"] === "23505") {
-              await executeSql(ctx._config.name, `SELECT "id" FROM ${_DB[table].table}" WHERE "name" = '${temp["name"]}' LIMIT 1`, true).then(
-                (res: object) => {
-                  console.log(row.getCell(1).value);
-                  row.getCell(1).value = +res["id"] + 100;
-                  console.log( row.getCell(1).value + ":" + row.getCell(2).value + ":" + row.getCell(3).value + ":" + row.getCell(4).value + ":" + row.getCell(5).value + ":");
-                });
-            }
-          });
-          result.push(temp);
-      }
-    }
-  );
-  console.log(ids);
-};
-
-export const importToXlsx = async (ctx: koa.Context) => {
-  const filePath = path.resolve(__dirname, "mario.xlsx");
-  const workbook = new Excel.Workbook();
-  workbook.xlsx.readFile(filePath).then(() => {
-    importOnglet(workbook, "Sensors", ctx);
-    importOnglet(workbook, "Locations", ctx);
-    // let names:object = {};
-    // const worksheet = workbook.getWorksheet(table);
-    // worksheet.eachRow({ includeEmpty: true }, async (row, rowNumber) => {
-    // //   const add = {};
-    // const temp:object = {};
-    //   if (rowNumber === 1 ) {
-    //     names = row.values.toString().split(",");
-    //     names = Object.assign({}, row.values.toString().split(","));
-    //     // names = names.filter(e => e !== "" && e !== "id");
-    // } else {
-    //     const vals = Object.assign({}, row.values.toString().split(","));
-    //     Object.keys(names).forEach((name: string, index: number) => {
-    //         if (!["","id"].includes(names[name])) {
-    //             console.log(row.values);
-
-    //             temp[names[name]] = vals[index];
-    //         }
-    //     });
-    //     await serverConfig.db(ctx._config.name).table(_DB[table].table).insert(temp);
-
-    //     result.push(temp);
-    //   }
-    // });
-    // console.log(result);
-  });
 };

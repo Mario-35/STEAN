@@ -10,7 +10,6 @@ import { server } from "../../server/index";
 
 const should = chai.should();
 
-
 describe("Delete test Database", function () {
     it("Delete test Database", (done) => {
         chai.request(server)

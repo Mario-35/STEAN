@@ -66,6 +66,9 @@ export class Literal {
     "Edm.Date"(value: string) {
         return value;
     }
+    "Edm.DateTimePeriod"(value: string) {
+        return value;
+    }
     "Edm.DateTimeOffset"(value: string) {
         return new Date(value);
     }

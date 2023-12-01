@@ -10,7 +10,7 @@ import Router from "koa-router";
 import fs from "fs";
 import { decodeToken, ensureAuthenticated, getAuthenticatedUser, } from "../authentication";
 import { ADMIN, API_VERSION, TEST, _READY } from "../constants";
-import { getUrlId, getUrlKey, returnFormats } from "../helpers";
+import { getUrlId, getUrlKey, isAdmin, isAllowedTo, returnFormats } from "../helpers";
 import { apiAccess, userAccess } from "../db/dataAccess";
 import { _DB } from "../db/constants";
 import { Logs } from "../logger";
@@ -18,16 +18,16 @@ import { IreturnResult } from "../types";
 import { EuserRights } from "../enums";
 import { createQueryHtml } from "../views/query";
 import { CreateHtmlView, createIqueryFromContext } from "../views/helpers/";
-import { isAdmin, isAllowedTo, getRouteFromPath } from "./helpers";
+import { getRouteFromPath } from "./helpers";
 import { DefaultState, Context } from "koa";
 import { createOdata } from "../odata";
 import { infos } from "../messages";
 import { getMetrics } from "../db/monitoring";
 import { serverConfig } from "../configuration";
 import { createDatabase } from "../db/createDb";
-import { exportToXlsx, importToXlsx } from "../db/helpers/export";
 import { remadeResult } from "../db/helpers/remadeResult";
 import { replayPayload } from "../db/queries";
+import { exportToXlsx, importFromXlsx } from "../db/helpers";
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 // ALl others
 unProtectedRoutes.get("/(.*)", async (ctx) => {
@@ -37,7 +37,8 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       : false
     : true;
   let returnToBody: any = undefined;
-  switch (getRouteFromPath(ctx.path).toUpperCase()) {
+  
+  if (ctx._config && ctx._config.apiVersion) switch (getRouteFromPath(ctx.path).toUpperCase()) {    
     case ctx._config.apiVersion.toUpperCase():
       const expectedResponse: object[] = [];      
       if (isAdmin(ctx) && !adminWithSuperAdminAccess) ctx.throw(401);
@@ -78,7 +79,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       return;
 
     case "IMPORT":
-      await importToXlsx(ctx);
+      await importFromXlsx();
       return;
 
     case "REGISTER":

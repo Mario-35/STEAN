@@ -292,7 +292,7 @@ describe("endpoint : Observations", () => {
                 apiName: `GetSelectObservationsMultikeyValueResult`,
                 apiDescription: "Retrieve observations with keyValue result.",
                 apiExample: {
-                    http: `/v1.0/${entity.name}(14)?$valueskeys=true`,
+                    http: `/v1.0/${entity.name}(14)?$valuesKeys=true`,
                     curl: defaultGet("curl", "KEYHTTP"),
                     javascript: defaultGet("javascript", "KEYHTTP"),
                     python: defaultGet("python", "KEYHTTP")

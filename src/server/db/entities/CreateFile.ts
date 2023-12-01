@@ -10,7 +10,7 @@ import koa from "koa";
 import { Common } from "./common";
 import { Logs } from "../../logger";
 import { IcsvColumn, IcsvFile, IreturnResult } from "../../types";
-import { createColumnHeaderName, executeSql } from "../helpers";
+import { createColumnHeaderName, executeSqlValues } from "../helpers";
 import { errors } from "../../messages/";
 import * as entities from "../entities/index";
 import { returnFormats } from "../../helpers";
@@ -83,7 +83,7 @@ export class CreateFile extends Common {
             ? returnValueError.body[0]
             : {};
           if (returnValueError.body)
-            await executeSql(ctx._config.name, `DELETE FROM "${this.DBST.Observations.table}" WHERE "datastream_id" = ${returnValueError.body["@iot.id"]}`, true);
+            await executeSqlValues(ctx._config.name, `DELETE FROM "${this.DBST.Observations.table}" WHERE "datastream_id" = ${returnValueError.body["@iot.id"]}`);
           return returnValueError;
         }
       } finally {
@@ -104,7 +104,7 @@ export class CreateFile extends Common {
         "hour" varchar(255) NULL,
         ${cols}, 
         CONSTRAINT ${paramsFile.tempTable}_pkey PRIMARY KEY (id));`;
-        await executeSql(ctx._config.name, createTable, true);
+        await executeSqlValues(ctx._config.name, createTable);
       const writable = serverConfig.db(ctx._config.name).unsafe(`COPY ${paramsFile.tempTable}  (${headers.join( "," )}) FROM STDIN WITH(FORMAT csv, DELIMITER ';'${ paramsFile.header })`).writable();
       return await new Promise<string | undefined>(async (resolve, reject) => {
       

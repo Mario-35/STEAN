@@ -15,7 +15,7 @@ import { ILoraDecoder } from "../types";
 
 export const decodeloraDeveuiPayload = async ( configName: string, loraDeveui: string, input: string ): Promise<ILoraDecoder| undefined> => {
   Logs.debug(`decodeLoraPayload deveui : [${loraDeveui}]`, input);
-  return await executeSql(configName, `SELECT "name", "code", "nomenclature", "synonym" FROM "${_DB.Decoders.table}" WHERE id = (SELECT "decoder_id" FROM "${_DB.Loras.table}" WHERE "deveui" = '${loraDeveui}') LIMIT 1`, false)
+  return await executeSql(configName, `SELECT "name", "code", "nomenclature", "synonym" FROM "${_DB.Decoders.table}" WHERE id = (SELECT "decoder_id" FROM "${_DB.Loras.table}" WHERE "deveui" = '${loraDeveui}') LIMIT 1`)
     .then((res: object) => {
         return decodingPayload(
           {

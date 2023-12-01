@@ -6,7 +6,7 @@
  *
  */
 
-import { executeSql } from ".";
+import { executeSqlValues } from ".";
 
 /**
  *
@@ -19,10 +19,10 @@ import { executeSql } from ".";
 export const verifyId = async ( configName: string, idInput: bigint | bigint[], tableSearch: string ): Promise<boolean> => {
   try {
     if (typeof idInput == "bigint") {
-      const temp = await executeSql(configName, `SELECT id FROM "${tableSearch}" WHERE "id" = ${idInput} LIMIT 1`, true);
+      const temp = await executeSqlValues(configName, `SELECT id FROM "${tableSearch}" WHERE "id" = ${idInput} LIMIT 1`);
       return temp["rowCount"] <= 0 ? false : true;
     } else {
-      const temp = await executeSql(configName, `SELECT count(id) FROM "${tableSearch}" WHERE "id" IN (${idInput.map(String)})`, true);
+      const temp = await executeSqlValues(configName, `SELECT count(id) FROM "${tableSearch}" WHERE "id" IN (${idInput.map(String)})`);
       return Object.values(idInput).length == temp[0].count;
     }
   } catch (error) {

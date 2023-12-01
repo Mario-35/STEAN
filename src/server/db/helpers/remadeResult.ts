@@ -1,10 +1,10 @@
 import koa from "koa";
-import { executeSql } from ".";
 import { serverConfig } from "../../configuration";
 import { asyncForEach, isNull } from "../../helpers";
 import { Logs } from "../../logger";
 import { decodeloraDeveuiPayload } from "../../lora";
 import { _DB } from "../constants";
+import { executeSqlValues } from "./executeSql";
 
 const getSortedKeys = async (
   connectionName: string,
@@ -15,7 +15,7 @@ const getSortedKeys = async (
     FROM ( SELECT jsonb_array_elements("unitOfMeasurements") AS units ) AS tmp) 
         FROM "${_DB.MultiDatastreams.table}" 
         WHERE "${_DB.MultiDatastreams.table}".id = ${inputID}`;
-  const tempQuery = await executeSql(connectionName, tempSql, true);
+  const tempQuery = await executeSqlValues(connectionName, tempSql);
   const multiDatastream = tempQuery["rows"];
   const listOfSortedValues: { [key: string]: number | null } = {};
 

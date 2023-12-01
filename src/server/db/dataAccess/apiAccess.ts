@@ -11,8 +11,7 @@ import { Common } from "../entities/common";
 import koa from "koa";
 import { Logs } from "../../logger";
 import { IreturnResult } from "../../types";
-import { getEntityName } from "../../helpers";
-import { errors, msg } from "../../messages";
+import { getEntityName } from "../helpers";
 
 // Interface API
 export class apiAccess {
@@ -24,10 +23,7 @@ export class apiAccess {
     const entityName = getEntityName(this.ctx._odata.entity);
     if (entityName && entityName in entities) {
       this.myEntity = new entities[(this.ctx, entityName)](ctx);
-      if (this.myEntity === undefined)
-        Logs.error(`${msg(errors.invalid, "entity")} : ${entityName}`);
-      else Logs.whereIam();
-    } else Logs.error(`${msg(errors.invalid, "entity")} : ${entityName}`);
+    } 
   }
 
   formatDataInput(input: object | undefined): object | undefined {
@@ -52,8 +48,7 @@ export class apiAccess {
 
   async update(idInput: bigint | string): Promise<IreturnResult | undefined> {
     Logs.whereIam();
-    if (this.myEntity)
-      return await this.myEntity.update(idInput, this.ctx.request.body);
+    if (this.myEntity) return await this.myEntity.update(idInput, this.ctx.request.body);
   }
 
   async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {

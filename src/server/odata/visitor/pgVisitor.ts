@@ -6,9 +6,9 @@
  *
  */
 
-import { convertResult, _DB } from "../../db/constants";
-import { getEntityName, isGraph, isObservation, removeQuotes, returnFormats } from "../../helpers";
-import { IodataContext, IKeyString, IreturnFormat } from "../../types";
+import { getColumnResult, getColumnNameOrAlias, _DB } from "../../db/constants";
+import { isGraph, isObservation, isTest, removeQuotes, returnFormats } from "../../helpers";
+import { IodataContext, IKeyString, IreturnFormat, Ientity, IcolumnOption, IKeyBoolean } from "../../types";
 import { Token } from "../parser/lexer";
 import { Literal } from "../parser/literal";
 import { SQLLiteral } from "../parser/sqlLiteral";
@@ -17,7 +17,8 @@ import koa from "koa";
 import { Logs } from "../../logger";
 import { createGetSql, createPostSql, oDatatoDate } from "./helper";
 import { errors, msg } from "../../messages/";
-import { EextensionsType } from "../../enums";
+import { EcolType, EextensionsType } from "../../enums";
+import { getEntity, getEntityName, getRelationColumnTable, isColumnType } from "../../db/helpers";
 
 export class PgVisitor {
   public options: SqlOptions;
@@ -57,6 +58,7 @@ export class PgVisitor {
   public configName: string;
   results: IKeyString = {};
   sql = "";
+  debugOdata = isTest() ? false : false;
   constructor(options = <SqlOptions>{}) {
     this.options = options;
     this.onlyRef = options.onlyRef;
@@ -79,17 +81,29 @@ export class PgVisitor {
   }
 
   addToArrayNames(key: string, value?: string) {
-    this.arrayNames[key] = value ? value : `"${key}"`;
+    this.arrayNames[key] = value ? value : `${key}`;
   }
 
   addToBlanks(input: string) {
-    if (input.endsWith("Time")) input = `step AS "${input}"`;
-    else if (input === "id") input = `coalesce("@iot.id", 0) AS "@iot.id"`;
+    // TODO test with create    
+    if (input.endsWith('Time"')) input = `step AS ${input}`;
+    else if (input === '"@iot.id"') input = `coalesce("@iot.id", 0) AS "@iot.id"`;
     else if (input.startsWith("CONCAT")) input = `${input}`;
-    else if (input[0] !== "'") input = `"${input}"`;
-    if (this.blanks) this.blanks.push(input);
-    else this.blanks = [input];
+    else if (input[0] !== "'") input = `${input}`;
+    if (this.blanks) this.blanks.push(input); else this.blanks = [input];
   }
+
+  protected getGoodColumnAlias(input: string, context: IodataContext ) {
+    const tempEntity = getEntity(this.entity || this.parentEntity || this.navigationProperty);    
+    const options: IcolumnOption = {table: false, as: false, cast: false, numeric: this.numeric, test: this.createOptions()};
+    const temp = input === "result" ? getColumnResult(true, this.isSelect(context)) : tempEntity ? getColumnNameOrAlias(tempEntity, input, options) : undefined;
+    if (temp) return temp;
+    if (this.isSelect(context) && tempEntity && tempEntity.relations[input]) {
+      const entity = getEntityName(input);       
+      return tempEntity && entity ? `CONCAT('${this.options.rootBase}${tempEntity.name}(', "${tempEntity.table}"."id", ')/${_DB[entity].name}') AS "${_DB[entity].name}@iot.navigationLink"` : undefined;    
+    }   
+  }
+
 
   init(ctx: koa.Context, node: Token) {
     Logs.head("INIT PgVisitor");
@@ -97,29 +111,22 @@ export class PgVisitor {
     this.configName = ctx._config.name;
     this.numeric = ctx._config.extensions.includes(EextensionsType.numeric);
     const temp = this.VisitRessources(node);
-    Logs.infos("PgVisitor", temp);
-    this.verifyRessources(ctx);
+    this.verifyRessources();
     return temp;
   }
 
-  verifyRessources = (ctx: koa.Context): void => {
+  verifyRessources = (): void => {
     Logs.head("verifyRessources");
-    // if (!serverConfig.configs[this.configName].entities.includes(_DB[this.entity].name)) {
-    //   this.returnNull = true;
-    //   // return;
-    // }
-    // if (this.entity.toUpperCase() === "LORA") this.setEntity("Loras");
-    // if (this.parentEntity) {
-    //   if (!_DB[this.parentEntity].relations[this.entity])
-    //     ctx.throw(404, { detail: msg(errors.invalid, "path") + this.entity.trim(), });
-    // } else if (!_DB[this.entity]) ctx.throw(404, { detail: msg(errors.invalid, "path") + this.entity.trim(), });
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  VisitRessources(node: Token, context?: any) {
+  VisitRessources(node: Token, context?: IodataContext) {
     const ressource = this[`VisitRessources${node.type}`];
-    if (ressource) ressource.call(this, node, context);
-    else {
+    if (ressource) {
+      ressource.call(this, node, context);
+      Logs.debug("VisitRessources",`VisitRessources${node.type}`, this.debugOdata);
+      Logs.result("node.raw", node.raw, this.debugOdata);
+    } else {
       Logs.error( `Ressource Not Found ============> VisitRessources${node.type}` );
       throw new Error(`Unhandled node type: ${node.type}`);
     }
@@ -172,6 +179,8 @@ export class PgVisitor {
       : node.value == "Edm.SByte"
       ? BigInt(node.raw)
       : node.raw;
+
+      
     this.where = this.options.loraId
       ? `"lora"."deveui" = '${this.options.loraId}'`
       : `id = ${this.id}`;
@@ -185,7 +194,7 @@ export class PgVisitor {
   protected VisitRessourcesPropertyPath(node: Token, context: IodataContext) {
     let tempNode = node;
     if (node.type == "PropertyPath") {
-      if (_DB[this.entity].relations[node.value.path.raw]) {
+      if (getRelationColumnTable(this.entity, node.value.path.raw) === EcolType.Relation) {
         this.parentId = this.id;
         this.id = BigInt(0);
         if (
@@ -255,30 +264,29 @@ export class PgVisitor {
   start(ctx: koa.Context, node: Token) {
     Logs.head("Start PgVisitor");
     const temp = this.Visit(node);
-    Logs.infos("PgVisitor", temp);
     this.verifyQuery(ctx);    
+    Logs.infos("PgVisitor", temp);
     return temp;
   }
 
   verifyQuery = (ctx: koa.Context): void => {
     Logs.head("verifyQuery");
-    // if (this.entity === "Logs" && ctx._config.name !== "admin") this.where += `${this.where.trim() == "" ? "" : " AND "} (database = '${ctx._config.alias.length > 0 ? ctx._config.alias.join("' OR database ='") : ctx._config.pg.database}')`;
 
-    if (this.select.length > 0) {
-      const cols = [
-        ...Object.keys(_DB[this.entity].columns),
-        ...Object.keys(_DB[this.entity].relations),
-      ];
+    // if (this.select.length > 0) {
+    //   const cols = [
+    //     ...Object.keys(_DB[this.entity].columns),
+    //     ...Object.keys(_DB[this.entity].relations),
+    //   ];
 
-      this.select
-        .split(",")
-        .filter((e: string) => e.trim() != "")
-        .forEach((element: string) => {
-          const test = removeQuotes(element);
-          if (!cols.includes(test) && test !== "result")
-            ctx.throw(404, { detail: msg(errors.invalid, "name") + test });
-        });
-    }
+      // this.select
+      //   .split(",")
+      //   .filter((e: string) => e.trim() != "")
+      //   .forEach((element: string) => {
+      //     const test = removeQuotes(element);
+      //     if (!cols.includes(test) && test !== "result")
+      //       ctx.throw(404, { detail: msg(errors.invalid, "name") + test });
+      //   });
+    // }
     const expands: string[] = [];
     this.includes.forEach((element: PgVisitor) => {
       if (element.ast.type === "ExpandItem")
@@ -315,6 +323,12 @@ export class PgVisitor {
       const visitor = this[`Visit${node.type}`];
       if (visitor) {
         visitor.call(this, node, context);
+        Logs.debug("Visit",`Visit${node.type}`, this.debugOdata);
+        Logs.result("node.raw", node.raw, this.debugOdata);
+        Logs.result("this.where", this.where, this.debugOdata);   
+        Logs.result("this.interval", this.interval, this.debugOdata);   
+        Logs.debug("context", context, this.debugOdata);
+
       } else {
         Logs.error(`Node error =================> Visit${node.type}`);
         Logs.error(node);
@@ -331,15 +345,15 @@ export class PgVisitor {
     }
     return this;
   }
+
+  isWhere = (context: IodataContext): boolean => (context.target ? context.target === "where" : false);
+  isSelect = (context: IodataContext): boolean => (context.target ? context.target === "select" : false);
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected VisitExpand(node: Token, context: IodataContext) {
     node.value.items.forEach((item: Token) => {
       const expandPath = item.value.path.raw;
-
-      let visitor = this.includes.filter(
-        (v) => v.navigationProperty == expandPath
-      )[0];
-
+      let visitor = this.includes.filter( (v) => v.navigationProperty == expandPath )[0];
       if (!visitor) {
         visitor = new PgVisitor({ ...this.options });
         this.includes.push(visitor);
@@ -352,7 +366,6 @@ export class PgVisitor {
     this.Visit(node.value.path, context);
     if (node.value.options)
       node.value.options.forEach((item: Token) => this.Visit(item, context));
-    // this.splitResult = node.value.split;
   }
 
   protected VisitSplitResult(node: Token, context: IodataContext) {
@@ -398,20 +411,13 @@ export class PgVisitor {
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected VisitResultFormat(node: Token, context: IodataContext) {
-    if (node.value.format) this.resultFormat = returnFormats[node.value.format];
-    //ATTTENTION
-    if (
-      [
-        returnFormats.dataArray,
-        returnFormats.graph,
-        returnFormats.graphDatas,
-        returnFormats.csv,
-      ].includes(this.resultFormat)
-    )
+    if (node.value.format) 
+      this.resultFormat = returnFormats[node.value.format];
+    if ( [ returnFormats.dataArray, returnFormats.graph, returnFormats.graphDatas, returnFormats.csv, ].includes(this.resultFormat) ) 
       this.noLimit();
-    if (isGraph(this)) {
-      this.showRelations = false;
-      this.orderby += '"resultTime" ASC';
+    if (isGraph(this)) { 
+      this.showRelations = false; 
+      this.orderby += '"resultTime" ASC'; 
     }
   }
 
@@ -440,12 +446,12 @@ export class PgVisitor {
   }
 
   protected VisitFilter(node: Token, context: IodataContext) {
-    if (this.where.trim() != "") this.where += " AND ";
     context.target = "where";
+    if (this.where.trim() != "") this.where += " AND ";
     this.Visit(node.value, context);
   }
 
-  protected VisitOrderBy(node: Token, context: IodataContext) {
+  protected VisitOrderBy(node: Token, context: IodataContext) {    
     context.target = "orderby";
     node.value.items.forEach((item: Token, i: number) => {
       this.Visit(item, context);
@@ -472,15 +478,19 @@ export class PgVisitor {
 
   protected VisitSelect(node: Token, context: IodataContext) {
     context.target = "select";
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    node.value.items.forEach((item: Token, i: number) => {
+    node.value.items.forEach((item: Token) => {
       this.Visit(item, context);
     });
   }
 
+
   protected VisitSelectItem(node: Token, context: IodataContext) {
-    context.identifier = node.raw;
-    if(context.target) this[context.target] += `"${node.raw}",`;
+    const tempColumn = this.getGoodColumnAlias(node.raw, context); 
+    
+     
+    context.identifier = tempColumn ? tempColumn : node.raw;
+    if(context.target) 
+      this[context.target] += tempColumn ? `${tempColumn},` : node.raw;
     this.showRelations = false;
   }
 
@@ -511,7 +521,7 @@ export class PgVisitor {
     this.Visit(node.value, context);
   }
 
-  protected VisitFirstMemberExpression(node: Token, context: IodataContext) {
+  protected VisitFirstMemberExpression(node: Token, context: IodataContext) {   
     this.Visit(node.value, context);
   }
 
@@ -522,16 +532,14 @@ export class PgVisitor {
   protected VisitPropertyPathExpression(node: Token, context: IodataContext) {
     if (node.value.current && node.value.next) {
       // deterwine if its column AND JSON
-      if (
-        _DB[this.entity].columns[node.value.current.raw] &&
-        _DB[this.entity].columns[node.value.current.raw].create.startsWith(
-          "json"
-        ) &&
-        node.value.next.raw[0] == "/"
-      ) {
-        this.where += `"${
-          node.value.current.raw
-        }"->>'${node.value.next.raw.slice(1)}'`;
+      if (getRelationColumnTable(_DB[this.entity], node.value.current.raw) === EcolType.Column
+            && isColumnType(_DB[this.entity], node.value.current.raw, "json") 
+            && node.value.next.raw[0] == "/" ) {
+              this.where += `"${node.value.current.raw}"->>'${node.value.next.raw.slice(1)}'`;
+      } else if (node.value.next.raw[0] == "/") {       
+        this.Visit(node.value.current, context);
+        context.identifier += ".";
+        this.Visit(node.value.next, context);
       } else {
         this.Visit(node.value.current, context);
         context.identifier += ".";
@@ -568,9 +576,10 @@ export class PgVisitor {
   }
 
   protected addDateTypeToWhere(node: Token, sign: string):string | undefined {
-    if (node.value.left.raw.endsWith("Time")) {
+    if (getRelationColumnTable(_DB[this.entity], node.value.left.raw) === EcolType.Column && isColumnType(_DB[this.entity], node.value.left.raw, "date")) {
       const testIsDate = oDatatoDate(node, sign);
-      if (testIsDate) return `"${node.value.left.raw}"${testIsDate}`;
+      const columnName = getColumnNameOrAlias(_DB[this.entity], node.value.left.raw, {table: true, as: true, cast: false, numeric: this.numeric, test: this.createOptions()});
+      if (testIsDate) return `${columnName ? columnName : `"${node.value.left.raw}"`}${testIsDate}`;
     }
   }
   protected VisitGreaterThanExpression(node: Token, context: IodataContext) {
@@ -597,63 +606,70 @@ export class PgVisitor {
     return Object.assign({}, this.parameters);
   }
 
-  protected VisitODataIdentifier(node: Token, context: IodataContext) {
-    node.value.name =
-      node.value.name === "result"
-        ? convertResult(this.numeric)
-        : node.value.name;
-    context.identifier = node.value.name;
-    if (this.entity != "" && context.target)
-      if (Object.keys(_DB[this.entity].columns).includes(node.value.name)) {
+  createOptions(): IKeyBoolean {
+    return {
+      valuesKeys: this.valuesKeys,
+    };
+  }
+
+  public createComplexWhere(entity: string, node: Token, context: IodataContext) {
+    if (context.target) {
+      const tempEntity = getEntity(entity);
+      if(!tempEntity) return;
+      const colType = getRelationColumnTable(tempEntity, node.value.name);
+      if (colType === EcolType.Column) { 
+      
         if (context.relation) {
-          if (
-            Object.keys(_DB[this.entity].relations).includes(context.relation)
-          ) {
+          if ( Object.keys(tempEntity.relations).includes(context.relation) ) {
             if (!context.key) {
-              context.key =
-                _DB[this.entity].relations[context.relation].entityColumn;
+              context.key = tempEntity.relations[context.relation].entityColumn; 
               this[context.target] += `"${context.key}"`;
             }
-            return;
           }
         }
-      } else if (
-        Object.keys(_DB[this.entity].relations).includes(node.value.name)
-      ) {
-        const relation = getEntityName(node.value.name);
-        if (relation) {
-          context.relation = node.value.name;
-          context.table = _DB[relation].table;
+      } else if (colType === EcolType.Relation) {
+        const tempEntity = getEntity(node.value.name);
+        if (tempEntity) {
+          if (context.relation) {
+            context.sql = `"${_DB[entity].table}"."${_DB[entity].relations[node.value.name].entityColumn}" IN (SELECT "${tempEntity.table}"."${_DB[entity].relations[node.value.name].relationKey}" FROM "${tempEntity.table}"`;
+          } else context.relation = node.value.name;
           if (!context.key) {
-            context.key =
-              _DB[this.entity].relations[context.relation].entityColumn;
-            this[context.target] = `"${
-              _DB[this.entity].relations[context.relation].entityColumn
-            }"`;
+            context.key = _DB[entity].relations[context.relation].entityColumn; 
+            this[context.target] = `"${ _DB[entity].relations[context.relation].entityColumn }"`;
           }
           return;
         }
       }
-    if (!context.key)
-      if(context.target) this[context.target] +=
-        node.value.name.includes("->") || node.value.name.includes("::")
-          ? node.value.name
-          : `"${node.value.name}"`;
-  }
-
-  protected testaOuam(test: string): string {
-    switch (test) {
-      case "Edm.Decimal":
-        return `CASE WHEN jsonb_typeof("result"-> 'value') = 'number' then "result"->'value' END::numeric`;
-      default:
-        return "";
     }
   }
 
+  
+  protected VisitODataIdentifier(node: Token, context: IodataContext) {
+    const alias = this.getGoodColumnAlias(node.value.name, context);
+    node.value.name = alias ? alias : node.value.name;
+    
+    if (context.relation && context.identifier && isColumnType(_DB[context.relation], context.identifier.split(".")[0], "json")) {
+      console.log("JE SUIS LA ATTENTION PAS EFFACER");
+      
+      context.identifier = `"${context.identifier.split(".")[0]}"->>'${node.value.name}'`;     
+    } else {      
+      if (this.isWhere(context)) this.createComplexWhere(context.identifier ? context.identifier.split(".")[0] : this.entity, node, context);
+      if (!context.relation && !context.identifier && alias && context.target) {
+        this[context.target] += alias;  
+      } else {
+        context.identifier = node.value.name;      
+        if (context.target && !context.key) 
+          this[context.target] += node.value.name.includes("->>") ||node.value.name.includes("->") || node.value.name.includes("::")
+            ? node.value.name
+            : this.entity && _DB[this.entity] ? `${getColumnNameOrAlias(_DB[this.entity], node.value.name, {table: false, as: false, cast: false, numeric: this.numeric, test: this.createOptions()})}` : node.value.name;
+      }
+    }    
+  }
+  
   protected VisitEqualsExpression(node: Token, context: IodataContext): void {
     const addDate = this.addDateTypeToWhere(node, "=");
     if (addDate) this.where += addDate;
-    else {
+    else {     
       this.Visit(node.value.left, context);
       this.where += " = ";
       this.Visit(node.value.right, context);
@@ -668,18 +684,28 @@ export class PgVisitor {
     this.where = this.where.replace(/<> null$/, "IS NOT NULL");
   }
 
-  protected VisitLiteral(node: Token, context: IodataContext): void {
-    if (context.relation && context.table && context.target == "where") {
-      this.where += `(SELECT "${context.table}"."id" FROM "${
-        context.table
-      }" WHERE "${context.table}"."${
-        context.identifier
-      }" = ${SQLLiteral.convert(node.value, node.raw)})`;
-    } else
-      this.where += context.literal =
-        node.value == "Edm.Boolean"
-          ? node.raw
-          : SQLLiteral.convert(node.value, node.raw);
+  protected VisitLiteral(node: Token, context: IodataContext): void {    
+    if (context.relation && this.isWhere(context)) {
+      const temp = this.where.split(" ").filter(e => e != ""); 
+      context.sign = temp.pop(); 
+      this.where = temp.join(" ");
+      
+      this.where += ` IN (SELECT ${_DB[this.entity].relations[context.relation] ? `"${_DB[this.entity].relations[context.relation]["relationKey"]}"` : `"${_DB[context.relation].table}"."id"`} FROM "${ _DB[context.relation].table }" WHERE `;
+      if (context.identifier) {
+        if (context.identifier.startsWith("CASE") || context.identifier.startsWith("("))
+          this.where += `${ context.identifier } ${context.sign} ${SQLLiteral.convert(node.value, node.raw)})`;
+        else {
+          const tempEntity = getEntity(context.relation);    
+
+          const quotes = context.identifier[0] === '"' ? '' : '"';
+          const alias = tempEntity ? getColumnNameOrAlias(tempEntity, context.identifier , {table: false, as: false, cast: false, numeric: this.numeric, test: this.createOptions()}) : undefined;
+
+          this.where += (context.sql)
+            ? `${context.sql} ${context.target} ${ context.identifier } ${context.sign} ${SQLLiteral.convert(node.value, node.raw)}))`
+            : `${alias ? '' : `${_DB[context.relation].table}.`}${alias ? alias : `${quotes}${ context.identifier }${quotes}`} ${context.sign} ${SQLLiteral.convert(node.value, node.raw)})`;
+        }
+      }
+    } else this.where += context.literal = node.value == "Edm.Boolean" ? node.raw : SQLLiteral.convert(node.value, node.raw);
   }
 
   protected VisitInExpression(node: Token, context: IodataContext): void {
@@ -693,45 +719,45 @@ export class PgVisitor {
     this.where += context.literal = SQLLiteral.convert(node.value, node.raw);
   }
 
-  protected createColumn(column: string): string {
+  protected createColumn(entity: string, column: string): string {
     column = removeQuotes(column);
     let test: string | undefined = undefined;
+    const tempEntity: Ientity = (typeof entity === "string") ? _DB[entity] : entity ;
     if (column.includes("/")) {
       const temp = column.split("/");
-      if (_DB[this.entity].relations.hasOwnProperty(temp[0])) {
-        const rel = _DB[this.entity].relations[temp[0]];
+      if (tempEntity.relations.hasOwnProperty(temp[0])) {
+        const rel = tempEntity.relations[temp[0]];
         column = `(SELECT "${temp[1]}" FROM "${rel.tableName}" WHERE ${rel.expand} AND length("${temp[1]}"::text) > 2)`;
         test = _DB[rel.entityName].columns[temp[1]].test;
         if (test)
           test = `(SELECT "${test}" FROM "${rel.tableName}" WHERE ${rel.expand})`;
       }
-    } else if (!_DB[this.entity].columns.hasOwnProperty(column)) {
-      if (_DB[this.entity].relations.hasOwnProperty(column)) {
-        const rel = _DB[this.entity].relations[column];
+    } else if (!tempEntity.columns.hasOwnProperty(column)) {
+      if (tempEntity.relations.hasOwnProperty(column)) {
+        const rel = tempEntity.relations[column];
         column = `(SELECT "${rel.entityColumn}" FROM "${rel.tableName}" WHERE ${rel.expand} AND length("${rel.entityColumn}"::text) > 2)`;
         test = _DB[rel.entityName].columns[rel.entityColumn].test;
       } else throw new Error(`Invalid column ${column}`);
     } else {
-      test = `"${_DB[this.entity].columns[column].test}"`;
+      test = `"${tempEntity.columns[column].test}"`;
       column = `"${column}"`;
     }
     if (test)
       column = `CASE 
-        WHEN  ${test} = 'application/vnd.geo+json'
-         THEN ST_GeomFromEWKT(ST_GeomFromGeoJSON(${column}))
-         ELSE ST_GeomFromEWKT(${column}::text)
-     END`;
+                  WHEN  ${test} = 'application/vnd.geo+json'
+                  THEN ST_GeomFromEWKT(ST_GeomFromGeoJSON(${column}))
+                  ELSE ST_GeomFromEWKT(${column}::text)
+              END`;
     return column;
   }
+
   protected VisitMethodCallExpression(node: Token, context: IodataContext) {
     const method = node.value.method;
     const params = node.value.parameters || [];
 
-    const columnOrData = (index: number): string => {
-      const temp = decodeURIComponent(
-        Literal.convert(params[index].value, params[index].raw)
-      );
-      if (temp === "result") return convertResult(this.numeric);
+    const columnOrData = (index: number, ForceString: boolean): string => {
+      const temp = decodeURIComponent( Literal.convert(params[index].value, params[index].raw) );
+      if (temp === "result") return getColumnResult(this.numeric, this.isSelect(context), ForceString === true ? 'text' : undefined);
       return _DB[this.entity].columns[temp] ? `"${temp}"` : `'${temp}'`;
     };
 
@@ -767,37 +793,37 @@ export class PgVisitor {
         ).slice(1, -1)}'`;
         break;
       case "endswith":
-        this.where += `${columnOrData(0)}  ILIKE '%${cleanData(1)}'`;
+        this.where += `${columnOrData(0, true)}  ILIKE '%${cleanData(1)}'`;
         break;
       case "startswith":
-        this.where += `${columnOrData(0)} ILIKE '${cleanData(1)}%'`;
+        this.where += `${columnOrData(0, true)} ILIKE '${cleanData(1)}%'`;
         break;
       case "substring":
         // if (params[0].value == "Edm.String" || params[0].type == "FirstMemberExpression") {
         if (params.length == 3)
-          this.where += ` SUBSTR(${columnOrData(0)}, ${cleanData(
+          this.where += ` SUBSTR(${columnOrData(0, true)}, ${cleanData(
             1
           )} + 1, ${cleanData(2)})`;
-        else this.where += ` SUBSTR(${columnOrData(0)}, ${cleanData(1)} + 1)`;
+        else this.where += ` SUBSTR(${columnOrData(0, true)}, ${cleanData(1)} + 1)`;
         break;
       case "substringof":
-        this.where += `${columnOrData(0)} ILIKE '%${cleanData(1)}%'`;
+        this.where += `${columnOrData(0, true)} ILIKE '%${cleanData(1)}%'`;
         break;
       case "indexof":
         // if (params[0].value == "Edm.String" || params[0].type == "FirstMemberExpression") {
-        this.where += ` POSITION('${cleanData(1)}' IN ${columnOrData(0)})`;
+        this.where += ` POSITION('${cleanData(1)}' IN ${columnOrData(0, true)})`;
         break;
       case "concat":
-        this.where += `(${columnOrData(0)} || '${cleanData(1)}')`;
+        this.where += `(${columnOrData(0, true)} || '${cleanData(1)}')`;
         break;
       case "length":
-        this.where += `CHAR_LENGTH(${columnOrData(0)})`;
+        this.where += `CHAR_LENGTH(${columnOrData(0, true)})`;
         break;
       case "tolower":
-        this.where += `LOWER(${columnOrData(0)})`;
+        this.where += `LOWER(${columnOrData(0, true)})`;
         break;
       case "toupper":
-        this.where += `UPPER(${columnOrData(0)})`;
+        this.where += `UPPER(${columnOrData(0, true)})`;
         break;
       case "year":
       case "month":
@@ -806,13 +832,13 @@ export class PgVisitor {
       case "minute":
       case "second":
         this.where += `EXTRACT(${method.toUpperCase()} FROM ${columnOrData(
-          0
+          0, false
         )})`;
         break;
       case "round":
       case "floor":
       case "ceiling":
-        this.where += `${method.toUpperCase()} (${columnOrData(0)})`;
+        this.where += `${method.toUpperCase()} (${columnOrData(0, false)})`;
         break;
       case "now":
         this.where += "NOW()";
@@ -823,7 +849,7 @@ export class PgVisitor {
         this.where += ")";
         break;
       case "time":
-        this.where += `(${columnOrData(0)})::time`;
+        this.where += `(${columnOrData(0, true)})::time`;
         break;
       case "geo.distance":
       case "geo.contains":
@@ -836,25 +862,25 @@ export class PgVisitor {
       case "geo.within":
         this.where += `${method
           .toUpperCase()
-          .replace("GEO.", "ST_")}(${this.createColumn(
-          columnOrData(0)
+          .replace("GEO.", "ST_")}(${this.createColumn(_DB[this.entity],
+          columnOrData(0, true)
         )}, '${geoColumnOrData(1, true)}')`;
         // this.where += `ST_Distance(${this.createColumn(columnOrData(0))}, '${geoColumnOrData(1, true)}')`;
         break;
       case "geo.length":
-        this.where += `ST_Length(ST_MakeLine(ST_AsText(${this.createColumn(
-          columnOrData(0)
+        this.where += `ST_Length(ST_MakeLine(ST_AsText(${this.createColumn(_DB[this.entity],
+          columnOrData(0, true)
         )}), '${geoColumnOrData(1, false)}'))`;
         break;
       case "geo.intersects":
-        this.where += `st_intersects(ST_AsText(${this.createColumn(
-          columnOrData(0)
+        this.where += `st_intersects(ST_AsText(${this.createColumn(_DB[this.entity],
+          columnOrData(0, true)
         )}), '${geoColumnOrData(1, false)}')`;
         break;
       case "trim":
         this.where += `TRIM(BOTH '${
           params.length == 2 ? cleanData(1) : " "
-        }' FROM ${columnOrData(0)})`;
+        }' FROM ${columnOrData(0, true)})`;
         break;
       case "mindatetime":
         this.where += `MIN(${this.where.split('" ')[0]}")`;

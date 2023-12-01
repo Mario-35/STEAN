@@ -14,6 +14,9 @@ export class SQLLiteral extends Literal {
     "Edm.Date"(value: string) {
         return "'" + value + "'";
     }
+    "Edm.DateTimePeriod"(value: string): any {
+        return "'" + value.trim() + "'";
+    }
     "Edm.DateTimeOffset"(value: string): any {
         return "'" + value.replace("T", " ").replace("Z", " ").trim() + "'";
     }

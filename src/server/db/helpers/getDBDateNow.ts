@@ -6,6 +6,6 @@
  *
  */
 
-import { executeSql } from ".";
+import { executeSqlValues } from ".";
 
-export const getDBDateNow = async ( configName: string ): Promise<string> => await executeSql(configName, "SELECT current_timestamp;", true).then((res: object) => res[0]);
+export const getDBDateNow = async ( configName: string ): Promise<string> => await executeSqlValues(configName, "SELECT current_timestamp;").then((res: object) => res[0]);

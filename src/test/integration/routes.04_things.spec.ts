@@ -567,6 +567,63 @@ describe("endpoint : Thing [8.2.1]", () => {
                     done();
                 });
         });
+
+        it(`Return ${entity.name} nested filter search`, (done) => {
+            const infos = {
+                api: `{get} ${entity.name}(:id)/entity(:id) Get filter nested resource path`,
+                apiName: `Get${entity.name}ComplexFilter`,
+                apiDescription: `Get Things that's have a datastream description equal to ...`,
+                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-nested-resource-path",
+                apiExample: {
+                    http: `/test/v1.0/${entity.name}?$filter=Datastreams/description eq 'Air quality Number five'`,
+                    curl: defaultGet("curl", "KEYHTTP"),
+                    javascript: defaultGet("javascript", "KEYHTTP"),
+                    python: defaultGet("python", "KEYHTTP")
+                }
+            };
+            chai.request(server)
+                .get(infos.apiExample.http)
+                .end((err: Error, res: any) => {
+                    should.not.exist(err);
+                    res.status.should.equal(200);
+                    res.type.should.equal("application/json");
+                    res.body["@iot.count"].should.eql(1);
+                    res.body.value.length.should.eql(1);
+                    res.body.value[0]["@iot.id"].should.eql(2);
+                    res.body.value[0]["@iot.selfLink"].should.contain("/Things(2)");
+                    addToApiDoc({ ...infos, result: limitResult(res) });
+                    done();
+                });
+        });
+
+        it(`Return ${entity.name} complex nested filter search`, (done) => {
+            const infos = {
+                api: `{get} ${entity.name}(:id)/entity(:id) Get complex filter nested resource path`,
+                apiName: `Get${entity.name}ComplexNestedFilter`,
+                apiDescription: `Get Things that's have a datastream Wich have an observed property with description equal to ...`,
+                apiReference: "",
+                apiExample: {
+                    http: `/test/v1.0/${entity.name}?$filter=Datastreams/ObservedProperty/description eq 'PM something Number three'`,
+                    curl: defaultGet("curl", "KEYHTTP"),
+                    javascript: defaultGet("javascript", "KEYHTTP"),
+                    python: defaultGet("python", "KEYHTTP")
+                }
+            };
+            chai.request(server)
+                .get(infos.apiExample.http)
+                .end((err: Error, res: any) => {
+                    should.not.exist(err);
+                    res.status.should.equal(200);
+                    res.type.should.equal("application/json");
+                    res.body["@iot.count"].should.eql(2);
+                    res.body.value.length.should.eql(2);
+                    res.body.value[0]["@iot.id"].should.eql(2);
+                    res.body.value[0]["@iot.selfLink"].should.contain("/Things(2)");
+                    addToApiDoc({ ...infos, result: limitResult(res) });
+                    done();
+                });
+        });
+
     });
 
     describe(`{post} ${entity.name} ${nbColorTitle}[10.2]`, () => {

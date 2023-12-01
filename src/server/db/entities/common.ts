@@ -10,7 +10,7 @@
  import { isNull, returnFormats } from "../../helpers/index";
  import { Logs } from "../../logger";
  import { Ientity, IreturnResult } from "../../types";
- import { executeSql, removeKeyFromUrl, verifyId } from "../helpers";
+ import { executeSqlValues, removeKeyFromUrl, verifyId } from "../helpers";
  import { errors } from "../../messages/";
  import { _DBFILTERED } from "../constants";
  
@@ -25,9 +25,7 @@
      Logs.whereIam();
      this.ctx = ctx;
      this.nextLinkBase = removeKeyFromUrl(
-       `${this.ctx._odata.options.rootBase}${
-         this.ctx.href.split(`${ctx._config.apiVersion}/`)[1]
-       }`,
+       `${this.ctx._odata.options.rootBase}${ this.ctx.href.split(`${ctx._config.apiVersion}/`)[1] }`,
        ["top", "skip"]
      );
      this.linkBase = `${this.ctx._odata.options.rootBase}${this.constructor.name}`;
@@ -82,27 +80,17 @@
      const max: number =
        this.ctx._odata.limit > 0
          ? +this.ctx._odata.limit
-         : this.ctx._config.nb_page;
+         : +this.ctx._config.nb_page;
      if (resLength >= max)
-       return `${encodeURI(this.nextLinkBase)}${
-         this.nextLinkBase.includes("?") ? "&" : "?"
-       }$top=${this.ctx._odata.limit}&$skip=${
-         this.ctx._odata.skip + this.ctx._odata.limit
-       }`;
+       return `${encodeURI(this.nextLinkBase)}${ this.nextLinkBase.includes("?") ? "&" : "?" }$top=${this.ctx._odata.limit}&$skip=${ this.ctx._odata.skip + this.ctx._odata.limit }`;
    };
  
    // create the prevLink
    prevLink = (resLength: number): string | undefined => {
      if (this.ctx._odata.limit < 1) return;
      const prev = this.ctx._odata.skip - this.ctx._odata.limit;
-     if (
-       ((this.ctx._config.nb_page && resLength >= this.ctx._config.nb_page) ||
-         this.ctx._odata.limit) &&
-       prev >= 0
-     )
-       return `${encodeURI(this.nextLinkBase)}${
-         this.nextLinkBase.includes("?") ? "&" : "?"
-       }$top=${this.ctx._odata.limit}&$skip=${prev}`;
+     if ( ((this.ctx._config.nb_page && resLength >= this.ctx._config.nb_page) || this.ctx._odata.limit) && prev >= 0 )
+       return `${encodeURI(this.nextLinkBase)}${ this.nextLinkBase.includes("?") ? "&" : "?" }$top=${this.ctx._odata.limit}&$skip=${prev}`;
    };
  
    // Return all items
@@ -116,11 +104,11 @@
      if (this.ctx._odata.resultFormat === returnFormats.sql)
        return this.createReturnResult({ body: sql });
      if (this.ctx._odata.resultFormat === returnFormats.graph) {
-       const tmp = await executeSql(this.ctx._config.name, sql, true);       
+       const tmp = await executeSqlValues(this.ctx._config.name, sql);       
        return this.createReturnResult({ body: tmp[0]});
      }
 
-    return await executeSql(this.ctx._config.name, sql, true)   
+    return await executeSqlValues(this.ctx._config.name, sql)   
        .then(async (res: object) => { 
          return (res[0] > 0) ? 
             this.createReturnResult({
@@ -148,7 +136,7 @@
       return this.createReturnResult({ body: sql });
 
     // build return result
-    return await executeSql(this.ctx._config.name, sql, true) 
+    return await executeSqlValues(this.ctx._config.name, sql) 
       .then((res: object) => {           
         if (this.ctx._odata.select && this.ctx._odata.onlyValue)
           return this.createReturnResult({
@@ -169,7 +157,7 @@
         }
       })
       .catch((err: Error) =>
-        this.ctx.throw(400, { code: 400, detail: err.message })
+        this.ctx.throw(400, { code: 400, detail: err })
       );
   }
 
@@ -187,7 +175,7 @@
      if (this.ctx._odata.resultFormat === returnFormats.sql)
        return this.createReturnResult({ body: sql });
      // build return result
-     return await executeSql(this.ctx._config.name, sql, true) 
+     return await executeSqlValues(this.ctx._config.name, sql) 
        .then((res: object) => {    
          if (res[0]) {
            if (res[0].duplicate)
@@ -226,7 +214,7 @@
      if (this.ctx._odata.resultFormat === returnFormats.sql)
        return this.createReturnResult({ body: sql });
 
-       return await executeSql(this.ctx._config.name, sql, true) 
+       return await executeSqlValues(this.ctx._config.name, sql) 
        .then((res: object) => {    
          if (res[0]) {
            return this.createReturnResult({
@@ -252,7 +240,7 @@
        this.ctx._odata.resultFormat === returnFormats.sql
          ? { id: BigInt(idInput), body: sql }
          : {
-             id: await executeSql(this.ctx._config.name, sql, true) 
+             id: await executeSqlValues(this.ctx._config.name, sql) 
                .then((res) => res[0])
                .catch(() => BigInt(0)),
            }

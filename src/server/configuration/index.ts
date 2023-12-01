@@ -5,11 +5,11 @@
  * @author mario.adam@inrae.fr
  *
  */
-import { ADMIN, API_VERSION, APP_NAME, APP_VERSION, DEFAULT_DB, NODE_ENV, setDebug, setReady, TIMESTAMP, _DEBUG, _NOTOK, _OK, _WEB, } from "../constants";
-import { asyncForEach, decrypt, hidePasswordIn, isTest, unikeList, } from "../helpers";
+import { ADMIN, API_VERSION, APP_NAME, APP_VERSION, DEFAULT_DB, NODE_ENV, setReady, TIMESTAMP, _DEBUG, _NOTOK, _OK, _WEB, } from "../constants";
+import { asyncForEach, decrypt, encrypt, hidePasswordIn, isProduction, isTest, unikeList, } from "../helpers";
 import { IconfigFile, IdbConnection } from "../types";
 import { errors, infos, msg } from "../messages";
-import { createDatabase} from "../db/helpers";
+import { createDatabase, executeSql} from "../db/helpers";
 import { app } from "..";
 import { Logs } from "../logger";
 import { EextensionsType } from "../enums";
@@ -29,29 +29,71 @@ class Configuration {
   static queries: { [key: string]: string[] } = {};
 
   constructor(file: fs.PathOrFileDescriptor) {
-    Logs.start(`START ${APP_NAME} version : ${APP_VERSION} [${NODE_ENV}]`);
-    Configuration.filePath = file;
-    const fileTemp = fs.readFileSync(file, "utf8");
-    Configuration.jsonConfiguration = JSON.parse(fileTemp);
-    Object.keys(Configuration.jsonConfiguration).forEach((element: string) => {
-      this.configs[element] = this.formatConfig(element);
-    });
+    try {
+      Configuration.filePath = file;
+      const fileContent = fs.readFileSync(file, "utf8");
+      Configuration.jsonConfiguration = JSON.parse(decrypt(fileContent));
+      if (this.validJSONConfig(Configuration.jsonConfiguration)) Object.keys(Configuration.jsonConfiguration).forEach((element: string) => {
+        this.configs[element] = this.formatConfig(element);
+      }); else {
+        Logs.error("Config Not correct");
+        process.exit(112);
+      }
+      if(isProduction() && fileContent[32] != ".") this.writeConfig();      
+      // rewrite file (to update config modification)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      Logs.error("Config Not correct", error["message"]);
+      process.exit(111);      
+    }
   }
 
-  async executeMultipleQueries(configName: string, queries: string[], infos: string) {
+  // verifi is valid config
+  private validJSONConfig(input : JSON): boolean {    
+    if (!input.hasOwnProperty("admin")) return false;
+    if (!input["admin"].hasOwnProperty("pg")) return false;
+    if (!input["admin"][["pg"]].hasOwnProperty("host")) return false;
+    if (!input["admin"][["pg"]].hasOwnProperty("user")) return false;
+    if (!input["admin"][["pg"]].hasOwnProperty("password")) return false;
+    if (!input["admin"][["pg"]].hasOwnProperty("database")) return false;
+    return true;
+  }
+  // Write an encrypt config file in json file
+  private writeConfig(): boolean {    
+    const result = {};
+    Object.entries(this.configs).forEach(([k, v]) => {        
+      result[k] = Object.keys(v).filter(key => key !== 'db' && key[0] != "_").reduce((obj, key) => { obj[key] = v[key]; return obj; }, {} );
+    });
+    
+    fs.writeFile(
+      Configuration.filePath,
+      isProduction() === true 
+        ? encrypt(JSON.stringify(result, null, 4))
+        : JSON.stringify(result, null, 4),
+      (err) => {
+        if (err) {
+          Logs.error(err);
+          return false;
+        }
+      });
+      return true;
+  }
+
+  async executeMultipleQueries(configName: string, queries: string[], infos: string):Promise<boolean> {
     await asyncForEach( queries, async (query: string) => {
       await serverConfig.db(configName).unsafe(query)
       .then(() => {
         Logs.create(`${infos} : [${configName}]`, _OK);
       }).catch((error: Error) => {
         Logs.error(error);
-        console.log(query);
+        return false;
       });
     });
+    return true;
   }
+  
 
-
-  async executeQueries(title: string): Promise<void> {
+  async executeQueries(title: string): Promise<boolean> {
     try {
       await asyncForEach(
         Object.keys(Configuration.queries),
@@ -61,7 +103,9 @@ class Configuration {
       );
     } catch (error) {
       Logs.error(error);
+      // return false;
     }
+    return true;
   }
 
   hashCode(s: string): number {
@@ -74,9 +118,7 @@ class Configuration {
   // return the connection
   db(name: string): postgres.Sql<Record<string, unknown>> {
     if (!this.configs[name].db) this.createDbConnectionFromConfigName(name);
-    return (
-      this.configs[name].db || this.createDbConnection(this.configs[name].pg)
-    );
+    return this.configs[name].db || this.createDbConnection(this.configs[name].pg);
   }
 
   dbAdminFor(name: string): postgres.Sql<Record<string, unknown>> {
@@ -116,11 +158,9 @@ class Configuration {
     else Configuration.queries[connectName] = [query];
   }
 
-  clearQueries() {
-    Configuration.queries = {};
-  }
+  clearQueries() { Configuration.queries = {}; }
 
-  async reCreateTrigger(configName: string) {
+  async reCreateTrigger(configName: string): Promise<boolean> {
     await asyncForEach( triggers(configName), async (query: string) => {
       const name = query.split(" */")[0].split("/*")[1].trim();
       await serverConfig.db(configName).unsafe(query)
@@ -128,29 +168,25 @@ class Configuration {
         Logs.create(`[${configName}] ${name}`, _OK);
       }).catch((error: Error) => {
         Logs.error(error);
+        return false;
       });
     });
+    return true;
   }
 
 
   // initialisation serve NOT IN TEST
-  async afterAll(): Promise<void> {
+  async afterAll(): Promise<boolean> {
     // Updates database after init
     if ( update && update["afterAll"] && Object.entries(update["afterAll"]).length > 0 ) {
       Logs.head("afterAll");
       this.clearQueries();
-      try {
-        Object.keys(this.configs)
-          .filter((e) => e != "admin")
-          .forEach(async (connectName: string) => {
-            update["afterAll"].forEach((operation: string) => {
-              this.addToQueries(connectName, operation);
-            });
-          });
-        await this.executeQueries("afterAll");
-      } catch (error) {
-        Logs.error(error);
-      }
+      Object.keys(this.configs)
+        .filter((e) => e != "admin")
+        .forEach(async (connectName: string) => {
+          update["afterAll"].forEach((operation: string) => { this.addToQueries(connectName, operation); });
+        });
+      await this.executeQueries("afterAll");
     }
 
     if ( update && update["decoders"] && Object.entries(update["decoders"]).length > 0 ) {
@@ -165,14 +201,15 @@ class Configuration {
           });
         });
       }
-      await this.executeQueries("decoders");
+     await this.executeQueries("decoders");
+     return true;
   }
 
   // initialisation serve NOT IN TEST
-  async init(): Promise<void> {
+  async init(): Promise<boolean> {
     let status = true;
     this.logToFile(this.configs[ADMIN]["logFile"]);
-    Logs.booting("active error to file", "errorFile.md");
+    Logs.booting(false, "active error to file", "errorFile.md");
     const errFile = fs.createWriteStream("errorFile.md", { flags: "w" });
     errFile.write(`## Start : ${TIMESTAMP()} \n`);
 
@@ -189,12 +226,23 @@ class Configuration {
       }
     );
     setReady(status);
-    this.afterAll();
+    if(status === true) {
+      this.afterAll();
+      this.saveConfig();
+    }                                      
+    return status;
+  }
+  
+  private async saveConfig():Promise<boolean> {
+    const temp = encrypt(JSON.stringify(this.configs, null, 4));
+    return await executeSql(ADMIN, `INSERT INTO public.configs (key, config)  VALUES('${temp.substring(32, 0)}' ,'${temp.slice(33)}');`)
+      .then(() => true)
+      .catch(() => false);
   }
 
   // Create logs in file
   private logToFile(file: string) {
-    setDebug(file && file.length > 0 ? true : false);
+    // setDebug(file && file.length > 0 ? true : false);
     if (_DEBUG === false) return;
     Logs.head("active Logs to file", file);
 
@@ -203,10 +251,9 @@ class Configuration {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     console.log = (...data: any[]) => {
-      logFile.write(
-        util.format.apply(null, data).replace(/\u001b[^m]*?m/g, "") + "\n"
-      );
-      if (!isTest()) process.stdout.write(util.format.apply(null, data) + "\n");
+      logFile.write( util.format.apply(null, data).replace(/\u001b[^m]*?m/g, "") + "\n" );
+      if (!isTest()) 
+        process.stdout.write(util.format.apply(null, data) + "\n");
     };
     console.error = console.log;
   }
@@ -248,14 +295,12 @@ class Configuration {
   // return config name from config name
   getConfigNameFromDatabase(input: string): string | undefined {
     if (input === "all") return;
-    const aliasName = Object.keys(this.configs).filter(
-      (configName: string) => this.configs[configName].pg.database === input
-    )[0];
+    const aliasName = Object.keys(this.configs).filter( (configName: string) => this.configs[configName].pg.database === input )[0];
     if (aliasName) return aliasName;
     throw new Error(`No configuration found for ${input} name`);
   }
 
-  getConfigExport= (name: string): object=> {
+  getConfigForExcelExport = (name: string): object=> {
     const result = Object.assign({}, this.configs[name].pg);
     result["password"] = "*****";
     ["name","apiVersion","port","date_format", "webSite", "nb_page", "forceHttps", "highPrecision", "logFile","alias", "extensions"].forEach(e => {
@@ -274,41 +319,23 @@ class Configuration {
       if (databaseName) return databaseName;
       let aliasName: undefined | string = undefined;
       Object.keys(this.configs).forEach((configName: string) => {
-        if (this.configs[configName].alias.includes(name))
-          aliasName = configName;
-      });
+        if (this.configs[configName].alias.includes(name)) aliasName = configName; });
       if (aliasName) return aliasName;
     }
   };
 
   // return IconfigFile Formated for IconfigFile object or name found in json file
   private formatConfig(input: object | string, name?: string): IconfigFile {
-    
     if (typeof input === "string") {
       name = input;
       input = Configuration.jsonConfiguration[input];
     }
-    // If config encrypted
-    Object.keys(input).forEach((elem: string) => {
-      input[elem] = decrypt(input[elem]);
-    });
     const goodDbName = name
       ? name
-      : decrypt(
-          input["pg_database"]
-            ? input["pg_database"]
-            : input["pg"]
-            ? input["pg"]["database"]
-            : "ERROR"
-        ) || "ERROR";        
+      : input[`pg`] && input[`pg`]["database"] ? input[`pg`]["database"] : `ERROR` || "ERROR";        
     let extensions = input["extensions"]
       ? ["base", ... String(input["extensions"]).split(",")]
       : ["base"];
-    if (input["multiDatastream"] && input["multiDatastream"] === true)
-      extensions.push("multiDatastream");
-    if (input["lora"] && input["lora"] === true)
-      extensions.push("multiDatastream", "lora");
-    if (input["numeric"] && input["numeric"] === true) extensions = ["numeric"];
     extensions = unikeList(extensions);
     const returnValue: IconfigFile = {
       name: goodDbName,
@@ -317,18 +344,11 @@ class Configuration {
           ? input["port"] || 8029
           : input["port"] || this.configs[ADMIN].port || 8029,
       pg: {
-        host: input["pg_host"] || input["pg"]["host"] || "ERROR",
-        port: input["pg_port"]
-          ? +input["pg_port"]
-          : input["pg"] && input["pg"]["port"]
-          ? +input["pg"]["port"]
-          : 5432,
-        user: input["pg_user"] || input["pg"]["user"] || "ERROR",
-        password: input["pg_password"] || input["pg"]["password"] || "ERROR",
-        database:
-          name && name === "test"
-            ? "test"
-            : input["pg_database"] || input["pg"]["database"] || "ERROR",
+        host: input[`pg`] && input[`pg`]["host"] ? input[`pg`]["host"] : `ERROR`,
+        port: input[`pg`] && input[`pg`]["port"] ? input[`pg`]["port"] : 5432,
+        user: input[`pg`] && input[`pg`]["user"] ? input[`pg`]["user"] : `ERROR`,
+        password: input[`pg`] && input[`pg`]["password"] ? input[`pg`]["password"] : `ERROR`,
+        database: name && name === "test" ? "test" : input[`pg`] && input[`pg`]["database"] ? input[`pg`]["database"] : `ERROR`,
         retry: input["retry"] ? +input["retry"] : 2,
       },
       apiVersion: input["apiVersion"] || API_VERSION,
@@ -355,23 +375,31 @@ class Configuration {
     return returnValue;
   }
 
-  // Add a new config file in json file
-  async addConfig(addJson: object): Promise<IconfigFile> {
-    const configs = this.formatConfig(addJson);
-    Configuration.jsonConfiguration[configs.name] = configs;
-    fs.writeFile(
-      Configuration.filePath,
-      JSON.stringify(Configuration.jsonConfiguration, null, 4),
-      (err) => {
-        if (err) {
-          Logs.error(err);
-          return false;
+
+  async addConfig(addJson: object): Promise<IconfigFile | undefined> {
+    try {
+      const addedConfig = this.formatConfig(addJson);
+      Configuration.jsonConfiguration[addedConfig.name] = addedConfig;
+      fs.writeFile(
+        Configuration.filePath,
+        encrypt(JSON.stringify(Configuration.jsonConfiguration, null, 4)),
+        (err) => {
+          if (err) {
+            Logs.error(err);
+            return false;
+          }
         }
-      }
-    );
-    await this.addToServer(configs.name);
-    hidePasswordIn(configs);
-    return configs;
+      );
+      this.configs[addedConfig.name] = this.formatConfig(addedConfig);
+      await this.addToServer(addedConfig.name);
+      this.writeConfig();
+      hidePasswordIn(addedConfig);
+      return addedConfig;
+      
+    } catch (error) {
+      console.log(error);
+      return undefined;
+    }
   }
 
   // process to add an entry in server
@@ -379,18 +407,18 @@ class Configuration {
     await this.isDbExist(key, true)
       .then(async (res: boolean) => {
         // await serverConfig.createUser(key);
-        Logs.bootingResult(`\x1b[37mDatabase => ${key}\x1b[39m on line`, res ? _WEB : _NOTOK);
+        Logs.booting(true, `\x1b[37mDatabase => ${key}\x1b[39m on line`, res ? _WEB : _NOTOK);
         const port = this.configs[key].port;
         if (port > 0) {
           if (Configuration.ports.includes(port))
-            Logs.bootingResult(
+            Logs.booting(true, 
               `\x1b[35m[${key}]\x1b[32m ${infos.addPort}`,
               port
             );
           else
             app.listen(port, () => {
               Configuration.ports.push(port);
-              Logs.bootingResult(
+              Logs.booting(true, 
                 `\x1b[33m[${key}]\x1b[32m ${infos.ListenPort}`,
                 port
               );
@@ -410,7 +438,7 @@ class Configuration {
   private async tryToCreateDB(connectName: string): Promise<boolean> {
     return await createDatabase(connectName)
       .then(async () => {
-        Logs.bootingResult( `${infos.db} ${infos.create} [${this.configs[connectName].pg.database}]`, _OK );
+        Logs.booting(true, `${infos.db} ${infos.create} [${this.configs[connectName].pg.database}]`, _OK );
         this.createDbConnectionFromConfigName(connectName);
         return true;
       })
@@ -421,13 +449,13 @@ class Configuration {
   }
 
   private async isDbExist( connectName: string, create: boolean ): Promise<boolean> {
-    Logs.booting(infos.dbExist, this.configs[connectName].pg.database);
+    Logs.booting(false, infos.dbExist, this.configs[connectName].pg.database);
     return await this.db(connectName)`select 1+1 AS result`
       .then(async () => {
         const listTempTables = await this.db(connectName)`SELECT array_agg(table_name) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'temp%';`;
         const tables = listTempTables[0]["array_agg"];
         if (tables != null)        
-          Logs.bootingResult(
+          Logs.booting(true, 
             `delete temp tables ==> \x1b[33m${connectName}\x1b[32m`,
             await this.db(connectName).begin(sql => {
               tables.forEach(async (table: string) => {await sql.unsafe(`DROP TABLE ${table}`);});

@@ -6,12 +6,18 @@
  *
  */
 
+import { EcolType } from "../enums";
+
 
 export interface IodataContext {
-    key?: string;
-    target?: string | undefined;
-    identifier?: string;
-    relation?: string;
-    table?: string;
-    literal?: string;
+    key: string | undefined;
+    target: string | undefined;
+    identifier: string | undefined;
+    identifierType: EcolType | undefined;
+    relation: string | undefined;
+    literal: string | undefined;
+    sign: string | undefined;
+    sql: string | undefined;
+    
+    pipo: string | undefined;
 }

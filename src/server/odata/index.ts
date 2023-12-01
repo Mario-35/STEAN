@@ -23,10 +23,25 @@ const doSomeWarkAfterCreateAst = async (input: PgVisitor, ctx: koa.Context) => {
   }
 };
 
+const escapesOdata = (input: string) : string => {
+  const codes = {
+    "/" : "%252F",
+    "\\" : "%255C"
+  };
+
+  const pop:string[] = [];
+  input.split("%27").forEach((v: string,i: number) => {
+    if (i > 0) Object.keys(codes).forEach((code: string) => v = v.split(code).join(codes[code]));
+    pop.push(v);
+  });
+  return pop.join("%27");
+};
+
+
 export const createOdata = async ( ctx: koa.Context ): Promise<PgVisitor | undefined> => {
   // blonk url if not defined
   const blankUrl = `$top=${ctx._config.nb_page ? ctx._config.nb_page : 200}`;
-
+  
   const options: SqlOptions = {
     loraId: undefined,
     rootBase: ctx._rootName,
@@ -41,13 +56,19 @@ export const createOdata = async ( ctx: koa.Context ): Promise<PgVisitor | undef
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .split(ctx._config.apiVersion)[1];
+   
+    urlSrc = escapesOdata(urlSrc);
+    
+    const clean = (replaceThis: string, by?: string) => urlSrc = urlSrc.split(replaceThis).join(by ? by : "");
 
   // function to remove element in url
   const removeElement = (input: string) => {
-    urlSrc = urlSrc.replace(`&${input}`, "");
-    urlSrc = urlSrc.replace(input, "");
+    clean(`&${input}`);
+    clean(input);
   };
-
+  
+  clean("geography%27", "%27"); 
+  
   if (urlSrc.includes("/Configs(")) {
     const nameConfig = urlSrc.split("/Configs(").join("").split(")")[0];
     options.name = nameConfig;
@@ -62,9 +83,9 @@ export const createOdata = async ( ctx: koa.Context ): Promise<PgVisitor | undef
       urlSrc = urlSrc.replace(idLora, "0");
     }
   }
-
+  
   // clean id in url
-  urlSrc = cleanUrl(urlSrc.replace(/@iot.id/g, "id"));
+  urlSrc = cleanUrl(clean("@iot.id", "id"));
 
   if (urlSrc === "/") return;
 
@@ -89,7 +110,7 @@ export const createOdata = async ( ctx: koa.Context ): Promise<PgVisitor | undef
 
   if (urlSrcSplit[0].split("(").length != urlSrcSplit[0].split(")").length) urlSrcSplit[0] += ")";
 
-  const astRessources: Token = <Token>resourcePath(<string>urlSrcSplit[0]);
+  const astRessources: Token = <Token>resourcePath(<string>urlSrcSplit[0]);  
 
   const astQuery: Token = <Token>query(decodeURIComponent(urlSrcSplit[1]));
 

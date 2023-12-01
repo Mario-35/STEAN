@@ -762,9 +762,9 @@ namespace Query {
 
     export function ValuesKeys(value: Utils.SourceArray, index: number): Lexer.Token | undefined {
         const start = index;
-        if (Utils.equals(value, index, "%24valueskeys")) {
+        if (Utils.equals(value, index, "%24valuesKeys")) {
             index += 13;
-        } else if (Utils.equals(value, index, "$valueskeys")) {
+        } else if (Utils.equals(value, index, "$valuesKeys")) {
             index += 11;
         } else return;
 

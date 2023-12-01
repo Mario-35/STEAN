@@ -6,6 +6,8 @@
 *
 */
 
+import { ESCAPE_ARRAY_JSON, ESCAPE_SIMPLE_QUOTE } from "../../constants";
+
 function isObject(value: unknown) {
     return typeof value === 'object' && value !== null;
   }
@@ -25,10 +27,13 @@ export function formatColumnValue(value: any, type: string): string | undefined 
       if (value === 'false') value = 0;
       return `'${value ? 1 : 0}'`;
     } else if ((type === 'json' || type === 'jsonb') && isObject(value)) {
-      return `'${JSON.stringify(value).replace(/'/g, "\''")}'`;
+      return `'${ESCAPE_SIMPLE_QUOTE(JSON.stringify(value))}'`;
+    } else if (type === 'text[]') {   
+      return `'${ESCAPE_ARRAY_JSON(String(value))}'`;
     } else {
+      if (String(value).startsWith("(SELECT")) return `${value}`;
         try {
-            return value.includes("'") ? `'${value.replace(/'/g, "\\'")}'` : `'${value}'`;
+            return value.includes("'") ? `'${ESCAPE_SIMPLE_QUOTE(value)}'` : `'${value}'`;
         } catch (error) {            
             return `'${value}'`;
         }

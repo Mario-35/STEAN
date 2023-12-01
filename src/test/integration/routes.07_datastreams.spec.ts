@@ -168,7 +168,7 @@ describe("endpoint : Datastream", () => {
         it(`Return ${entity.name} of a specific Thing`, (done) => {
             const id = 6;
             const infos = {
-                api: `{get} Things(${id})/${entity.name} Get one from specific Thing`,
+                api: `{get} Things(${id})/${entity.name} Get from a specific Thing`,
                 apiName: `GetThings${entity.name}`,
                 apiDescription: "Get Datastream(s) from Things.",
                 apiExample: {
@@ -263,6 +263,60 @@ describe("endpoint : Datastream", () => {
                     res.status.should.equal(400);
                     res.type.should.equal("application/json");
                     res.body["detail"].should.contain(`Invalid expand path`);
+                    done();
+                });
+        });
+
+        it(`Return ${entity.name} phenomenonTime search`, (done) => {
+            const infos = {
+                api: `{get} ${entity.name} Get From phenomenonTime search`,
+                apiName: `GetPhenomenonTime${entity.name}`,
+                apiDescription: "Get Datastream(s) from phenomenonTime filter.",
+                apiExample: {
+                    http: `/v1.0/${entity.name}?$filter=resultTime eq 2016-11-18T03:15:15Z/2016-11-18T04:15:15Z`,
+                    curl: defaultGet("curl", "KEYHTTP"),
+                    javascript: defaultGet("javascript", "KEYHTTP"),
+                    python: defaultGet("python", "KEYHTTP")
+                }
+            };
+            chai.request(server)
+                .get(`/test${infos.apiExample.http}`)
+                .end((err: Error, res: any) => {
+                    should.not.exist(err);
+                    res.status.should.equal(200);
+                    res.type.should.equal("application/json");
+                    res.body["@iot.count"].should.eql(1);
+                    res.body.value[0]["@iot.id"].should.eql(2);
+                    addToApiDoc({ ...infos, result: res });
+                    done();
+                });
+        });
+
+        it(`Return ${entity.name} from an observation filter`, (done) => {
+            const infos = {
+                api: `{get} ${entity.name} Get From observations filter`,
+                apiName: `GetObservationFilter${entity.name}`,
+                apiDescription: "Get Datastream(s) from Observations filter.",
+                apiExample: {
+                    http: `/v1.0/${entity.name}?$filter=Observations/result eq 23`,
+                    curl: defaultGet("curl", "KEYHTTP"),
+                    javascript: defaultGet("javascript", "KEYHTTP"),
+                    python: defaultGet("python", "KEYHTTP")
+                }
+            };
+            chai.request(server)
+                .get(`/test${infos.apiExample.http}`)
+                .end((err: Error, res: any) => {
+                    should.not.exist(err);
+                    res.status.should.equal(200);
+                    res.type.should.equal("application/json");
+                    res.body.should.include.keys("value");
+                    res.body.value[0].should.include.keys(testsKeys);
+                    res.body["@iot.count"].should.eql(1);
+                    res.body.value.length.should.eql(1);
+                    res.body.value[0]["@iot.id"].should.eql(10);
+                    res.body.value[0]["@iot.selfLink"].should.contain("/Datastreams(10)");
+                    addToApiDoc({ ...infos, result: res });
                     done();
                 });
         });

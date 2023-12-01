@@ -6,16 +6,16 @@
  *
  */
 
-import { VOIDTABLE } from "../../../constants";
-import { getBigIntFromString, getEntityName } from "../../../helpers";
+import { VOIDTABLE, _DEBUG } from "../../../constants";
+import { getBigIntFromString } from "../../../helpers";
 import { Logs } from "../../../logger";
 import { Ientity, IKeyString } from "../../../types";
-import { EoperationType } from "../../../enums/";
+import { Elog, EoperationType } from "../../../enums/";
 import { PgVisitor } from "../PgVisitor";
 import { _DB } from "../../../db/constants";
 import { createPgQuery } from ".";
 import { queryAsJson } from "../../../db/queries";
-import { createInsertValues, createUpdateValues } from "../../../db/helpers";
+import { createInsertValues, createUpdateValues, getEntityName } from "../../../db/helpers";
 export function createPostSql(datas: object, configName: string, main: PgVisitor): string {
     let sqlResult = "";
     const queryMaker: {
@@ -81,20 +81,21 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
         sorting.forEach((element: string) => {
             if (queryMaker[element].datas.hasOwnProperty("@iot.id")) {
                 const searchId = queryMaker[element].datas["@iot.id"];
-                returnValue.push(
-                    `, ${element} AS (select "id" from "${queryMaker[element].table}" where "id" = ${searchId})`
-                    );
-                } else {
-                    returnValue.push(`, ${element} AS (`);
-                    if (main.id) {
-                        if (queryMaker[element].type == EoperationType.Association) 
-                            returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${createInsertValues(queryMaker[element].datas)} on conflict ("${Object.keys(queryMaker[element].datas).join('","')}") do update set ${createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = ${BigInt(main.id).toString()}`);
-                        else
-                            returnValue.push(`UPDATE "${queryMaker[element].table}" set ${createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = ${BigInt(main.id).toString()}`);
-                    } else returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${createInsertValues(queryMaker[element].datas)}`);                            
-                        returnValue.push(`RETURNING ${postEntity.table == queryMaker[element].table ? allFields : queryMaker[element].keyId})`);
-                }
-            });
+                returnValue.push( `, ${element} AS (select "id" from "${queryMaker[element].table}" where "id" = ${searchId})` );
+            } else if (queryMaker[element].datas.hasOwnProperty("@iot.name")) {
+                const searchByName = queryMaker[element].datas["@iot.name"];
+                returnValue.push( `, ${element} AS (select "id" from "${queryMaker[element].table}" where "name" = '${searchByName}')` );
+            } else {
+                returnValue.push(`, ${element} AS (`);
+                if (main.id) {
+                    if (queryMaker[element].type == EoperationType.Association) 
+                        returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${createInsertValues(queryMaker[element].datas)} on conflict ("${Object.keys(queryMaker[element].datas).join('","')}") do update set ${createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = ${BigInt(main.id).toString()}`);
+                    else
+                        returnValue.push(`UPDATE "${queryMaker[element].table}" set ${createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = ${BigInt(main.id).toString()}`);
+                } else returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${createInsertValues(queryMaker[element].datas)}`);                            
+                    returnValue.push(`RETURNING ${postEntity.table == queryMaker[element].table ? allFields : queryMaker[element].keyId})`);
+            }
+        });
         // format object quotes
         return returnValue.join("\n").replace(/\'@/g, "").replace(/\@'/g, "");
     };
@@ -338,7 +339,8 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
         singular: false, 
         count: false
     });
-    Logs.query(sqlResult);        
+    Logs.showQuery(`\n${sqlResult}`, [Elog.whereIam, _DEBUG === true ? Elog.Show : Elog.None]);
+
     return sqlResult;
 
 }
