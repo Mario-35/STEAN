@@ -8,6 +8,7 @@
 
 import { serverConfig } from "../../configuration";
 import { _OK } from "../../constants";
+import { addDoubleQuotes } from "../../helpers";
 import { Logs } from "../../logger";
 import { Ientity, IKeyString } from "../../types";
 
@@ -28,22 +29,20 @@ Logs.head(`CreateTable [${tableEntity.table}] for ${configName}`);
   
   Object.keys(tableEntity.columns).forEach((column) => {
     if (tableEntity.columns[column].create.trim() != "")
-      tabInsertion.push(`"${column}" ${tableEntity.columns[column].create}`);
+      tabInsertion.push(`${addDoubleQuotes(column)} ${tableEntity.columns[column].create}`);
   });
   insertion = `${tabInsertion.join(", ")}`;
 
   if (tableEntity.constraints) {
     Object.keys(tableEntity.constraints).forEach((constraint) => {
       if (tableEntity.constraints)
-        tabConstraints.push(
-          `ALTER TABLE ONLY "${tableEntity.table}" ADD CONSTRAINT "${constraint}" ${tableEntity.constraints[constraint]};`
-        );
+        tabConstraints.push( `ALTER TABLE ONLY ${addDoubleQuotes(tableEntity.table)} ADD CONSTRAINT ${addDoubleQuotes(constraint)} ${tableEntity.constraints[constraint]};` );
     });
   }
 
   if (tableEntity.table.trim() != "")
-    returnValue[String(`Create table ${tableEntity.table}`)] =
-    await serverConfig.db(configName).unsafe(`CREATE TABLE "${tableEntity.table}" (${insertion});`)
+    returnValue[String(`Create table ${addDoubleQuotes(tableEntity.table)}`)] =
+    await serverConfig.db(configName).unsafe(`CREATE TABLE ${addDoubleQuotes(tableEntity.table)} (${insertion});`)
         .then(() => _OK)
         .catch((error: Error) => error.message);
 

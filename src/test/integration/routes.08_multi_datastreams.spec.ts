@@ -232,7 +232,7 @@ describe("endpoint : MultiDatastream", () => {
                 apiName: `GetPhenomenonTime${entity.name}`,
                 apiDescription: "Get Datastream(s) from phenomenonTime filter.",
                 apiExample: {
-                    http: `/v1.0/${entity.name}?$filter=phenomenonTime eq 2016-11-18T04:15:15Z/2016-11-18T07:15:15Z`,
+                    http: `/v1.0/${entity.name}?$filter=phenomenonTime eq 2016-11-11T07:15:15Z/2016-11-14T04:15:15Z`,
                     curl: defaultGet("curl", "KEYHTTP"),
                     javascript: defaultGet("javascript", "KEYHTTP"),
                     python: defaultGet("python", "KEYHTTP")
@@ -304,13 +304,13 @@ describe("endpoint : MultiDatastream", () => {
 
         it(`Return ${entity.name} phenomenonTime search`, (done) => {
             chai.request(server)
-                .get(`/test/v1.0/${entity.name}?$filter=phenomenonTime eq 2016-11-18T02:15:15Z/2016-11-18T05:15:15Z`)
+                .get(`/test/v1.0/${entity.name}?$filter=phenomenonTime eq 2016-11-15T06:15:15Z/2016-11-17T08:15:15Z`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
                     res.body["@iot.count"].should.eql(1);
-                    res.body.value[0]["@iot.id"].should.eql(2);
+                    res.body.value[0]["@iot.id"].should.eql(10);
                     done();
                 });
         });

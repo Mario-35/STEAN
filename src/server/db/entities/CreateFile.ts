@@ -111,6 +111,7 @@ export class CreateFile extends Common {
       readable
         .pipe(addAbortSignal(controller.signal, await writable))
         .on('close', async () => {
+          // TODO DATES !!!!
           const sql = `INSERT INTO "${ this.DBST.Observations.table }" 
                     ("datastream_id", "phenomenonTime", "resultTime", "result") 
                     SELECT '${String(

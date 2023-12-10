@@ -166,7 +166,7 @@
          it("should return the Lora Affected datastream that was added", (done) => {
              const datas = {
                  "Datastream": {
-                     "@iot.id": 15
+                     "@iot.id": 14
                  },
                  "Decoder": {
                      "@iot.id": 3
@@ -177,7 +177,7 @@
              };
              const infos = {
                  api: `{post} ${entity.name} Post Datastream basic`,
-                 apiName: `Post${entity.name}Datastream`,
+                 apiName: `Post${entity.name}Datastream?$debug=true`,
                  apiDescription: `Post a new ${entity.name}.${showHide(`Post${entity.name}`, apiInfos["10.2"])}`, apiExample: {
                      http: `/v1.0/${entity.name}`,
                      curl: defaultPost("curl", "KEYHTTP", datas),
@@ -190,12 +190,35 @@
                  .post(`/test${infos.apiExample.http}`)
                  .send(infos.apiParamExample)
                  .set("Cookie", `${keyTokenName}=${token}`)
-                 .end((err: Error, res: any) => {                    
+                 .end((err: Error, res: any) => {  
                      should.not.exist(err);
                      res.status.should.equal(201);
                      res.type.should.equal("application/json");
                      res.body.should.include.keys(testsKeys);
                      addToApiDoc({ ...infos, result: limitResult(res) });
+                     done();
+                 });
+         });
+
+         it("should return an error because datastream not exist", (done) => {
+             chai.request(server)
+                 .post(`/test/v1.0/${entity.name}`)
+                 .send({
+                    "Datastream": {
+                        "@iot.id": 155
+                    },
+                    "Decoder": {
+                        "@iot.id": 3
+                    },
+                    "name": "Lora for datastream",
+                    "description": "My new Lora Description",
+                    "deveui": "70b3d5e75e014f06"
+                })
+                 .set("Cookie", `${keyTokenName}=${token}`)
+                 .end((err: Error, res: any) => {
+                     should.not.exist(err);
+                     res.status.should.equal(400);
+                     res.body["detail"].should.contain('exist no datastream ID --> 155');
                      done();
                  });
          });

@@ -24,3 +24,5 @@ export const isObservation = (input: Ientity | string) => typeof input === "stri
 export const isSingular = (input: string): boolean => { const entityName = getEntityName(input); return entityName ? _DB[entityName].singular == input : false; };
 export const isAdmin = (ctx: Koa.Context): boolean => ctx._config && ctx._config.name === ADMIN;
 export const isAllowedTo = (ctx: Koa.Context, what: EuserRights): boolean => ctx._user && ctx._user.PDCUAS[what];
+export const isObjectArray = (what: object) => Object.prototype.toString.call(what) === '[object Array]'; 
+export const isObject = (value: unknown) => typeof value === 'object' && value !== null;

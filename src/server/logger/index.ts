@@ -40,7 +40,7 @@ class Logger {
     logAll<T>(input: T, colors?: boolean) {
         return typeof input === "object" ? util.inspect(input, { showHidden: false, depth: null, colors: colors || false, }) : input;
     }
-
+    
     private logCleInfos<T>(cle: string, infos: T) {
       this.log( `${this.col(EColor.FgGreen)} ${cle} ${this.col( EColor.FgWhite )} : ${this.col(EColor.FgCyan)} ${this.logAll( infos, this.debugFile )}${this.col(EColor.Reset)}` );
     }
@@ -142,7 +142,6 @@ class Logger {
       errFile.write(`# ${this.line(10)} ${TIMESTAMP()} ${this.line(10)}\n`);
     errFile.write(util.format.apply(null, data) + "\n");
   }
-
 }
 export const Logs = new Logger();
 

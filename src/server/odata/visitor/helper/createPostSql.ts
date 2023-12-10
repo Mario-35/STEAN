@@ -7,7 +7,7 @@
  */
 
 import { VOIDTABLE, _DEBUG } from "../../../constants";
-import { getBigIntFromString } from "../../../helpers";
+import { addDoubleQuotes, getBigIntFromString } from "../../../helpers";
 import { Logs } from "../../../logger";
 import { Ientity, IKeyString } from "../../../types";
 import { Elog, EoperationType } from "../../../enums/";
@@ -26,7 +26,7 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
             keyId: string;
         };
     } = {};
-    const tempEntity = main.getEntity();
+    const tempEntity = main.entity;
     const postEntity: Ientity = _DB[tempEntity == "CreateFile" ? "Datastreams" : tempEntity];
     const postParentEntity: Ientity | undefined = main.parentEntity ? _DB[main.parentEntity ] : undefined;
     const names: IKeyString = {
@@ -81,7 +81,8 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
         sorting.forEach((element: string) => {
             if (queryMaker[element].datas.hasOwnProperty("@iot.id")) {
                 const searchId = queryMaker[element].datas["@iot.id"];
-                returnValue.push( `, ${element} AS (select "id" from "${queryMaker[element].table}" where "id" = ${searchId})` );
+                returnValue.push( `, ${element} AS (select verifyId('${queryMaker[element].table}', ${searchId}) as id)` );
+                // returnValue.push( `, ${element} AS (select "id" from "${queryMaker[element].table}" where "id" = ${searchId})` );
             } else if (queryMaker[element].datas.hasOwnProperty("@iot.name")) {
                 const searchByName = queryMaker[element].datas["@iot.name"];
                 returnValue.push( `, ${element} AS (select "id" from "${queryMaker[element].table}" where "name" = '${searchByName}')` );
@@ -323,14 +324,14 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
     if ((names[postEntity.table] && queryMaker[postEntity.table] && queryMaker[postEntity.table].datas) || root === undefined) {
         queryMaker[postEntity.table].datas = Object.assign(root as object, queryMaker[postEntity.table].datas);
         queryMaker[postEntity.table].keyId = main.id ? "id" : "*";
-        sqlResult = queryMakerToString(`WITH "log_request" AS (SELECT srid FROM "${VOIDTABLE}" LIMIT 1)`);
+        sqlResult = queryMakerToString(`WITH "log_request" AS (SELECT srid FROM ${addDoubleQuotes(VOIDTABLE)} LIMIT 1)`);
     } else {
         sqlResult = queryMakerToString(
             main.id
             ? root && Object.entries(root).length > 0
-            ? `WITH ${postEntity.table} AS (UPDATE "${postEntity.table}" set ${createUpdateValues(root)} WHERE "id" = ${main.id.toString()} RETURNING ${allFields})`
-                : `WITH ${postEntity.table} AS (SELECT * FROM "${postEntity.table}" WHERE "id" = ${main.id.toString()})`
-                : `WITH ${postEntity.table} AS (INSERT INTO "${postEntity.table}" ${createInsertValues(root)} RETURNING ${allFields})`
+            ? `WITH ${postEntity.table} AS (UPDATE ${addDoubleQuotes(postEntity.table)} set ${createUpdateValues(root)} WHERE "id" = ${main.id.toString()} RETURNING ${allFields})`
+                : `WITH ${postEntity.table} AS (SELECT * FROM ${addDoubleQuotes(postEntity.table)} WHERE "id" = ${main.id.toString()})`
+                : `WITH ${postEntity.table} AS (INSERT INTO ${addDoubleQuotes(postEntity.table)} ${createInsertValues(root)} RETURNING ${allFields})`
                 );
             }
     const temp = createPgQuery(main, main); 
@@ -340,7 +341,5 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
         count: false
     });
     Logs.showQuery(`\n${sqlResult}`, [Elog.whereIam, _DEBUG === true ? Elog.Show : Elog.None]);
-
     return sqlResult;
-
 }

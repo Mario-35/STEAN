@@ -95,6 +95,13 @@ function simpleClick(link) {
 		canGo = true;
 	}
 }
+function openClick(link) {
+	if (link[link.length-1] === '"') link = link.slice(0, -1);
+	if (link[0] === '"') link = link.slice(1);
+	console.log("===========================================================");
+	console.log(link.trim());
+	window.open(link.trim(), '_blank').focus();
+}
 
 function updateWinJsonResult(input, title) {
 	if (!wins.Json || wins.Json === null || wins.Json.content === null) {
@@ -114,11 +121,17 @@ function updateWinJsonResult(input, title) {
 	jsonRenderer.addEventListener("click", function(event) {
 		clickCount++;
 		if (clickCount === 1) {
-			if (Array.from(event.target.classList).includes('type-url-link')) {
-				singleClickTimer = setTimeout(function() {
-					clickCount = 0;
-					simpleClick(event.target.innerHTML);
-				}, 400);
+			if (Array.from(event.target.classList).includes('type-url-')) {
+				if (Array.from(event.target.classList).includes('type-url-link')) {
+					singleClickTimer = setTimeout(function() {
+						clickCount = 0;
+						simpleClick(event.target.innerHTML);
+					}, 400);
+				} else {
+					singleClickTimer = setTimeout(function() {
+						clickCount = 0;
+					}, 400);
+				}
 			}
 		} else if (clickCount === 2) {
 			clearTimeout(singleClickTimer);
@@ -126,7 +139,10 @@ function updateWinJsonResult(input, title) {
 			if (Array.from(event.target.classList).includes('type-url-link')) {
 				simpleClick(event.target.innerHTML);
 				go.onclick();
+			} else if (Array.from(event.target.classList).includes('type-url-external')) {
+				openClick(event.target.innerHTML);
 			}
+
 		}
 	});
 

@@ -1,10 +1,10 @@
 import koa from "koa";
+import { executeSqlValues } from ".";
 import { serverConfig } from "../../configuration";
 import { asyncForEach, isNull } from "../../helpers";
 import { Logs } from "../../logger";
 import { decodeloraDeveuiPayload } from "../../lora";
 import { _DB } from "../constants";
-import { executeSqlValues } from "./executeSql";
 
 const getSortedKeys = async (
   connectionName: string,

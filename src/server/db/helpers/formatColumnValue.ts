@@ -7,35 +7,41 @@
 */
 
 import { ESCAPE_ARRAY_JSON, ESCAPE_SIMPLE_QUOTE } from "../../constants";
+import { addSimpleQuotes, isObject } from "../../helpers";
 
-function isObject(value: unknown) {
-    return typeof value === 'object' && value !== null;
-  }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function formatColumnValue(value: any, type: string): string | undefined {
-    if (!value) return;
-    if (value === void 0) {
+  if (value) switch (value) {
+    case void 0:
       return '';
-    } else if (value === null) {
+    case null:
       return 'null';
-    } else if (value && value.isRawInstance) {
-      return value.toQuery();
-    } else if (type === 'number') {
-        return value;
-    } else if (type === 'bool') {
-      if (value === 'false') value = 0;
-      return `'${value ? 1 : 0}'`;
-    } else if ((type === 'json' || type === 'jsonb') && isObject(value)) {
-      return `'${ESCAPE_SIMPLE_QUOTE(JSON.stringify(value))}'`;
-    } else if (type === 'text[]') {   
-      return `'${ESCAPE_ARRAY_JSON(String(value))}'`;
-    } else {
+      case value.isRawInstance:
+        return value.toQuery();
+    default:
+      switch (type) {
+        case 'number':
+          return value;
+        case 'bool':
+          if (value === 'false') value = 0;
+          return `'${value ? 1 : 0}'`;
+        case 'json':
+        case 'jsonb':
+          if (isObject(value)) return addSimpleQuotes(ESCAPE_SIMPLE_QUOTE(JSON.stringify(value)));
+          return "JSON ERROR";
+        case 'text[]':
+          const temp = ESCAPE_ARRAY_JSON(String(value));
+          if(temp) return addSimpleQuotes(temp);
+          return "ARRAY ERROR";
+        default:
+          break;
+      }
       if (String(value).startsWith("(SELECT")) return `${value}`;
-        try {
-            return value.includes("'") ? `'${ESCAPE_SIMPLE_QUOTE(value)}'` : `'${value}'`;
-        } catch (error) {            
-            return `'${value}'`;
-        }
-    }
+      try {
+          return value.includes("'") ? addSimpleQuotes(ESCAPE_SIMPLE_QUOTE(value)): addSimpleQuotes(value);
+      } catch (error) {            
+          return addSimpleQuotes(value);
+      }
   }
+}

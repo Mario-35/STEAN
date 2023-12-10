@@ -8,7 +8,7 @@
 
 import { createTable } from "../helpers";
 import { serverConfig } from "../../configuration";
-import { asyncForEach } from "../../helpers";
+import { addDoubleQuotes, addSimpleQuotes, asyncForEach } from "../../helpers";
 import { Logs } from "../../logger";
 import { _DBADMIN, _RIGHTS } from "../constants";
 import { ADMIN, _OK } from "../../constants";
@@ -24,18 +24,18 @@ export const createAdminDB = async (): Promise<IKeyString> => {
     .then(async () => {
       returnValue["create Admin DB"] = _OK;
       returnValue["User"] = await serverConfig
-        .db(ADMIN).unsafe(`SELECT COUNT(*) FROM pg_user WHERE usename = '${config.user}';`)
+        .db(ADMIN).unsafe(`SELECT COUNT(*) FROM pg_user WHERE usename = ${addSimpleQuotes(config.user)};`)
         .then(async (res) => {
           if (res["rowCount"] < 1) {
             Logs.result("Create User", config.user);
             return serverConfig
-              .db(ADMIN).unsafe(`CREATE ROLE ${config.user} WITH PASSWORD '${config.password}' ${_RIGHTS};`)
+              .db(ADMIN).unsafe(`CREATE ROLE ${addDoubleQuotes(config.user)} WITH PASSWORD ${addSimpleQuotes(config.password)} ${_RIGHTS};`)
               .then(() => { return `Create User ${_OK}`; })
               .catch((err: Error) => err.message);
           } else {
             Logs.result("Update User", config.user);
             return await serverConfig
-              .db(ADMIN).unsafe(`ALTER ROLE ${config.user} WITH PASSWORD '${config.password}' ${_RIGHTS};`)
+              .db(ADMIN).unsafe(`ALTER ROLE ${addDoubleQuotes(config.user)} WITH PASSWORD ${addSimpleQuotes(config.password)} ${_RIGHTS};`)
               .then(() => { return `Update User ${_OK}`; })
               .catch((err: Error) => err.message);
             }

@@ -13,17 +13,17 @@ import { Logs } from "../logger";
 import { errors } from "../messages";
 import { ILoraDecoder } from "../types";
 
-export const decodeloraDeveuiPayload = async ( configName: string, loraDeveui: string, input: string ): Promise<ILoraDecoder| undefined> => {
-  Logs.debug(`decodeLoraPayload deveui : [${loraDeveui}]`, input);
+export const decodeloraDeveuiPayload = async ( configName: string, loraDeveui: string, payload: string ): Promise<ILoraDecoder| undefined> => {
+  Logs.debug(`decodeLoraPayload deveui : [${loraDeveui}]`, payload);  
   return await executeSql(configName, `SELECT "name", "code", "nomenclature", "synonym" FROM "${_DB.Decoders.table}" WHERE id = (SELECT "decoder_id" FROM "${_DB.Loras.table}" WHERE "deveui" = '${loraDeveui}') LIMIT 1`)
     .then((res: object) => {
         return decodingPayload(
           {
-            name: res["name"],
-            code: String(res["code"]),
-            nomenclature: res["nomenclature"],
+            name: res[0]["name"],
+            code: String(res[0]["code"]),
+            nomenclature: res[0]["nomenclature"],
           },
-          input
+          payload
         );
     }).catch(() => {
       return {

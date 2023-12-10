@@ -15,7 +15,6 @@ import { getBigIntFromString } from "../../helpers";
 import { errors, msg } from "../../messages";
 import { queryMultiDatastreamsUnitsKeys } from "../queries";
 import { EextensionsType } from "../../enums";
-// import { QUOTEDCOMA } from "../../constants";
 
 export class Observations extends Common {
   constructor(ctx: koa.Context) {

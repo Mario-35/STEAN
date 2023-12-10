@@ -16,12 +16,17 @@ chai.use(chaiHttp);
 
 const should = chai.should();
 
-const tests = [
-    "/test/v1.0/Things?$filter=Datastreams/description eq 'Air quality Number'",
-    "/test/v1.0/Things?$filter=Datastreams/ObservedProperty/description eq 'PM something Number three'",
-    "/test/v1.0/Observations?$filter=validTime gt 2016-01-02T01:01:01.123Z",
-    // "/test/v1.0/Observations?$filter=validTime gt 2016-01-02T01:01:01,123Z",
-    // "/test/v1.0/Observations?$filter=length(result) le 2",
+const tests = {
+    "/test/v1.0/Things?$filter=Datastreams/ObservedProperty/description eq 'PM something Number three'": 2,
+    "/test/v1.0/Observations?$filter=validTime gt 2016-01-02T01:01:01.123Z": 76,
+    "/test/v1.0/Things?$filter=Datastreams/unitOfMeasurement/name eq 'PM 2.4 Particulates (ug/m3)'": 1,
+    "/test/v1.0/Things?$filter=Datastreams/unitOfMeasurement/name eq 'PM 2.5 Particulates (ug/m3)'": 2,
+    "/test/v1.0/Observations?$filter=result gt 90 or result eq 0.11": 4,
+    "/test/v1.0/Observations?$filter=length(result) le 2": 9,
+    "/test/v1.0/Observations?$filter=resultTime gt 2021-01-02T01:01:01.123Z": 26,
+    "/test/v1.0/Observations?$filter=resultTime lt 2017-01-02T01:01:01.123Z": 42,
+    "/test/v1.0/Observations?$filter=resultTime lt 2017-01-02T01:01:01.123Z and resultTime gt 2016-01-02T01:01:01.123Z": 20,
+    // "/test/v1.0/Things?$filter=Datastreams/Observations/resultTime ge 2020-06-01T00:00:00Z and Datastreams/Observations/resultTime le 2022-07-01T00:00:00Z
     // "/test/v1.0/Things?$filter=name eq 'it''s a quote'",
     // "/test/v1.0/Things?$filter=name eq 'it''''s two quotes'",
     // "/test/v1.0/Things?$filter=Datastreams/Observations/FeatureOfInterest/id eq 'FOI_1' and Datastreams/Observations/resultTime ge 2010-06-01T00:00:00Z and date(Datastreams/Observations/resultTime) le date(2010-07-01T00:00:00Z)",
@@ -38,9 +43,9 @@ const tests = [
     // "/test/v1.0/Locations?$filter=st_touches(geography'POLYGON((8 53, 7.5 54.5, 8.5 54.5, 8 53))', location)",
     // "/test/v1.0/Locations?$filter=st_within(geography'POINT(7.5 52.75)', location)",
     // "/test/v1.0/Observations?$filter=validTime gt 2016-01-02T01:01:01.000Z/2016-01-03T23:59:59.999Z sub duration'P1D'"
-];
+};
 describe("Various tests", () => {
-    tests.forEach((test: string) => {
+    Object.keys(tests).forEach((test: string) => {
         it(test, (done) => {
             chai.request(server)
                 .get(test)
@@ -48,6 +53,7 @@ describe("Various tests", () => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
+                    res.body["@iot.count"].should.eql(+tests[test]);
                     done();
                 });
         });

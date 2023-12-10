@@ -18,16 +18,14 @@ export const getColumnResult = (numeric: boolean, as: boolean, cast: string = "n
   ? `CASE WHEN jsonb_typeof("result"-> 'value') = 'number' THEN ("result"->>'value')::${cast} END${as === true ? ' AS "result"' : ''}` 
   : `CASE WHEN jsonb_typeof("result"-> 'value') = 'number' then ("result"->'value')::${cast} END${as === true ? ' AS "result"' : ''}`;
 export const getColumnNameOrAlias = (entity: Ientity, column : string, options: IcolumnOption) => {
-  // console.log("=====================================================");
-  // console.log(options);
+  // console.log(`=======================${entity.name}==============================`);
+  // console.log(`column : ${column}`);
   
   const result = entity 
           && column != "" 
           && entity.columns[column] 
             ? entity.columns[column].columnAlias(options.test ? {...options.test, ...{"as": options.as}} : {"as": options.as}) 
             : undefined;
-  // console.log(result);
-  
   return result ? `${options.table === true && result && result[0] === '"' ? `"${entity.table}".${result}` : result}` : undefined;        
 }; 
 
@@ -40,7 +38,6 @@ export const getAllColumnName = (entity: Ientity, columns : string | string[], o
     const temp = getColumnNameOrAlias(entity, column, options);
     if (temp) result.push(temp);
   });
-  
   return result;
 };
 
@@ -531,7 +528,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         type: "text",
       },
       encodingType: {
-        create: "text NOT NULL",
+        create: "text NOT NULL DEFAULT 'application/pdf'::text",
         columnAlias() {
           return `"encodingType"`;
         },
@@ -542,7 +539,7 @@ const dbDatas: { [key in Eentities]: Ientity } = {
         type: "list",
       },
       metadata: {
-        create: "text NOT NULL",
+        create: "text NOT NULL DEFAULT 'none.pdf'::text",
         columnAlias() {
           return `"metadata"`;
         },
@@ -1466,16 +1463,13 @@ const dbDatas: { [key in Eentities]: Ientity } = {
     constraints: {
       lora_pkey: 'PRIMARY KEY ("id")',
       lora_unik_deveui: 'UNIQUE ("deveui")',
-      // lora_datastream_id_fkey: 'FOREIGN KEY ("datastream_id") REFERENCES "datastream"("id") ON UPDATE CASCADE ON DELETE CASCADE',
-      lora_multidatastream_id_fkey:
-        'FOREIGN KEY ("multidatastream_id") REFERENCES "multidatastream"("id") ON UPDATE CASCADE ON DELETE CASCADE',
-      lora_decoder_fkey:
-        'FOREIGN KEY ("decoder_id") REFERENCES "decoder"("id") ON UPDATE CASCADE ON DELETE CASCADE',
+      lora_datastream_fkey: 'FOREIGN KEY ("datastream_id") REFERENCES "datastream"("id") ON UPDATE CASCADE ON DELETE CASCADE',
+      lora_multidatastream_fkey: 'FOREIGN KEY ("multidatastream_id") REFERENCES "multidatastream"("id") ON UPDATE CASCADE ON DELETE CASCADE',
+      lora_decoder_fkey: 'FOREIGN KEY ("decoder_id") REFERENCES "decoder"("id") ON UPDATE CASCADE ON DELETE CASCADE',
     },
     indexes: {
       lora_datastream_id: 'ON public."lora" USING btree ("datastream_id")',
-      lora_multidatastream_id:
-        'ON public."lora" USING btree ("multidatastream_id")',
+      lora_multidatastream_id: 'ON public."lora" USING btree ("multidatastream_id")',
       decoder_id: 'ON public."lora" USING btree ("decoder_id")',
     },
     canPost: false,

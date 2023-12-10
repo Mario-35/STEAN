@@ -19,7 +19,7 @@ import path from "path";
 import { HELMET_CONFIG, APP_KEY, TEST, ADMIN } from "./constants";
 import { serverConfig } from "./configuration";
 import { PgVisitor } from "./odata";
-import { IconfigFile, IKeyString, IuserToken } from "./types";
+import { IconfigFile, IKeyString, Ilog, IuserToken } from "./types";
 import { infos } from "./messages";
 import { Logs } from "./logger";
 
@@ -32,18 +32,7 @@ declare module "koa" {
     _odata: PgVisitor;
     _datas: IKeyString;
     _user: IuserToken;
-    _log:
-      | {
-          method: string;
-          returnid?: string;
-          code: number;
-          url: string;
-          database: string;
-          datas: JSON;
-          user_id: string;
-          error?: string;
-        }
-      | undefined;
+    _log: Ilog | undefined;
   }
 }
 

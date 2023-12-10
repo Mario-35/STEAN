@@ -8,7 +8,7 @@
 
 import { createTable } from "../helpers";
 import { serverConfig } from "../../configuration";
-import { asyncForEach, isTest } from "../../helpers";
+import { addDoubleQuotes, addSimpleQuotes, asyncForEach, isTest } from "../../helpers";
 import { Logs } from "../../logger";
 import { _DB, _RIGHTS } from "../constants";
 import { testsDatas } from "./testsDatas";
@@ -34,14 +34,14 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
     .then(async () => {
       returnValue[`Create Database`] = `${config.database} ${_OK}`;
       // create USER if not exist
-      await adminConnection.unsafe(`SELECT COUNT(*) FROM pg_user WHERE usename = '${config.user}';`)
+      await adminConnection.unsafe(`SELECT COUNT(*) FROM pg_user WHERE usename = ${addSimpleQuotes(config.password)};`)
         .then(async (res: object) => {
           if (res[0] == 0) {
-            returnValue[`CREATE ROLE ${config.user}`] = await adminConnection.unsafe(`CREATE ROLE ${config.user} WITH PASSWORD '${config.password}' ${_RIGHTS}`)
+            returnValue[`CREATE ROLE ${config.user}`] = await adminConnection.unsafe(`CREATE ROLE ${config.user} WITH PASSWORD ${addSimpleQuotes(config.password)} ${_RIGHTS}`)
               .then(() => _OK)
               .catch((err: Error) => err.message);
           } else {
-            await adminConnection.unsafe(`ALTER ROLE ${config.user} WITH PASSWORD '${config.password}' ${_RIGHTS}`)
+            await adminConnection.unsafe(`ALTER ROLE ${config.user} WITH PASSWORD ${addSimpleQuotes(config.password)}  ${_RIGHTS}`)
               .then(() => {
                 returnValue[`Create/Alter ROLE`] = `${config.user} ${_OK}`;
               })
@@ -104,19 +104,19 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
   });
 
   if ( serverConfig.configs[configName].extensions.includes( EextensionsType.numeric ) ) {
-    await dbConnection.unsafe(`ALTER TABLE observation ALTER COLUMN result TYPE float4 USING null;`)
+    await dbConnection.unsafe(`ALTER TABLE ${addDoubleQuotes(_DB.Observations.table)} ALTER COLUMN 'result' TYPE float4 USING null;`)
       .catch((error: Error) => {
         Logs.error(error);
         return error;
       });
-    await dbConnection.unsafe(`ALTER TABLE historical_observation ALTER COLUMN _result TYPE float4 USING null;`)
+    await dbConnection.unsafe(`ALTER TABLE ${addDoubleQuotes(_DB.HistoricalLocations.table)}  ALTER COLUMN '_result' TYPE float4 USING null;`)
       .catch((error) => {
         Logs.error(error);
         return error;
       });
   }
 
-  await dbConnection.unsafe(`SELECT COUNT(*) FROM pg_user WHERE usename = '${config.user}';`)
+  await dbConnection.unsafe(`SELECT COUNT(*) FROM pg_user WHERE usename = ${addSimpleQuotes(config.user)};`)
     .then(() => {
       returnValue["Create DB"] = _OK;
     });

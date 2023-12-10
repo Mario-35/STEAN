@@ -12,7 +12,6 @@ import chaiHttp from "chai-http";
 import { IApiDoc, IApiInput, prepareToApiDoc, generateApiDoc, identification, keyTokenName, limitResult } from "./constant";
 
 import { server } from "../../server/index";
-import { _DB } from "../../server/db/constants";
 
 chai.use(chaiHttp);
 

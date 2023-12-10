@@ -804,6 +804,10 @@ var multiSelects = {};
 		return regexp.test(string);
 	  }
 
+	isExternal(string) {
+		return (string.toUpperCase().endsWith(".PDF") || string.toUpperCase().endsWith(".HTML"));
+	}
+
 	isCode(string) {
 		return string.startsWith("function decode(");
 	}
@@ -830,7 +834,7 @@ var multiSelects = {};
 
 		if (type === "string") {
 			if (this.isUrl(value)) {
-				type = value.includes(this.rootName) ?  "url-link" : "url";
+				type = value.includes(this.rootName) ? "url-link" : this.isExternal(value) ? "url-external" : "url";
 			  } else if (this.isDate(value)) {
 				type = "date";
 			  } else if (this.isCode(value)) {

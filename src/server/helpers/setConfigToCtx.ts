@@ -41,7 +41,6 @@ const getNameFromUrl = ( input: string, version?: string ): string | undefined =
 export const setConfigToCtx = (ctx: koa.Context): void => {
   createBearerToken(ctx);
   setDebug(ctx.request.url.includes("$debug=true"));
-  // requestToFile(ctx.request.url);
   let configName = getConfigFromPort(ctx.req.socket.localPort);
   const version = getVersionFromUrl(ctx.originalUrl);
   const name = getNameFromUrl(ctx.originalUrl, version);
@@ -50,6 +49,7 @@ export const setConfigToCtx = (ctx: koa.Context): void => {
     configName = configName || serverConfig.getConfigNameFromName(name);
     if (configName) ctx._config = serverConfig.configs[configName];
     else return;
+    // else throw new Error(msg(errors.notPresentInConfigName, name));
   }
 
   ctx.querystring = decodeURIComponent(querystring.unescape(ctx.querystring));
@@ -66,7 +66,6 @@ export const setConfigToCtx = (ctx: koa.Context): void => {
   } catch (error) {
     ctx._log = undefined;
   }
-
   const protocol = ctx.request.headers["x-forwarded-proto"]
     ? ctx.request.headers["x-forwarded-proto"]
     : ctx._config.forceHttps && ctx._config.forceHttps == true

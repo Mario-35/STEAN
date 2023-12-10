@@ -18,7 +18,6 @@ export const cleanUrl = (input: string): string => {
     while (["$", "&", "?"].includes(input[input.length - 1])) {
         input = input.slice(0, -1);
     }
-
     while (["&", "?"].includes(input[0])) {
         input = input.slice(1);
     }

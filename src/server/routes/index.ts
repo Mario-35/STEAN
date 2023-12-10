@@ -29,10 +29,9 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
         };
     if (_DEBUG) Logs.object("configCtx", configCtx(ctx));
     // Write in logs
-    await next().then(async () => {
-      if (ctx._config.extensions.includes("logs")) await writeToLog(ctx);
+    await next().then(async () => { 
+      // if (ctx._config.extensions.includes("logs")) await writeToLog(ctx);
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {    
     if (isDev()) Logs.error(error);
     

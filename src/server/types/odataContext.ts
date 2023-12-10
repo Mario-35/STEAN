@@ -17,7 +17,6 @@ export interface IodataContext {
     relation: string | undefined;
     literal: string | undefined;
     sign: string | undefined;
-    sql: string | undefined;
-    
-    pipo: string | undefined;
+    sql: string | undefined;    
+    in: boolean | undefined;
 }

@@ -1,8 +1,8 @@
   
-  const removeQuotes = (input) => (input != null && input.length >= 2 && input.charAt(0) == '\"' && input.charAt(input.length - 1) === '\"') ? input.substring(1, input.length - 1) : input;
+  const removeAllQuotes = (input) => (input != null && input.length >= 2 && input.charAt(0) == '\"' && input.charAt(input.length - 1) === '\"') ? input.substring(1, input.length - 1) : input;
 
   function decodeUrl(input) {
-    input = removeQuotes(input);
+    input = removeAllQuotes(input);
     header("decodeUrl", input);
     try {
       // return true if some works are done (for init to not delete value)

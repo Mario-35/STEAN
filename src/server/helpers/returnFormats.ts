@@ -18,14 +18,14 @@ import { PgVisitor } from "../odata";
 import { _DB } from "../db/constants";
 import { Eformats } from "../enums";
 import { isGraph } from ".";
+import { DOUBLEQUOTEDCOMA } from "../constants";
 
 const defaultFunction = (input: string | object) => input;
 const defaultForwat = (input: PgVisitor): string => input.sql;
 const generateFields = (input: PgVisitor): string[] => {
   let fields: string[] = [];
   if (isGraph(input)) {
-    const table =
-      _DB[input.parentEntity ? input.parentEntity : input.getEntity()].table;
+    const table = _DB[input.parentEntity ? input.parentEntity : input.entity].table;
     fields = [
       `(SELECT ${table}."description" FROM ${table} WHERE ${table}."id" = ${
         input.parentId ? input.parentId : input.id
@@ -37,10 +37,10 @@ const generateFields = (input: PgVisitor): string[] => {
 
 
 const generateGrahSql = (input: PgVisitor) => {
-  input.blanks = ["id", "step as date", "result"];
-  if (isGraph(input)) input.blanks.push("concat"); 
+  input.intervalColumns = ["id", "step as date", "result"];
+  if (isGraph(input)) input.intervalColumns.push("concat"); 
   const table =
-    _DB[input.parentEntity ? input.parentEntity : input.getEntity()].table;
+    _DB[input.parentEntity ? input.parentEntity : input.entity].table;
   const id = input.parentId ? input.parentId : input.id;
   return queryAsJson({
     query:
@@ -100,7 +100,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
                 element[1]["name"],
                 element[1]["symbol"],
               ].join('","')}`
-            : `${element[1]["infos"].split("|").join('","')}`;
+            : `${element[1]["infos"].split("|").join(DOUBLEQUOTEDCOMA)}`;
           const formatedData = `const value${index} = [${element[1]["datas"]}]; 
           const infos${index} = ["${infos}"];`;
           formatedDatas.push(`

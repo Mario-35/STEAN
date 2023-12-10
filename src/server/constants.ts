@@ -31,8 +31,8 @@ export const APP_KEY = fs.readFileSync(__dirname + "/configuration/.key", "utf8"
 export let _DEBUG = false;
 export let _READY = false;
 export const VOIDTABLE = "spatial_ref_sys";
-export const DOUBLEQUOTE = '"';
-export const QUOTEDCOMA = '",\n"';
+export const DOUBLEQUOTEDCOMA = '",\n"';
+export const SIMPLEQUOTEDCOMA = "',\n'";
 export const API_VERSION = "v1.0";
 export const ESCAPE_SIMPLE_QUOTE = (input: string) => input.replace(/[']+/g, "''");
 export const ESCAPE_ARRAY_JSON = (input: string) => input ? input.replace("[", "{") .replace("]", "}") : undefined;

@@ -258,7 +258,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
   } // END Switch
 
   // API REQUEST
-  if (ctx.path.includes(`/${API_VERSION}`)) {    
+  if (ctx.path.includes(`/${API_VERSION}`)) {
     Logs.head(`unProtected GET ${API_VERSION}`);
     const odataVisitor = await createOdata(ctx);    
     if (odataVisitor) ctx._odata = odataVisitor;

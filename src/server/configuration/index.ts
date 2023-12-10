@@ -6,7 +6,7 @@
  *
  */
 import { ADMIN, API_VERSION, APP_NAME, APP_VERSION, DEFAULT_DB, NODE_ENV, setReady, TIMESTAMP, _DEBUG, _NOTOK, _OK, _WEB, } from "../constants";
-import { asyncForEach, decrypt, encrypt, hidePasswordIn, isProduction, isTest, unikeList, } from "../helpers";
+import { addSimpleQuotes, asyncForEach, decrypt, encrypt, hidePasswordIn, isProduction, isTest, unikeList, } from "../helpers";
 import { IconfigFile, IdbConnection } from "../types";
 import { errors, infos, msg } from "../messages";
 import { createDatabase, executeSql} from "../db/helpers";
@@ -215,7 +215,7 @@ class Configuration {
 
     await asyncForEach(
       // Start connectionsening ALL entries in config file
-      Object.keys(this.configs),
+      Object.keys(this.configs).filter(e => e.toUpperCase() !== "TEST"),
       async (key: string) => {
         try {
           await this.addToServer(key);
@@ -235,7 +235,7 @@ class Configuration {
   
   private async saveConfig():Promise<boolean> {
     const temp = encrypt(JSON.stringify(this.configs, null, 4));
-    return await executeSql(ADMIN, `INSERT INTO public.configs (key, config)  VALUES('${temp.substring(32, 0)}' ,'${temp.slice(33)}');`)
+    return await executeSql(ADMIN, `INSERT INTO "public"."configs" ("key", "config")  VALUES(${addSimpleQuotes(temp.substring(32, 0))} ,${addSimpleQuotes(temp.slice(33))});`)
       .then(() => true)
       .catch(() => false);
   }

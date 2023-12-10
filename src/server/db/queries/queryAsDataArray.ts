@@ -7,13 +7,13 @@
  */
 
 import { queryAsJson } from ".";
-import { removeQuotes } from "../../helpers";
+import { removeAllQuotes } from "../../helpers";
 import { PgVisitor } from "../../odata";
 
 export const queryAsDataArray = (input: PgVisitor): string =>
   queryAsJson({
     query: `SELECT (ARRAY['${Object.keys(input.arrayNames)
-      .map((e: string) => removeQuotes(e))
+      .map((e: string) => removeAllQuotes(e))
       .join(
         "','"
       )}']) as "component", count(*) as "dataArray@iot.count", jsonb_agg(allkeys) as "dataArray" FROM (SELECT json_build_array(${Object.values(

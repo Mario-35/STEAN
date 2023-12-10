@@ -19,7 +19,8 @@ export { Ientity } from "./entity";
 export { IpgQuery } from "./pgQuery";
 export { IstreamInfos } from "./streamInfos";
 export { Iuser } from "./user";
-export { Iquery } from "./query";
+export { Ilog } from "./log";
+export { IqueryOptions } from "./queryOptions";
 export { ILoraDecoder } from "./loraDecoder";
 export { IuserToken } from "./userToken";
 export interface IKeyString { [key: string]: string; }

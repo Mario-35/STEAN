@@ -13,7 +13,7 @@ import {
   getBigIntFromString,
   notNull,
 } from "../../helpers/index";
-import { DOUBLEQUOTE, QUOTEDCOMA, VOIDTABLE } from "../../constants";
+import { DOUBLEQUOTEDCOMA, VOIDTABLE } from "../../constants";
 import { Logs } from "../../logger";
 import { IreturnResult } from "../../types";
 import { errors, msg } from "../../messages/";
@@ -42,9 +42,9 @@ export class Loras extends Common {
   createListQuery(input: string[], columnListString: string): string {
     const tempList = columnListString.split("COLUMN");
     return tempList[0].concat(
-      DOUBLEQUOTE,
+      '"',
       input.join(`"${tempList[1]}${tempList[0]}"`),
-      DOUBLEQUOTE,
+      '"',
       tempList[1]
     );
   }
@@ -112,7 +112,8 @@ export class Loras extends Common {
     }
 
     // search for frame and decode payload if found
-    if (notNull(this.stean["frame"])) { const temp = await decodeloraDeveuiPayload( this.ctx._config.name, this.stean["deveui"], this.stean["frame"] );
+    if (notNull(this.stean["frame"])) { 
+      const temp = await decodeloraDeveuiPayload( this.ctx._config.name, this.stean["deveui"], this.stean["frame"] );
       if (!temp) return this.ctx.throw(400, { code: 400, detail: "dons ton cul lulu"});
       if (temp && temp.error) {
         if (silent) return this.createReturnResult({ body: temp.error });
@@ -124,7 +125,7 @@ export class Loras extends Common {
 
     const searchMulti = queryMultiDatastreamFromDeveui(this.stean["deveui"]);
 
-    const multiDatastream = await executeSql(this.ctx._config.name, `SELECT id, _default_foi, thing_id, ${searchMulti}`);
+    let multiDatastream = await executeSql(this.ctx._config.name, `SELECT id, _default_foi, thing_id, ${searchMulti}`);
     
     let datastream = undefined;
 
@@ -136,7 +137,7 @@ export class Loras extends Common {
         if (silent) return this.createReturnResult({ body: errorMessage });
         else this.ctx.throw(404, { code: 404, detail: errorMessage });
       }
-    }
+    } else multiDatastream = multiDatastream[0];
     this.stean["formatedDatas"] = {};
 
     if ( this.stean["decodedPayload"] && notNull(this.stean["decodedPayload"]["datas"]) )
@@ -162,7 +163,7 @@ export class Loras extends Common {
     if (!this.stean["date"]) {
       if (silent) return this.createReturnResult({ body: errors.noValidDate });
       else this.ctx.throw(400, { code: 400, detail: errors.noValidDate });
-    }
+    }    
     
     if (multiDatastream) {
       Logs.debug("multiDatastream", multiDatastream);
@@ -251,7 +252,7 @@ export class Loras extends Common {
       const sql = `WITH "${VOIDTABLE}" AS (select srid FROM "${VOIDTABLE}" LIMIT 1)
                 , multidatastream1 AS (SELECT id, thing_id, _default_foi, ${searchMulti} LIMIT 1)
                 , myValues ( "${Object.keys(insertObject).join(
-                  QUOTEDCOMA
+                  DOUBLEQUOTEDCOMA
                 )}") AS (values (${Object.values(insertObject).join()}))
                 , searchDuplicate AS (SELECT * FROM "${
                   this.DBST.Observations.table
@@ -259,11 +260,10 @@ export class Loras extends Common {
                 , observation1 AS (INSERT INTO  "${
                   this.DBST.Observations.table
                 }" ("${Object.keys(insertObject).join(
-        QUOTEDCOMA
-      )}") SELECT * FROM myValues
-                                WHERE NOT EXISTS (SELECT * FROM searchDuplicate)
-                                AND (SELECT id FROM multidatastream1) IS NOT NULL
-                                RETURNING *)
+                  DOUBLEQUOTEDCOMA
+      )}") SELECT * FROM myValues WHERE NOT EXISTS (SELECT * FROM searchDuplicate)
+                                  AND (SELECT id FROM multidatastream1) IS NOT NULL
+                                  RETURNING *)
                 , result1 AS (SELECT (SELECT observation1.id FROM observation1)
                 , (SELECT multidatastream1."keys" FROM multidatastream1)
                 , (SELECT searchDuplicate.id AS duplicate FROM  searchDuplicate)
@@ -357,7 +357,7 @@ export class Loras extends Common {
                  this.DBST.Datastreams.table
                }" WHERE id =${datastream.id})
                , myValues ( "${Object.keys(insertObject).join(
-                 QUOTEDCOMA
+                DOUBLEQUOTEDCOMA
                )}") AS (values (${Object.values(insertObject).join()}))
                , searchDuplicate AS (SELECT * FROM "${
                  this.DBST.Observations.table
@@ -365,7 +365,7 @@ export class Loras extends Common {
                , observation1 AS (INSERT INTO  "${
                  this.DBST.Observations.table
                }" ("${Object.keys(insertObject).join(
-        QUOTEDCOMA
+                DOUBLEQUOTEDCOMA
       )}") SELECT * FROM myValues
                                 WHERE NOT EXISTS (SELECT * FROM searchDuplicate)
                                AND (select id from datastream1) IS NOT NULL

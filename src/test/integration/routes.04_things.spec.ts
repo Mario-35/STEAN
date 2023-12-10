@@ -71,7 +71,7 @@ describe("endpoint : Thing [8.2.1]", () => {
 
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
-                .end((err, res) => {                    
+                .end((err, res) => {    
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -619,6 +619,34 @@ describe("endpoint : Thing [8.2.1]", () => {
                     res.body.value.length.should.eql(2);
                     res.body.value[0]["@iot.id"].should.eql(2);
                     res.body.value[0]["@iot.selfLink"].should.contain("/Things(2)");
+                    addToApiDoc({ ...infos, result: limitResult(res) });
+                    done();
+                });
+        });
+
+        it(`Return ${entity.name} double complex nested filter search`, (done) => {
+            const infos = {
+                api: `{get} ${entity.name} Get double complex filter nested resource path`,
+                apiName: `Get${entity.name}DoubleComplexNestedFilter`,
+                apiDescription: `Get Things that's have a datastream Wich have an observed property with description equal to ...`,
+                apiReference: "",
+                apiExample: {
+                    http: `/test/v1.0/${entity.name}?$filter=Datastreams/Observations/resultTime ge 2016-11-12 and Datastreams/Observations/resultTime le 2016-11-15`,
+                    curl: defaultGet("curl", "KEYHTTP"),
+                    javascript: defaultGet("javascript", "KEYHTTP"),
+                    python: defaultGet("python", "KEYHTTP")
+                }
+            };
+            chai.request(server)
+                .get(infos.apiExample.http)
+                .end((err: Error, res: any) => {                    
+                    should.not.exist(err);
+                    res.status.should.equal(200);
+                    res.type.should.equal("application/json");
+                    res.body["@iot.count"].should.eql(2);
+                    res.body.value.length.should.eql(2);
+                    res.body.value[0]["@iot.id"].should.eql(4);
+                    res.body.value[0]["@iot.selfLink"].should.contain("/Things(4)");
                     addToApiDoc({ ...infos, result: limitResult(res) });
                     done();
                 });

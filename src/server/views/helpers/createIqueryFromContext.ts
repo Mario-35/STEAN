@@ -14,10 +14,10 @@ import { serverConfig } from "../../configuration";
 import { _DB, _DBFILTERED } from "../../db/constants";
 import { _DBADMIN } from "../../db/constants";
 import { getMetrics } from "../../db/monitoring";
-import { Iquery } from "../../types";
+import { IqueryOptions } from "../../types";
 
 
-export const createIqueryFromContext = async (ctx: koa.Context): Promise<Iquery> => {
+export const createIqueryFromContext = async (ctx: koa.Context): Promise<IqueryOptions> => {
     const user = await getAuthenticatedUser(ctx); 
     const metrics = await getMetrics("keys"); 
     const temp = ctx._config.name === 'admin' === true 

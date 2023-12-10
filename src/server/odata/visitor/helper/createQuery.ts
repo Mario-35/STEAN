@@ -8,7 +8,7 @@
 
 import { createSql, getColumnsList } from ".";
 import { _DB } from "../../../db/constants";
-import { isNull, isSingular } from "../../../helpers";
+import { addDoubleQuotes, isNull, isSingular } from "../../../helpers";
 import { Logs } from "../../../logger";
 import { queryAsJson } from "../../../db/queries";
 import { IpgQuery } from "../../../types";
@@ -19,30 +19,28 @@ import { getEntityName } from "../../../db/helpers";
 
 export function createQueryString(main: PgVisitor, element: PgVisitor): string { 
     Logs.whereIam();  
-    const tempIpgQuery = createPgQuery(main, element);
-    if (!tempIpgQuery) return "ERROR";
-    return createSql(tempIpgQuery);
+    const tempPgQuery = createPgQuery(main, element);
+    return tempPgQuery ? createSql(tempPgQuery) : "ERROR";
 }
 
 export function createPgQuery(main: PgVisitor, element: PgVisitor): IpgQuery | undefined { 
-    Logs.whereIam();    
-    // get the name of the entity
-    const realEntity = element.relation ||element.entity ;
-    const select: string[] | undefined = getColumnsList(realEntity, main, element); 
+    Logs.whereIam();
+    // const realEntity = element.relation ||element.entity ;
+    const select: string[] | undefined = getColumnsList(element.entity, main, element); 
     if (select) {
-        const realEntityName = getEntityName(realEntity);
+        const realEntityName = getEntityName(element.entity);
         if (realEntityName) {
             const relations: string[] = Object.keys(_DB[realEntityName].relations).filter((e: string) => serverConfig.configs[main.configName]._context.entities.includes(_DB[realEntityName].relations[e].entityName));
             element.includes.forEach((item) => {                                
                 const name = item.navigationProperty;                                                
                 const index = relations.indexOf(name);
                 if (index >= 0) {
-                    item.setEntity(name);
+                    item.entity = name;
                     item.where += `${item.where.trim() == "" ? '' : " AND "}${_DB[realEntityName].relations[name].expand}`;                                                            
                     relations[index] = `(${queryAsJson({ 
                         query: createQueryString(main,item), 
                         singular : isSingular(name), 
-                        count: false })}) AS "${name}"`;
+                        count: false })}) AS ${addDoubleQuotes(name)}`;
                     main.addToArrayNames(name);
                 }
             });
@@ -52,9 +50,9 @@ export function createPgQuery(main: PgVisitor, element: PgVisitor): IpgQuery | u
                     const tempTable = getEntityName(rel);
                     if (tempTable) {
                         if(!_DB[realEntityName].relations[rel].relationKey.startsWith("_"))
-                            select.push(`CONCAT('${main.options.rootBase}${_DB[realEntityName].name}(', "${_DB[realEntityName].table}"."id", ')/${rel}') AS "${rel}@iot.navigationLink"`);                            
+                            select.push(`CONCAT('${main.options.rootBase}${_DB[realEntityName].name}(', ${addDoubleQuotes(_DB[realEntityName].table)}."id", ')/${rel}') AS "${rel}@iot.navigationLink"`);                            
                         if(!_DB[realEntityName].relations[rel].relationKey.startsWith("_"))
-                            main.addToBlanks(`'${main.options.rootBase}${_DB[realEntityName].name}(0)/${rel}' AS "${rel}@iot.navigationLink"`);
+                            main.addToIntervalColumns(`'${main.options.rootBase}${_DB[realEntityName].name}(0)/${rel}' AS "${rel}@iot.navigationLink"`);
                     }
                 }
             });

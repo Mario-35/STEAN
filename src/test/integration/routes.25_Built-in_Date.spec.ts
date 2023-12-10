@@ -52,47 +52,47 @@ describe("Odata BuiltInDates [9.3.3.5.2]", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(20);
-                res.body["value"][0]["@iot.id"].should.eql(11);
+                res.body.value.length.should.eql(1);
+                res.body["value"][0]["@iot.id"].should.eql(20);
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
     });
 
-    it("search by resultTime eq 18-11-2016", (done) => {
+    it("search by resultTime eq 14-11-2016", (done) => {
         chai.request(server)
-            .get(`/test/v1.0/Observations?$filter=resultTime eq '18-11-2016'`)
+            .get(`/test/v1.0/Observations?$filter=resultTime eq '16-11-2016'`)
             .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(20);
-                res.body["value"][0]["@iot.id"].should.eql(11);
+                res.body.value.length.should.eql(2);
+                res.body["value"][0]["@iot.id"].should.eql(18);
                 done();
             });
     });
 
-    it("search by resultTime gt 18-11-2016", (done) => {
+    it("search by resultTime gt 14-11-2016", (done) => {
         chai.request(server)
-            .get(`/test/v1.0/Observations?$filter=resultTime gt '18-11-2016'`)
+            .get(`/test/v1.0/Observations?$filter=resultTime gt '14-11-2016'`)
             .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(34);
-                res.body["value"][0]["@iot.id"].should.eql(26);
+                res.body.value.length.should.eql(41);
+                res.body["value"][0]["@iot.id"].should.eql(17);
                 done();
             });
     });
 
-    it("search by resultTime lt 2016-11-18", (done) => {
+    it("search by resultTime lt 2016-11-14", (done) => {
         chai.request(server)
-            .get(`/test/v1.0/Observations?$filter=resultTime lt '18-11-2016'`)
+            .get(`/test/v1.0/Observations?$filter=resultTime lt '14-11-2016'`)
             .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(22);
+                res.body.value.length.should.eql(33);
                 res.body["value"][0]["@iot.id"].should.eql(56);
                 done();
             });
@@ -166,7 +166,7 @@ describe("Odata BuiltInDates [9.3.3.5.2]", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(1);
+                res.body.value.length.should.eql(3);
                 res.body["value"][0]["@iot.id"].should.eql(66);
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
@@ -251,7 +251,7 @@ describe("Odata BuiltInDates [9.3.3.5.2]", () => {
             apiName: "BuiltInDateDate",
             apiDescription: "The date function returns the date part of the DateTimeOffset parameter value, evaluated in the time zone of the DateTimeOffset parameter value.",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
-            apiExample: { http: "/v1.0/Observations?$filter=date(resultTime) eq date(validTime)",
+            apiExample: { http: "/v1.0/Observations?$filter=date(resultTime) eq date(phenomenonTime)",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -263,7 +263,7 @@ describe("Odata BuiltInDates [9.3.3.5.2]", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(10);
+                res.body.value.length.should.eql(66);
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });

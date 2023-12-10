@@ -9,7 +9,7 @@
 
 import { getAllColumnName, _DB } from "../../../db/constants";
 import { getEntityName } from "../../../db/helpers";
-import { isCsvOrArray, isGraph, isObservation, removeQuotes } from "../../../helpers";
+import { isCsvOrArray, isGraph, isObservation, removeAllQuotes } from "../../../helpers";
 import { Logs } from "../../../logger";
 import { Ientity } from "../../../types";
 import { PgVisitor } from "../PgVisitor";
@@ -45,7 +45,7 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
 
     cols.forEach(e => {
         returnValue.push(e);
-        if (main.interval) main.addToBlanks(extractColumnName(e));
+        if (main.interval) main.addToIntervalColumns(extractColumnName(e));
         if (e === "id" && (element.showRelations == true || isCsvOrArray(main))) {
             if (isCsvOrArray(main)) main.addToArrayNames("id");            
             else returnValue.push(selfLink);    
@@ -54,13 +54,13 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
             main.addToArrayNames(temp === '"@iot.id"' ? '"id"' : temp); 
         }
     });
-    if (main.interval) main.addToBlanks(`CONCAT('${main.options.rootBase}${tempEntity.name}(', coalesce("@iot.id", '0')::text, ')') AS "@iot.selfLink"`);
+    if (main.interval) main.addToIntervalColumns(`CONCAT('${main.options.rootBase}${tempEntity.name}(', coalesce("@iot.id", '0')::text, ')') AS "@iot.selfLink"`);
 
     if (isObservation(tempEntity) === true && element.onlyRef === false ) {
         if (main.interval && !isGraph(main)) returnValue.push(`timestamp_ceil("resultTime", interval '${main.interval}') AS srcdate`);
         if (element.splitResult) element.splitResult.forEach((elem: string) => {
             const alias: string = element.splitResult && element.splitResult.length === 1 ? "result" : elem;
-            returnValue.push( `result-> 'valueskeys'->'${element.splitResult && element.splitResult.length === 1 ? removeQuotes(element.splitResult[0]) : alias}' AS "${alias}"` );
+            returnValue.push( `result-> 'valueskeys'->'${element.splitResult && element.splitResult.length === 1 ? removeAllQuotes(element.splitResult[0]) : alias}' AS "${alias}"` );
             main.addToArrayNames(alias);
         });
     }

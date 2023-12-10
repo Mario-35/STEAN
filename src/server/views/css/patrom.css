@@ -1,7 +1,7 @@
 /**
 * Patrom theme 
 * @copyright 2023-present Inrae
-* 10/11/2023 11:46:50
+* 07/12/2023 10:00:46
 * @author mario.adam@inrae.fr
 *
 */
@@ -130,6 +130,7 @@ body {
   --json-object: #cdf323;
   --json-url: #DD2E2E;
   --json-url-link: #ce8787;
+  --json-url-external: #68aed3;
   --json-string: #107904;
   --json-date: #CB7500;
 }.theme-dark {
@@ -253,6 +254,7 @@ body {
   --json-object: #cdf323;
   --json-url: #F0A1A1;
   --json-url-link: #ce8787;
+  --json-url-external: #0091df;
   --json-string: #B7E4B2;
   --json-date: #CB7500;
 }
@@ -2815,6 +2817,11 @@ input[type="radio"]:disabled:active + .patrom-radio-button__checkmark:before {
 
 .json-viewer .type-url {
 	color: var(--json-url);
+}
+
+.json-viewer .type-url-external {
+	color: var(--json-url-external);
+	cursor: pointer;
 }
 
 .json-viewer .type-url-link {

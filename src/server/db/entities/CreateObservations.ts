@@ -10,7 +10,7 @@ import koa from "koa";
 import { Common } from "./common";
 import { Logs } from "../../logger";
 import { IcsvColumn, IcsvFile, IreturnResult, IstreamInfos } from "../../types";
-import { executeSql, executeSqlValues, getStreamInfos, streamCsvFileInPostgreSql } from "../helpers";
+import { dateToDateWithTimeZone, executeSql, executeSqlValues, getStreamInfos, streamCsvFileInPostgreSql } from "../helpers";
 import { asyncForEach } from "../../helpers";
 import { errors, msg } from "../../messages/";
 import { EdatesType, EextensionsType } from "../../enums";
@@ -24,29 +24,8 @@ export class CreateObservations extends Common {
   constructor(ctx: koa.Context) {
     super(ctx);
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // get stream ID
-  dateToDateWithTimeZone(value: string) {
-    //Create Date object from ISO string
-    const date = new Date(value);
-    //Get ms for date
-    const time = date.getTime();
-    //Check if timezoneOffset is positive or negative
-    if (date.getTimezoneOffset() <= 0) {
-      //Convert timezoneOffset to hours and add to Date value in milliseconds
-      const final = time + Math.abs(date.getTimezoneOffset() * 60000);
-      //Convert from milliseconds to date and convert date back to ISO string
-      return new Date(final).toISOString();
-    } else {
-      const final = time + -Math.abs(date.getTimezoneOffset() * 60000);
-      return new Date(final).toISOString();
-    }
-  }
 
-  createListColumnsValues(
-    type: "COLUMNS" | "VALUES",
-    input: string[]
-  ): string[] {
+  createListColumnsValues( type: "COLUMNS" | "VALUES", input: string[] ): string[] {
     const res: string[] = [];
     const separateur = type === "COLUMNS" ? '"' : "'";
     input.forEach((elem: string, index: number) => {
@@ -64,7 +43,7 @@ export class CreateObservations extends Common {
             ? `'{"value": [${elem}]}'`
             : typeof elem === "string"
             ? elem.endsWith("Z")
-              ? `TO_TIMESTAMP('${this.dateToDateWithTimeZone(elem)}', '${
+              ? `TO_TIMESTAMP('${dateToDateWithTimeZone(elem)}', '${
                   EdatesType.dateWithOutTimeZone
                 }')::TIMESTAMP`
               : `${separateur}${elem}${separateur}`
@@ -167,16 +146,8 @@ export class CreateObservations extends Common {
         this.ctx.throw(404, { code: 404, detail: errors.noStream });
       else {
         await asyncForEach(dataInput["dataArray"], async (elem: string[]) => {
-          const keys = [`"${dataStreamId.type?.toLowerCase()}_id"`].concat(
-            this.createListColumnsValues(
-              "COLUMNS",
-              dataInput["components"]
-            )
-          );
-          const values = this.createListColumnsValues("VALUES", [
-            String(dataStreamId.id),
-            ...elem,
-          ]);
+          const keys = [`"${dataStreamId.type?.toLowerCase()}_id"`].concat( this.createListColumnsValues( "COLUMNS", dataInput["components"] ) );
+          const values = this.createListColumnsValues("VALUES", [ String(dataStreamId.id), ...elem, ]);
           await executeSqlValues(this.ctx._config.name, `INSERT INTO "observation" (${keys}) VALUES (${values}) RETURNING id`)
             .then((res: object) => {
               returnValue.push(

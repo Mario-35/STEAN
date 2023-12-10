@@ -11,7 +11,7 @@ import { PgVisitor } from "../PgVisitor";
 
  export function createGetSql(main: PgVisitor): string {   
     main.includes.forEach((include) => {
-        if (include.navigationProperty.includes("/")) {                
+        if (include.navigationProperty.includes("/")) {              
             const names = include.navigationProperty.split("/");
             include.navigationProperty = names[0];
             const visitor = new PgVisitor({...main.options});

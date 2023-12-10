@@ -1,6 +1,7 @@
 import Excel from "exceljs";
 import koa from "koa";
 import postgres from "postgres";
+import { isColumnType } from ".";
 import { serverConfig } from "../../configuration";
 import { EextensionsType } from "../../enums";
 import { asyncForEach } from "../../helpers";
@@ -73,7 +74,7 @@ const createColumnsList = async (ctx: koa.Context, entity: string) => {
       const createQuery = (input: string) => `select distinct ${input} AS "${column}" from "${_DB[entity].table}" LIMIT 200`;
       if (_DB[entity].columns[column].create !== "") {
         // IF JSON create column-key  note THAT is limit 200 firts items
-        if (_DB[entity].columns[column].create.startsWith("json")) {
+        if (isColumnType(_DB[entity], column, "json")) {
           const tempSqlResult = await serverConfig.db(ctx._config.name).unsafe(createQuery(`jsonb_object_keys("${column}")`))
             .catch(async (e) => {
               if (e.code === "22023") {

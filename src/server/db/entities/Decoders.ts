@@ -10,9 +10,9 @@ import koa from "koa";
 import { IreturnResult } from "../../types";
 import { Common } from "./common";
 import { Logs } from "../../logger";
-import { asyncForEach } from "../../helpers";
+import { addDoubleQuotes, asyncForEach } from "../../helpers";
 import { decodingPayload } from "../../lora";
-import { executeSqlValues } from "../helpers";
+import { executeSql, executeSqlValues } from "../helpers";
 export class Decoders extends Common {
   constructor(ctx: koa.Context) {
     super(ctx);
@@ -22,11 +22,11 @@ export class Decoders extends Common {
     Logs.whereIam();
     if (this.ctx._odata.payload) {
       const result = {};
-      const decoders = await executeSqlValues(this.ctx._config.name, `SELECT "id", "name", "code", "nomenclature", "synonym" FROM "${this.DBST.Decoders.table}"`);
+      const decoders = await executeSql(this.ctx._config.name, `SELECT "id", "name", "code", "nomenclature", "synonym" FROM ${addDoubleQuotes(this.DBST.Decoders.table)}`);
       await asyncForEach(
         // Start connectionsening ALL entries in config file
         Object(decoders),
-        async (decoder: string) => {
+        async (decoder: object) => {          
           if (this.ctx._odata.payload) {
             const temp = decodingPayload(
               {

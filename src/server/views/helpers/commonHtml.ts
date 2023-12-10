@@ -9,15 +9,15 @@
 /* eslint-disable quotes */
 
 import { Logs } from "../../logger";
-import { cleanUrl, removeQuotes, replacer } from "../../helpers";
+import { cleanUrl, removeAllQuotes, replacer } from "../../helpers";
 import { addCssFile, listaddCssFiles } from "../css";
 import { addJsFile, listaddJsFiles } from "../js";
 import { APP_VERSION } from "../../constants";
-import { Iquery } from "../../types";
+import { IqueryOptions } from "../../types";
 
 const fileWithOutMin = (input: string): string => input.replace(".min",'');
 
-export const commonHtml = (input: string, params: Iquery): string => {
+export const commonHtml = (input: string, params: IqueryOptions): string => {
     Logs.head("commonHtml");
     Logs.debug("params", params); 
     const result: string[] = input
@@ -33,7 +33,7 @@ export const commonHtml = (input: string, params: Iquery): string => {
         let index = result.indexOf(searhText);
         if (index > 0) result[index] = content;
         else {
-            index = result.indexOf(removeQuotes(searhText));
+            index = result.indexOf(removeAllQuotes(searhText));
             if (index > 0) result[index] = content;
         }
     };

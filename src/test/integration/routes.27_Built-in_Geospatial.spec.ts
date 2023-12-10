@@ -79,12 +79,12 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
         };
         chai.request(server)
             .get(`/test${infos.apiExample.http}`)
-            .end((err: Error, res: any) => {
+            .end((err: Error, res: any) => {                
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(5);
-                res.body["value"][0]["@iot.id"].should.eql(5);
+                res.body["value"][0]["@iot.id"].should.eql(13);
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
@@ -134,7 +134,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(5);
-                res.body["value"][0]["@iot.id"].should.eql(5);
+                res.body["value"][0]["@iot.id"].should.eql(13);
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });

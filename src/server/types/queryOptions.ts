@@ -8,7 +8,7 @@
 
 import { Ientity, Iuser } from ".";
 
-export interface Iquery {
+export interface IqueryOptions {
     user: Iuser;
     methods: string[];
     metrics: string[] | {[key: string] : any};

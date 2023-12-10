@@ -10,10 +10,10 @@
 
 import fs from "fs";
 import { Logs } from "../../logger";
-import { Iquery } from "../../types";
+import { IqueryOptions } from "../../types";
 import { commonHtml } from "../helpers";
 
-export const createQueryHtml = (params: Iquery): string => {
+export const createQueryHtml = (params: IqueryOptions): string => {
     Logs.head("createQueryHtml");
     return commonHtml(fs.readFileSync(__dirname + "/query.html").toString(), params);
 };

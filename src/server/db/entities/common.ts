@@ -7,7 +7,7 @@
  */
 
  import koa from "koa";
- import { isNull, returnFormats } from "../../helpers/index";
+ import { addDoubleQuotes, asyncForEach, isNull, returnFormats } from "../../helpers/index";
  import { Logs } from "../../logger";
  import { Ientity, IreturnResult } from "../../types";
  import { executeSqlValues, removeKeyFromUrl, verifyId } from "../helpers";
@@ -49,12 +49,7 @@
      });
      return undefined;
    }
- 
-   // only for override
-   formatString(input: string): string {
-     return input.replace(/\s+/g, " ").trim();
-   }
- 
+
    formatDataInput(input: object | undefined): object | undefined {
      return input;
    }
@@ -124,8 +119,7 @@
    }
  
    // Return one item
-   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-   async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
+   async getSingle(_idInput: bigint | string): Promise<IreturnResult | undefined> {
     Logs.whereIam();
     // create query
     const sql = this.ctx._odata.asGetSql();
@@ -140,11 +134,7 @@
       .then((res: object) => {           
         if (this.ctx._odata.select && this.ctx._odata.onlyValue)
           return this.createReturnResult({
-            body: String(res[
-                this.ctx._odata.select == "id"
-                  ? "@iot.id"
-                  : 0
-              ]),
+            body: String(res[ this.ctx._odata.select == "id" ? "@iot.id" : 0 ]),
           });
 
         if (res[0] > 0) {          
@@ -161,11 +151,27 @@
       );
   }
 
- 
+  async addWultipleLines(dataInput: object | undefined): Promise<IreturnResult | undefined> {
+    Logs.whereIam();
+    const results:object[] = [];
+    await asyncForEach(Object(dataInput), async (datas: object) => {
+      const modifiedDatas = this.formatDataInput(datas);
+       if (modifiedDatas) {
+         const sql = this.ctx._odata.asPostSql(modifiedDatas, this.ctx._config.name);             
+         await executeSqlValues(this.ctx._config.name, sql)
+          .then((res: object) => results.push(res[0][0]) )
+          .catch((err: Error) => {        
+            this.ctx.throw(400, { code: 400, detail: err["detail"] });
+          });
+       }  
+    });
+    return this.createReturnResult({
+      body: results,
+    });
+  }
    // Post an item
    async add(dataInput: object | undefined): Promise<IreturnResult | undefined> {
-     Logs.whereIam();
- 
+    Logs.whereIam();      
      dataInput = this.formatDataInput(dataInput);
  
      if (!dataInput) return;
@@ -190,16 +196,15 @@
            });
          }
        })
-       .catch((err: Error) => {        
-         this.ctx.throw(400, { code: 400, detail: err["detail"] });
+       .catch((err: Error) => {    
+        console.log(err);
+            
+         this.ctx.throw(400, { code: 400, detail: err.message });
        });
    }
  
    // Update an item
-   async update(
-     idInput: bigint | string,
-     dataInput: object | undefined
-   ): Promise<IreturnResult | undefined> {
+   async update( idInput: bigint | string, dataInput: object | undefined ): Promise<IreturnResult | undefined> {
      Logs.whereIam();
      const testIfId = await verifyId( this.ctx._config.name, BigInt(idInput), this.DBST[this.constructor.name].table );
  
@@ -208,9 +213,7 @@
  
      dataInput = this.formatDataInput(dataInput);
      if (!dataInput) return;
-     // create query
      const sql = this.ctx._odata.asPatchSql(dataInput, this.ctx._config.name);
- 
      if (this.ctx._odata.resultFormat === returnFormats.sql)
        return this.createReturnResult({ body: sql });
 
@@ -231,11 +234,7 @@
    // Delete an item
    async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {
      Logs.whereIam();
-     // create query
-     const sql = `DELETE FROM "${
-       this.DBST[this.constructor.name].table
-     }" WHERE id = ${idInput} RETURNING id`;
-     // build return result
+     const sql = `DELETE FROM ${addDoubleQuotes(this.DBST[this.constructor.name].table)} WHERE "id" = ${idInput} RETURNING id`;
      return this.createReturnResult(
        this.ctx._odata.resultFormat === returnFormats.sql
          ? { id: BigInt(idInput), body: sql }

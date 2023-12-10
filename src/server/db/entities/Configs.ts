@@ -25,8 +25,8 @@ export class Configs extends Common {
     const result: { [key: string]: IconfigFile } = {};
     Object.keys(serverConfig.configs)
       .filter((e) => e != "admin")
-      .forEach((elem: string) => {
-        result[elem] = { ...serverConfig.configs[elem] };
+      .forEach((elem: string) => { 
+        result[elem] = { ...serverConfig.configs[elem] }; 
       });
     return this.createReturnResult({
       body: hidePasswordIn(result)
@@ -38,11 +38,7 @@ export class Configs extends Common {
     if (!ensureAuthenticated(this.ctx)) this.ctx.throw(401);
     return this.createReturnResult({
       body: hideKeysInJson(
-        serverConfig.configs[
-          typeof idInput === "string" ? idInput : this.ctx._config.name
-        ],
-        ["entities"]
-      ),
+        serverConfig.configs[ typeof idInput === "string" ? idInput : this.ctx._config.name ], ["entities"] ),
     });
   }
 

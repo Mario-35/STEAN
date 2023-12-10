@@ -273,7 +273,7 @@ describe("endpoint : Datastream", () => {
                 apiName: `GetPhenomenonTime${entity.name}`,
                 apiDescription: "Get Datastream(s) from phenomenonTime filter.",
                 apiExample: {
-                    http: `/v1.0/${entity.name}?$filter=resultTime eq 2016-11-18T03:15:15Z/2016-11-18T04:15:15Z`,
+                    http: `/v1.0/${entity.name}?$filter=resultTime eq 2016-11-09T04:15:15Z/2016-11-14T03:15:15Z`,
                     curl: defaultGet("curl", "KEYHTTP"),
                     javascript: defaultGet("javascript", "KEYHTTP"),
                     python: defaultGet("python", "KEYHTTP")

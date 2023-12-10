@@ -11,6 +11,7 @@ import { queryAsJson } from "../queries";
 import { IstreamInfos } from "../../types";
 import { _DB, _STREAM } from "../constants";
 import { executeSqlValues, getEntityName } from ".";
+import { addDoubleQuotes } from "../../helpers";
 
 export const getStreamInfos = async ( configName: string, input: JSON ): Promise<IstreamInfos | undefined> => {
   Logs.whereIam();
@@ -21,7 +22,7 @@ export const getStreamInfos = async ( configName: string, input: JSON ): Promise
   const searchKey = input[_DB[streamEntity].name] || input[_DB[streamEntity].singular];
   const streamId: string | undefined = isNaN(searchKey) ? searchKey["@iot.id"] : searchKey;
   if (streamId) {
-    const query = `SELECT "id", "observationType", "_default_foi" FROM "${ _DB[streamEntity].table }" WHERE id = ${BigInt(streamId)} LIMIT 1`;
+    const query = `SELECT "id", "observationType", "_default_foi" FROM ${addDoubleQuotes(_DB[streamEntity].table)} WHERE id = ${BigInt(streamId)} LIMIT 1`;
     return executeSqlValues(configName, queryAsJson({ query: query, singular: true, count: false }))
       .then((res: object) => {        
         return res ? {

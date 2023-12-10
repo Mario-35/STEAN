@@ -15,6 +15,6 @@
 
 export const cleanStringComma = (input: string, list?: string[]): string => {
     input = input.split(",").filter((word: string) => word.trim() != "").join(", ");
-    if(list) list.forEach((e: string) => input = input.split(` ${e}"`).join(`" ${e}`));
+    if (list) list.forEach((e: string) => input = input.split(` ${e}"`).join(`" ${e}`));
     return input;
 };

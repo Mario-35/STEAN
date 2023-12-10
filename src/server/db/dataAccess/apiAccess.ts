@@ -12,6 +12,7 @@ import koa from "koa";
 import { Logs } from "../../logger";
 import { IreturnResult } from "../../types";
 import { getEntityName } from "../helpers";
+import { isObjectArray } from "../../helpers";
 
 // Interface API
 export class apiAccess {
@@ -43,7 +44,10 @@ export class apiAccess {
 
   async add(): Promise<IreturnResult | undefined> {
     Logs.whereIam();
-    if (this.myEntity) return await this.myEntity.add(this.ctx.request.body);
+    if (this.myEntity) 
+      return isObjectArray(this.ctx.request.body)
+      ? await this.myEntity.addWultipleLines(this.ctx.request.body)
+      : await this.myEntity.add(this.ctx.request.body);
   }
 
   async update(idInput: bigint | string): Promise<IreturnResult | undefined> {

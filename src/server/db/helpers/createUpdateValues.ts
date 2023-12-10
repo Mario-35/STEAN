@@ -8,21 +8,18 @@
 
 import { formatColumnValue } from ".";
 import { ESCAPE_SIMPLE_QUOTE } from "../../constants";
+import { addDoubleQuotes, addSimpleQuotes } from "../../helpers";
 import { _DB } from "../constants";
 
 export const createUpdateValues = (input : object, entityName?: string, ): string => {    
-    if (entityName && _DB[entityName] && _DB[entityName].columns) {
-        const result:string[] = [];
+    const result:string[] = [];
+    if (entityName && _DB[entityName] && _DB[entityName].columns) 
         Object.keys(input).forEach((e: string) => {
             const temp = formatColumnValue(input[e], _DB[entityName].columns[e].type);
-            if (temp) result.push(`"${e}" = ${temp}`);
+            if (temp) result.push(`${addDoubleQuotes(e)} = ${temp}`);
         });
-        return result.join();
-    } else {    
-        const result:string[] = [];
-        Object.keys(input).forEach((e: string) => {
-            result.push(`"${e}" = '${ESCAPE_SIMPLE_QUOTE(input[e])}'`);
+     else Object.keys(input).forEach((e: string) => {
+            result.push(`${addDoubleQuotes(e)} = ${addSimpleQuotes(ESCAPE_SIMPLE_QUOTE(input[e]))}`);
         });
-        return result.join();
-    }
+    return result.join();
 };
