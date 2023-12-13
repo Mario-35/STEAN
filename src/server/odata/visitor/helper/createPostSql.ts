@@ -92,7 +92,7 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
                     if (queryMaker[element].type == EoperationType.Association) 
                         returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${createInsertValues(queryMaker[element].datas)} on conflict ("${Object.keys(queryMaker[element].datas).join('","')}") do update set ${createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = ${BigInt(main.id).toString()}`);
                     else
-                        returnValue.push(`UPDATE "${queryMaker[element].table}" set ${createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = ${BigInt(main.id).toString()}`);
+                        returnValue.push(`UPDATE "${queryMaker[element].table}" set ${createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = (select verifyId('${queryMaker[element].table}', ${main.id}) as id)`);
                 } else returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${createInsertValues(queryMaker[element].datas)}`);                            
                     returnValue.push(`RETURNING ${postEntity.table == queryMaker[element].table ? allFields : queryMaker[element].keyId})`);
             }
@@ -329,7 +329,7 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
         sqlResult = queryMakerToString(
             main.id
             ? root && Object.entries(root).length > 0
-            ? `WITH ${postEntity.table} AS (UPDATE ${addDoubleQuotes(postEntity.table)} set ${createUpdateValues(root)} WHERE "id" = ${main.id.toString()} RETURNING ${allFields})`
+            ? `WITH ${postEntity.table} AS (UPDATE ${addDoubleQuotes(postEntity.table)} set ${createUpdateValues(root)} WHERE "id" = (select verifyId('${postEntity.table}', ${main.id}) as id) RETURNING ${allFields})`
                 : `WITH ${postEntity.table} AS (SELECT * FROM ${addDoubleQuotes(postEntity.table)} WHERE "id" = ${main.id.toString()})`
                 : `WITH ${postEntity.table} AS (INSERT INTO ${addDoubleQuotes(postEntity.table)} ${createInsertValues(root)} RETURNING ${allFields})`
                 );

@@ -116,10 +116,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
 
   // ADD LORA IS OPEN
   if ((ctx._user && ctx._user.id > 0) || ctx.request.url.includes("/Lora")) {
-    if (
-      ctx.request.type.startsWith("application/json") &&
-      Object.keys(ctx.request.body).length > 0
-    ) {
+    if ( ctx.request.type.startsWith("application/json") && Object.keys(ctx.request.body).length > 0 ) {
       const odataVisitor = await createOdata(ctx);
       if (odataVisitor) ctx._odata = odataVisitor;
       if (ctx._odata) {
@@ -134,6 +131,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
       } else ctx.throw(400);
     } else if (ctx.request.type.startsWith("multipart/form-data")) {
       // If upload datas
+      console.log("==============================>");
       const getDatas = async (): Promise<IKeyString> => {
         Logs.head("getDatas ...");
         return new Promise(async (resolve, reject) => {
@@ -147,6 +145,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
         });
       };
       ctx._datas = await getDatas();
+      
       const odataVisitor = await createOdata(ctx);
       if (odataVisitor) ctx._odata = odataVisitor;
       if (ctx._odata) {

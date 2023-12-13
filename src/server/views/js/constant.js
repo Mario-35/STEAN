@@ -51,3 +51,9 @@ function getRelationsList(input) {
     return ent ? Object.keys(_PARAMS._DATAS[ent].relations) : undefined;
 }
 const getWinActives = () => Object.entries(wins).filter(e => e === true).length > 0;
+
+async function asyncForEach(array, callback) {
+    for (let index = 0; index < array.length; index++) {
+        await callback(array[index], index, array);
+    }
+}

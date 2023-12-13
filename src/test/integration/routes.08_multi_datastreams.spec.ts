@@ -777,11 +777,6 @@ describe("endpoint : MultiDatastream", () => {
             chai.request(server)
                 .patch(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .send({
-                    unitOfMeasurement: {
-                        symbol: "ºC",
-                        name: "Celsius",
-                        definition: "http://unitsofmeasure.org/ucum.html"
-                    },
                     observationType: "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
                     description: "Temp readings",
                     name: "temp_readings"

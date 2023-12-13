@@ -303,7 +303,7 @@ class Configuration {
   getConfigForExcelExport = (name: string): object=> {
     const result = Object.assign({}, this.configs[name].pg);
     result["password"] = "*****";
-    ["name","apiVersion","port","date_format", "webSite", "nb_page", "forceHttps", "highPrecision", "logFile","alias", "extensions"].forEach(e => {
+    ["name","apiVersion","port","date_format", "webSite", "nb_page", "forceHttps", "highPrecision", "canDrop", "logFile","alias", "extensions"].forEach(e => {
       result[e]= this.configs[name][e];
     }); 
     return result;
@@ -359,6 +359,7 @@ class Configuration {
       alias: input["alias"] ? unikeList(String(input["alias"]).split(",")) : [],
       extensions: extensions,
       highPrecision: input["highPrecision"] ? input["highPrecision"] : false,
+      canDrop: input["canDrop"] ? input["canDrop"] : false,
       logFile: input["log"] ? input["log"] : "",
       db: undefined,
       _context: {
@@ -498,6 +499,7 @@ class Configuration {
         return returnResult;
       });
   }
+
 }
 
 export const serverConfig = new Configuration(__dirname + `/${NODE_ENV}.json`);

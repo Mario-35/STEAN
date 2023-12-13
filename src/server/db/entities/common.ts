@@ -10,9 +10,9 @@
  import { addDoubleQuotes, asyncForEach, isNull, returnFormats } from "../../helpers/index";
  import { Logs } from "../../logger";
  import { Ientity, IreturnResult } from "../../types";
- import { executeSqlValues, removeKeyFromUrl, verifyId } from "../helpers";
- import { errors } from "../../messages/";
+ import { executeSqlValues, removeKeyFromUrl } from "../helpers";
  import { _DBFILTERED } from "../constants";
+import { getErrorCode } from "../../messages";
  
  // Connon class
  export class Common {
@@ -24,10 +24,7 @@
    constructor(ctx: koa.Context) {
      Logs.whereIam();
      this.ctx = ctx;
-     this.nextLinkBase = removeKeyFromUrl(
-       `${this.ctx._odata.options.rootBase}${ this.ctx.href.split(`${ctx._config.apiVersion}/`)[1] }`,
-       ["top", "skip"]
-     );
+     this.nextLinkBase = removeKeyFromUrl( `${this.ctx._odata.options.rootBase}${ this.ctx.href.split(`${ctx._config.apiVersion}/`)[1] }`, ["top", "skip"] );
      this.linkBase = `${this.ctx._odata.options.rootBase}${this.constructor.name}`;
      this.DBST = _DBFILTERED(this.ctx);     
    }
@@ -197,20 +194,14 @@
          }
        })
        .catch((err: Error) => {    
-        console.log(err);
-            
-         this.ctx.throw(400, { code: 400, detail: err.message });
+        const code = getErrorCode(err, 400);     
+        this.ctx.throw(code, { code: code, detail: err.message });
        });
    }
  
    // Update an item
    async update( idInput: bigint | string, dataInput: object | undefined ): Promise<IreturnResult | undefined> {
-     Logs.whereIam();
-     const testIfId = await verifyId( this.ctx._config.name, BigInt(idInput), this.DBST[this.constructor.name].table );
- 
-     if (testIfId === false)
-       this.ctx.throw(404, { code: 404, detail: errors.noId + idInput });
- 
+     Logs.whereIam(); 
      dataInput = this.formatDataInput(dataInput);
      if (!dataInput) return;
      const sql = this.ctx._odata.asPatchSql(dataInput, this.ctx._config.name);
@@ -226,8 +217,9 @@
            });
          }
        })
-       .catch((err: Error) => {        
-         this.ctx.throw(400, { code: 400, detail: err["detail"] });
+       .catch((err: Error) => {
+        const code = getErrorCode(err, 400);     
+        this.ctx.throw(code, { code: code, detail: err.message });
        });
    }
  

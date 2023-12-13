@@ -23,6 +23,7 @@ export interface IconfigFile {
     extensions: string[];
     alias: string[];
     highPrecision: boolean;
+    canDrop: boolean;
     logFile: string;
     db: postgres.Sql<Record<string, unknown>> | undefined;
     _context: {

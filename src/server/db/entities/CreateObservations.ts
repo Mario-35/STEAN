@@ -59,6 +59,7 @@ export class CreateObservations extends Common {
   }
 
   async getAll(): Promise<IreturnResult | undefined> {
+    Logs.whereIam();
     this.ctx.throw(400, { code: 400 });
   }
 
@@ -121,6 +122,7 @@ export class CreateObservations extends Common {
             // Execute query
             if (res) await executeSql(this.ctx._config.name, res).then(async (returnResult: object) => {
               Logs.debug("SQL Executing", _OK);
+              returnResult = returnResult[0];
               returnValue.push(
                 `Add ${
                   returnResult && returnResult["inserted"]

@@ -83,11 +83,18 @@ function whatButton(obj) {
 function buttonGo() {
 	if (importFile === true) {
 		hide(go);
+		console.log(submit.value);
 		show(submit);
+		hide(btnCreate);
+	} else if (_PARAMS.methods.includes("POST") && jsonDatas.innerText.includes('"create": {')) {
+		hide(go);
+		show(btnCreate);
+		hide(submit);
 	} else {
 		show(go);
 		canShowQueryButton();
 		hide(submit);
+		hide(btnCreate);
 	}
 }
 

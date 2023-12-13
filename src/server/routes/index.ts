@@ -18,6 +18,7 @@ export { unProtectedRoutes } from "./unProtected";
 export const routerHandle = async (ctx: Koa.Context, next: any) => {
   try {
     setConfigToCtx(ctx);
+    if (!ctx._config) return;    
     const tempUser = decodeToken(ctx);
     ctx._user = tempUser
       ? tempUser

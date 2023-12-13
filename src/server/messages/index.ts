@@ -14,3 +14,9 @@ export const msg = (...args: string[]) => { for (let i = 1; i < args.length; i++
 export const errors =jsonErrors;
 export const infos =jsonInfos;
 
+export const getErrorCode = (err: Error, actual: number): number => { 
+    if (err["where"] && err["where"].includes("verifyid")) return 404;
+    return actual;
+};
+ 
+

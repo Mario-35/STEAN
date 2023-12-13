@@ -39,6 +39,5 @@ buildTableWithCsv = (input, separator, container) => {
 	_table.appendChild(_thead);
 	_table.appendChild(_tbody);
 	_wrapper.appendChild(_table);
-
 	tableArea.appendChild(_wrapper);
 };

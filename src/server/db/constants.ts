@@ -14,13 +14,8 @@ const makeIDAlias = '"id" AS "@iot.id"';
 const makeCount = (table: string) => `SELECT count(DISTINCT id) from "${table}" AS count`;
 export const _RIGHTS = "SUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION NOBYPASSRLS CONNECTION LIMIT -1";
 export type _STREAM = "Datastream" | "MultiDatastream" | undefined;
-export const getColumnResult = (numeric: boolean, as: boolean, cast: string = "numeric") => numeric 
-  ? `CASE WHEN jsonb_typeof("result"-> 'value') = 'number' THEN ("result"->>'value')::${cast} END${as === true ? ' AS "result"' : ''}` 
-  : `CASE WHEN jsonb_typeof("result"-> 'value') = 'number' then ("result"->'value')::${cast} END${as === true ? ' AS "result"' : ''}`;
-export const getColumnNameOrAlias = (entity: Ientity, column : string, options: IcolumnOption) => {
-  // console.log(`=======================${entity.name}==============================`);
-  // console.log(`column : ${column}`);
-  
+export const getColumnResult = (numeric: boolean, as: boolean, cast: string = "numeric") => `CASE WHEN jsonb_typeof("result"->'value') = 'number' THEN ("result"->${numeric ? '>': ''}'value')::${cast} END${as === true ? ' AS "result"' : ''}`; 
+export const getColumnNameOrAlias = (entity: Ientity, column : string, options: IcolumnOption) => {  
   const result = entity 
           && column != "" 
           && entity.columns[column] 
@@ -31,12 +26,11 @@ export const getColumnNameOrAlias = (entity: Ientity, column : string, options: 
 
 export const getAllColumnName = (entity: Ientity, columns : string | string[], options: IcolumnOption): string[] => {
   const result: string[] = [];
-  if (typeof columns === "string") {
-    columns = columns[0] === "*" ? Object.keys(entity.columns).filter((word) => !word.includes("_")) : columns.split(',');
-  }
+  if (typeof columns === "string") columns = columns[0] === "*" ? Object.keys(entity.columns).filter((word) => !word.includes("_")) : columns.split(',');
+
   columns.forEach((column: string) => {
-    const temp = getColumnNameOrAlias(entity, column, options);
-    if (temp) result.push(temp);
+    const columnTemp = getColumnNameOrAlias(entity, column, options);
+    if (columnTemp) result.push(columnTemp);
   });
   return result;
 };

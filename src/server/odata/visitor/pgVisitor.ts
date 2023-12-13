@@ -561,10 +561,7 @@ export class PgVisitor {
     }
   }
 
-  protected addDateTypeToWhere(node: Token, sign: string, context: IodataContext):string | undefined {
-    // console.log(`======== ${context.identifier}==========`);
-    // console.log(node);
-   
+  protected addDateTypeToWhere(node: Token, sign: string, context: IodataContext):string | undefined {   
     if (getRelationColumnTable(_DB[this.entity], node.value.left.raw) === EcolType.Column && isColumnType(_DB[this.entity], node.value.left.raw, "date")) {
       const testIsDate = oDatatoDate(node, sign);
       const columnName = getColumnNameOrAlias(_DB[context.identifier || this.entity], node.value.left.raw, {table: true, as: true, cast: false, numeric: this.numeric, test: this.createOptions()});

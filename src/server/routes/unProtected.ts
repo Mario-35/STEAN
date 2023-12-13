@@ -10,7 +10,7 @@ import Router from "koa-router";
 import fs from "fs";
 import { decodeToken, ensureAuthenticated, getAuthenticatedUser, } from "../authentication";
 import { ADMIN, API_VERSION, TEST, _READY } from "../constants";
-import { getUrlId, getUrlKey, isAdmin, isAllowedTo, returnFormats } from "../helpers";
+import { addSimpleQuotes, getUrlId, getUrlKey, isAdmin, isAllowedTo, returnFormats } from "../helpers";
 import { apiAccess, userAccess } from "../db/dataAccess";
 import { _DB } from "../db/constants";
 import { Logs } from "../logger";
@@ -27,7 +27,7 @@ import { serverConfig } from "../configuration";
 import { createDatabase } from "../db/createDb";
 import { remadeResult } from "../db/helpers/remadeResult";
 import { replayPayload } from "../db/queries";
-import { exportToXlsx, importFromXlsx } from "../db/helpers";
+import { executeAdmin, exportToXlsx, importFromXlsx } from "../db/helpers";
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 // ALl others
 unProtectedRoutes.get("/(.*)", async (ctx) => {
@@ -199,6 +199,27 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             ctx.redirect(`${ctx._rootName}error`);
           }
         });
+      return;
+    case "DROP":
+      // create DB test
+      Logs.head("drop database");
+      if (ctx._config.canDrop === true) {        
+        const dbName = ctx._config.pg.database;
+        console.log(dbName);
+        console.log("start");
+        // await ctx._config.db?.end();
+        await executeAdmin(`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND datname = ${addSimpleQuotes(dbName)}`, true).then(async () => {
+            await executeAdmin(`DROP DATABASE IF EXISTS ${dbName}`, true);
+            returnToBody = await createDatabase(dbName);
+            if (returnToBody) {
+              ctx.status = 201;
+              ctx.body = returnToBody;
+            } else {
+              ctx.status = 400;
+              ctx.redirect(`${ctx._rootName}error`);
+            }
+          });
+      }
       return;
     case "REDOAGRHYS":
       // create DB test

@@ -6,7 +6,8 @@
  *
  */
 
-export enum EoperationType { Table,
+export enum EoperationType { 
+    Table,
     Relation,
     Association
 }

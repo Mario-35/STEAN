@@ -87,6 +87,10 @@ btnPostTemplate.onclick = () => {
 	beautifyDatas(getElement("jsonDatas"), result, "json");
 };
 
+btnCreate.onclick = async () => {
+	await createDb();
+};
+
 btnRoot.onclick = async () => {
 	const url = `${optHost.value}/${optVersion.value}/`;
 	const jsonObj = await getFetchDatas(url, "GET");
@@ -167,10 +171,7 @@ go.onclick = async (e) => {
 					body: jsonDatas.innerText,
 				});
 				const value = await response.json();
-				if (response.status == 401) {
-					// window.location.replace(value);
-					window.location.href = "/login";
-				}
+				if (response.status == 401) window.location.href = "/login";
 				wait(false);
 				updateWinJsonResult(value, `[${methodOption.value}]:${url}`);
 			}
@@ -238,7 +239,7 @@ fileone.addEventListener("change", (e) => {
 			fileName = e.target.value.split("\\").pop();
 
 		if (fileName) {
-			fileonelabel.selectOptionor("span").innerHTML = fileName;
+			fileonelabel.querySelector("span").innerHTML = fileName;
 			methodOption.value = "POST";
 			// const key = "Datastreams";
 			// entityOption.value = key;
@@ -266,7 +267,6 @@ function addToResultList(key, value, plus) {
 		addToResultList("-->", plus);
 	}
 }
-
 
 function prepareForm() {
 	if (importFile === true) {

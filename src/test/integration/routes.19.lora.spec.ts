@@ -217,7 +217,7 @@
                  .set("Cookie", `${keyTokenName}=${token}`)
                  .end((err: Error, res: any) => {
                      should.not.exist(err);
-                     res.status.should.equal(400);
+                     res.status.should.equal(404);
                      res.body["detail"].should.contain('exist no datastream ID --> 155');
                      done();
                  });
