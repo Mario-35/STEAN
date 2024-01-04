@@ -6,7 +6,7 @@
  *
  */
 
-import { Ientity, Iuser } from ".";
+import { Ientities, Iuser } from ".";
 
 export interface IqueryOptions {
     user: Iuser;
@@ -24,5 +24,5 @@ export interface IqueryOptions {
     results?: JSON | string;
     graph: boolean;
     admin: boolean;
-    _DATAS : { [k: string]: Ientity; }
+    _DATAS : Ientities
 }

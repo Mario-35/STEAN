@@ -7,5 +7,6 @@
  */
 
 import { executeSqlValues } from ".";
+import { IconfigFile } from "../../types";
 
-export const getDBDateNow = async ( configName: string ): Promise<string> => await executeSqlValues(configName, "SELECT current_timestamp;").then((res: object) => res[0]);
+export const getDBDateNow = async ( config: IconfigFile ): Promise<string> => await executeSqlValues(config, "SELECT current_timestamp;").then((res: object) => res[0]);

@@ -7,7 +7,7 @@
  */
 
 import koa from "koa";
-import { Logs } from "../../logger";
+import { formatLog } from "../../logger";
 import { errors } from "../../messages";
 import { Common } from "./common";
 
@@ -17,18 +17,18 @@ export class Datastreams extends Common {
   }
 
   formatDataInput(input: object | undefined): object | undefined {
-    Logs.whereIam();
+    console.log(formatLog.whereIam());
     if (input) {
       if (input["observationType"]) {
         if (
-          !this.DBST.Datastreams.columns[
+          !this.ctx._model.Datastreams.columns[
             "observationType"
           ].verify?.list.includes(input["observationType"])
         )
           this.ctx.throw(400, { code: 400, detail: errors["observationType"] });
       } else
         input["observationType"] =
-          this.DBST.Datastreams.columns["observationType"].verify?.default;
+        this.ctx._model.Datastreams.columns["observationType"].verify?.default;
     }
     return input;
   }

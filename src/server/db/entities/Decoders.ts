@@ -9,7 +9,7 @@
 import koa from "koa";
 import { IreturnResult } from "../../types";
 import { Common } from "./common";
-import { Logs } from "../../logger";
+import { formatLog } from "../../logger";
 import { addDoubleQuotes, asyncForEach } from "../../helpers";
 import { decodingPayload } from "../../lora";
 import { executeSql, executeSqlValues } from "../helpers";
@@ -19,21 +19,16 @@ export class Decoders extends Common {
   }
 
   async getAll(): Promise<IreturnResult | undefined> {
-    Logs.whereIam();
+    console.log(formatLog.whereIam());
     if (this.ctx._odata.payload) {
       const result = {};
-      const decoders = await executeSql(this.ctx._config.name, `SELECT "id", "name", "code", "nomenclature", "synonym" FROM ${addDoubleQuotes(this.DBST.Decoders.table)}`);
+      const decoders = await executeSql(this.ctx._config, `SELECT "id", "name", "code", "nomenclature", "synonym" FROM ${addDoubleQuotes(this.ctx._model.Decoders.table)}`);
       await asyncForEach(
         // Start connectionsening ALL entries in config file
         Object(decoders),
         async (decoder: object) => {          
           if (this.ctx._odata.payload) {
-            const temp = decodingPayload(
-              {
-                name: decoder["name"],
-                code: String(decoder["code"]),
-                nomenclature: decoder["nomenclature"],
-              },
+            const temp = decodingPayload( { name: decoder["name"], code: String(decoder["code"]), nomenclature: decoder["nomenclature"], },
               this.ctx._odata.payload
             );
             result[decoder["id"]] = temp;
@@ -45,18 +40,15 @@ export class Decoders extends Common {
   }
 
   async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
-    Logs.whereIam();
+    console.log(formatLog.whereIam());
     if (this.ctx._odata.payload) {
-      const decoder = await executeSqlValues(this.ctx._config.name, `SELECT "id", "name", "code", "nomenclature", "synonym" FROM "${this.DBST.Decoders.table}" WHERE id = this.ctx._odata.id`);
+      const decoder = await executeSqlValues(this.ctx._config, `SELECT "id", "name", "code", "nomenclature", "synonym" FROM "${this.ctx._model.Decoders.table}" WHERE id = this.ctx._odata.id`);
       return decoder[0]
         ? this.createReturnResult({
-            body: decodingPayload(
-              {
-                name: decoder[0]["name"],
-                code: String(decoder[0]["code"]),
-                nomenclature: decoder[0]["nomenclature"],
-              },
-              this.ctx._odata.payload
+            body: decodingPayload( { name: decoder[0]["name"], 
+            code: String(decoder[0]["code"]), 
+            nomenclature: decoder[0]["nomenclature"], },
+            this.ctx._odata.payload
             ),
           })
         : undefined;

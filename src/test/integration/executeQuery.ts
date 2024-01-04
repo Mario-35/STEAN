@@ -8,7 +8,7 @@ export const executeQuery = async (sql: string, show?:boolean): Promise<object> 
     
     return new Promise(async function (resolve, reject) {
         await dbTest.unsafe(sql).then((res: object) => {   
-            if(show) console.log(res[0]);           
+            if (show) console.log(res[0]);           
                 resolve(res[0]);
             }).catch((err: Error) => {                
                 reject(err);

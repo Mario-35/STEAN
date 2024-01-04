@@ -7,14 +7,13 @@
  */
 
 import { serverConfig } from "../../configuration";
-import { ADMIN, _DEBUG } from "../../constants";
-import { Elog } from "../../enums";
-import { Logs } from "../../logger";
+import { ADMIN } from "../../constants";
+import { log } from "../../log";
 
-export const executeAdmin = async (query: string, show?:boolean): Promise<object> => {
-    Logs.showQuery(`\n${query}`, [Elog.whereIam, (_DEBUG === true || show) ? Elog.Show : Elog.None]);
+export const executeAdmin = async (query: string): Promise<object> => {
+    log.query(`\n${query}`);
     return new Promise(async function (resolve, reject) {
-        await serverConfig.db(ADMIN).unsafe(query).then((res: object) => {                            
+        await serverConfig.getConnection(ADMIN).unsafe(query).then((res: object) => {                            
             resolve(res);
         }).catch((err: Error) => {
             reject(err);

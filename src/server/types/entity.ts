@@ -10,19 +10,19 @@ import { IentityColumn, IentityRelation, IKeyString } from ".";
 import { EextensionsType } from "../enums";
 
 export interface Ientity {
-    readonly name: string; // Entity Name
-    readonly count: string; // Entity Name
-    readonly clone?: string;
-    readonly singular: string;
-    readonly table: string;
-    readonly order: number;
-    readonly orderBy: string;
-    readonly columns: IentityColumn;
-    readonly visible: boolean;
-    readonly canPost: boolean;
-    readonly relations: { [key: string]: IentityRelation };
-    readonly constraints?: IKeyString;
-    readonly indexes?: IKeyString;
-    readonly after?: string;
-    readonly extensions: EextensionsType[];
+     name: string; // Entity Name
+     count: string; // Entity Name
+     clone?: string;
+     singular: string;
+     table: string;
+     order: number;
+     orderBy: string;
+     columns: IentityColumn;
+     visible: boolean;
+     canPost: boolean;
+     relations: { [key: string]: IentityRelation };
+     constraints?: IKeyString;
+     indexes?: IKeyString;
+     after?: string;
+     extensions: EextensionsType[];
 }

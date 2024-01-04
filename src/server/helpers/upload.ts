@@ -12,8 +12,8 @@ import path from "path";
 import util from "util";
 import fs from "fs";
 import koa from "koa";
-import { Logs } from "../logger";
 import { IKeyString } from "../types";
+import { log } from "../log";
 
 /**
  *
@@ -50,7 +50,7 @@ export const upload = (ctx: koa.Context): Promise<IKeyString> => {
           data.state = `GET ${chunk.length} bytes`;
         });
         file.on("error", (error: Error) => {
-          Logs.error(error.message);
+          log.errorMsg(error);
         });
         file.on("end", () => {
           data.state = "UPLOAD FINISHED";
@@ -64,7 +64,7 @@ export const upload = (ctx: koa.Context): Promise<IKeyString> => {
     });
     // catch error
     busboy.on("error", (error: Error) => {
-      Logs.error(error.message);
+      log.errorMsg(error);
       data.state = "ERROR";
       reject(error);
     });

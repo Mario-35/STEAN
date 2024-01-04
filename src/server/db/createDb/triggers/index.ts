@@ -15,7 +15,7 @@ export const triggers = (configName: string):string[] => {
     fs.readdirSync(path.join(__dirname)).filter((e: string) => e.endsWith(".sql")).forEach(file => {
       const content = fs.readFileSync(__dirname + `/${file}`, "utf8");
       // Remove multiDatastream if not in extension
-      if (content.includes("/* START 'multiDatastream' */") && !serverConfig.configs[configName].extensions.includes("multiDatastream")){
+      if (content.includes("/* START 'multiDatastream' */") && !serverConfig.getConfig(configName).extensions.includes("multiDatastream")){
         const temp = content.split('"MULTIDS_ROW" "multidatastream"%rowtype;').join("").split("/* START 'multiDatastream' */");
         result.push(temp[0] + temp[1].split("/* END 'multiDatastream' */")[1]);                
       } else result.push(content);

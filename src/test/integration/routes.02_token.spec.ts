@@ -4,7 +4,7 @@ import chai from "chai";
 import chaiHttp from "chai-http";
 import fs from "fs";
 import path from "path";
-import { IApiDoc, prepareToApiDoc, IApiInput, identification, generateApiDoc } from "./constant";
+import { IApiDoc, prepareToApiDoc, IApiInput, identification, generateApiDoc, testVersion } from "./constant";
 
 chai.use(chaiHttp);
 
@@ -40,7 +40,7 @@ describe("Identification : Token", () => {
                 apiName: `TokenLogin`,
                 apiDescription: "Get a new token.",
                 apiExample: {
-                    http: `/v1.0/login`,
+                    http: `/${testVersion}/login`,
                     curl: `curl -X POST KEYHTTP/login -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' -d 'username=sensorapi&password=mario29'`
                 },
                 apiParamExample: { "username": "myUserName", "password": "*************" }
@@ -65,7 +65,7 @@ describe("Identification : Token", () => {
                 apiName: `TokenError`,
                 apiDescription: "Identification failed.",
                 apiExample: {
-                    http: `/v1.0/login`,
+                    http: `/${testVersion}/login`,
                     curl: `curl -X POST KEYHTTP/login -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' -d 'username=sensorapi&password=mario9'`
                 },
                 apiParamExample: { "username": identification.username, "password": "nowhere" }
@@ -90,7 +90,7 @@ describe("Identification : Token", () => {
                 apiName: `TokenLogout`,
                 apiDescription: "Logout actual connection.",
                 apiExample: {
-                    http: `/v1.0/logout`,
+                    http: `/${testVersion}/logout`,
                     curl: `curl -X GET KEYHTTP/logout`
                 }
             };

@@ -8,7 +8,7 @@
 
 /* eslint-disable quotes */
 
-import { Logs } from "../../logger";
+import { formatLog } from "../../logger";
 import { cleanUrl, removeAllQuotes, replacer } from "../../helpers";
 import { addCssFile, listaddCssFiles } from "../css";
 import { addJsFile, listaddJsFiles } from "../js";
@@ -18,8 +18,8 @@ import { IqueryOptions } from "../../types";
 const fileWithOutMin = (input: string): string => input.replace(".min",'');
 
 export const commonHtml = (input: string, params: IqueryOptions): string => {
-    Logs.head("commonHtml");
-    Logs.debug("params", params); 
+    console.log(formatLog.head("commonHtml"));
+    console.log(formatLog.debug("params", params)); 
     const result: string[] = input
                             .replace(/<link /g,'\n<link ')
                             .replace(/<script /g,'\n<script ')

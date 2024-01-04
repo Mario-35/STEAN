@@ -10,18 +10,17 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, IApiInput, prepareToApiDoc, generateApiDoc, identification, keyTokenName, defaultPost, limitResult, blank } from "./constant";
+import { IApiDoc, IApiInput, prepareToApiDoc, generateApiDoc, identification, keyTokenName, defaultPost, limitResult, blank, testVersion, _RAWDB } from "./constant";
 
 import { server } from "../../server/index";
 import { Ientity } from "../../server/types";
-import { _DB } from "../../server/db/constants";
 
 chai.use(chaiHttp);
 
 const should = chai.should();
 
 const docs: IApiDoc[] = [];
-const entity: Ientity = _DB.CreateObservations;
+const entity: Ientity = _RAWDB.CreateObservations;
 
 
 const addToApiDoc = (input: IApiInput) => {
@@ -107,7 +106,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
     before((done) => {
         
         chai.request(server)
-            .post("/test/v1.0/login")
+            .post(`/test/${testVersion}/login`)
             .send(identification)
             .end((err: Error, res: any) => {
                 token = String(res.body["token"]);
@@ -121,7 +120,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
             apiName: "PostCreateObservationsDatastream",
             apiDescription: "Create Observations with CreateObservations",
             apiExample: {
-                http: "/v1.0/CreateObservations",
+                http: `/${testVersion}/CreateObservations`,
                 curl: defaultPost("curl", "KEYHTTP", datasObs(1)),
                 javascript: defaultPost("javascript", "KEYHTTP", datasObs(1)),
                 python: defaultPost("python", "KEYHTTP", datasObs(1))
@@ -130,16 +129,16 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
         };
 
         chai.request(server)
-            .post("/test/v1.0/CreateObservations")
+            .post(`/test/${testVersion}/CreateObservations`)
             .send(infos.apiParamExample)
             .set("Cookie", `${keyTokenName}=${token}`)
             .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(201);
                 res.type.should.equal("application/json");
-                res.body[0].should.include("/v1.0/Observations(");
-                res.body[1].should.include("/v1.0/Observations(");
-                res.body[2].should.include("/v1.0/Observations(");
+                res.body[0].should.include(`/${testVersion}/Observations(`);
+                res.body[1].should.include(`/${testVersion}/Observations(`);
+                res.body[2].should.include(`/${testVersion}/Observations(`);
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
@@ -147,7 +146,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
 
     it("should throw an error if datastream does not exist", (done) => {
         chai.request(server)
-            .post("/test/v1.0/CreateObservations")
+            .post(`/test/${testVersion}/CreateObservations`)
             .send({
                 "Datastream": { "@iot.id": `${BigInt(Number.MAX_SAFE_INTEGER)}` },
                 "components": ["phenomenonTime", "result", "resultTime", "FeatureOfInterest/id"],
@@ -170,16 +169,16 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
 
     it("should return 4 observations in datastream 2", (done) => {
         chai.request(server)
-            .post("/test/v1.0/CreateObservations")
+            .post(`/test/${testVersion}/CreateObservations`)
             .send(datasObs(2))
             .set("Cookie", `${keyTokenName}=${token}`)
             .end((err: Error, res: any) => {                
                 should.not.exist(err);
                 res.status.should.equal(201);
                 res.type.should.equal("application/json");
-                res.body[0].should.include("/v1.0/Observations(");
-                res.body[1].should.include("/v1.0/Observations(");
-                res.body[2].should.include("/v1.0/Observations(");
+                res.body[0].should.include(`/${testVersion}/Observations(`);
+                res.body[1].should.include(`/${testVersion}/Observations(`);
+                res.body[2].should.include(`/${testVersion}/Observations(`);
                 done();
             });
     });
@@ -190,7 +189,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
             apiName: "PostCreateObservationsDatastreamDuplicate",
             apiDescription: "Create Observations duplicate with CreateObservations",
             apiExample: {
-                http: "/v1.0/CreateObservations",
+                http: `/${testVersion}/CreateObservations`,
                 curl: defaultPost("curl", "KEYHTTP", datasObs(2)),
                 javascript: defaultPost("javascript", "KEYHTTP", datasObs(2)),
                 python: defaultPost("python", "KEYHTTP", datasObs(2))
@@ -199,7 +198,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
         };
         
         chai.request(server)
-        .post("/test/v1.0/CreateObservations")
+        .post(`/test/${testVersion}/CreateObservations`)
         .send(datasObs(2))
         .set("Cookie", `${keyTokenName}=${token}`)
             .end((err: Error, res: any) => {
@@ -223,7 +222,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
             apiName: "PostCreateObservationsDatastreamDuplicateDelete",
             apiDescription: "Create Observations duplicate delete with CreateObservations",
             apiExample: {
-                http: "/v1.0/CreateObservations",
+                http: `/${testVersion}/CreateObservations`,
                 curl: defaultPost("curl", "KEYHTTP", datas),
                 javascript: defaultPost("javascript", "KEYHTTP", datas),
                 python: defaultPost("python", "KEYHTTP", datas)
@@ -232,7 +231,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
         };
         
         chai.request(server)
-        .post("/test/v1.0/CreateObservations")
+        .post(`/test/${testVersion}/CreateObservations`)
         .send(datas)
         .set("Cookie", `${keyTokenName}=${token}`)
         .end((err: Error, res: any) => {
@@ -254,7 +253,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
             apiName: "PostCreateObservationsMultiDatastream",
             apiDescription: "Create Observations duplicate with CreateObservations",
             apiExample: {
-                http: "/v1.0/CreateObservations",
+                http: `/${testVersion}/CreateObservations`,
                 curl: defaultPost("curl", "KEYHTTP", datas),
                 javascript: defaultPost("javascript", "KEYHTTP", datas),
                 python: defaultPost("python", "KEYHTTP", datas)
@@ -263,7 +262,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
         };
         
         chai.request(server)
-        .post("/test/v1.0/CreateObservations")
+        .post(`/test/${testVersion}/CreateObservations`)
         .send(datas)
         .set("Cookie", `${keyTokenName}=${token}`)
             .end((err: Error, res: any) => {
@@ -284,7 +283,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
             apiName: "PostCreateObservationsMultiDatastreamDuplicate",
             apiDescription: "Create Observations duplicate with CreateObservations",
             apiExample: {
-                http: "/v1.0/CreateObservations",
+                http: `/${testVersion}/CreateObservations`,
                 curl: defaultPost("curl", "KEYHTTP", datas),
                 javascript: defaultPost("javascript", "KEYHTTP", datas),
                 python: defaultPost("python", "KEYHTTP", datas)
@@ -293,7 +292,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
         };
         
         chai.request(server)
-        .post("/test/v1.0/CreateObservations")
+        .post(`/test/${testVersion}/CreateObservations`)
         .send(datas)
         .set("Cookie", `${keyTokenName}=${token}`)
         .end((err: Error, res: any) => {
@@ -317,7 +316,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
             apiName: "PostCreateObservationsMultiDatastreamDuplicateDelete",
             apiDescription: "Create Observations duplicate delete with CreateObservations",
             apiExample: {
-                http: "/v1.0/CreateObservations",
+                http: `/${testVersion}/CreateObservations`,
                 curl: defaultPost("curl", "KEYHTTP", datas),
                 javascript: defaultPost("javascript", "KEYHTTP", datas),
                 python: defaultPost("python", "KEYHTTP", datas)
@@ -326,7 +325,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
         };
         
         chai.request(server)
-        .post("/test/v1.0/CreateObservations")
+        .post(`/test/${testVersion}/CreateObservations`)
         .send(datas)
         .set("Cookie", `${keyTokenName}=${token}`)
         .end((err: Error, res: any) => {

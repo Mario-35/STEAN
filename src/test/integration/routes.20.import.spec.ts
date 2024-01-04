@@ -9,7 +9,7 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, IApiInput, prepareToApiDoc, generateApiDoc, identification, keyTokenName, limitResult } from "./constant";
+import { IApiDoc, IApiInput, prepareToApiDoc, generateApiDoc, identification, keyTokenName, limitResult, testVersion } from "./constant";
 
 import { server } from "../../server/index";
 
@@ -67,7 +67,7 @@ describe("CSV Import", function () {
     let token = "";
     before((done) => {        
         chai.request(server)
-            .post("/test/v1.0/login")
+            .post(`/test/${testVersion}/login`)
             .send(identification)
             .end((err: Error, res: any) => {
                 token = String(res.body["token"]);
@@ -80,7 +80,7 @@ describe("CSV Import", function () {
             api: `{post} CreateObservations with simple csv attached file`,
             apiName: "PostImportSimple",
             apiDescription: "Import simple csv file",
-            apiExample: { http: "/v1.0/CreateObservations" },
+            apiExample: { http: `/${testVersion}/CreateObservations` },
             apiParamExample: simple
         };
         chai.request(server)
@@ -109,7 +109,7 @@ describe("CSV Import", function () {
             api: `{post} CreateObservations with simple csv attached file`,
             apiName: "PostImportSimpleDuplicates",
             apiDescription: "Import simple csv file",
-            apiExample: { http: "/v1.0/CreateObservations" },
+            apiExample: { http: `/${testVersion}/CreateObservations` },
             apiParamExample: simple
         };
         chai.request(server)
@@ -137,7 +137,7 @@ describe("CSV Import", function () {
             api: `{post} CreateObservations with multi csv attached file`,
             apiName: "PostImportMulti",
             apiDescription: "Import multi csv file",
-            apiExample: { http: "/v1.0/CreateObservations" },
+            apiExample: { http: `/${testVersion}/CreateObservations` },
             apiParamExample: multi
         };
 
@@ -166,7 +166,7 @@ describe("CSV Import", function () {
             api: `{post} CreateObservations with multi csv attached file`,
             apiName: "PostImportMultiDuplicates",
             apiDescription: "Import multi csv file",
-            apiExample: { http: "/v1.0/CreateObservations" },
+            apiExample: { http: `/${testVersion}/CreateObservations` },
             apiParamExample: multi
         };
         chai.request(server)

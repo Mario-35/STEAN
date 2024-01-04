@@ -10,9 +10,8 @@
 
  import chai from "chai";
  import chaiHttp from "chai-http";
- import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, identification, keyTokenName, defaultPost, getNB, limitResult, apiInfos, showHide, nbColor, nbColorTitle } from "./constant";
+ import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, identification, keyTokenName, defaultPost, getNB, limitResult, apiInfos, showHide, nbColor, nbColorTitle, testVersion, _RAWDB } from "./constant";
  import { server } from "../../server/index";
- import { _DB } from "../../server/db/constants";
  import { Ientity } from "../../server/types";
  
  const testsKeys = [
@@ -32,8 +31,8 @@
  const should = chai.should();
  
  const docs: IApiDoc[] = [];
- const entity: Ientity = _DB.Loras;
- // const entityObs: Ientity = _DB.Observations;
+ const entity: Ientity = _RAWDB.Loras;
+ // const entityObs: Ientity = _RAWDB.Observations;
  let firstLoraID = "";
  let firstLoraDEVEUI = ""; 
  
@@ -56,7 +55,7 @@
  
      before((done) => {         
          chai.request(server)
-             .post("/test/v1.0/login")
+             .post(`/test/${testVersion}/login`)
              .send(identification)
              .end((err: Error, res: any) => {
                  token = String(res.body["token"]);
@@ -71,11 +70,11 @@
                 apiName: `GetAll${entity.name}`,
                 apiDescription: `Retrieve all ${entity.name}.${showHide(`Get${entity.name}`, apiInfos["9.2.2"])}`,
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-collection-entities",
-                apiExample: { http: `/v1.0/${entity.name}` },
+                apiExample: { http: `/${testVersion}/${entity.name}` },
                 apiSuccess: ["{number} id @iot.id", "{relation} selfLink @iot.selfLink", ...success]
              };
             chai.request(server)
-                .get(`/test/v1.0/${entity.name}`)
+                .get(`/test/${testVersion}/${entity.name}`)
                 .end((err, res) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -96,7 +95,7 @@
                  apiName: `GetOne${entity.name}`,
                  apiDescription: "Get a specific Lora.",
                  apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-entity",
-                 apiExample: { http: `/v1.0/${entity.name}(${firstLoraDEVEUI})` }
+                 apiExample: { http: `/${testVersion}/${entity.name}(${firstLoraDEVEUI})` }
              };
              chai.request(server)
                  .get(`/test${infos.apiExample.http}`)
@@ -113,7 +112,7 @@
  
          it("should throw an error if the Lora does not exist", (done) => {
              chai.request(server)
-                 .get(`/test/v1.0/${entity.name}(NOTHINGTOFOUND)`)
+                 .get(`/test/${testVersion}/${entity.name}(NOTHINGTOFOUND)`)
                  .end((err, res) => {
                      should.not.exist(err);
                      res.status.should.equal(404);
@@ -142,7 +141,7 @@
                  api: `{post} ${entity.name} Post MultiDatastream basic`,
                  apiName: `Post${entity.name}MultiDatastream`,
                  apiDescription: `Post a new ${entity.name}.${showHide(`Post${entity.name}`, apiInfos["10.2"])}`, apiExample: {
-                     http: `/v1.0/${entity.name}`,
+                     http: `/${testVersion}/${entity.name}`,
                      curl: defaultPost("curl", "KEYHTTP", datas),
                      javascript: defaultPost("javascript", "KEYHTTP", datas),
                      python: defaultPost("python", "KEYHTTP", datas)
@@ -179,7 +178,7 @@
                  api: `{post} ${entity.name} Post Datastream basic`,
                  apiName: `Post${entity.name}Datastream?$debug=true`,
                  apiDescription: `Post a new ${entity.name}.${showHide(`Post${entity.name}`, apiInfos["10.2"])}`, apiExample: {
-                     http: `/v1.0/${entity.name}`,
+                     http: `/${testVersion}/${entity.name}`,
                      curl: defaultPost("curl", "KEYHTTP", datas),
                      javascript: defaultPost("javascript", "KEYHTTP", datas),
                      python: defaultPost("python", "KEYHTTP", datas)
@@ -202,7 +201,7 @@
 
          it("should return an error because datastream not exist", (done) => {
              chai.request(server)
-                 .post(`/test/v1.0/${entity.name}`)
+                 .post(`/test/${testVersion}/${entity.name}`)
                  .send({
                     "Datastream": {
                         "@iot.id": 155
@@ -235,7 +234,7 @@
                  apiName: `Post${entity.name}Observation`,
                  apiDescription: `Post a new Observation in a Lora Thing.`,
                  apiExample: {
-                     http: `/v1.0/${entity.name}`,
+                     http: `/${testVersion}/${entity.name}`,
                      curl: defaultPost("curl", "KEYHTTP", datas),
                      javascript: defaultPost("javascript", "KEYHTTP", datas),
                      python: defaultPost("python", "KEYHTTP", datas)
@@ -270,7 +269,7 @@
                 apiName: `Post${entity.name}ObservationError`,
                 apiDescription: `Post a new Observation in a Lora Thing.`,
                 apiExample: {
-                    http: `/v1.0/${entity.name}`,
+                    http: `/${testVersion}/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
                     javascript: defaultPost("javascript", "KEYHTTP", datas),
                     python: defaultPost("python", "KEYHTTP", datas)
@@ -302,7 +301,7 @@
                 apiName: `Post${entity.name}InvalidPayload`,
                 apiDescription: `Post a new Observation in a Lora Thing.`,
                 apiExample: {
-                    http: `/v1.0/${entity.name}`,
+                    http: `/${testVersion}/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
                     javascript: defaultPost("javascript", "KEYHTTP", datas),
                     python: defaultPost("python", "KEYHTTP", datas)
@@ -324,7 +323,7 @@
 
          it(`Return Error if the payload is malformed ${nbColor}[10.2.2]`, (done) => {
              chai.request(server)
-                 .post(`/test/v1.0/${entity.name}`)
+                 .post(`/test/${testVersion}/${entity.name}`)
                  .send({})
                  .set("Cookie", `${keyTokenName}=${token}`)
                  .end((err: Error, res: any) => {
@@ -348,7 +347,7 @@
                  apiName: `Post${entity.name}Duplicate`,
                  apiDescription: "Post a new Duplicate Lora Observation.",
                  apiExample: {
-                     http: `/v1.0/${entity.name}`,
+                     http: `/${testVersion}/${entity.name}`,
                      curl: defaultPost("curl", "KEYHTTP", datas),
                      javascript: defaultPost("javascript", "KEYHTTP", datas),
                      python: defaultPost("python", "KEYHTTP", datas)
@@ -385,7 +384,7 @@
                  apiName: `Post${entity.name}Sort`,
                  apiDescription: "Post a new Lora Observation Sorted.",
                  apiExample: {
-                     http: `/v1.0/${entity.name}`,
+                     http: `/${testVersion}/${entity.name}`,
                      curl: defaultPost("curl", "KEYHTTP", datas),
                      javascript: defaultPost("javascript", "KEYHTTP", datas),
                      python: defaultPost("python", "KEYHTTP", datas)
@@ -424,7 +423,7 @@
                  apiName: `Post${entity.name}Null`,
                  apiDescription: "Post a new Lora Observation With Data null.",
                  apiExample: {
-                     http: `/v1.0/${entity.name}`,
+                     http: `/${testVersion}/${entity.name}`,
                      curl: defaultPost("curl", "KEYHTTP", datas),
                      javascript: defaultPost("javascript", "KEYHTTP", datas),
                      python: defaultPost("python", "KEYHTTP", datas)
@@ -463,7 +462,7 @@
                  apiName: `Post${entity.name}DataNotCorrespond`,
                  apiDescription: "Post a new Lora Observation Data not corresponding.",
                  apiExample: {
-                     http: `/v1.0/${entity.name}`,
+                     http: `/${testVersion}/${entity.name}`,
                      curl: defaultPost("curl", "KEYHTTP", datas),
                      javascript: defaultPost("javascript", "KEYHTTP", datas),
                      python: defaultPost("python", "KEYHTTP", datas)
@@ -500,7 +499,7 @@
      //                     apiName: `Delete${entity.name}`,
      //                     apiDescription: "Delete an Lora Observation.",
      //                     apiExample: {
-     //                         http: `/v1.0/${entity.name}(${myId})`,
+     //                         http: `/${testVersion}/${entity.name}(${myId})`,
      //                         curl: defaultDelete("curl", "KEYHTTP"),
      //                         javascript: defaultDelete("javascript", "KEYHTTP"),
      //                         python: defaultDelete("python", "KEYHTTP")
@@ -526,7 +525,7 @@
      //     });
      //     it("should throw an error if the sensor does not exist", (done) => {
      //         chai.request(server)
-     //             .delete(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
+     //             .delete(`/test/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
      //             .set("Cookie", `${keyTokenName}=${token}`)
      //             .end((err: Error, res: any) => {
      //                 should.not.exist(err);

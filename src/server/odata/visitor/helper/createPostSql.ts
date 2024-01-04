@@ -6,16 +6,16 @@
  *
  */
 
-import { VOIDTABLE, _DEBUG } from "../../../constants";
+import { VOIDTABLE } from "../../../constants";
 import { addDoubleQuotes, getBigIntFromString } from "../../../helpers";
-import { Logs } from "../../../logger";
+import { formatLog } from "../../../logger";
 import { Ientity, IKeyString } from "../../../types";
-import { Elog, EoperationType } from "../../../enums/";
+import { EoperationType } from "../../../enums/";
 import { PgVisitor } from "../PgVisitor";
-import { _DB } from "../../../db/constants";
 import { createPgQuery } from ".";
 import { queryAsJson } from "../../../db/queries";
-import { createInsertValues, createUpdateValues, getEntityName } from "../../../db/helpers";
+import { models } from "../../../models";
+import { log } from "../../../log";
 export function createPostSql(datas: object, configName: string, main: PgVisitor): string {
     let sqlResult = "";
     const queryMaker: {
@@ -27,8 +27,8 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
         };
     } = {};
     const tempEntity = main.entity;
-    const postEntity: Ientity = _DB[tempEntity == "CreateFile" ? "Datastreams" : tempEntity];
-    const postParentEntity: Ientity | undefined = main.parentEntity ? _DB[main.parentEntity ] : undefined;
+    const postEntity: Ientity = main.ctx._model[tempEntity == "CreateFile" ? "Datastreams" : tempEntity];
+    const postParentEntity: Ientity | undefined = main.parentEntity ? main.ctx._model[main.parentEntity ] : undefined;
     const names: IKeyString = {
         [postEntity.table]: postEntity.table
     };
@@ -53,7 +53,6 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
         const returnValue: string[] = [query];
         const links: { [key: string]: string[] } = {};
         const sorting: string[] = [];
-        
         Object.keys(queryMaker).forEach((element: string) => {
             Object.keys(queryMaker).forEach((elem: string) => {
                 if (JSON.stringify(queryMaker[elem].datas).includes(`select ${element}`)) {
@@ -62,7 +61,6 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
                 }
             });
         });
-        
         //  pre sorting for some case like multidatastreams
         Object.keys(links).forEach((elem: string) => {
             Object.keys(links).forEach((subElem: string) => {
@@ -90,10 +88,10 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
                 returnValue.push(`, ${element} AS (`);
                 if (main.id) {
                     if (queryMaker[element].type == EoperationType.Association) 
-                        returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${createInsertValues(queryMaker[element].datas)} on conflict ("${Object.keys(queryMaker[element].datas).join('","')}") do update set ${createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = ${BigInt(main.id).toString()}`);
+                        returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${models.createInsertValues(main.ctx._config, queryMaker[element].datas)} on conflict ("${Object.keys(queryMaker[element].datas).join('","')}") do update set ${models.createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = ${BigInt(main.id).toString()}`);
                     else
-                        returnValue.push(`UPDATE "${queryMaker[element].table}" set ${createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = (select verifyId('${queryMaker[element].table}', ${main.id}) as id)`);
-                } else returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${createInsertValues(queryMaker[element].datas)}`);                            
+                        returnValue.push(`UPDATE "${queryMaker[element].table}" set ${models.createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = (select verifyId('${queryMaker[element].table}', ${main.id}) as id)`);
+                } else returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${models.createInsertValues(main.ctx._config, queryMaker[element].datas)}`);                            
                     returnValue.push(`RETURNING ${postEntity.table == queryMaker[element].table ? allFields : queryMaker[element].keyId})`);
             }
         });
@@ -109,8 +107,7 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
      * @returns result
      */
     const start = (datas: object, entity?: Ientity, parentEntity?: Ientity): object | undefined => {
-        Logs.head(`start level ${level++}`);
-        
+        console.log(formatLog.head(`start level ${level++}`));        
         const returnValue = {};
         entity = entity ? entity : postEntity;
         parentEntity = parentEntity ? parentEntity : postParentEntity ? postParentEntity : postEntity;
@@ -192,7 +189,7 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
              * @param subParentEntity {Ientity} entity parent
              */
         const addAssociation = (subEntity: Ientity, subParentEntity: Ientity) => {
-            Logs.debug(`addAssociation in ${subEntity.name} for parent`, subParentEntity.name);
+            console.log(formatLog.debug(`addAssociation in ${subEntity.name} for parent`, subParentEntity.name));
 
             const relationName = getRelationNameFromEntity(subEntity, subParentEntity);
             const parentRelationName = getRelationNameFromEntity(subParentEntity, subEntity);
@@ -200,10 +197,10 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
             if (parentRelationName && relationName) {
                 const relation = subEntity.relations[relationName];
                 const parentRelation = subParentEntity.relations[parentRelationName];
-                Logs.debug(`Found a parent relation in ${subEntity.name}`, subParentEntity.name);
+                console.log(formatLog.debug(`Found a parent relation in ${subEntity.name}`, subParentEntity.name));
                 
                 if (relation.tableName == parentRelation.tableName && relation.tableName == subEntity.table) {
-                    Logs.debug("Found a relation to do in sub query", subParentEntity.name);
+                    console.log(formatLog.debug("Found a relation to do in sub query", subParentEntity.name));
                     const tableName = names[subEntity.table];
                     const parentTableName = names[subParentEntity.table];
                     
@@ -219,7 +216,7 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
                         if (relation.tableName == subParentEntity.table) {
                             const tableName = names[subEntity.table];
                             const parentTableName = names[subParentEntity.table];
-                            Logs.debug(`Add parent relation ${tableName} in`, parentTableName);                            
+                            console.log(formatLog.debug(`Add parent relation ${tableName} in`, parentTableName));                            
                             addToQueryMaker(
                                 EoperationType.Relation,
                                 parentTableName,
@@ -231,7 +228,7 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
                             } else if (relation.tableName != subParentEntity.table && relation.tableName != subEntity.table) {
                                 const tableName = names[subEntity.table];
                                 const parentTableName = names[subParentEntity.table];
-                                Logs.debug(`Add Table association ${tableName} in`, parentTableName);
+                                console.log(formatLog.debug(`Add Table association ${tableName} in`, parentTableName));
                                 addToQueryMaker(
                                     EoperationType.Association,
                                     relation.tableName,
@@ -247,7 +244,7 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
                 } else {
                     const tableName = names[subEntity.table];
                     const parentTableName = names[subParentEntity.table];
-                    Logs.debug(`Add Relation ${tableName} in`, parentTableName);
+                    console.log(formatLog.debug(`Add Relation ${tableName} in`, parentTableName));
                     addToQueryMaker(
                         EoperationType.Table,
                         parentTableName,
@@ -268,9 +265,9 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
          * @param value Datas to process
          */
         const subBlock = (key: string, value: object) => {
-            const entityNameSearch = getEntityName(key);
+            const entityNameSearch = models.getEntityName(main.ctx._config, key);
             if (entityNameSearch) {
-                const newEntity = _DB[entityNameSearch];
+                const newEntity = main.ctx._model[entityNameSearch];
                 const name = createName(newEntity.table);
                 names[newEntity.table] = name;
                 const test = start(value, newEntity, entity);
@@ -289,16 +286,16 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     Object.entries(datas[key]).forEach(([_key, value]) => {
                         if (entity && parentEntity && Object.keys(entity.relations).includes(key)) {
-                            Logs.debug(`Found a relation for ${entity.name}`, key);
+                            console.log(formatLog.debug(`Found a relation for ${entity.name}`, key));
                             subBlock(key, value as object);
                         } else {
-                            Logs.debug(`data ${key}`, datas[key]);
+                            console.log(formatLog.debug(`data ${key}`, datas[key]));
                             returnValue[key] = datas[key];
                         }
                     });
                 } else if (typeof datas[key] === "object") {
                     if (Object.keys(entity.relations).includes(key)) {
-                        Logs.debug(`Found a object relation for ${entity.name}`, key);
+                        console.log(formatLog.debug(`Found a object relation for ${entity.name}`, key));
                         subBlock(key, datas[key]);
                     }
                 } else returnValue[key] = datas[key];
@@ -309,9 +306,9 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
 
 
     if (main.parentEntity) {
-        const entityName = getEntityName(main.parentEntity);
-        Logs.debug("Found entity : ", entityName);
-        const callEntity = entityName ? _DB[entityName] : undefined;
+        const entityName =models.getEntityName(main.ctx._config, main.parentEntity);
+        console.log(formatLog.debug("Found entity : ", entityName));
+        const callEntity = entityName ? main.ctx._model[entityName] : undefined;
         const id: bigint | undefined =
         typeof main.parentId== "string" ? getBigIntFromString(main.parentId) : main.parentId;
         if (entityName && callEntity && id && id > 0) {
@@ -329,9 +326,9 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
         sqlResult = queryMakerToString(
             main.id
             ? root && Object.entries(root).length > 0
-            ? `WITH ${postEntity.table} AS (UPDATE ${addDoubleQuotes(postEntity.table)} set ${createUpdateValues(root)} WHERE "id" = (select verifyId('${postEntity.table}', ${main.id}) as id) RETURNING ${allFields})`
+            ? `WITH ${postEntity.table} AS (UPDATE ${addDoubleQuotes(postEntity.table)} set ${models.createUpdateValues(root)} WHERE "id" = (select verifyId('${postEntity.table}', ${main.id}) as id) RETURNING ${allFields})`
                 : `WITH ${postEntity.table} AS (SELECT * FROM ${addDoubleQuotes(postEntity.table)} WHERE "id" = ${main.id.toString()})`
-                : `WITH ${postEntity.table} AS (INSERT INTO ${addDoubleQuotes(postEntity.table)} ${createInsertValues(root)} RETURNING ${allFields})`
+                : `WITH ${postEntity.table} AS (INSERT INTO ${addDoubleQuotes(postEntity.table)} ${models.createInsertValues(main.ctx._config, root)} RETURNING ${allFields})`
                 );
             }
     const temp = createPgQuery(main, main); 
@@ -340,6 +337,6 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
         singular: false, 
         count: false
     });
-    Logs.showQuery(`\n${sqlResult}`, [Elog.whereIam, _DEBUG === true ? Elog.Show : Elog.None]);
+    log.query(`\n${sqlResult}`);
     return sqlResult;
 }

@@ -18,16 +18,12 @@ export interface IconfigFile {
     date_format: string;
     webSite: string;
     nb_page: number;
-    createUser?: boolean;
     forceHttps: boolean;
     extensions: string[];
     alias: string[];
     highPrecision: boolean;
     canDrop: boolean;
     logFile: string;
-    db: postgres.Sql<Record<string, unknown>> | undefined;
-    _context: {
-        entities: string[];
-    }
+    connection: postgres.Sql<Record<string, unknown>> | undefined;
 }
 

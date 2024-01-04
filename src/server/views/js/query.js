@@ -178,7 +178,7 @@ function init() {
 
 	refresh();
 	populateMultiSelect("queryMetric", _PARAMS.metrics);
-	optVersion.value = _PARAMS.version;
+	optVersion.value = 'v' + _PARAMS.version;
 	optHost.value = _PARAMS.host;
 	if (_PARAMS.datas) datas.json_value = _PARAMS.datas;
 	queryOptions.value = _PARAMS.options;

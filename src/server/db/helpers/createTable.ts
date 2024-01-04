@@ -8,41 +8,43 @@
 
 import { serverConfig } from "../../configuration";
 import { _OK } from "../../constants";
+import { log } from "../../log";
 import { addDoubleQuotes } from "../../helpers";
-import { Logs } from "../../logger";
+import { formatLog } from "../../logger";
 import { Ientity, IKeyString } from "../../types";
 
 export const createTable = async ( configName: string, tableEntity: Ientity, doAfter: string | undefined ): Promise<IKeyString> => {
   if (!tableEntity) return {};
-Logs.head(`CreateTable [${tableEntity.table}] for ${configName}`);
+  console.log(formatLog.head(`CreateTable [${tableEntity.table}] for ${configName}`));
   const space = 5;
   const tab = () => " ".repeat(space);
-  const tabInsertion: string[] = [];
-  const tabConstraints: string[] = [];
+  const tabIeInsert: string[] = [];
+  const tableConstraints: string[] = [];
   const returnValue: IKeyString = {};
-
   let insertion = "";
-  if (!serverConfig.db(configName)) {
-    Logs.error("connection Error");
+
+  if (!serverConfig.getConnection(configName)) {
+    log.errorMsg("connection Error");
     return { error: "connection Error" };
   }
   
   Object.keys(tableEntity.columns).forEach((column) => {
     if (tableEntity.columns[column].create.trim() != "")
-      tabInsertion.push(`${addDoubleQuotes(column)} ${tableEntity.columns[column].create}`);
+      tabIeInsert.push(`${addDoubleQuotes(column)} ${tableEntity.columns[column].create}`);
   });
-  insertion = `${tabInsertion.join(", ")}`;
+
+  insertion = tabIeInsert.join(", ");
 
   if (tableEntity.constraints) {
     Object.keys(tableEntity.constraints).forEach((constraint) => {
       if (tableEntity.constraints)
-        tabConstraints.push( `ALTER TABLE ONLY ${addDoubleQuotes(tableEntity.table)} ADD CONSTRAINT ${addDoubleQuotes(constraint)} ${tableEntity.constraints[constraint]};` );
+        tableConstraints.push( `ALTER TABLE ONLY ${addDoubleQuotes(tableEntity.table)} ADD CONSTRAINT ${addDoubleQuotes(constraint)} ${tableEntity.constraints[constraint]};` );
     });
   }
 
   if (tableEntity.table.trim() != "")
     returnValue[String(`Create table ${addDoubleQuotes(tableEntity.table)}`)] =
-    await serverConfig.db(configName).unsafe(`CREATE TABLE ${addDoubleQuotes(tableEntity.table)} (${insertion});`)
+    await serverConfig.getConnection(configName).unsafe(`CREATE TABLE ${addDoubleQuotes(tableEntity.table)} (${insertion});`)
         .then(() => _OK)
         .catch((error: Error) => error.message);
 
@@ -57,14 +59,14 @@ Logs.head(`CreateTable [${tableEntity.table}] for ${configName}`);
 
   if (tabTemp.length > 0)
     returnValue[`${tab()}Create indexes for ${tableEntity.name}`] =
-    await serverConfig.db(configName).unsafe(tabTemp.join(";"))
+    await serverConfig.getConnection(configName).unsafe(tabTemp.join(";"))
         .then(() => _OK)
         .catch((error: Error) => error.message);
 
   // CREATE CONSTRAINTS
-  if (tableEntity.constraints && tabConstraints.length > 0)
+  if (tableEntity.constraints && tableConstraints.length > 0)
     returnValue[`${tab()}Create constraints for ${tableEntity.table}`] =
-      await serverConfig.db(configName).unsafe(tabConstraints.join(" "))
+      await serverConfig.getConnection(configName).unsafe(tableConstraints.join(" "))
         .then(() => _OK)
         .catch((error: Error) => error.message);
 
@@ -72,17 +74,17 @@ Logs.head(`CreateTable [${tableEntity.table}] for ${configName}`);
   if (tableEntity.after) {
     if (tableEntity.after.toUpperCase().startsWith("INSERT"))
       returnValue[`${tab()}Something to do after for ${tableEntity.table}`] =
-      await serverConfig.db(configName).unsafe(tableEntity.after)
+      await serverConfig.getConnection(configName).unsafe(tableEntity.after)
           .then(() => _OK)
           .catch((error: Error) => {
-            Logs.error(error);
+            log.errorMsg(error);
             return error.message;
           });
   }
 
   // CREATE SOMETHING AFTER (migration)
   if (doAfter) {
-    returnValue[`${tab()} doAfter ${tableEntity.table}`] = await serverConfig.db(configName).unsafe(doAfter)
+    returnValue[`${tab()} doAfter ${tableEntity.table}`] = await serverConfig.getConnection(configName).unsafe(doAfter)
       .then(() => _OK)
       .catch((error: Error) => error.message);
   }

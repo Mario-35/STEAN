@@ -8,6 +8,7 @@
 
 import koa from "koa";
 import { serverConfig } from "../../configuration";
+import { versionString } from "../../constants";
 import { getMetrics } from "../../db/monitoring";
 import { EextensionsType } from "../../enums";
 import { IKeyString, Iuser } from "../../types";
@@ -15,37 +16,19 @@ import { addCssFile } from "../css";
 
 export class CreateHtmlView {
     private ctx: koa.Context;
-
-    constructor(ctx: koa.Context) {
-        this.ctx = ctx;
-    }
-
-    private css = (name: string): string => {
-        switch (name.toLowerCase()) {
-            case "user":
-                return addCssFile("userForm.css");
-            default:
-                return addCssFile("query.css");
-        }
-    };
-
-    private head = (title: string, name: string): string => {
-        return `<head> <meta charset="utf-8"> <style>${this.css(name)}</style> <title>${title}</title> </head>`;
-    };
-
-    private foot = (
-        links: {
-            href: string;
-            class: string;
-            name: string;
-        }[]
-    ): string => {
+    private css = (name: string): string => (name.toLowerCase() === "user") ? addCssFile("userForm.css") : addCssFile("query.css");
+    private head = (title: string, name: string): string => `<head> <meta charset="utf-8"> <style>${this.css(name)}</style> <title>${title}</title> </head>`;
+    private foot = ( links: { href: string; class: string; name: string; }[] ): string => {
         const returnValue: string[] = ['<div class="hr"></div>'];
         links.forEach((element: { href: string; class: string; name: string }) => {
             returnValue.push(`<div class="inner"> <a href="${element.href}" class="${element.class}" >${element.name}</a> </div>`);
         });
         return returnValue.join();
     };
+
+    constructor(ctx: koa.Context) {
+        this.ctx = ctx;
+    }
 
     addSubmitButton(label: string ) {
       return `<div class="group"> <input type="submit" class="button" value="${label}"> </div>`;
@@ -89,8 +72,8 @@ export class CreateHtmlView {
 
     public config = (datas: { config: string | undefined ; body?: any; why?: IKeyString }): string => {
       try {
-        const conf = serverConfig.configs["essai"];        
-        // const conf = datas.config ? serverConfig.configs[datas.config] : serverConfig.createBlankConfig(this.ctx._configName);        
+        const conf = serverConfig.getConfig("essai");        
+        // const conf = datas.config ? serverConfig.getConfig(datas.config] : serverConfig.createBlankConfig(this.ctx._configName);        
         const alert = (name: string): string => {
             return datas.why && datas.why[name] ? `<div class="alert">${datas.why[name]}</div>` : "";
         };
@@ -105,7 +88,7 @@ export class CreateHtmlView {
                   <input id="tab-2" type="radio" name="tab" class="sign-up">
                   <label for="tab-2" class="tab">Database</label>
                   <div class="login-form">
-                    <form action="${this.ctx._linkBase}/${this.ctx._config.apiVersion}/config" method="post">
+                    <form action="${this.ctx._linkBase}/${versionString(this.ctx._config.apiVersion)}/config" method="post">
                       <div class="sign-in-htm">
                         <div class="group">
                           <label for="user" class="label">config name</label>
@@ -257,7 +240,7 @@ export class CreateHtmlView {
             "user"
         )} <body> <div class="login-wrap"> <div class="login-html"> <h2>You are authenticated.</h2> <div class="hr"></div> <h3>Username : ${
             user.username
-        }</h3> <h3>Hosting : ${user.database == "all" ? "all" : config ? serverConfig.configs[config].pg.host : "Not Found"}</h3> <h3>Database : ${user.database}</h3> <h3>Status : ${
+        }</h3> <h3>Hosting : ${user.database == "all" ? "all" : config ? serverConfig.getConfig(config).pg.host : "Not Found"}</h3> <h3>Database : ${user.database}</h3> <h3>Status : ${
             user.admin
         }</h3> ${user.superAdmin ? `<div class="inner"> <a href="${this.ctx._linkBase}/admin" class="button-admin" >users</a> </div>` : ""} ${this.foot([
             { href: this.ctx._linkBase + "/Logout", class: "button-logout", name: "Logout" },
@@ -275,8 +258,8 @@ export class CreateHtmlView {
     };
 
     public infos = async (): Promise<string> => {
-      const infos = await getMetrics("all");      
-        return `<!DOCTYPE html> <html> ${this.head(
+      const infos = await getMetrics("all");         
+        return infos ? `<!DOCTYPE html> <html> ${this.head(
             "Infos",
             "user"
         )} <body> <div class="login-html"> <div class="table-wrapper"> <table class="fl-table"> <tbody>
@@ -288,6 +271,6 @@ export class CreateHtmlView {
             { href: this.ctx._linkBase + `/${this.ctx._config.apiVersion}/`, class: "button-submit", name: "Root" },
             { href: this.ctx._linkBase + `/${this.ctx._config.apiVersion}/Query`, class: "button", name: "Query" },
             { href: this.ctx._linkBase.split(this.ctx._config.name)[0], class: "button-logout", name: "Documentation" }
-        ])} </div> </body> </html> `;
+        ])} </div> </body> </html> ` : '';
     };
   }

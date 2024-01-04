@@ -7,13 +7,11 @@
  */
 
 import Router from "koa-router";
-import fs from "fs";
 import { decodeToken, ensureAuthenticated, getAuthenticatedUser, } from "../authentication";
-import { ADMIN, API_VERSION, TEST, _READY } from "../constants";
+import { ADMIN, TEST, versionString, _READY } from "../constants";
 import { addSimpleQuotes, getUrlId, getUrlKey, isAdmin, isAllowedTo, returnFormats } from "../helpers";
 import { apiAccess, userAccess } from "../db/dataAccess";
-import { _DB } from "../db/constants";
-import { Logs } from "../logger";
+import { formatLog } from "../logger";
 import { IreturnResult } from "../types";
 import { EuserRights } from "../enums";
 import { createQueryHtml } from "../views/query";
@@ -27,7 +25,7 @@ import { serverConfig } from "../configuration";
 import { createDatabase } from "../db/createDb";
 import { remadeResult } from "../db/helpers/remadeResult";
 import { replayPayload } from "../db/queries";
-import { executeAdmin, exportToXlsx, importFromXlsx } from "../db/helpers";
+import { executeAdmin, executeSql, exportToXlsx } from "../db/helpers";
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 // ALl others
 unProtectedRoutes.get("/(.*)", async (ctx) => {
@@ -37,18 +35,18 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       : false
     : true;
   let returnToBody: any = undefined;
-  
-  if (ctx._config && ctx._config.apiVersion) switch (getRouteFromPath(ctx.path).toUpperCase()) {    
-    case ctx._config.apiVersion.toUpperCase():
+  // if (ctx._config && ctx._config.apiVersion) 
+  switch (getRouteFromPath(ctx.path).toUpperCase()) {    
+    case `V${ctx._config.apiVersion}`:
       const expectedResponse: object[] = [];      
       if (isAdmin(ctx) && !adminWithSuperAdminAccess) ctx.throw(401);
-        ctx._config._context.entities
-        .filter((elem: string) => _DB[elem].order > 0)
-        .sort((a, b) => (_DB[a].order > _DB[b].order ? 1 : -1))
+        Object.keys(ctx._model)
+        .filter((elem: string) => ctx._model[elem].order > 0)
+        .sort((a, b) => (ctx._model[a].order > ctx._model[b].order ? 1 : -1))
         .forEach((value: string) => {
           expectedResponse.push({
-            name: _DB[value].name,
-            url: `${ctx._linkBase}/${ctx._config.apiVersion}/${value}`,
+            name: ctx._model[value].name,
+            url: `${ctx._linkBase}/${versionString(ctx._config.apiVersion)}/${value}`,
           });
         });
       ctx.type = returnFormats.json.type;
@@ -56,17 +54,6 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         value: expectedResponse.filter((elem) => Object.keys(elem).length),
       };
       break;
-
-    case "FAVICON.ICO":
-      try {
-        const cacheControl = `public, max-age=${8640}`;
-        ctx.set("Cache-Control", cacheControl);
-        ctx.type = returnFormats.icon.type;
-        ctx.body = fs.readFileSync(__dirname + "/favicon.ico");
-      } catch (e) {
-        if (e instanceof Error) Logs.error(e.message);
-      }
-      return;
 
     case "ERROR":
       returnToBody = new CreateHtmlView(ctx);
@@ -78,10 +65,6 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       await exportToXlsx(ctx);
       return;
 
-    case "IMPORT":
-      await importFromXlsx();
-      return;
-
     case "REGISTER":
       returnToBody = new CreateHtmlView(ctx);
       ctx.type = returnFormats.html.type;
@@ -90,10 +73,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
 
     case "LOGOUT":
       ctx.cookies.set("jwt-session");
-      if (
-        ctx.request.header.accept &&
-        ctx.request.header.accept.includes("text/html")
-      )
+      if ( ctx.request.header.accept && ctx.request.header.accept.includes("text/html") )
         ctx.redirect(`${ctx._rootName}login`);
       else ctx.status = 200;
       ctx.body = {
@@ -105,11 +85,9 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       let sql = getUrlKey(ctx.request.url, "query");
       if (sql) {
         sql = atob(sql);
-        const resultSql = sql.includes("log_request")
-          ? await serverConfig.db(ADMIN)`${sql}`
-          : await serverConfig.db(ctx._config.name)`${sql}`;
+        const resultSql = await executeSql(sql.includes("log_request") ? serverConfig.getConfig(ADMIN) : ctx._config, sql);
         ctx.status = 201;
-        ctx.body = resultSql["rows"];
+        ctx.body = [resultSql];
       }
       return;
 
@@ -123,8 +101,8 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       return;
     case "READY":
       const moi = {};
-      Object.keys(serverConfig.configs).flatMap(
-        (e) => (moi[e] = serverConfig.configs[e].db ? true : false)
+      serverConfig.getConfigs().flatMap(
+        (e) => (moi[e] = serverConfig.getConfig(e).connection ? true : false)
       );
       ctx.type = returnFormats.json.type;
       ctx.body = {
@@ -132,6 +110,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         databases: moi,
       };
       return;
+      
     case "STATUS":
       if (ensureAuthenticated(ctx)) {
         const user = await getAuthenticatedUser(ctx);
@@ -185,11 +164,11 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
 
     case "REDEMO":
       // create DB test
-      Logs.head("reDemo");
+      console.log(formatLog.head("reDemo"));
       await serverConfig
-        .db(ADMIN)`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'demo';`
+        .getConnection(ADMIN)`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'demo';`
         .then(async () => {
-          await serverConfig.db(ADMIN)`DROP DATABASE IF EXISTS demo`;
+          await serverConfig.getConnection(ADMIN)`DROP DATABASE IF EXISTS demo`;
           returnToBody = await createDatabase("demo");
           if (returnToBody) {
             ctx.status = 201;
@@ -202,14 +181,12 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       return;
     case "DROP":
       // create DB test
-      Logs.head("drop database");
+      console.log(formatLog.head("drop database"));
       if (ctx._config.canDrop === true) {        
         const dbName = ctx._config.pg.database;
-        console.log(dbName);
-        console.log("start");
         // await ctx._config.db?.end();
-        await executeAdmin(`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND datname = ${addSimpleQuotes(dbName)}`, true).then(async () => {
-            await executeAdmin(`DROP DATABASE IF EXISTS ${dbName}`, true);
+        await executeAdmin(`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND datname = ${addSimpleQuotes(dbName)}`).then(async () => {
+            await executeAdmin(`DROP DATABASE IF EXISTS ${dbName}`);
             returnToBody = await createDatabase(dbName);
             if (returnToBody) {
               ctx.status = 201;
@@ -223,11 +200,11 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       return;
     case "REDOAGRHYS":
       // create DB test
-      Logs.head("redoAgrhys");
+      console.log(formatLog.head("redoAgrhys"));
       await serverConfig
-        .db(ADMIN)`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'agrhys';`
+        .getConnection(ADMIN)`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'agrhys';`
         .then(async () => {
-          await serverConfig.db(ADMIN)`DROP DATABASE IF EXISTS agrhys`;
+          await serverConfig.getConnection(ADMIN)`DROP DATABASE IF EXISTS agrhys`;
           returnToBody = await createDatabase("agrhys");
           if (returnToBody) {
             ctx.status = 201;
@@ -240,7 +217,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       return;
     case "CREATEDB":
       // create DB test
-      Logs.head("GET createDB");
+      console.log(formatLog.head("GET createDB"));
       returnToBody = await createDatabase(TEST);
       if (returnToBody) {
         ctx.status = 201;
@@ -253,11 +230,11 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
 
     case "REMOVEDBTEST":
       // create DB test
-      Logs.head("GET remove DB test");
+      console.log(formatLog.head("GET remove DB test"));
       const returnDel = await serverConfig
-        .db(ADMIN)`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'test';`
+        .getConnection(ADMIN)`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'test';`
         .then(async () => {
-          await serverConfig.db(ADMIN)`DROP DATABASE IF EXISTS test`;
+          await serverConfig.getConnection(ADMIN)`DROP DATABASE IF EXISTS test`;
           return true;
         });
       if (returnDel) {
@@ -267,8 +244,9 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         ctx.status = 400;
         ctx.redirect(`${ctx._rootName}error`);
       }
-      return;      
-      case "QUERY":
+      return;
+        
+      case "QUERY":        
         if (!adminWithSuperAdminAccess) ctx.redirect(`${ctx._rootName}login`);
         returnToBody = await createIqueryFromContext(ctx);
         ctx.set("script-src", "self");
@@ -278,14 +256,14 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         return;      
   } // END Switch
 
-  // API REQUEST
-  if (ctx.path.includes(`/${API_VERSION}`)) {
-    Logs.head(`unProtected GET ${API_VERSION}`);
+  // API REQUEST  
+  if (ctx.path.includes(`/${versionString(ctx._config.apiVersion)}`)) {
+    console.log(formatLog.head(`unProtected GET ${versionString(ctx._config.apiVersion)}`));
     const odataVisitor = await createOdata(ctx);    
     if (odataVisitor) ctx._odata = odataVisitor;
     if (ctx._odata) {
       if (ctx._odata.returnNull === true) { ctx.body = { values: [] }; return; }
-      Logs.head(`GET ${API_VERSION}`);
+      console.log(formatLog.head(`GET ${versionString(ctx._config.apiVersion)}`));
       const objectAccess = new apiAccess(ctx);
       if (objectAccess) {
         //API Root
@@ -314,8 +292,5 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         } else ctx.throw(400);
       }
     }
-  } else {
-    const createHtml = new CreateHtmlView(ctx);
-    ctx.body = await createHtml.infos();
   }
 });

@@ -6,7 +6,10 @@
  *
  */
 
+import { formatLog } from "../../logger";
+
 export const dateToDateWithTimeZone = (value: string) => {
+    console.log(formatLog.whereIam());
     //Create Date object from ISO string
     const date = new Date(value);
     //Get ms for date

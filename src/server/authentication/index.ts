@@ -6,9 +6,9 @@
  *
  */
 
-export { loginUser } from "./loginUser";
 export { createToken } from "./createToken";
 export { decodeToken } from "./decodeToken";
-export { userAuthenticated } from "./userAuthenticated";
-export { getAuthenticatedUser } from "./getAuthenticatedUser";
 export { ensureAuthenticated } from "./ensureAuthenticated";
+export { getAuthenticatedUser } from "./getAuthenticatedUser";
+export { loginUser } from "./loginUser";
+export { userAuthenticated } from "./userAuthenticated";

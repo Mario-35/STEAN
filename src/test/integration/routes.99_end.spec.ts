@@ -7,13 +7,14 @@ import chaiHttp from "chai-http";
 chai.use(chaiHttp);
 
 import { server } from "../../server/index";
+import { testVersion } from "./constant";
 
 const should = chai.should();
 
 describe("Delete test Database", function () {
     it("Delete test Database", (done) => {
         chai.request(server)
-        .get("/test/v1.0/removedbtest")
+        .get(`/test/${testVersion}/removedbtest`)
         .end((err: Error, res: any) => {                 
                 if (err) {
                     console.log(res.body);                    

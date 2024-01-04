@@ -14,5 +14,5 @@ export interface Ilog{
     database: string;
     datas: JSON;
     user_id: string;
-    error?: string;
+    error?: object;
   }

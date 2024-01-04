@@ -9,9 +9,9 @@
 export const isNull = <T>(input: T): boolean => {
     switch (typeof input) {
         case "string":
-            if(input && input != "" && input != null) return true;
+            if (input && input != "" && input != null) return true;
         case "object":
-            if(input && Object.keys(input).length > 0) return true;    
+            if (input && Object.keys(input).length > 0) return true;    
         default:
             return false;
     } 

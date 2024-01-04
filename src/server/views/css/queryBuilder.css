@@ -30,6 +30,7 @@
   align-items: center;
   text-align: center;
 }
+
 .criterium-container {
   min-height: 3rem;
   background-color: var(--content-background);

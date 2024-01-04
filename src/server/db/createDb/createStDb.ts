@@ -9,20 +9,22 @@
 import { createTable } from "../helpers";
 import { serverConfig } from "../../configuration";
 import { addDoubleQuotes, addSimpleQuotes, asyncForEach, isTest } from "../../helpers";
-import { Logs } from "../../logger";
-import { _DB, _RIGHTS } from "../constants";
+import { formatLog } from "../../logger";
+import { _RIGHTS } from "../constants";
 import { testsDatas } from "./testsDatas";
 import { IKeyString } from "../../types";
 import { EextensionsType } from "../../enums";
 import { _NOTOK, _OK } from "../../constants";
 import { triggers } from "./triggers";
+import { models } from "../../models";
+import { log } from "../../log";
 
 export const createSTDB = async (configName: string): Promise<IKeyString> => {
-  Logs.head("createDatabase", "createDatabase");
+  console.log(formatLog.head("createDatabase", "createDatabase"));
   // init result
-  const config = serverConfig.configs[configName].pg;
+  const config = serverConfig.getConfig(configName).pg;
   const returnValue: IKeyString = { "Start create Database": config.database };
-  const adminConnection = serverConfig.dbAdminFor(configName);
+  const adminConnection = serverConfig.getConnectionAdminFor(configName);
   // Test connection Admin
   if (!adminConnection) {
     returnValue["DROP Error"] = "No Admin connection";
@@ -46,17 +48,17 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
                 returnValue[`Create/Alter ROLE`] = `${config.user} ${_OK}`;
               })
               .catch((err: Error) => {
-                Logs.error(err);
+                log.errorMsg(err);
               });
           }
         });
     })
     .catch((err: Error) => {
-      Logs.error(err);
+      log.errorMsg(err);
     });
 
     
-    const dbConnection = serverConfig.db(configName);
+    const dbConnection = serverConfig.getConnection(configName);
     if (!dbConnection) {
     returnValue["DROP Error"] = `No DB connection ${_NOTOK}`;
     return returnValue;
@@ -72,21 +74,23 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
     .then(() => _OK)
     .catch((err: Error) => err.message);
     
+    const DB = models.DBFull(configName);
+  
   // loop to create each table
   await asyncForEach(
-    serverConfig.configs[configName]._context.entities,
+    Object.keys(DB),
     async (keyName: string) => {
-      const res = await createTable(configName, _DB[keyName], undefined);
-      Object.keys(res).forEach((e: string) => Logs.create(e, res[e]));      
+      const res = await createTable(configName, DB[keyName], undefined);
+      Object.keys(res).forEach((e: string) => log.create(e, res[e]));      
     }
   );
 
   // loop to create each table
   await asyncForEach( triggers(configName), async (query: string) => {
     const name = query.split(" */")[0].split("/*")[1].trim();
-    await serverConfig.db(configName).unsafe(query)
+    await serverConfig.getConnection(configName).unsafe(query)
       .then(() => {
-        Logs.create(name, _OK);
+        log.create(name, _OK);
       }).catch((error: Error) => {
         console.log(error);
         process.exit(111);
@@ -94,7 +98,7 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
     }
   );
 
-  if (isTest()) await serverConfig.db(configName).begin(sql => {
+  if (isTest()) await serverConfig.getConnection(configName).begin(sql => {
     testsDatas().forEach(async (query: string) => {
       await sql.unsafe(query).catch((error: Error) => {
         console.log(error);
@@ -103,15 +107,15 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
     });
   });
 
-  if ( serverConfig.configs[configName].extensions.includes( EextensionsType.numeric ) ) {
-    await dbConnection.unsafe(`ALTER TABLE ${addDoubleQuotes(_DB.Observations.table)} ALTER COLUMN 'result' TYPE float4 USING null;`)
+  if ( serverConfig.getConfig(configName).extensions.includes( EextensionsType.numeric ) ) {
+    await dbConnection.unsafe(`ALTER TABLE ${addDoubleQuotes(DB.Observations.table)} ALTER COLUMN 'result' TYPE float4 USING null;`)
       .catch((error: Error) => {
-        Logs.error(error);
+        log.errorMsg(error);
         return error;
       });
-    await dbConnection.unsafe(`ALTER TABLE ${addDoubleQuotes(_DB.HistoricalLocations.table)}  ALTER COLUMN '_result' TYPE float4 USING null;`)
+    await dbConnection.unsafe(`ALTER TABLE ${addDoubleQuotes(DB.HistoricalLocations.table)}  ALTER COLUMN '_result' TYPE float4 USING null;`)
       .catch((error) => {
-        Logs.error(error);
+        log.errorMsg(error);
         return error;
       });
   }

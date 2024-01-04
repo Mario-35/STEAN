@@ -11,8 +11,6 @@
 import koa from "koa";
 import { getAuthenticatedUser } from "../../authentication";
 import { serverConfig } from "../../configuration";
-import { _DB, _DBFILTERED } from "../../db/constants";
-import { _DBADMIN } from "../../db/constants";
 import { getMetrics } from "../../db/monitoring";
 import { IqueryOptions } from "../../types";
 
@@ -20,12 +18,6 @@ import { IqueryOptions } from "../../types";
 export const createIqueryFromContext = async (ctx: koa.Context): Promise<IqueryOptions> => {
     const user = await getAuthenticatedUser(ctx); 
     const metrics = await getMetrics("keys"); 
-    const temp = ctx._config.name === 'admin' === true 
-    ? _DBADMIN 
-    : user && (user.admin === true || user.superAdmin === true) 
-        ? _DB
-        : _DBFILTERED(ctx);
-
     return {
         id: "",
         methods: ["GET"],
@@ -52,7 +44,7 @@ export const createIqueryFromContext = async (ctx: koa.Context): Promise<IqueryO
         graph: ctx.url.includes("$resultFormat=graph"),
         admin: ctx._config.name === 'admin',
         metrics: ["all"].concat(metrics as Array<string>),
-        services: Object.keys(serverConfig.configs).filter(e => e!== "admin"),
-        _DATAS: Object.fromEntries( Object.entries(temp).filter(([, v]) => v.visible === true))
+        services: serverConfig.getConfigs(),
+        _DATAS: ctx._model
     };
 };

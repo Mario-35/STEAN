@@ -26,10 +26,11 @@ import {
     apiInfos,
     showHide,
     nbColorTitle,
-    nbColor
+    nbColor,
+    testVersion,
+    _RAWDB
 } from "./constant";
 import { server } from "../../server/index";
-import { _DB } from "../../server/db/constants";
 import { Ientity } from "../../server/types";
 import { testsKeys as locations_testsKeys } from "./routes.05_locations.spec";
 import { count, executeQuery, last } from "./executeQuery";
@@ -41,7 +42,7 @@ chai.use(chaiHttp);
 const should = chai.should();
 
 const docs: IApiDoc[] = [];
-const entity: Ientity = _DB.HistoricalLocations;
+const entity: Ientity = _RAWDB.HistoricalLocations;
 
 const addToApiDoc = (input: IApiInput) => {
     docs.push(prepareToApiDoc(input, entity.name));
@@ -63,7 +64,7 @@ describe("endpoint : HistoricalLocations", () => {
 
     before((done) => {
         chai.request(server)
-            .post("/test/v1.0/login")
+            .post(`/test/${testVersion}/login`)
             .send(identification)
             .end((err: Error, res: any) => {
                 token = String(res.body["token"]);
@@ -79,7 +80,7 @@ describe("endpoint : HistoricalLocations", () => {
                 apiDescription: `Retrieve all ${entity.name}.${showHide(`Get${entity.name}`, apiInfos["9.2.2"])}`,
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-collection-entities",
                 apiExample: {
-                    http: `/v1.0/${entity.name}`,
+                    http: `/${testVersion}/${entity.name}`,
                     curl: defaultGet("curl", "KEYHTTP"),
                     javascript: defaultGet("javascript", "KEYHTTP"),
                     python: defaultGet("python", "KEYHTTP")
@@ -113,7 +114,7 @@ describe("endpoint : HistoricalLocations", () => {
                 apiDescription: "Get a specific Historical Location.",
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-entity",
                 apiExample: {
-                    http: `/v1.0/${entity.name}(1)`,
+                    http: `/${testVersion}/${entity.name}(1)`,
                     curl: defaultGet("curl", "KEYHTTP"),
                     javascript: defaultGet("javascript", "KEYHTTP"),
                     python: defaultGet("python", "KEYHTTP")
@@ -136,7 +137,7 @@ describe("endpoint : HistoricalLocations", () => {
 
         it(`Return Error if the ${entity.name} not exist`, (done) => {
             chai.request(server)
-                .get(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
+                .get(`/test/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .end((err, res) => {
                     should.not.exist(err);
                     res.status.should.equal(404);
@@ -152,7 +153,7 @@ describe("endpoint : HistoricalLocations", () => {
                 apiName: `GetExpandLocations${entity.name}`,
                 apiDescription: "Get a specific Historical Location and expand Locations.",
                 apiExample: {
-                    http: `/v1.0/${entity.name}(6)?$expand=Locations`,
+                    http: `/${testVersion}/${entity.name}(6)?$expand=Locations`,
                     curl: defaultGet("curl", "KEYHTTP"),
                     javascript: defaultGet("javascript", "KEYHTTP"),
                     python: defaultGet("python", "KEYHTTP")
@@ -180,7 +181,7 @@ describe("endpoint : HistoricalLocations", () => {
                 apiName: `GetSelectTime${entity.name}`,
                 apiDescription: "Retrieve time for a specific Historical Location.",
                 apiExample: {
-                    http: `/v1.0/${entity.name}(6)?$select=time`,
+                    http: `/${testVersion}/${entity.name}(6)?$select=time`,
                     curl: defaultGet("curl", "KEYHTTP"),
                     javascript: defaultGet("javascript", "KEYHTTP"),
                     python: defaultGet("python", "KEYHTTP")
@@ -201,7 +202,7 @@ describe("endpoint : HistoricalLocations", () => {
         it(`Return ${entity.name} Subentity Things ${nbColor}[9.2.6]`, (done) => {
             const name = "Things";
             chai.request(server)
-                .get(`/test/v1.0/${entity.name}(2)/Things`)
+                .get(`/test/${testVersion}/${entity.name}(2)/Things`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -220,7 +221,7 @@ describe("endpoint : HistoricalLocations", () => {
         it(`Return ${entity.name} Subentity Locations ${nbColor}[9.2.6]`, (done) => {
             const name = "Locations";
             chai.request(server)
-                .get(`/test/v1.0/${entity.name}(2)/Locations`)
+                .get(`/test/${testVersion}/${entity.name}(2)/Locations`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -237,7 +238,7 @@ describe("endpoint : HistoricalLocations", () => {
         it(`Return ${entity.name} Expand Things ${nbColor}[9.3.2.1]`, (done) => {
             const name = "Things";
             chai.request(server)
-                .get(`/test/v1.0/${entity.name}(2)?$expand=${name}`)
+                .get(`/test/${testVersion}/${entity.name}(2)?$expand=${name}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -255,7 +256,7 @@ describe("endpoint : HistoricalLocations", () => {
         it(`Return ${entity.name} Expand Locations ${nbColor}[9.3.2.1]`, (done) => {
             const name = "Locations";
             chai.request(server)
-                .get(`/test/v1.0/${entity.name}(2)?$expand=${name}`)
+                .get(`/test/${testVersion}/${entity.name}(2)?$expand=${name}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -281,7 +282,7 @@ describe("endpoint : HistoricalLocations", () => {
                         apiDescription: `Patch a ${entity.singular}.${showHide(`Patch${entity.name}`, apiInfos["10.3"])}`,
                         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_2",
                         apiExample: {
-                            http: `/v1.0/${entity.name}(${locations["id"]})`,
+                            http: `/${testVersion}/${entity.name}(${locations["id"]})`,
                             curl: defaultPatch("curl", "KEYHTTP", datas),
                             javascript: defaultPatch("javascript", "KEYHTTP", datas),
                             python: defaultPatch("python", "KEYHTTP", datas)
@@ -307,7 +308,7 @@ describe("endpoint : HistoricalLocations", () => {
 
         it(`Return Error if the ${entity.name} not exist`, (done) => {
             chai.request(server)
-                .patch(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
+                .patch(`/test/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .send({
                     "time": "2015-02-07T19:22:11.297Z"
                 })
@@ -332,7 +333,7 @@ describe("endpoint : HistoricalLocations", () => {
                         apiDescription: `Delete a ${entity.singular}.${showHide(`Delete${entity.name}`, apiInfos["10.4"])}`,
                         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_3",
                         apiExample: {
-                            http: `/v1.0/${entity.name}(${beforeDelete["id"]})`,
+                            http: `/${testVersion}/${entity.name}(${beforeDelete["id"]})`,
                             curl: defaultDelete("curl", "KEYHTTP"),
                             javascript: defaultDelete("javascript", "KEYHTTP"),
                             python: defaultDelete("python", "KEYHTTP")
@@ -355,7 +356,7 @@ describe("endpoint : HistoricalLocations", () => {
 
         it(`Return Error if the ${entity.name} not exist`, (done) => {
             chai.request(server)
-                .delete(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
+                .delete(`/test/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .set("Cookie", `${keyTokenName}=${token}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);

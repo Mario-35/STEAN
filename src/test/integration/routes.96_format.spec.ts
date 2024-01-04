@@ -10,7 +10,7 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, limitResult } from "./constant";
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, limitResult, testVersion } from "./constant";
 import { server } from "../../server/index";
 
 chai.use(chaiHttp);
@@ -37,7 +37,7 @@ describe("Output formats", () => {
                 api: `{get} ResultFormat as csv`,
                 apiName: "FormatCsv",
                 apiDescription: 'Use $resultFormat=csv to get datas as csv format.<br><img class="tabLogo" src="./assets/csv.jpg" alt="csv result">',
-                apiExample: { http: "/v1.0/Datastreams(1)/Observations?$top=20&$resultFormat=csv" }
+                apiExample: { http: `/${testVersion}/Datastreams(1)/Observations?$top=20&$resultFormat=csv` }
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
@@ -58,7 +58,7 @@ describe("Output formats", () => {
                 api: `{get} Things Things as dataArray`,
                 apiName: "FormatThingdataArray",
                 apiDescription: 'Use $resultFormat=dataArray to get datas as dataArray format.',
-                apiExample: { http: "/v1.0/Things?$resultFormat=dataArray" }
+                apiExample: { http: `/${testVersion}/Things?$resultFormat=dataArray` }
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
@@ -81,7 +81,7 @@ describe("Output formats", () => {
                 api: `{get} Datastream Observations as dataArray`,
                 apiName: "FormatDataStreamdataArray",
                 apiDescription: 'Use $resultFormat=dataArray to get datas as dataArray format.',
-                apiExample: { http: "/v1.0/Datastreams(1)/Observations?$resultFormat=dataArray&$select=id,result" }
+                apiExample: { http: `/${testVersion}/Datastreams(1)/Observations?$resultFormat=dataArray&$select=id,result` }
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
@@ -106,7 +106,7 @@ describe("Output formats", () => {
                 api: `{get} ResultFormat as graph`,
                 apiName: "FormatGraph",
                 apiDescription: 'Use $resultFormat=graph to get datas into graphical representation.<br><img class="tabLogo" src="./assets/graph.png" alt="graph result">',
-                apiExample: { http: "/v1.0/Datastreams(1)/Observations?$resultFormat=graph" }
+                apiExample: { http: `/${testVersion}/Datastreams(1)/Observations?$resultFormat=graph` }
             };
             chai.request(server)
                 .get(`/test${infos.apiExample.http}`)
@@ -126,7 +126,7 @@ describe("Output formats", () => {
                 api: `{get} ResultFormat as graphDatas`,
                 apiName: "FormatGraphDatas",
                 apiDescription: "Use $resultFormat=graphDatas to get datas into echarts compatible format.",
-                apiExample: { http: "/v1.0/Datastreams(1)/Observations?$resultFormat=graphDatas" },
+                apiExample: { http: `/${testVersion}/Datastreams(1)/Observations?$resultFormat=graphDatas` },
                 apiReference: "https://echarts.apache.org/en/index.html"
             };
             chai.request(server)

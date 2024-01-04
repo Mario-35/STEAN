@@ -1,21 +1,14 @@
 import koa from "koa";
 import { executeSqlValues } from ".";
 import { serverConfig } from "../../configuration";
+import { log } from "../../log";
 import { asyncForEach, isNull } from "../../helpers";
-import { Logs } from "../../logger";
 import { decodeloraDeveuiPayload } from "../../lora";
-import { _DB } from "../constants";
+import { IconfigFile } from "../../types";
 
-const getSortedKeys = async (
-  connectionName: string,
-  inputID: string,
-  synonym: object
-): Promise<any> => {
-  const tempSql = `SELECT id, _default_foi, thing_id, (SELECT jsonb_agg(tmp.units -> 'name') AS keys 
-    FROM ( SELECT jsonb_array_elements("unitOfMeasurements") AS units ) AS tmp) 
-        FROM "${_DB.MultiDatastreams.table}" 
-        WHERE "${_DB.MultiDatastreams.table}".id = ${inputID}`;
-  const tempQuery = await executeSqlValues(connectionName, tempSql);
+const getSortedKeys = async ( config: IconfigFile, inputID: string, synonym: object ): Promise<{ [key: string]: number | null }> => {
+  const tempSql = `SELECT id, _default_foi, thing_id, (SELECT jsonb_agg(tmp.units -> 'name') AS keys FROM ( SELECT jsonb_array_elements("unitOfMeasurements") AS units ) AS tmp) FROM "multidatastream" WHERE "multidatastream".id = ${inputID}`;
+  const tempQuery = await executeSqlValues(config, tempSql);
   const multiDatastream = tempQuery["rows"];
   const listOfSortedValues: { [key: string]: number | null } = {};
 
@@ -42,13 +35,10 @@ const getSortedKeys = async (
   return listOfSortedValues;
 };
 
-export const remadeResult = async (
-  ctx: koa.Context,
-  step: number
-): Promise<string> => {
+export const remadeResult = async ( ctx: koa.Context, step: number ): Promise<string> => {
   let progression = 1;
   const getObservations = await serverConfig
-    .db(ctx._config.name)`select * from observation where result->'value' is null or result->'value' = '[null, null, null]' order by id ${
+    .getConnection(ctx._config.name)`select * from observation where result->'value' is null or result->'value' = '[null, null, null]' order by id ${
         step > 0 ? `LIMIT ${step}` : ""
       }`;
   await asyncForEach(getObservations["rows"], async (elem: object) => {
@@ -60,23 +50,14 @@ export const remadeResult = async (
         progression = 1;
       } else progression += 1;
       let newResult: object | undefined = undefined;
-      console.log(elem);
-      console.log(elem["result"]["datas"]);
       if (!isNull(elem["result"]["datas"])) {
-        console.log(
-          "=======================================================go>"
-        );
         newResult = elem["result"];
-        if (newResult) {
-          newResult["valueskeys"] = null;
-          // newResult["value"] = Object.values(sortedKeys);
-        }
-        console.log(newResult);
+        if (newResult) newResult["valueskeys"] = null;
         return newResult;
       } else if (!isNull(elem["multidatastream_id"])) {
         if (isNull(elem["result"])) {
           const sortedKeys = await getSortedKeys(
-            ctx._config.name,
+            ctx._config,
             elem["multidatastream_id"],
             {}
           );
@@ -102,7 +83,7 @@ export const remadeResult = async (
 
           if (deveui && payload) {
             const decodedPayload = await decodeloraDeveuiPayload(
-              ctx._config.name,
+              ctx,
               deveui.toUpperCase(),
               payload.toUpperCase()
             );
@@ -110,27 +91,17 @@ export const remadeResult = async (
               console.log(decodedPayload);
   
               if (decodedPayload.error) {
-                console.log(
-                  "================ ERROR ====================================="
-                );
                 console.log(decodedPayload);
               } else if (decodedPayload.result.valid === false) {
-                console.log(
-                  "================ Invalid ====================================="
-                );
+                console.log( "================ Invalid =====================================" );
                 console.log(elem);
                 console.log(decodedPayload);
               } else if (decodedPayload.result.messages.length > 0) {
-                const sortedKeys = await getSortedKeys(
-                  ctx._config.name,
-                  elem["multidatastream_id"],
-                  {}
-                );
+                const sortedKeys = await getSortedKeys( ctx._config, elem["multidatastream_id"], {} );
                 const cleanDatas = {};
                 console.log(sortedKeys);
                 Object.keys(decodedPayload.result.datas).forEach((key) => {
-                  cleanDatas[key.toLowerCase()] =
-                    decodedPayload.result.datas[key];
+                  cleanDatas[key.toLowerCase()] = decodedPayload.result.datas[key];
                 });
                 Object.keys(sortedKeys).forEach((key) => {
                   sortedKeys[key] = cleanDatas[key] ? cleanDatas[key] : null;
@@ -145,37 +116,23 @@ export const remadeResult = async (
             }
             }
           } else {
-            console.log(
-              "================ NO deveui and/or payload ====================================="
-            );
-
+            console.log( "================ NO deveui and/or payload =====================================" );
             console.log(elem);
             console.log(`deveui: ${deveui} | payload:${payload}`);
           }
         }
-      } else if (!isNull(elem["datastream_id"])) {
-        newResult = {
-          date: elem["phenomenonTime"],
-          value: elem["_resultnumber"],
-        };
-      }
+      } else if (!isNull(elem["datastream_id"])) newResult = { date: elem["phenomenonTime"], value: elem["_resultnumber"], };
+      
       console.log(newResult);
 
       if (newResult && newResult["rln"]) {
-        // process.stdout.write(`[${elem["id"]}]`);
-        // console.log(`================ WRITE ${elem["id"]} =====================================`);
-        await serverConfig
-          .db(ctx._config.name)`UPDATE "${
-              _DB.Observations.table
-            }" SET "result" = '${JSON.stringify(newResult)}' WHERE id = ${
-              elem["id"]
-            }`;
+        await serverConfig .getConnection(ctx._config.name)`UPDATE "observation" SET "result" = '${JSON.stringify(newResult)}' WHERE id = ${ elem["id"] }`;
       }
     } catch (error) {
-      Logs.error(error);
+      log.errorMsg(error);
     }
   });
-  const decodedPayload = await serverConfig.db(ctx._config.name)`select 
+  const decodedPayload = await serverConfig.getConnection(ctx._config.name)`select 
     (select count(*) from observation where result->'value' is null) as "a traiter",
     (select count(*) from observation where result->'value' is null and result is not null) as "avec infos",
     (select count(*) from observation where result->'value' is null and result is null) as "sans infos",

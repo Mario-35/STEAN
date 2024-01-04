@@ -9,7 +9,7 @@
 import koa from "koa";
 import { Common } from "./common";
 import { errors, msg } from "../../messages/";
-import { Logs } from "../../logger";
+import { formatLog } from "../../logger";
 
 export class MultiDatastreams extends Common {
   constructor(ctx: koa.Context) {
@@ -17,7 +17,7 @@ export class MultiDatastreams extends Common {
   }
 
   formatDataInput(input: object | undefined): object | undefined {
-    Logs.whereIam();
+    console.log(formatLog.whereIam());
     if (!input) this.ctx.throw(400, { code: 400, detail: errors.noData });
     const temp = this.getKeysValue(input, ["FeaturesOfInterest", "foi"]);
     if (temp) input["_default_foi"] = temp;
@@ -49,11 +49,11 @@ export class MultiDatastreams extends Common {
         .replace("]", "}");
 
     if (input["observationType"]) {
-      if ( !this.DBST.MultiDatastreams.columns[ "observationType" ].verify?.list.includes(input["observationType"]) )
+      if ( !this.ctx._model.MultiDatastreams.columns[ "observationType" ].verify?.list.includes(input["observationType"]) )
         this.ctx.throw(400, { code: 400, detail: errors["observationType"] });
     } else
       input["observationType"] =
-        this.DBST.MultiDatastreams.columns["observationType"].verify?.default;
+      this.ctx._model.MultiDatastreams.columns["observationType"].verify?.default;
 
     return input;
   }

@@ -7,6 +7,7 @@ import chaiHttp from "chai-http";
 chai.use(chaiHttp);
 
 import { server } from "../../server/index";
+import { testVersion } from "./constant";
 
 const should = chai.should();
 
@@ -14,7 +15,7 @@ describe("Create Test Database.", function () {
     this.timeout(7500);
     it("Create Database", (done) => {
         chai.request(server)
-            .get("/test/v1.0/createDB")
+            .get(`/test/${testVersion}/createDB`)
             .end((err: Error, res: any) => {     
                 if (err) {
                     console.log(res.body);                    

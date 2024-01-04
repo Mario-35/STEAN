@@ -4,7 +4,7 @@ import chai from "chai";
 import chaiHttp from "chai-http";
 import fs from "fs";
 import path from "path";
-import { IApiDoc, prepareToApiDoc, generateApiDoc, IApiInput, apiInfos, blank } from "./constant";
+import { IApiDoc, prepareToApiDoc, generateApiDoc, IApiInput, apiInfos, blank, testVersion } from "./constant";
 
 chai.use(chaiHttp);
 
@@ -51,7 +51,7 @@ addToApiDoc({
 });
 
 describe("endpoint : index", () => {
-    describe("GET /v1.0/ [9.2.1]", () => {
+    describe(`GET /${testVersion}/ [9.2.1]`, () => {
 
         it("should return json", (done) => {
             const infos = {
@@ -59,7 +59,7 @@ describe("endpoint : index", () => {
                 apiName: "rootSensorThings",
                 apiDescription: `Access to all resources begins at the base resource path.`,
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#resource-path",
-                apiExample: { http: "/v1.0/" },
+                apiExample: { http: `/${testVersion}/` },
                 apiSuccess: [
                     "{relation} Datastreams Get all datastreams.",
                     "{relation} MultiDatastreams Get all multidatastreams.",
@@ -105,7 +105,7 @@ describe("endpoint : index", () => {
                 apiName: "rootSensorThings",
                 apiDescription: `Access to all resources begins at the base resource path.`,
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#resource-path",
-                apiExample: { http: "/v1.0/" },
+                apiExample: { http: `/${testVersion}/` },
                 apiSuccess: [
                     "{relation} Datastreams Get all datastreams.",
                     "{relation} MultiDatastreams Get all multidatastreams.",
@@ -149,7 +149,7 @@ describe("endpoint : index", () => {
                 apiName: "resultSensorThings",
                 apiDescription: `Stean use differents type of result : ${apiInfos["0"]}`,
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#resource-path",
-                apiExample: { http: "/v1.0/" },
+                apiExample: { http: `/${testVersion}/` },
                 apiSuccess: [
                     "{relation} Datastreams Get all datastreams.",
                     "{relation} MultiDatastreams Get all multidatastreams.",

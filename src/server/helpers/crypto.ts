@@ -8,7 +8,7 @@
 
 import crypto from "crypto";
 import { APP_KEY } from "../constants";
-import { Logs } from "../logger";
+import { log } from "../log";
 
 export const encrypt = (text: string): string => {
   const iv = crypto.randomBytes(16);
@@ -25,7 +25,7 @@ export const decrypt = (input: string): string => {
         const decrpyted = Buffer.concat([ decipher.update(Buffer.from(input.slice(33), "hex")), decipher.final(), ]);
         return decrpyted.toString();
     } catch (error) {
-      Logs.error(error);
+      log.errorMsg(error);
     }
   }
   return input;

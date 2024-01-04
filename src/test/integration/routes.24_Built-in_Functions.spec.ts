@@ -10,7 +10,7 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult } from "./constant";
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult, testVersion } from "./constant";
 import { server } from "../../server/index";
 
 
@@ -39,7 +39,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
             apiName: "BuiltInFunctionsSubstringof",
             apiDescription: "This string function filters all the records that contain with string in property.",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-            apiExample: { http: "/v1.0/Things?$filter=substringof('description', 'one') eq true",
+            apiExample: { http: `/${testVersion}/Things?$filter=substringof('description', 'one') eq true`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -60,7 +60,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
 
     it("substringof('name', '1')", (done) => {
         chai.request(server)
-            .get(`/test/v1.0/Things?$filter=substringof('description', 'one')`)
+            .get(`/test/${testVersion}/Things?$filter=substringof('description', 'one')`)
             .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
@@ -77,7 +77,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
             apiName: "BuiltInFunctionsEndwith",
             apiDescription: "This string function filters all the records that column name ends with the string in the property.",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-            apiExample: { http: "/v1.0/Things?$filter=endswith('description', 'one')  eq true",
+            apiExample: { http: `/${testVersion}/Things?$filter=endswith('description', 'one')  eq true`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -98,7 +98,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
 
     it("endwith('description', 'one')", (done) => {
         chai.request(server)
-            .get(`/test/v1.0/Things?$filter=endswith('description', 'one')`)
+            .get(`/test/${testVersion}/Things?$filter=endswith('description', 'one')`)
             .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
@@ -111,7 +111,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
 
     it("endwith(description, 'one')", (done) => {
         chai.request(server)
-            .get(`/test/v1.0/Things?$filter=endswith(description, 'one')`)
+            .get(`/test/${testVersion}/Things?$filter=endswith(description, 'one')`)
             .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
@@ -128,7 +128,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
             apiName: "BuiltInFunctionsStartswith",
             apiDescription: "This string function filters all the records that starts with the string in the property.",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-            apiExample: { http: "/v1.0/Things?$filter=startswith('name', 'Temperature') eq true",
+            apiExample: { http: `/${testVersion}/Things?$filter=startswith('name', 'Temperature') eq true`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -149,7 +149,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
 
     it("startswith('name', 'Temperature')", (done) => {
         chai.request(server)
-            .get(`/test/v1.0/Things?$filter=startswith('name', 'Temperature')`)
+            .get(`/test/${testVersion}/Things?$filter=startswith('name', 'Temperature')`)
             .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
@@ -162,7 +162,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
 
     it("startswith(name, 'Temperature')", (done) => {
         chai.request(server)
-            .get(`/test/v1.0/Things?$filter=startswith(name, 'Temperature')`)
+            .get(`/test/${testVersion}/Things?$filter=startswith(name, 'Temperature')`)
             .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
@@ -179,7 +179,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
             apiName: "BuiltInFunctionsLength",
             apiDescription: "This string function return the length of the parameters to be test in filter.",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-            apiExample: { http: "/v1.0/Things?$filter=length(description) le 22",
+            apiExample: { http: `/${testVersion}/Things?$filter=length(description) le 22`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -204,7 +204,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
             apiName: "BuiltInFunctionsIndexOf",
             apiDescription: "This string function return the index of the parameters in the column.",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-            apiExample: { http: "/v1.0/Things?$filter=indexof('name', 'Temperature') eq 1",
+            apiExample: { http: `/${testVersion}/Things?$filter=indexof('name', 'Temperature') eq 1`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -229,7 +229,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
             apiName: "BuiltInFunctionsSubstringOne",
             apiDescription: "This string function filters all the records that contain with part of the string extract all characters from a particular position of a column name .",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-            apiExample: { http: "/v1.0/Things?$filter=substring('name', 1) eq 'ame of new Things 1'",
+            apiExample: { http: `/${testVersion}/Things?$filter=substring('name', 1) eq 'ame of new Things 1'`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -254,7 +254,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
             apiName: "BuiltInFunctionsSubstringTwo",
             apiDescription: "This string function filters all the records that contain with part of the string extract by specific number of characters from a particular position of a column name .",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-            apiExample: { http: "/v1.0/Things?$filter=substring('name', 12, 10) eq 'Monitoring'",
+            apiExample: { http: `/${testVersion}/Things?$filter=substring('name', 12, 10) eq 'Monitoring'`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -279,7 +279,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
             apiName: "BuiltInFunctionsTolower",
             apiDescription: "This string function return string whose characters are going to be converted to lowercase.",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-            apiExample: { http: "/v1.0/Things?$filter=tolower('name') eq 'sensorwebthing 2'",
+            apiExample: { http: `/${testVersion}/Things?$filter=tolower('name') eq 'sensorwebthing 2'`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -304,7 +304,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
             apiName: "BuiltInFunctionsToUpper",
             apiDescription: "This string function return string whose characters are going to be converted to uppercase.",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-            apiExample: { http: "/v1.0/Things?$filter=toupper('name') eq 'SENSORWEBTHING 2'",
+            apiExample: { http: `/${testVersion}/Things?$filter=toupper('name') eq 'SENSORWEBTHING 2'`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -329,7 +329,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
             apiName: "BuiltInFunctionsTrim",
             apiDescription: "This string function return string with removed spaces from both side from a string.",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-            apiExample: { http: "/v1.0/Things?$filter=trim('name') eq 'MultiDatastreams SensorWebThing 10'",
+            apiExample: { http: `/${testVersion}/Things?$filter=trim('name') eq 'MultiDatastreams SensorWebThing 10'`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -354,7 +354,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
             apiName: "BuiltInFunctionsTrimWithParams",
             apiDescription: "This string function return string with removed spaces from both side from a string.",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-            apiExample: { http: "/v1.0/Things?$filter=trim('name', 'SensorWebThing ') eq '2'",
+            apiExample: { http: `/${testVersion}/Things?$filter=trim('name', 'SensorWebThing ') eq '2'`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -379,7 +379,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
             apiName: "BuiltInFunctionsConcat",
             apiDescription: " 	The concat function returns a string that appends the second input parameter string value to the first.",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-            apiExample: { http: "/v1.0/Things?$filter=concat('name', 'test') eq 'MultiDatastreams SensorWebThing 10test'",
+            apiExample: { http: `/${testVersion}/Things?$filter=concat('name', 'test') eq 'MultiDatastreams SensorWebThing 10test'`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 

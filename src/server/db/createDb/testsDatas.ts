@@ -6,7 +6,7 @@
  *
  */
 
-import { Logs } from "../../logger";
+import { log } from "../../log";
 
 const numberStr = [
     "one",
@@ -457,7 +457,7 @@ const numberStr = [
       datas.forEach((elem: string) => result.push(elem));
       
     } catch (error) {
-      Logs.error(error);
+      log.errorMsg(error);
     } finally {
       return result;
     }

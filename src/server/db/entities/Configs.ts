@@ -8,7 +8,7 @@
 
 import koa from "koa";
 import { Common } from "./common";
-import { Logs } from "../../logger";
+import { formatLog } from "../../logger";
 import { IconfigFile, IreturnResult } from "../../types";
 import { serverConfig } from "../../configuration";
 import { hideKeysInJson, hidePasswordIn } from "../../helpers";
@@ -20,30 +20,28 @@ export class Configs extends Common {
   }
 
   async getAll(): Promise<IreturnResult | undefined> {
-    Logs.whereIam();
+    console.log(formatLog.whereIam());
     if (!ensureAuthenticated(this.ctx)) this.ctx.throw(401);
     const result: { [key: string]: IconfigFile } = {};
-    Object.keys(serverConfig.configs)
-      .filter((e) => e != "admin")
-      .forEach((elem: string) => { 
-        result[elem] = { ...serverConfig.configs[elem] }; 
-      });
+    serverConfig.getConfigs().forEach((elem: string) => { 
+      result[elem] = { ...serverConfig.getConfig(elem) }; 
+    });
     return this.createReturnResult({
       body: hidePasswordIn(result)
     });
   }
 
   async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
-    Logs.whereIam();
+    console.log(formatLog.whereIam());
     if (!ensureAuthenticated(this.ctx)) this.ctx.throw(401);
     return this.createReturnResult({
       body: hideKeysInJson(
-        serverConfig.configs[ typeof idInput === "string" ? idInput : this.ctx._config.name ], ["entities"] ),
+        serverConfig.getConfig( typeof idInput === "string" ? idInput : this.ctx._config.name ), ["entities"] ),
     });
   }
 
-  async add(dataInput: object | undefined): Promise<IreturnResult | undefined> {
-    Logs.whereIam();
+  async post(dataInput: object | undefined): Promise<IreturnResult | undefined> {
+    console.log(formatLog.whereIam());
     if (!ensureAuthenticated(this.ctx)) this.ctx.throw(401);
     if (dataInput)
       return this.createReturnResult({
@@ -53,7 +51,7 @@ export class Configs extends Common {
 
   // Delete an item
   async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {
-    Logs.whereIam(idInput);
+   console.log(formatLog.whereIam(idInput));
     return;
   }
 }

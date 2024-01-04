@@ -9,23 +9,22 @@
 import koa from "koa";
 import { serverConfig } from "../configuration";
 import querystring from "querystring";
-import { API_VERSION, TEST, setDebug } from "../constants";
+import { TEST, setDebug } from "../constants";
 import { errors } from "../messages";
 import { createBearerToken, getUserId, isTest } from ".";
-// import { requestToFile } from "../routes/trace";
-
+import { models } from "../models";
 
 const getVersionFromUrl = (input: string) =>
   input
     .replace(/[//]+/g, "/")
     .split("/")
-    .filter((value: string) => value.match(/v{1}\d\.\d/g))[0] || API_VERSION;
+    .filter((value: string) => value.match(/v{1}\d\.\d/g))[0];
 
 const getConfigFromPort = (port: number | undefined): string | undefined => {
   if (port) {
     const databaseName = isTest()
       ? [TEST]
-      : Object.keys(serverConfig.configs).filter( (word) => (word != TEST && serverConfig.configs[word].port) == port );
+      : serverConfig.getConfigs().filter( (word) => (word != TEST && serverConfig.getConfig(word).port) == port );
     if (databaseName && databaseName.length === 1) return databaseName[0];
   }
 };
@@ -44,14 +43,14 @@ export const setConfigToCtx = (ctx: koa.Context): void => {
   let configName = getConfigFromPort(ctx.req.socket.localPort);
   const version = getVersionFromUrl(ctx.originalUrl);
   const name = getNameFromUrl(ctx.originalUrl, version);
+  
   if (!name) throw new Error(errors.noNameIdentified);
   if (name) {
     configName = configName || serverConfig.getConfigNameFromName(name);
-    if (configName) ctx._config = serverConfig.configs[configName];
+    if (configName) ctx._config = serverConfig.getConfig(configName);
     else return;
     // else throw new Error(msg(errors.notPresentInConfigName, name));
   }
-
   ctx.querystring = decodeURIComponent(querystring.unescape(ctx.querystring));
   try {
     if (ctx._config.extensions.includes("logs"))
@@ -83,4 +82,6 @@ export const setConfigToCtx = (ctx: koa.Context): void => {
     process.env.NODE_ENV?.trim() === "test"
       ? `proxy/${version}/`
       : `${ctx._linkBase}/${version}/`;
+
+  ctx._model = models.filteredModelFromConfig(ctx._config);
 };

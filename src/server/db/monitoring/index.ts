@@ -8,18 +8,17 @@
 
 import { serverConfig } from "../../configuration";
 import { ADMIN, APP_NAME } from "../../constants";
-import { asyncForEach } from "../../helpers";
-import { Logs } from "../../logger";
+import { log } from "../../log";
+import { asyncForEach, isNull } from "../../helpers";
+import { formatLog } from "../../logger";
 
-export const getMetrics = async (
-  name: string
-): Promise<string[] | { [key: string]: any }> => {
-  Logs.whereIam();
-  const sqlTemp = await serverConfig.db(ADMIN)`SELECT split_part(split_part((SELECT version()), ',', 1), ' ', 2) AS version`;
+export const getMetrics = async ( name: string ): Promise<string[] | { [key: string]: any } | undefined> => {
+  console.log(formatLog.whereIam());
+  const sqlTemp = await serverConfig.getConnection(ADMIN)`SELECT split_part(split_part((SELECT version()), ',', 1), ' ', 2) AS version`;
+  if (isNull(sqlTemp)) { 
   const dbVersion = sqlTemp["version"];
   const username = "postgres";
-  const minVersion = (major: number, minor: number): boolean =>
-    Number(`${major}.${minor}`) >= dbVersion ? false : true;
+  const minVersion = (major: number, minor: number): boolean => Number(`${major}.${minor}`) >= dbVersion ? false : true;
   const type = "all";
   const lto = 3 * 1000;
   const metrics = {
@@ -215,14 +214,16 @@ export const getMetrics = async (
     async (operation: string) => {
       if (metrics[operation])
         await serverConfig
-          .db(ADMIN)`${metrics[operation]}`
+          .getConnection(ADMIN)`${metrics[operation]}`
           .then((result) => {
             res[operation] = result;
           })
           .catch((err) => {
-            Logs.error(err);
+            log.errorMsg(err);
           });
     }
   );
   return res;
+}
+
 };

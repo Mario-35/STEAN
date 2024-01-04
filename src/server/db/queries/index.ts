@@ -6,14 +6,15 @@
  *
  */
 
-export { queryAsJson } from "./queryAsJson";
 export { queryAsDataArray } from "./queryAsDataArray";
+export { queryAsJson } from "./queryAsJson";
+export { queryGraphDatastream } from "./queryGraphDatastream";
+export { queryGraphMultiDatastream } from "./queryGraphMultiDatastream";
 export { queryInterval } from "./queryInterval";
 export { queryMultiDatastreamFromDeveui } from "./queryMultiDatastreamFromDeveui";
-export { queryMultiDatastreamsUnitsKeys } from "./queryMultiDatastreamsUnitsKeys";
 export { queryMultiDatastreamKeys } from "./queryMultiDatastreamKeys";
-export { queryGraphMultiDatastream } from "./queryGraphMultiDatastream";
-export { queryGraphDatastream } from "./queryGraphDatastream";
+export { queryMultiDatastreamsUnitsKeys } from "./queryMultiDatastreamsUnitsKeys";
+export { queryStreamFromDeveui } from "./queryStreamFromDeveui";
 export { queryTestId } from "./queryTestId";
 export { replayPayload } from "./replayPayload";
 

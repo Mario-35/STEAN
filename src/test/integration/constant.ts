@@ -2,13 +2,14 @@ import fs from "fs";
 import path from "path";
 import { TEST } from "../../server/constants";
 import { Ientity } from "../../server/types";
-const conf = require("../../server/configuration/test.json");
-const apidocJson = require("../apidoc.json");
+import conf from "../../server/configuration/test.json";
+import apidocJson from "../apidoc.json";
+import { models } from "../../server/models";
 export const identification = { "username": conf[TEST].pg.user, "password": conf[TEST].pg.password };
-
+export const testVersion = "v1.1";
 let nb = 0;
 export function getNB(message: string): string {nb +=1; return `${message} ${String(nb)}`;} 
-
+export const _RAWDB = models.DBFull(TEST);
 // Institut Agro Rennes-Angers 48.1140652783794, -1.7062956999598533 
 export const geoPos: { [key: string]: number[] } = {
     "Centre commercial Grand Quartier" : [48.13765198324515, -1.6956051932646596],

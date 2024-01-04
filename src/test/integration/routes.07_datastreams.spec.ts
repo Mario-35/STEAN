@@ -28,10 +28,11 @@ import {
     apiInfos,
     showHide,
     nbColor,
-    nbColorTitle
+    nbColorTitle,
+    testVersion,
+    _RAWDB
 } from "./constant";
 import { server } from "../../server/index";
-import { _DB } from "../../server/db/constants";
 import { Ientity } from "../../server/types";
 
 import { testsKeys as Observations_testsKeys } from "./routes.11_observations.spec";
@@ -56,7 +57,7 @@ chai.use(chaiHttp);
 const should = chai.should();
 
 const docs: IApiDoc[] = [];
-const entity: Ientity = _DB.Datastreams;
+const entity: Ientity = _RAWDB.Datastreams;
 
 const addToApiDoc = (input: IApiInput) => {
     docs.push(prepareToApiDoc(input, entity.name));
@@ -80,7 +81,7 @@ describe("endpoint : Datastream", () => {
 
     before((done) => {
         chai.request(server)
-            .post("/test/v1.0/login")
+            .post(`/test/${testVersion}/login`)
             .send(identification)
             .end((err: Error, res: any) => {
                 token = String(res.body["token"]);
@@ -96,7 +97,7 @@ describe("endpoint : Datastream", () => {
                 apiDescription: `Retrieve all ${entity.name}.${showHide(`Get${entity.name}`, apiInfos["9.2.2"])}`,
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-collection-entities",
                 apiExample: {
-                    http: `/v1.0/${entity.name}`,
+                    http: `/${testVersion}/${entity.name}`,
                     curl: defaultGet("curl", "KEYHTTP"),
                     javascript: defaultGet("javascript", "KEYHTTP"),
                     python: defaultGet("python", "KEYHTTP")
@@ -105,7 +106,7 @@ describe("endpoint : Datastream", () => {
             };
             executeQuery(count(entity.table)).then((result) => {
                     chai.request(server)
-                        .get(`/test/v1.0/${entity.name}`)
+                        .get(`/test/${testVersion}/${entity.name}`)
                         .end((err, res) => {
                             should.not.exist(err);
                             res.status.should.equal(200);
@@ -130,7 +131,7 @@ describe("endpoint : Datastream", () => {
                 apiDescription: "Get a specific Datastream.",
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-entity",
                 apiExample: {
-                    http: `/v1.0/${entity.name}(${id})`,
+                    http: `/${testVersion}/${entity.name}(${id})`,
                     curl: defaultGet("curl", "KEYHTTP"),
                     javascript: defaultGet("javascript", "KEYHTTP"),
                     python: defaultGet("python", "KEYHTTP")
@@ -155,7 +156,7 @@ describe("endpoint : Datastream", () => {
 
         it(`Return error if ${entity.name} not exist ${nbColor}[9.2.4]`, (done) => {
             chai.request(server)
-                .get(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
+                .get(`/test/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .end((err, res) => {
                     should.not.exist(err);
                     res.status.should.equal(404);
@@ -172,7 +173,7 @@ describe("endpoint : Datastream", () => {
                 apiName: `GetThings${entity.name}`,
                 apiDescription: "Get Datastream(s) from Things.",
                 apiExample: {
-                    http: `/v1.0/Things(${id})/${entity.name}`,
+                    http: `/${testVersion}/Things(${id})/${entity.name}`,
                     curl: defaultGet("curl", "KEYHTTP"),
                     javascript: defaultGet("javascript", "KEYHTTP"),
                     python: defaultGet("python", "KEYHTTP")
@@ -204,7 +205,7 @@ describe("endpoint : Datastream", () => {
                 apiName: `GetExpandObservations${entity.name}`,
                 apiDescription: "Get a specific Datastream with expand Observations and ObservedProperty.",
                 apiExample: {
-                    http: `/v1.0/${entity.name}(10)?$expand=Observations,ObservedProperty`,
+                    http: `/${testVersion}/${entity.name}(10)?$expand=Observations,ObservedProperty`,
                     curl: defaultGet("curl", "KEYHTTP"),
                     javascript: defaultGet("javascript", "KEYHTTP"),
                     python: defaultGet("python", "KEYHTTP")
@@ -234,7 +235,7 @@ describe("endpoint : Datastream", () => {
                 apiName: `GetAllInfos${entity.name}`,
                 apiDescription: "Get all infos of a datastream.",
                 apiExample: {
-                    http: `/v1.0/${entity.name}(10)?$expand=Thing/Locations,Sensor,ObservedProperty`,
+                    http: `/${testVersion}/${entity.name}(10)?$expand=Thing/Locations,Sensor,ObservedProperty`,
                     curl: defaultGet("curl", "KEYHTTP"),
                     javascript: defaultGet("javascript", "KEYHTTP"),
                     python: defaultGet("python", "KEYHTTP")
@@ -257,7 +258,7 @@ describe("endpoint : Datastream", () => {
 
         it(`Return error if ${entity.name} Path is invalid`, (done) => {
             chai.request(server)
-                .get(`/test/v1.0/${entity.name}(2)?$expand=Things/Locations,Sensor,ObservedProperty`)
+                .get(`/test/${testVersion}/${entity.name}(2)?$expand=Things/Locations,Sensor,ObservedProperty`)
                 .end((err, res) => {
                     should.not.exist(err);
                     res.status.should.equal(400);
@@ -273,7 +274,7 @@ describe("endpoint : Datastream", () => {
                 apiName: `GetPhenomenonTime${entity.name}`,
                 apiDescription: "Get Datastream(s) from phenomenonTime filter.",
                 apiExample: {
-                    http: `/v1.0/${entity.name}?$filter=resultTime eq 2016-11-09T04:15:15Z/2016-11-14T03:15:15Z`,
+                    http: `/${testVersion}/${entity.name}?$filter=resultTime eq 2016-11-09T04:15:15Z/2016-11-14T03:15:15Z`,
                     curl: defaultGet("curl", "KEYHTTP"),
                     javascript: defaultGet("javascript", "KEYHTTP"),
                     python: defaultGet("python", "KEYHTTP")
@@ -298,7 +299,7 @@ describe("endpoint : Datastream", () => {
                 apiName: `GetObservationFilter${entity.name}`,
                 apiDescription: "Get Datastream(s) from Observations filter.",
                 apiExample: {
-                    http: `/v1.0/${entity.name}?$filter=Observations/result eq 23`,
+                    http: `/${testVersion}/${entity.name}?$filter=Observations/result eq 23`,
                     curl: defaultGet("curl", "KEYHTTP"),
                     javascript: defaultGet("javascript", "KEYHTTP"),
                     python: defaultGet("python", "KEYHTTP")
@@ -324,7 +325,7 @@ describe("endpoint : Datastream", () => {
         it(`Return ${entity.name} Subentity Thing ${nbColor}[9.2.6]`, (done) => {
             const name = "Thing";
             chai.request(server)
-                .get(`/test/v1.0/${entity.name}(2)/${name}`)
+                .get(`/test/${testVersion}/${entity.name}(2)/${name}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -343,7 +344,7 @@ describe("endpoint : Datastream", () => {
         it(`Return ${entity.name} Subentity Sensor ${nbColor}[9.2.6]`, (done) => {
             const name = "Sensor";
             chai.request(server)
-                .get(`/test/v1.0/${entity.name}(2)/${name}`)
+                .get(`/test/${testVersion}/${entity.name}(2)/${name}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -360,7 +361,7 @@ describe("endpoint : Datastream", () => {
         it(`Return ${entity.name} Subentity ObservedProperty ${nbColor}[9.2.6]`, (done) => {
             const name = "ObservedProperty";
             chai.request(server)
-                .get(`/test/v1.0/${entity.name}(2)/${name}`)
+                .get(`/test/${testVersion}/${entity.name}(2)/${name}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -377,7 +378,7 @@ describe("endpoint : Datastream", () => {
         it(`Return ${entity.name} Subentity Observations ${nbColor}[9.2.6]`, (done) => {
             const name = "Observations";
             chai.request(server)
-                .get(`/test/v1.0/${entity.name}(1)/${name}`)
+                .get(`/test/${testVersion}/${entity.name}(1)/${name}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -394,7 +395,7 @@ describe("endpoint : Datastream", () => {
         it(`Return ${entity.name} Expand Things ${nbColor}[9.3.2.1]`, (done) => {
             const name = "Thing";
             chai.request(server)
-                .get(`/test/v1.0/${entity.name}(2)?$expand=${name}`)
+                .get(`/test/${testVersion}/${entity.name}(2)?$expand=${name}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -412,7 +413,7 @@ describe("endpoint : Datastream", () => {
         it(`Return ${entity.name} Expand Sensor ${nbColor}[9.3.2.1]`, (done) => {
             const name = "Sensor";
             chai.request(server)
-                .get(`/test/v1.0/${entity.name}(2)?$expand=${name}`)
+                .get(`/test/${testVersion}/${entity.name}(2)?$expand=${name}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -428,7 +429,7 @@ describe("endpoint : Datastream", () => {
         it(`Return ${entity.name} Expand Observations ${nbColor}[9.3.2.1]`, (done) => {
             const name = "Observations";
             chai.request(server)
-                .get(`/test/v1.0/${entity.name}(1)?$expand=${name}`)
+                .get(`/test/${testVersion}/${entity.name}(1)?$expand=${name}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -445,7 +446,7 @@ describe("endpoint : Datastream", () => {
         it(`Return ${entity.name} Expand ObservedProperty ${nbColor}[9.3.2.1]`, (done) => {
             const name = "ObservedProperty";
             chai.request(server)
-                .get(`/test/v1.0/${entity.name}(1)?$expand=${name}`)
+                .get(`/test/${testVersion}/${entity.name}(1)?$expand=${name}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -480,7 +481,7 @@ describe("endpoint : Datastream", () => {
                 apiDescription: `Post a new ${entity.name}.${showHide(`Post${entity.name}`, apiInfos["10.2"])}`,
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#link-existing-entities-when-creating",
                 apiExample: {
-                    http: `/v1.0/${entity.name}`,
+                    http: `/${testVersion}/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
                     javascript: defaultPost("javascript", "KEYHTTP", datas),
                     python: defaultPost("python", "KEYHTTP", datas)
@@ -522,7 +523,7 @@ describe("endpoint : Datastream", () => {
                 apiDescription: `Post a new ${entity.name} with default FOI`,
                 apiReference: "",
                 apiExample: {
-                    http: `/v1.0/${entity.name}`,
+                    http: `/${testVersion}/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
                     javascript: defaultPost("javascript", "KEYHTTP", datas),
                     python: defaultPost("python", "KEYHTTP", datas)
@@ -545,7 +546,7 @@ describe("endpoint : Datastream", () => {
 
         it(`Return Error if the payload is malformed ${nbColor}[10.2.2]`, (done) => {
             chai.request(server)
-                .post("/test/v1.0/Datastreams")
+                .post(`/test/${testVersion}/Datastreams`)
                 .send({})
                 .set("Cookie", `${keyTokenName}=${token}`)
                 .end((err: Error, res: any) => {
@@ -585,7 +586,7 @@ describe("endpoint : Datastream", () => {
                 apiDescription: "POST a new Datastream with existing Thing.",
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#link-existing-entities-when-creating",
                 apiExample: {
-                    http: `/v1.0/Things(1)/${entity.name}`,
+                    http: `/${testVersion}/Things(1)/${entity.name}`,
                     curl: defaultPost("curl", "KEYHTTP", datas),
                     javascript: defaultPost("javascript", "KEYHTTP", datas),
                     python: defaultPost("python", "KEYHTTP", datas)
@@ -631,7 +632,7 @@ describe("endpoint : Datastream", () => {
                 }                
             };
             chai.request(server)
-                .post(`/test/v1.0/Things(1)/${entity.name}`)
+                .post(`/test/${testVersion}/Things(1)/${entity.name}`)
                 .send(datas)
                 .set("Cookie", `${keyTokenName}=${token}`)
                 .end(async (err: Error, res: any) => {
@@ -661,7 +662,7 @@ describe("endpoint : Datastream", () => {
                         apiDescription: `Patch a ${entity.singular}.${showHide(`Patch${entity.name}`, apiInfos["10.3"])}`,
                         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_2",
                         apiExample: {
-                            http: `/v1.0/${entity.name}(10)`,
+                            http: `/${testVersion}/${entity.name}(10)`,
                             curl: defaultPatch("curl", "KEYHTTP", datas),
                             javascript: defaultPatch("javascript", "KEYHTTP", datas),
                             python: defaultPatch("python", "KEYHTTP", datas)
@@ -687,7 +688,7 @@ describe("endpoint : Datastream", () => {
 
         it(`Return Error if the ${entity.name} not exist`, (done) => {
             chai.request(server)
-                .patch(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
+                .patch(`/test/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .send({
                     unitOfMeasurement: {
                         symbol: "ºC",
@@ -720,7 +721,7 @@ describe("endpoint : Datastream", () => {
                         apiDescription: `Delete a ${entity.singular}.${showHide(`Delete${entity.name}`, apiInfos["10.4"])}`,
                         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_3",
                         apiExample: {
-                            http: `/v1.0/${entity.name}(${beforeDelete["id"]})`,
+                            http: `/${testVersion}/${entity.name}(${beforeDelete["id"]})`,
                             curl: defaultDelete("curl", "KEYHTTP"),
                             javascript: defaultDelete("javascript", "KEYHTTP"),
                             python: defaultDelete("python", "KEYHTTP")
@@ -743,7 +744,7 @@ describe("endpoint : Datastream", () => {
 
         it(`Return Error if the ${entity.name} not exist`, (done) => {
             chai.request(server)
-                .delete(`/test/v1.0/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
+                .delete(`/test/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
                 .set("Cookie", `${keyTokenName}=${token}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);

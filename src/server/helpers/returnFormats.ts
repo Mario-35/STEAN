@@ -9,23 +9,22 @@
 import { queryAsDataArray, queryAsJson, queryGraphDatastream, queryGraphMultiDatastream, queryInterval, } from "../db/queries";
 import { Parser } from "json2csv";
 import koa from "koa";
-import { Logs } from "../logger";
 import { IreturnFormat } from "../types";
 import { addCssFile } from "../views/css";
 import { addJsFile } from "../views/js";
 import util from "util";
 import { PgVisitor } from "../odata";
-import { _DB } from "../db/constants";
 import { Eformats } from "../enums";
 import { isGraph } from ".";
 import { DOUBLEQUOTEDCOMA } from "../constants";
+import { log } from "../log";
 
 const defaultFunction = (input: string | object) => input;
 const defaultForwat = (input: PgVisitor): string => input.sql;
 const generateFields = (input: PgVisitor): string[] => {
   let fields: string[] = [];
   if (isGraph(input)) {
-    const table = _DB[input.parentEntity ? input.parentEntity : input.entity].table;
+    const table = input.ctx._model[input.parentEntity ? input.parentEntity : input.entity].table;
     fields = [
       `(SELECT ${table}."description" FROM ${table} WHERE ${table}."id" = ${
         input.parentId ? input.parentId : input.id
@@ -40,11 +39,11 @@ const generateGrahSql = (input: PgVisitor) => {
   input.intervalColumns = ["id", "step as date", "result"];
   if (isGraph(input)) input.intervalColumns.push("concat"); 
   const table =
-    _DB[input.parentEntity ? input.parentEntity : input.entity].table;
+  input.ctx._model[input.parentEntity ? input.parentEntity : input.entity].table;
   const id = input.parentId ? input.parentId : input.id;
   return queryAsJson({
     query:
-      table === _DB.Datastreams.table
+      table === input.ctx._model.Datastreams.table
         ? queryGraphDatastream(table, id, queryInterval(input))
         : queryGraphMultiDatastream( table, id, input.splitResult, queryInterval(input) ),
     singular: false,
@@ -70,7 +69,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
             query: input.sql,
             singular: false,
             count: true,
-            fullCount: input.count === true ? _DB[input.entity].count : undefined,
+            fullCount: input.count === true ? input.ctx._model[input.entity].count : undefined,
             fields: generateFields(input),
           });
     },
@@ -147,7 +146,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
           return parser.parse(input[0].dataArray);
         } catch (e) {
           if (e instanceof Error) {
-            Logs.error(e.message);
+            log.errorMsg(e);
             return e.message;
           }
         }

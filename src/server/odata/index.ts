@@ -14,11 +14,12 @@ import { serverConfig } from "../configuration";
 import { PgVisitor } from "./visitor/PgVisitor";
 import { SqlOptions } from "./parser/sqlOptions";
 import { queryMultiDatastreamKeys } from "../db/queries";
+import { versionString } from "../constants";
 export { PgVisitor } from "./visitor/PgVisitor";
 
 const doSomeWarkAfterCreateAst = async (input: PgVisitor, ctx: koa.Context) => {
   if ( input.splitResult && input.splitResult[0].toUpperCase() == "ALL" && input.parentId && <bigint>input.parentId > 0 ) {
-    const temp = await serverConfig.db(ctx._config.name).unsafe(`${queryMultiDatastreamKeys(input.parentId)}`);
+    const temp = await serverConfig.getConnection(ctx._config.name).unsafe(`${queryMultiDatastreamKeys(input.parentId)}`);
     input.splitResult = temp[0]["keys"];
   }
 };
@@ -55,7 +56,7 @@ export const createOdata = async ( ctx: koa.Context ): Promise<PgVisitor | undef
   let urlSrc = ctx.href
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .split(ctx._config.apiVersion)[1];
+    .split(versionString(ctx._config.apiVersion))[1];
    
     urlSrc = escapesOdata(urlSrc);
     
@@ -114,9 +115,9 @@ export const createOdata = async ( ctx: koa.Context ): Promise<PgVisitor | undef
 
   const astQuery: Token = <Token>query(decodeURIComponent(urlSrcSplit[1]));
 
-  const temp = new PgVisitor(options)
-    .init(ctx, astRessources)
-    .start(ctx, astQuery);
+  const temp = new PgVisitor(ctx, options)
+    .init(astRessources)
+    .start(astQuery);
 
   await doSomeWarkAfterCreateAst(temp, ctx);
 

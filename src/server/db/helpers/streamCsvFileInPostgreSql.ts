@@ -7,15 +7,15 @@
  */
 
 import fs from "fs";
-import { Logs } from "../../logger";
+import { formatLog } from "../../logger";
 import { IcsvColumn, IcsvFile } from "../../types";
 import readline from "readline";
 import koa from "koa";
-import { _DB } from "../constants";
 import { createReadStream } from 'fs';
 import { addAbortSignal } from 'stream';
 import { serverConfig } from "../../configuration";
 import { executeSql } from ".";
+import { log } from "../../log";
 
 interface ICsvImport {
   dateSql: string;
@@ -41,7 +41,7 @@ const dateSqlRequest = async ( paramsFile: IcsvFile ): Promise<ICsvImport | unde
     const splitColumns = line.split(";");
     if (regexDateHour.test(splitColumns[0]) == true) {
       const nbCol = (line.match(/;/g) || []).length;
-      Logs.result("dateSqlRequest", "Date Hour");
+      console.log(formatLog.result("dateSqlRequest", "Date Hour"));
       returnValue.columns = ["datehour"];
       for (let i = 0; i < nbCol; i++) returnValue.columns.push(`value${i + 1}`);
 
@@ -52,7 +52,7 @@ const dateSqlRequest = async ( paramsFile: IcsvFile ): Promise<ICsvImport | unde
       regexDate.test(splitColumns[0]) == true &&
       regexHour.test(splitColumns[1]) == true
     ) {
-      Logs.result("dateSqlRequest", "date ; hour");
+      console.log(formatLog.result("dateSqlRequest", "date ; hour"));
       const nbCol = (line.match(/;/g) || []).length;
 
       returnValue.columns = ["date", "hour"];
@@ -89,13 +89,13 @@ export const createColumnHeaderName = async (
       fileStream.destroy();
       return cols;
     } catch (error) {
-      Logs.error(error);
+      log.errorMsg(error);
     }
   }
 };
 
-export const streamCsvFileInPostgreSql = async ( ctx: koa.Context, configName: string, paramsFile: IcsvFile ): Promise<string | undefined> => {
-  Logs.whereIam();
+export const streamCsvFileInPostgreSql = async ( ctx: koa.Context, paramsFile: IcsvFile ): Promise<string | undefined> => {
+  console.log(formatLog.whereIam());
   let returnValue = undefined;
   const sqlRequest = await dateSqlRequest(paramsFile);
   if (sqlRequest) {
@@ -104,20 +104,20 @@ export const streamCsvFileInPostgreSql = async ( ctx: koa.Context, configName: s
     const cols:string[] = [];
     sqlRequest.columns.forEach((value) => cols.push(`"${value}" varchar(255) NULL`));
     const createTable = `CREATE TABLE public."${paramsFile.tempTable}" ( id serial4 NOT NULL, ${cols}, CONSTRAINT ${paramsFile.tempTable}_pkey PRIMARY KEY (id));`;
-    await executeSql(ctx._config.name, createTable);
-    const writable = serverConfig.db(configName).unsafe(`COPY ${paramsFile.tempTable}  (${sqlRequest.columns.join( "," )}) FROM STDIN WITH(FORMAT csv, DELIMITER ';'${ paramsFile.header })`).writable();
+    await executeSql(ctx._config, createTable);
+    const writable = serverConfig.getConnection(ctx._config.name).unsafe(`COPY ${paramsFile.tempTable}  (${sqlRequest.columns.join( "," )}) FROM STDIN WITH(FORMAT csv, DELIMITER ';'${ paramsFile.header })`).writable();
   
     readable
       .pipe(addAbortSignal(controller.signal, await writable))
       .on('error', () => {
-        Logs.error('ABORTED-STREAM'); // this executed
+        log.errorMsg('ABORTED-STREAM'); // this executed
       });
       
     const fileImport = paramsFile.filename.split("/").reverse()[0];
     const dateImport = new Date().toLocaleString();
 
     // stream finshed so COPY
-    Logs.debug("COPY TO ", paramsFile.tempTable);
+    console.log(formatLog.debug("COPY TO ", paramsFile.tempTable));
     const scriptSql: string[] = [];
     const scriptSqlResult: string[] = [];
     // make import query
@@ -129,7 +129,7 @@ export const streamCsvFileInPostgreSql = async ( ctx: koa.Context, configName: s
           `${index == 0 ? "WITH" : ","} updated${
             index + 1
           } AS (INSERT into "${
-            _DB.Observations.table
+            ctx._model.Observations.table
           }" ("${csvColumn.stream.type?.toLowerCase()}_id", "featureofinterest_id", "phenomenonTime","resultTime", "result", "resultQuality") SELECT ${
             csvColumn.stream.id
           }, ${csvColumn.stream.FoId},  ${sqlRequest.dateSql}, ${

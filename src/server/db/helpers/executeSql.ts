@@ -7,18 +7,17 @@
  */
 
 import { serverConfig } from "../../configuration";
-import { _DEBUG } from "../../constants";
-import { Elog } from "../../enums";
+import { log } from "../../log";
 import { isTest } from "../../helpers";
-import { Logs } from "../../logger";
+import { IconfigFile } from "../../types";
 
-export const executeSql = async (configName: string, query: string, show?:boolean): Promise<object> => {
-    Logs.showQuery(`\n${query}`, [Elog.whereIam, (_DEBUG === true || show) ? Elog.Show : Elog.None]);
+export const executeSql = async (config: IconfigFile, query: string): Promise<object> => {
+    log.query(`\n${query}`);
     return new Promise(async function (resolve, reject) {
-        await serverConfig.db(configName).unsafe(query).then((res: object) => {                            
+        await serverConfig.getConnection(config.name).unsafe(query).then((res: object) => {                            
             resolve(res);
         }).catch((err: Error) => {
-            if (!isTest() && +err["code"] === 23505) Logs.errorQuery(query, err);
+            if (!isTest() && +err["code"] === 23505) log.queryError(query, err);
             reject(err);
         });
     });

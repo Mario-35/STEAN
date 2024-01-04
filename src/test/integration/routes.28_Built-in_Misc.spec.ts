@@ -10,7 +10,7 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult } from "./constant";
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult, testVersion } from "./constant";
 import { server } from "../../server/index";
 
 
@@ -39,7 +39,7 @@ describe("Odata BuiltInMisc", () => {
             apiName: "BuiltInMiscInterval",
             apiDescription: "The interval keyword rounds the input postgresSql interval (see reference below) parameter to the nearest interval.",
             apiReference: "https://www.postgresql.org/docs/15/ecpg-pgtypes.html#ECPG-PGTYPES-INTERVAL",
-            apiExample: { http: "/v1.0/Datastreams(3)/Observations?$interval=1 hour",
+            apiExample: { http: `/${testVersion}/Datastreams(3)/Observations?$interval=1 hour`,
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
@@ -64,7 +64,7 @@ describe("Odata BuiltInMisc", () => {
 
     it("interval(15 min)", (done) => {
         chai.request(server)
-            .get(`/test/v1.0/Datastreams(3)/Observations?$interval=15 min`)
+            .get(`/test/${testVersion}/Datastreams(3)/Observations?$interval=15 min`)
             .end((err: Error, res: any) => { 
                 should.not.exist(err);
                 res.status.should.equal(200);
@@ -79,7 +79,7 @@ describe("Odata BuiltInMisc", () => {
 
     it("interval(1 min)", (done) => {
         chai.request(server)
-            .get(`/test/v1.0/Datastreams(3)/Observations?$interval=1 min`)
+            .get(`/test/${testVersion}/Datastreams(3)/Observations?$interval=1 min`)
             .end((err: Error, res: any) => {     
                 should.not.exist(err);
                 res.status.should.equal(200);
@@ -94,7 +94,7 @@ describe("Odata BuiltInMisc", () => {
 
     it("interval(1 day)", (done) => {
         chai.request(server)
-            .get(`/test/v1.0/Datastreams(4)/Observations?$interval=1 day`)
+            .get(`/test/${testVersion}/Datastreams(4)/Observations?$interval=1 day`)
             .end((err: Error, res: any) => { 
                 should.not.exist(err);
                 res.status.should.equal(200);

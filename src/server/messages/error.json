@@ -1,6 +1,7 @@
 {
 	"alreadyPresent": "Already present",
 	"inConfigFile": "Error in config file",
+	"configName": "Configname $1 not found",
 	"noNameIdentified": "No name indentified",
     "notPresentInConfigName": "$1 : not present in config File",  
 	"tokenInvalid": "Token MUST NOT be provided in more than one place",
@@ -41,5 +42,7 @@
 	"createUser": "Error in creating user",
 	"decoderError": "decoder error",
 	"DecodingPayloadError": "Decoding Payload error",
-	"InvalidPayload": "Invalid Payload"
+	"InvalidPayload": "Invalid Payload",
+	"invalidSTVersion": "Invalid SensorThings version",
+	"wrongVersion": "Wrong $1 version"
 }

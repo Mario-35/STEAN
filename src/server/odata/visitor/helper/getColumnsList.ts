@@ -6,11 +6,10 @@
  *
  */
 
-
-import { getAllColumnName, _DB } from "../../../db/constants";
-import { getEntityName } from "../../../db/helpers";
+import { getAllColumnName } from "../../../db/constants";
 import { isCsvOrArray, isGraph, isObservation, removeAllQuotes } from "../../../helpers";
-import { Logs } from "../../../logger";
+import { formatLog } from "../../../logger";
+import { models } from "../../../models";
 import { Ientity } from "../../../types";
 import { PgVisitor } from "../PgVisitor";
 
@@ -21,14 +20,14 @@ function extractColumnName(input: string): string{
 }
 
 export function getColumnsList(tableName: string, main: PgVisitor, element: PgVisitor): string[] | undefined {   
-    Logs.whereIam();
-    const entityName = getEntityName(tableName.trim());
+    console.log(formatLog.whereIam());
+    const entityName = models.getEntityName(main.ctx._config, tableName.trim());
     if (!entityName) return;
-    const tempEntity:Ientity = _DB[entityName];
+    const tempEntity:Ientity = main.ctx._model[entityName];
     const returnValue: string[] = isGraph(main)
                                     ? [ main.interval
                                             ? `timestamp_ceil("resultTime", interval '${main.interval}') AS srcdate`
-                                            : `CONCAT('[new Date("', TO_CHAR("resultTime", 'YYYY/MM/DD HH24:MI'), '"), ', result->${main.parentEntity === _DB.MultiDatastreams.name ? "'valueskeys'->src.name" : "'value'"} ,']')`
+                                            : `CONCAT('[new Date("', TO_CHAR("resultTime", 'YYYY/MM/DD HH24:MI'), '"), ', result->${main.parentEntity === main.ctx._model.MultiDatastreams.name ? "'valueskeys'->src.name" : "'value'"} ,']')`
                                     ] : isCsvOrArray(main) ? ["id"] : [];                                    
                                     
     const selfLink = `CONCAT('${main.options.rootBase}${tempEntity.name}(', "${tempEntity.table}"."id", ')') AS "@iot.selfLink"`; 
@@ -39,10 +38,7 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
     let cols = isSelect 
                     ? element.select.split(",").filter((word: string) => word.trim() != "")
                     : getAllColumnName(tempEntity, "*", {table: true, as: true, cast: false, numeric: false, test: main.createOptions()});
-
-        
     if (element.splitResult) cols = cols.filter(e => e != "result");
-
     cols.forEach(e => {
         returnValue.push(e);
         if (main.interval) main.addToIntervalColumns(extractColumnName(e));
@@ -52,7 +48,8 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
         } else {
             const temp = extractColumnName(e);
             main.addToArrayNames(temp === '"@iot.id"' ? '"id"' : temp); 
-        }
+        }        
+        if (isCsvOrArray(main) && ["payload", "deveui", "phenomenonTime"].includes(removeAllQuotes(e))) main.addToArrayNames(e);
     });
     if (main.interval) main.addToIntervalColumns(`CONCAT('${main.options.rootBase}${tempEntity.name}(', coalesce("@iot.id", '0')::text, ')') AS "@iot.selfLink"`);
 
