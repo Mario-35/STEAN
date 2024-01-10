@@ -4,7 +4,7 @@ import postgres from "postgres";
 import { serverConfig } from "../../configuration";
 import { log } from "../../log";
 import { EextensionsType } from "../../enums";
-import { asyncForEach } from "../../helpers";
+import { addDoubleQuotes, asyncForEach, hidePasswordIn } from "../../helpers";
 import { models } from "../../models";
 
 const addConfigToExcel = async ( workbook: Excel.Workbook, config: object ) => {
@@ -52,12 +52,12 @@ const addToExcel = async ( workbook: Excel.Workbook, name: string, input: object
 const createColumnsList = async (ctx: koa.Context, entity: string) => {
   const columnList: string[] = [];
   await asyncForEach(
-    Object.keys(ctx._madel[entity].columns),
+    Object.keys(ctx._model[entity].columns),
     async (column: string) => {
-      const createQuery = (input: string) => `select distinct ${input} AS "${column}" from "${ctx._madel[entity].table}" LIMIT 200`;
-      if (ctx._madel[entity].columns[column].create !== "") {
+      const createQuery = (input: string) => `select distinct ${input} AS "${column}" from "${ctx._model[entity].table}" LIMIT 200`;
+      if (ctx._model[entity].columns[column].create !== "") {
         // IF JSON create column-key  note THAT is limit 200 firts items
-        if (models.isColumnType(ctx._config, ctx._madel[entity], column, "json")) {
+        if (models.isColumnType(ctx._config, ctx._model[entity], column, "json")) {
           const tempSqlResult = await serverConfig.getConnection(ctx._config.name).unsafe(createQuery(`jsonb_object_keys("${column}")`))
             .catch(async (e) => {
               if (e.code === "22023") {
@@ -81,7 +81,7 @@ const createColumnsList = async (ctx: koa.Context, entity: string) => {
   return columnList;
 };
 
-export const exportToXlsx = async (ctx: koa.Context) => {
+const exportToXlsx = async (ctx: koa.Context) => {
   // CReate new workBook
   const workbook = new Excel.Workbook();
   workbook.creator = "Me";
@@ -92,18 +92,16 @@ export const exportToXlsx = async (ctx: koa.Context) => {
   addConfigToExcel(workbook, serverConfig.getConfigForExcelExport(ctx._config.name));
   // Loop on entities
   await asyncForEach(
-    Object.keys(ctx._madel).filter(
+    Object.keys(ctx._model).filter(
       (entity: string) =>
-        ctx._madel[entity].table !== "" &&
-        [
-          EextensionsType.base,
+        ctx._model[entity].table !== "" &&
+        [EextensionsType.base,
           EextensionsType.multiDatastream,
-          EextensionsType.lora,
-        ].some((r) => ctx._madel[entity].extensions.includes(r))
+          EextensionsType.lora].some((r) => ctx._model[entity].extensions.includes(r))
     ),
     async (entity: string) => {
       const cols = await createColumnsList(ctx, entity);      
-      const temp = await serverConfig.getConnection(ctx._config.name).unsafe(`select ${cols} from "${ctx._madel[entity].table}" LIMIT 200`);  
+      const temp = await serverConfig.getConnection(ctx._config.name).unsafe(`select ${cols} from "${ctx._model[entity].table}" LIMIT 200`);  
       await addToExcel(workbook, entity, temp);
   });
   // Save file
@@ -112,4 +110,38 @@ export const exportToXlsx = async (ctx: koa.Context) => {
   await workbook.xlsx.write(ctx.res);
   // Close all
   ctx.res.end();
+};
+
+const exportToJson = async (ctx: koa.Context) => {
+  const result = { "create": hidePasswordIn(serverConfig.getConfig(ctx._config.name))};
+  const entities = Object.keys(ctx._model).filter((e: string) => ctx._model[e].createOrder > 0);
+  entities[entities.indexOf('Observations')] = ctx._model.ThingsLocations.name;
+  console.log(entities);
+
+  await asyncForEach(
+    entities,
+    async (entity: string) => {
+      if(Object.keys(ctx._model[entity].columns)) {
+        const cols = Object.keys(ctx._model[entity].columns).filter((e: string) => e != "id" && !e.endsWith('_id') && e[0] != '_' && ctx._model[entity].columns[e].create != "");
+        const rels = [""];
+        Object.keys(ctx._model[entity].columns).filter((e: string) => e.endsWith('_id')).forEach((e: string) => {
+          const table = e.split("_")[0];
+          const entity = models.getEntityName(ctx._config, table);
+          const temp = `(select "name" FROM "${table}" where "${table}"."id" = id LIMIT 1) AS "${entity}"`;
+          rels.push(temp);
+        });   
+        
+        const myCols = cols.map(e => addDoubleQuotes(e)).join();
+        
+        if (myCols.length <= 1) rels.shift();
+        const sql = `select ${myCols}${rels.length > 1 ? rels.join() : ""}\n from "${ctx._model[entity].table}" LIMIT 200`;  
+        const temp = await serverConfig.getConnection(ctx._config.name).unsafe(sql);  
+        result[entity] = (temp);
+      }  
+  });
+  return result;
+};
+
+export const exportService = async (ctx: koa.Context) => {
+  return (ctx.url.includes("xls")) ? exportToXlsx(ctx) : exportToJson(ctx);
 };

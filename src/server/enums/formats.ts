@@ -22,5 +22,6 @@ export const enum Eformats {
     jpg = "jpg", 
     jpeg = "jpeg", 
     ico = "ico",
-    xlsx = "xlsx"
+    xlsx = "xlsx",
+    xml = "xml"
 }

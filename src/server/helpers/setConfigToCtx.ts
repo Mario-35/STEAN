@@ -9,8 +9,8 @@
 import koa from "koa";
 import { serverConfig } from "../configuration";
 import querystring from "querystring";
-import { TEST, setDebug } from "../constants";
-import { errors } from "../messages";
+import { TEST, setDebug, versionString } from "../constants";
+import { errors, msg } from "../messages";
 import { createBearerToken, getUserId, isTest } from ".";
 import { models } from "../models";
 
@@ -29,27 +29,35 @@ const getConfigFromPort = (port: number | undefined): string | undefined => {
   }
 };
 
-const getNameFromUrl = ( input: string, version?: string ): string | undefined => {
+export const getNameFromUrl = ( input: string, version?: string ): string | undefined => {
   version = version || getVersionFromUrl(input);
   return input
     .split(version)[0]
     .split("/")
-    .filter((e: string) => e != "")[0];
+    .filter((e: string) => e != "")
+    .reverse()[0];
 };
 
 export const setConfigToCtx = (ctx: koa.Context): void => {
   createBearerToken(ctx);
   setDebug(ctx.request.url.includes("$debug=true"));
   let configName = getConfigFromPort(ctx.req.socket.localPort);
-  const version = getVersionFromUrl(ctx.originalUrl);
-  const name = getNameFromUrl(ctx.originalUrl, version);
-  
+  const urlversion = getVersionFromUrl(ctx.originalUrl);
+  const name = getNameFromUrl(ctx.originalUrl, urlversion);  
   if (!name) throw new Error(errors.noNameIdentified);
   if (name) {
     configName = configName || serverConfig.getConfigNameFromName(name);
     if (configName) ctx._config = serverConfig.getConfig(configName);
     else return;
     // else throw new Error(msg(errors.notPresentInConfigName, name));
+  }
+
+  // forcing post loras with different version 
+  if (urlversion != versionString(ctx._config.apiVersion)) {
+    if (ctx.request.method === "POST" && ctx.originalUrl.includes(`${urlversion}/Loras`)) ctx._urlversion = urlversion;
+    
+    // if (ctx.request.method === "POST" && ctx.originalUrl.endsWith("/Things")) 
+    else throw new Error(msg(errors.wrongVersion, ctx._config.apiVersion));  
   }
   ctx.querystring = decodeURIComponent(querystring.unescape(ctx.querystring));
   try {
@@ -80,8 +88,8 @@ export const setConfigToCtx = (ctx: koa.Context): void => {
   if (!ctx._linkBase.includes(name)) ctx._linkBase = ctx._linkBase + "/" + name;
   ctx._rootName =
     process.env.NODE_ENV?.trim() === "test"
-      ? `proxy/${version}/`
-      : `${ctx._linkBase}/${version}/`;
+      ? `proxy/${versionString(ctx._config.apiVersion)}/`
+      : `${ctx._linkBase}/${versionString(ctx._config.apiVersion)}/`;
 
   ctx._model = models.filteredModelFromConfig(ctx._config);
 };

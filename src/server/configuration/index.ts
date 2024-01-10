@@ -24,6 +24,7 @@ import { log } from "../log";
 class Configuration {
   static configs: { [key: string]: IconfigFile } = {};
   static filePath: fs.PathOrFileDescriptor;
+  
   static jsonConfiguration: JSON;
   static ports: number[] = [];
   static queries: { [key: string]: string[] } = {};

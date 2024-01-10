@@ -6,12 +6,12 @@
  *
  */
 
-import { IKeyString, IKeyBoolean } from ".";
+import { IKeyString, IKeyBoolean, IconfigFile } from ".";
 
 export interface IentityColumn {
     [key: string]: {
         readonly create: string;
-        columnAlias(test?: IKeyBoolean): string;
+        columnAlias(config: IconfigFile, test?: IKeyBoolean): string;
         readonly unique?: boolean;
         readonly test?: string;
         readonly dataList?: IKeyString;

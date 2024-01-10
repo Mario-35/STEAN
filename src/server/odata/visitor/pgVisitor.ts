@@ -6,7 +6,6 @@
  *
  */
 
-import { getColumnResult, getColumnNameOrAlias } from "../../db/constants";
 import { addDoubleQuotes, addSimpleQuotes, isGraph, isNull, isObservation, isTest, removeAllQuotes, returnFormats } from "../../helpers";
 import { IodataContext, IKeyString, IreturnFormat, Ientity, IcolumnOption, IKeyBoolean } from "../../types";
 import { Token } from "../parser/lexer";
@@ -20,6 +19,7 @@ import { errors, msg } from "../../messages/";
 import { EcolType, EextensionsType } from "../../enums";
 import { models } from "../../models";
 import { log } from "../../log";
+import { getColumnNameOrAlias, getColumnResult } from "../../db/helpers";
 
 export class PgVisitor {
   public ctx: koa.Context;
@@ -96,7 +96,7 @@ export class PgVisitor {
           ? models.getEntity(this.ctx._config, this.entity || this.parentEntity || this.navigationProperty) 
           : undefined;    
     const options: IcolumnOption = {table: false, as: false, cast: false, numeric: this.numeric, test: this.createOptions()};
-    const temp = input === "result" ? getColumnResult(true, this.isSelect(context)) : tempEntity ? getColumnNameOrAlias(tempEntity, input, options) : undefined;
+    const temp = input === "result" ? getColumnResult(true, this.isSelect(context)) : tempEntity ? getColumnNameOrAlias(this.ctx._config, tempEntity, input, options) : undefined;
     if (temp) return temp;
     if (this.isSelect(context) && tempEntity && tempEntity.relations[input]) {
       const entity = models.getEntityName(this.ctx._config ,input);       
@@ -570,7 +570,7 @@ export class PgVisitor {
   protected addDateTypeToWhere(node: Token, sign: string, context: IodataContext):string | undefined {  
     if (models.getRelationColumnTable(this.ctx._config, this.ctx._model[this.entity], node.value.left.raw) === EcolType.Column && models.isColumnType(this.ctx._config, this.ctx._model[this.entity], node.value.left.raw, "date")) {
       const testIsDate = oDatatoDate(node, sign);
-      const columnName = getColumnNameOrAlias(this.ctx._model[context.identifier || this.entity], node.value.left.raw, {table: true, as: true, cast: false, numeric: this.numeric, test: this.createOptions()});
+      const columnName = getColumnNameOrAlias(this.ctx._config, this.ctx._model[context.identifier || this.entity], node.value.left.raw, {table: true, as: true, cast: false, numeric: this.numeric, test: this.createOptions()});
       // const columnName = getColumnNameOrAlias(this.ctx._model[this.entity], node.value.left.raw, {table: true, as: true, cast: false, numeric: this.numeric, test: this.createOptions()});
       if (testIsDate) return `${columnName ? columnName : `${addDoubleQuotes(node.value.left.raw)}`}${testIsDate}`;
     }
@@ -648,7 +648,7 @@ export class PgVisitor {
       } else {        
         context.identifier = node.value.name;
         if (context.target && !context.key) {
-          const alias = getColumnNameOrAlias(this.ctx._model[this.entity], node.value.name, {table: false, as: false, cast: false, numeric: this.numeric, test: this.createOptions()});
+          const alias = getColumnNameOrAlias(this.ctx._config, this.ctx._model[this.entity], node.value.name, {table: false, as: false, cast: false, numeric: this.numeric, test: this.createOptions()});
           this[context.target] += node.value.name.includes("->>") ||node.value.name.includes("->") || node.value.name.includes("::")
             ? node.value.name
             : this.entity && this.ctx._model[this.entity] 
@@ -693,7 +693,7 @@ export class PgVisitor {
           const tempEntity = models.getEntity(this.ctx._config, context.relation);    
 
           const quotes = context.identifier[0] === '"' ? '' : '"';
-          const alias = tempEntity ? getColumnNameOrAlias(tempEntity, context.identifier , {table: false, as: false, cast: false, numeric: this.numeric, test: this.createOptions()}) : undefined;
+          const alias = tempEntity ? getColumnNameOrAlias(this.ctx._config, tempEntity, context.identifier , {table: false, as: false, cast: false, numeric: this.numeric, test: this.createOptions()}) : undefined;
 
           this.where += (context.sql)
             ? `${context.sql} ${context.target} ${addDoubleQuotes(context.identifier)} ${context.sign} ${SQLLiteral.convert(node.value, node.raw)}))[END]`

@@ -27,6 +27,7 @@ export { IreturnResult } from "./returnResult";
 export { IstreamInfos } from "./streamInfos";
 export { Iuser } from "./user";
 export { IuserToken } from "./userToken";
+
 export interface IKeyBoolean { [key: string]: boolean; }
 export interface IKeyString { [key: string]: string; }
 export type Ientities = { [key in Eentities]: Ientity }

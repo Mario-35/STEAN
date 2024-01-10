@@ -15,6 +15,7 @@ export interface Ientity {
      clone?: string;
      singular: string;
      table: string;
+     createOrder: number;
      order: number;
      orderBy: string;
      columns: IentityColumn;

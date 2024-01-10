@@ -25,7 +25,8 @@ import { serverConfig } from "../configuration";
 import { createDatabase } from "../db/createDb";
 import { remadeResult } from "../db/helpers/remadeResult";
 import { replayPayload } from "../db/queries";
-import { executeAdmin, executeSql, exportToXlsx } from "../db/helpers";
+import { executeAdmin, executeSql, exportService } from "../db/helpers";
+import { models } from "../models";
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 // ALl others
 unProtectedRoutes.get("/(.*)", async (ctx) => {
@@ -35,7 +36,6 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       : false
     : true;
   let returnToBody: any = undefined;
-  // if (ctx._config && ctx._config.apiVersion) 
   switch (getRouteFromPath(ctx.path).toUpperCase()) {    
     case `V${ctx._config.apiVersion}`:
       const expectedResponse: object[] = [];      
@@ -62,7 +62,8 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       return;
 
     case "EXPORT":
-      await exportToXlsx(ctx);
+      ctx.type = returnFormats.json.type;
+      ctx.body = await exportService(ctx);
       return;
 
     case "REGISTER":
@@ -110,6 +111,17 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         databases: moi,
       };
       return;
+
+      case "DRAW":
+        ctx.type = returnFormats.xml.type;
+        ctx.body = models.getDraw(ctx);
+        return;
+
+      case "INFOS":
+        ctx.type = returnFormats.json.type;
+        ctx.body = models.getInfos(ctx);
+        return;
+
       
     case "STATUS":
       if (ensureAuthenticated(ctx)) {
@@ -257,7 +269,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
   } // END Switch
 
   // API REQUEST  
-  if (ctx.path.includes(`/${versionString(ctx._config.apiVersion)}`)) {
+  if (ctx.path.includes(`/${versionString(ctx._config.apiVersion)}`) || ctx._urlversion) {
     console.log(formatLog.head(`unProtected GET ${versionString(ctx._config.apiVersion)}`));
     const odataVisitor = await createOdata(ctx);    
     if (odataVisitor) ctx._odata = odataVisitor;
@@ -294,3 +306,4 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
     }
   }
 });
+

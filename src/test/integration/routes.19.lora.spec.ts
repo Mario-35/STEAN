@@ -176,7 +176,7 @@
              };
              const infos = {
                  api: `{post} ${entity.name} Post Datastream basic`,
-                 apiName: `Post${entity.name}Datastream?$debug=true`,
+                 apiName: `Post${entity.name}Datastream`,
                  apiDescription: `Post a new ${entity.name}.${showHide(`Post${entity.name}`, apiInfos["10.2"])}`, apiExample: {
                      http: `/${testVersion}/${entity.name}`,
                      curl: defaultPost("curl", "KEYHTTP", datas),

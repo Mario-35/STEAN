@@ -221,6 +221,12 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
     format: defaultFunction,
     generateSql: defaultForwat,
   },
+  xml: {
+    name: "xml",
+    type: "application/xml",
+    format: defaultFunction,
+    generateSql: defaultForwat,
+  },
 };
 
 export const returnFormats = Object.freeze(_returnFormats);

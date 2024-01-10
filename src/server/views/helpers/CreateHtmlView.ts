@@ -157,14 +157,14 @@ export class CreateHtmlView {
                               datas.login ? "" : "checked"
                           }><label for="tab-2" class="tab">Sign Up</label>
                           <div class="login-form">
-                            <form action="${this.ctx._linkBase}/${this.ctx._config.apiVersion}/login" method="post">
+                            <form action="${this.ctx._linkBase}/${versionString(this.ctx._config.apiVersion)}/login" method="post">
                               <div class="sign-in-htm">
                                 ${this.addTextInput({id: "user", name: "username", label: "Username", value: ""})}
                                 ${this.addTextInput({id: "pass", name: "password", label: "Password", value: "", password: true})}
                                 ${this.addCheckBox({id: "check", checked: true, label: "Keep me Signed in"})}
                                 ${this.addSubmitButton("Sign In")}
                                 <div class="hr"></div>
-                                ${this.addButton(`${this.ctx._linkBase}/${this.ctx._config.apiVersion}/Query`, "Return to Query")}
+                                ${this.addButton(`${this.ctx._linkBase}/${versionString(this.ctx._config.apiVersion)}/Query`, "Return to Query")}
                                 <div class="foot-lnk">
                                   <a href="#forgot">Forgot Password?</a>
                                 </div>
@@ -243,8 +243,8 @@ export class CreateHtmlView {
         }</h3> <h3>Hosting : ${user.database == "all" ? "all" : config ? serverConfig.getConfig(config).pg.host : "Not Found"}</h3> <h3>Database : ${user.database}</h3> <h3>Status : ${
             user.admin
         }</h3> ${user.superAdmin ? `<div class="inner"> <a href="${this.ctx._linkBase}/admin" class="button-admin" >users</a> </div>` : ""} ${this.foot([
-            { href: this.ctx._linkBase + "/Logout", class: "button-logout", name: "Logout" },
-            { href: this.ctx._linkBase + `/${this.ctx._config.apiVersion}/Query`, class: "button", name: "Query" }
+            { href: this.ctx._linkBase + `/${versionString(this.ctx._config.apiVersion)}/Logout`, class: "button-logout", name: "Logout" },
+            { href: this.ctx._linkBase + `/${versionString(this.ctx._config.apiVersion)}/Query`, class: "button", name: "Query" }
         ])} </div> </div> </body> </html> `;
     };
 
@@ -253,7 +253,7 @@ export class CreateHtmlView {
             "Error",
             "user"
         )} <body> <div class="login-wrap"> <div class="login-html"> <h1>Error.</h1> <div class="hr"></div> <h3>On error page</h3> <h3>${message}</h3> <div class="hr"></div> <div id="outer"> <div class="inner"> <a href="/Login" class="button-submit" >Login</a> </div> <div class="inner"> <a href="${
-            this.ctx._linkBase + `/${this.ctx._config.apiVersion}/Query`
+            this.ctx._linkBase + `/${versionString(this.ctx._config.apiVersion)}/Query`
         }" class="button" >query</a> </div> </div> </div> </body> </html>`;
     };
 
@@ -268,8 +268,8 @@ export class CreateHtmlView {
         Uptime : ${infos["get_uptime"][0]["pg_postmaster_start_time"]}<br>
         Size : ${infos["dump_pgdatabase_size"].filter((e: any) => e.datname === this.ctx._config.name)[0]["size"]}<br>
         </tbody></table> </div> ${this.foot([
-            { href: this.ctx._linkBase + `/${this.ctx._config.apiVersion}/`, class: "button-submit", name: "Root" },
-            { href: this.ctx._linkBase + `/${this.ctx._config.apiVersion}/Query`, class: "button", name: "Query" },
+            { href: this.ctx._linkBase + `/${versionString(this.ctx._config.apiVersion)}/`, class: "button-submit", name: "Root" },
+            { href: this.ctx._linkBase + `/${versionString(this.ctx._config.apiVersion)}/Query`, class: "button", name: "Query" },
             { href: this.ctx._linkBase.split(this.ctx._config.name)[0], class: "button-logout", name: "Documentation" }
         ])} </div> </body> </html> ` : '';
     };

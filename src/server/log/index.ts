@@ -36,15 +36,15 @@ class Log {
     process.stdout.write(`${color(EColor.FgWhite)} -->${color( EColor.FgCyan )} ${cle} ${color(EColor.FgWhite)} ${showAll(value)}${color(EColor.Reset)}\n`);
   }
 
-  message<T>(cle: string, infos: T) {
+  public message<T>(cle: string, infos: T) {
     return `${color(EColor.FgYellow)} ${cle} ${color( EColor.FgWhite )}:${color(EColor.FgCyan)} ${showAll( infos)}${color(EColor.Reset)}`;
   }
 
-  query(sql: unknown) {
+  public query(sql: unknown) {
     if(_DEBUG) process.stdout.write(`${color(EColor.FgCyan)} ${showAll(sql)}${color( EColor.Reset )}`);
   }
 
-  queryError<T>(query: unknown, error: T) {  
+  public queryError<T>(query: unknown, error: T) {  
     process.stdout.write(`${color(EColor.FgGreen)} ${"=".repeat(15)} ${color( EColor.FgCyan )} ERROR ${color(EColor.FgGreen)} ${"=".repeat(15)}${color( EColor.Reset )}
       ${color(EColor.FgRed)} ${error} ${color( EColor.FgBlue )}
       ${color(EColor.FgCyan)} ${showAll(query, false ) }${color(EColor.Reset)}`);
@@ -53,7 +53,6 @@ class Log {
   public init() {
     console.log(this.message("Log", "ready " + _OK));    
   }
-
 }
 
 export const log = new Log();

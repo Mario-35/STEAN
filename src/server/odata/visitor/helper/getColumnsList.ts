@@ -6,7 +6,7 @@
  *
  */
 
-import { getAllColumnName } from "../../../db/constants";
+import { getAllColumnName } from "../../../db/helpers";
 import { isCsvOrArray, isGraph, isObservation, removeAllQuotes } from "../../../helpers";
 import { formatLog } from "../../../logger";
 import { models } from "../../../models";
@@ -37,9 +37,9 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
     // create columns list
     let cols = isSelect 
                     ? element.select.split(",").filter((word: string) => word.trim() != "")
-                    : getAllColumnName(tempEntity, "*", {table: true, as: true, cast: false, numeric: false, test: main.createOptions()});
-    if (element.splitResult) cols = cols.filter(e => e != "result");
-    cols.forEach(e => {
+                    : getAllColumnName(main.ctx._config, tempEntity, "*", {table: true, as: true, cast: false, numeric: false, test: main.createOptions()});
+    if (element.splitResult) cols = cols.filter((e: string) => e != "result");
+    cols.forEach((e: string) => {        
         returnValue.push(e);
         if (main.interval) main.addToIntervalColumns(extractColumnName(e));
         if (e === "id" && (element.showRelations == true || isCsvOrArray(main))) {

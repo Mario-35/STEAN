@@ -20,6 +20,7 @@ export const configCtx = (ctx: koa.Context): IKeyString => {
     _linkBase: `"${ctx._linkBase}"`,
     name: `"${ctx._config.name}"`,
     _rootName: `"${ctx._rootName}"`,
+    _urlversion: `"${ctx._urlversion}"`,
     method: `"${ctx.method}"`,
     url: `"${ctx.url}"`,
     originalUrl: `"${ctx.originalUrl}"`,

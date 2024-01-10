@@ -51,14 +51,14 @@ export const createOdata = async ( ctx: koa.Context ): Promise<PgVisitor | undef
     method: ctx.method,
     name: "",
   };
-
+  
   // normalize href
   let urlSrc = ctx.href
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .split(versionString(ctx._config.apiVersion))[1];
+    .split(ctx._urlversion ? ctx._urlversion : versionString(ctx._config.apiVersion))[1];
    
-    urlSrc = escapesOdata(urlSrc);
+    if (urlSrc && urlSrc.trim() != "") urlSrc = escapesOdata(urlSrc);
     
     const clean = (replaceThis: string, by?: string) => urlSrc = urlSrc.split(replaceThis).join(by ? by : "");
 

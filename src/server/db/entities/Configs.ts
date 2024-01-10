@@ -21,7 +21,9 @@ export class Configs extends Common {
 
   async getAll(): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
-    if (!ensureAuthenticated(this.ctx)) this.ctx.throw(401);
+    if (!ensureAuthenticated(this.ctx)) return this.createReturnResult({
+      body: hidePasswordIn(serverConfig.getConfig(this.ctx._config.name))
+    });
     const result: { [key: string]: IconfigFile } = {};
     serverConfig.getConfigs().forEach((elem: string) => { 
       result[elem] = { ...serverConfig.getConfig(elem) }; 
