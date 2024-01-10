@@ -4,13 +4,9 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-<mxCell
-            id="BFmJljl-8hoy7SMpkLxM-154"
-            value="&lt;p style=&quot;margin: 0px; margin-top: 4px; text-align: center; text-decoration: underline;&quot;&gt;&lt;
-            strong&gt;Observations&lt;/strong&gt;&lt;/p&gt;&lt;
-            hr&gt;&lt;p align=&quot;left&quot; style=&quot;margin: 0px; margin-left: 8px;&quot;&gt;adam: mario&lt;/p&gt;" style="verticalAlign=top;namealign=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;strokeColor=#003366;shadow=1;fillColor=#D4E1F5;fontColor=#003366" parent="1" vertex="1">
-            <mxGeometry y="-2220" width="230" height="131.25" as="geometry" />
-          </mxCell>
+        <mxCell id="BFmJljl-8hoy7SMpkLxM-154" value="&lt;p style=&quot;margin: 0px; margin-top: 4px; text-align: center; text-decoration: underline;&quot;&gt;&lt;strong&gt;${name}&lt;/strong&gt;&lt;/p&gt;&lt;hr&gt;&lt;p align=&quot;left&quot; style=&quot;margin: 0px; margin-left: 8px;&quot;&gt;resultTime: TM_Instant&lt;/p&gt;" style="verticalAlign=top;namealign=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;strokeColor=#003366;shadow=1;fillColor=#D4E1F5;fontColor=#003366" parent="1" vertex="1">
+          <mxGeometry y="-2220" width="230" height="131.25" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
