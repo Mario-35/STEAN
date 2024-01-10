@@ -11,7 +11,6 @@ import { errors, msg } from "../messages";
 import { IconfigFile, Ientities, Ientity, IKeyBoolean, IstreamInfos } from "../types";
 import koa from "koa";
 import fs from "fs";
-import path from "path";
 
 const testVersion = (input: string) => Object.keys(Models.models).includes(input);
 
@@ -1714,23 +1713,23 @@ class Models {
   
 
   getColsName(entity: Ientity) {
-    return Object.keys(entity.columns).filter((word) => !word.includes("_")); 
+    return Object.keys(entity.columns).filter((word) => !word.includes("_") && !word.includes("id")); 
   }
   getDraw(ctx: koa.Context) {
     const entities = Models.models[DEFAULT_API_VERSION];
-    const height = (entity: Ientity) => (this.getColsName(entity).length * 13) + 30;
+    // const height = (entity: Ientity) => (this.getColsName(entity).length * 13) + 30;
     const cols = (entity: Ientity) => {
     let result = "";
     this.getColsName(entity).forEach((e: string) => {
-        result += ` &lt;p style=&quot;margin: 0px; margin-left: 8px;&quot;&gt;${e}: ${entity.columns[e].type}&lt;/p&gt;`;        
+        result += ` &lt;p style=&quot;margin: 0px; margin-left: 8px;&quot;&gt;${e}: ${entity.columns[e].type.toUpperCase()}&lt;/p&gt;`;        
       });
       return result;
     };
 
-    let fileContent = fs.readFileSync(__dirname + `/draws/ST1_0.drawio`, "utf8");
+    let fileContent = fs.readFileSync(__dirname + `/draws/ST${ctx._config.apiVersion.replace(".","_")}.drawio`, "utf8");
 
     Object.keys(entities).forEach((e: string) => {
-      fileContent = fileContent.replace(`COLUMNS.${entities[e]}`, cols(entities[e]));
+      fileContent = fileContent.replace(`COLUMNS.${entities[e].name}`, cols(entities[e]));
     });
 
     return fileContent;
@@ -1740,7 +1739,9 @@ class Models {
     const result = {
       version : versionString(ctx._config.apiVersion),
       ready : ctx._config.connection ? true : false,
-      model : `https://github.com/Mario-35/STEAN/blob/main/assets/${ctx._config.apiVersion}/model.png?raw=true`
+      model : {
+        Base:`https://app.diagrams.net/?lightbox=1&edit=_blank#U${ctx._linkBase}/${versionString(ctx._config.apiVersion)}/draw`
+      }
     };
     const extensions = {};
     switch (ctx._config.apiVersion) {
