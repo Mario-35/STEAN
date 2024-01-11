@@ -1710,13 +1710,13 @@ class Models {
               return map[item];
             });
   }
-  
 
   getColsName(entity: Ientity) {
     return Object.keys(entity.columns).filter((word) => !word.includes("_") && !word.includes("id")); 
   }
-  getDraw(ctx: koa.Context) {
-    const entities = Models.models[DEFAULT_API_VERSION];
+
+  getDraw(ctx: koa.Context, option: string) {
+    const entities = Models.models[ctx._config.apiVersion];
     // const height = (entity: Ientity) => (this.getColsName(entity).length * 13) + 30;
     const cols = (entity: Ientity) => {
     let result = "";
@@ -1726,7 +1726,7 @@ class Models {
       return result;
     };
 
-    let fileContent = fs.readFileSync(__dirname + `/draws/ST${ctx._config.apiVersion.replace(".","_")}.drawio`, "utf8");
+    let fileContent = fs.readFileSync(__dirname + `/model.xml`, "utf8");
 
     Object.keys(entities).forEach((e: string) => {
       fileContent = fileContent.replace(`COLUMNS.${entities[e].name}`, cols(entities[e]));
@@ -1743,6 +1743,9 @@ class Models {
         Base:`https://app.diagrams.net/?lightbox=1&edit=_blank#U${ctx._linkBase}/${versionString(ctx._config.apiVersion)}/draw`
       }
     };
+    if (ctx._config.extensions.includes("multiDatastream")) result.model["multiDatastream"] = `https://app.diagrams.net/?lightbox=1&edit=_blank#U${ctx._linkBase}/${versionString(ctx._config.apiVersion)}/draw?options=multiDatastream`;
+    if (ctx._config.extensions.includes("lora")) result.model["lora"] = `https://app.diagrams.net/?lightbox=1&edit=_blank#U${ctx._linkBase}/${versionString(ctx._config.apiVersion)}/draw?options=lora`;
+    if (ctx._config.extensions.includes("multiDatastream") && ctx._config.extensions.includes("lora")) result.model["lora"] = `https://app.diagrams.net/?lightbox=1&edit=_blank#U${ctx._linkBase}/${versionString(ctx._config.apiVersion)}/draw?options=multiDatastream,lora`;
     const extensions = {};
     switch (ctx._config.apiVersion) {
       case "1.1":
@@ -1753,7 +1756,6 @@ class Models {
         result["Ogc link"] = "https://docs.ogc.org/is/15-078r6/15-078r6.html";
         break;
     }
-
     if (ctx._config.extensions.includes("tasking")) extensions["tasking"] = "https://docs.ogc.org/is/17-079r1/17-079r1.html";
     if (ctx._config.extensions.includes("logs")) extensions["logs"] = `${ctx._linkBase}/${versionString(ctx._config.apiVersion)}/Logs`;
       
