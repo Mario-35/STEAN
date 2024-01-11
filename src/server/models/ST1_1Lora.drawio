@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2024-01-11T07:51:04.929Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0" etag="Y6qa0bM4K3GjShMcN-6Y" version="22.1.18" type="github">
+<mxfile host="app.diagrams.net" modified="2024-01-11T07:51:49.225Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0" etag="esPeMFfpucRXlCDTL0IK" version="22.1.18" type="github">
   <diagram name="Page-1" id="efa7a0a1-bf9b-a30e-e6df-94a7791c09e9">
     <mxGraphModel dx="2576" dy="2226" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="826" pageHeight="1169" background="none" math="0" shadow="0">
       <root>
@@ -185,7 +185,7 @@
         <mxCell id="rQaWSIzN3dqc3fvIYqgy-110" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.997;entryY=0.298;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="BFmJljl-8hoy7SMpkLxM-120" source="22" target="29">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="rQaWSIzN3dqc3fvIYqgy-152" value="&lt;p style=&quot;margin: 0px; margin-top: 4px; text-align: center; text-decoration: underline;&quot;&gt;&lt;strong&gt;Observation&lt;/strong&gt;&lt;/p&gt;&lt;hr&gt;COLUMNS.Observations" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;strokeColor=#003366;shadow=1;fillColor=#D4E1F5;fontColor=#003366" vertex="1" parent="BFmJljl-8hoy7SMpkLxM-120">
+        <mxCell id="rQaWSIzN3dqc3fvIYqgy-152" value="&lt;p style=&quot;margin: 0px; margin-top: 4px; text-align: center; text-decoration: underline;&quot;&gt;&lt;strong&gt;Logs&lt;/strong&gt;&lt;/p&gt;&lt;hr&gt;COLUMNS.Logs" style="verticalAlign=top;align=left;overflow=fill;fontSize=12;fontFamily=Helvetica;html=1;strokeColor=#b85450;shadow=1;fillColor=#f8cecc;" vertex="1" parent="BFmJljl-8hoy7SMpkLxM-120">
           <mxGeometry y="330" width="140" height="250" as="geometry" />
         </mxCell>
       </root>
