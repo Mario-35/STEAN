@@ -6,7 +6,6 @@ import { executeSqlValues } from "../db/helpers";
 import { queryAsJson } from "../db/queries";
 import { EcolType, EdatesType, EextensionsType, EobservationType, Erelations } from "../enums";
 import { addDoubleQuotes, addSimpleQuotes, deepClone, isObject, isTest } from "../helpers";
-import { formatLog } from "../logger";
 import { errors, msg } from "../messages";
 import { IconfigFile, Ientities, Ientity, IKeyBoolean, IstreamInfos } from "../types";
 import koa from "koa";
@@ -1715,7 +1714,14 @@ class Models {
     return Object.keys(entity.columns).filter((word) => !word.includes("_") && !word.includes("id")); 
   }
 
-  getDraw(ctx: koa.Context, option: string) {
+  getDraw(ctx: koa.Context) {
+    const deleteId = (id: string) => {
+      const start = `<mxCell id="${id}"`;
+      const end = "</mxCell>";
+      const temp = fileContent.split(start)[1].split(end)[0];
+      fileContent = fileContent.replace(`${start}${temp}${end}`, "");
+      
+    };
     const entities = Models.models[ctx._config.apiVersion];
     // const height = (entity: Ientity) => (this.getColsName(entity).length * 13) + 30;
     const cols = (entity: Ientity) => {
@@ -1727,7 +1733,20 @@ class Models {
     };
 
     let fileContent = fs.readFileSync(__dirname + `/model.xml`, "utf8");
-
+    if(!ctx._config.extensions.includes("logs")) deleteId("124");
+    if(!ctx._config.extensions.includes("multiDatastream")) {
+      deleteId("114");
+      deleteId("115");
+      deleteId("117");
+      deleteId("118");
+      deleteId("119");
+      deleteId("116");
+      deleteId("120");
+      deleteId("121");
+      fileContent = fileContent.replace(`&lt;hr&gt;COLUMNS.${entities.MultiDatastreams.name}`, "");
+      fileContent = fileContent.replace(`&lt;hr&gt;COLUMNS.${entities.MultiDatastreams.name}`, "");
+      fileContent = fileContent.replace(`&lt;strong&gt;${entities.MultiDatastreams.singular}&lt;/strong&gt;`, "");
+    }
     Object.keys(entities).forEach((e: string) => {
       fileContent = fileContent.replace(`COLUMNS.${entities[e].name}`, cols(entities[e]));
     });
@@ -1739,13 +1758,8 @@ class Models {
     const result = {
       version : versionString(ctx._config.apiVersion),
       ready : ctx._config.connection ? true : false,
-      model : {
-        Base:`https://app.diagrams.net/?lightbox=1&edit=_blank#U${ctx._linkBase}/${versionString(ctx._config.apiVersion)}/draw`
-      }
+      model : `https://app.diagrams.net/?lightbox=1&edit=_blank#U${ctx._linkBase}/${versionString(ctx._config.apiVersion)}/draw`
     };
-    if (ctx._config.extensions.includes("multiDatastream")) result.model["multiDatastream"] = `https://app.diagrams.net/?lightbox=1&edit=_blank#U${ctx._linkBase}/${versionString(ctx._config.apiVersion)}/draw?options=multiDatastream`;
-    if (ctx._config.extensions.includes("lora")) result.model["lora"] = `https://app.diagrams.net/?lightbox=1&edit=_blank#U${ctx._linkBase}/${versionString(ctx._config.apiVersion)}/draw?options=lora`;
-    if (ctx._config.extensions.includes("multiDatastream") && ctx._config.extensions.includes("lora")) result.model["lora"] = `https://app.diagrams.net/?lightbox=1&edit=_blank#U${ctx._linkBase}/${versionString(ctx._config.apiVersion)}/draw?options=multiDatastream,lora`;
     const extensions = {};
     switch (ctx._config.apiVersion) {
       case "1.1":
@@ -1870,7 +1884,6 @@ class Models {
   }
 
   public getEntityName(config: IconfigFile, search: string): string | undefined {
-    console.log(formatLog.head("getEntityName", search));
     if(config && search) {        
       const tempModel = Models.models[config.apiVersion];
       const testString: string | undefined = search

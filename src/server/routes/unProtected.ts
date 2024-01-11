@@ -114,9 +114,8 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
 
       case "DRAW":
         console.log(ctx._odata);
-        const options = getUrlKey(ctx.request.url, "options");
         ctx.type = returnFormats.xml.type;
-        ctx.body = models.getDraw(ctx, options || "");
+        ctx.body = models.getDraw(ctx);
         return;
 
       case "INFOS":
