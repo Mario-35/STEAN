@@ -79,7 +79,7 @@ export const getMetrics = async ( name: string ): Promise<string[] | { [key: str
     } FROM pg_stat_database`,
     dump_pgtablespace_size: `SELECT date_trunc('seconds', now()), spcname, pg_tablespace_size(spcname), CASE WHEN ${
       minVersion(9, 2) ? "pg_tablespace_location(oid)" : "spclocation"
-    } = '' THEN CASE WHEN spcname = 'pg_default' THEN (select setting from pg_settings where name='data_directory')||'/base' ELSE (select setting from pg_settings where name='data_directory')||'/global' END ELSE ${
+    } = '' THEN CASE WHEN spcname = 'pg_default' THEN (SELECT setting from pg_settings WHERE name='data_directory')||'/base' ELSE (SELECT setting from pg_settings WHERE name='data_directory')||'/global' END ELSE ${
       minVersion(9, 2) ? "pg_tablespace_location(oid)" : "spclocation"
     } END AS tablespace_location FROM pg_tablespace`,
     dump_pgstatdatabaseconflicts: `SELECT date_trunc('seconds', now()), * FROM pg_stat_database_conflicts`,
@@ -127,7 +127,7 @@ export const getMetrics = async ( name: string ): Promise<string[] | { [key: str
           }`
     } FROM ( SELECT file > first_value(file) OVER w AS is_recycled ${
       minVersion(9, 5)
-        ? ",(select setting from pg_settings where name = 'max_wal_size')::float4 AS max_wal"
+        ? ",(SELECT setting from pg_settings WHERE name = 'max_wal_size')::float4 AS max_wal"
         : `${
             minVersion(9, 0)
               ? ",1 + ( current_setting('checkpoint_segments')::float4 * ( 2 + current_setting('checkpoint_completion_target')::float4 )) AS max_wal1, 1 + current_setting('wal_keep_segments')::float4 + current_setting('checkpoint_segments')::float4 AS max_wal2"
@@ -169,7 +169,7 @@ export const getMetrics = async ( name: string ): Promise<string[] | { [key: str
         : "coalesce((SELECT (regexp_matches(pg_get_indexdef(indexrelid), ' (WHERE .*)'))[1])::text, 'A') = coalesce((SELECT (regexp_matches(pg_get_indexdef(index_backward), ' (WHERE .*)'))[1])::text, 'A')"
     } `,
     dump_invalidindexes: `SELECT date_trunc('seconds', now()), current_database(), schemaname, relname, indexrelname, regexp_replace(pg_get_indexdef(pg_stat_user_indexes.indexrelid), E'[\\\\n\\\\r]+', ' ', 'g') FROM pg_stat_user_indexes INNER JOIN pg_index ON pg_index.indexrelid = pg_stat_user_indexes.indexrelid WHERE NOT pg_index.indisvalid`,
-    dump_hashindexes: `WITH indexes AS ( SELECT date_trunc('seconds', now()), current_database(), schemaname,relname, indexrelname, regexp_replace(pg_get_indexdef(pg_stat_user_indexes.indexrelid), E'[\\\\n\\\\r]+', ' ', 'g') AS indexdef FROM pg_stat_user_indexes INNER JOIN pg_index ON pg_index.indexrelid = pg_stat_user_indexes.indexrelid) SELECT * from indexes where indexdef like '%%USING hash (%'`,
+    dump_hashindexes: `WITH indexes AS ( SELECT date_trunc('seconds', now()), current_database(), schemaname,relname, indexrelname, regexp_replace(pg_get_indexdef(pg_stat_user_indexes.indexrelid), E'[\\\\n\\\\r]+', ' ', 'g') AS indexdef FROM pg_stat_user_indexes INNER JOIN pg_index ON pg_index.indexrelid = pg_stat_user_indexes.indexrelid) SELECT * from indexes WHERE indexdef like '%%USING hash (%'`,
     dump_count_indexes: `SELECT date_trunc('seconds', now()), current_database(), pg_stat_user_tables.schemaname, pg_stat_user_tables.relname, count(pg_stat_user_indexes.indexrelid) AS number_of_indexes FROM pg_stat_user_tables lEFT JOIN pg_stat_user_indexes ON pg_stat_user_indexes.schemaname = pg_stat_user_tables.schemaname AND pg_stat_user_indexes.relname = pg_stat_user_tables.relname GROUP BY pg_stat_user_tables.schemaname, pg_stat_user_tables.relname`,
     dump_unusedtrigfunc: `SELECT date_trunc('seconds', now()), current_database(), c.nspname, a.proname FROM pg_proc a JOIN pg_type b ON a.prorettype = b.oid JOIN pg_namespace c ON a.pronamespace = c.oid WHERE ${
       minVersion(11, 0)

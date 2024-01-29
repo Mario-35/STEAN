@@ -101,6 +101,8 @@ describe(`CSV ${entity.name}`, function () {
             .attach("file", "./src/test/integration/files/duplicates/file.csv")
             .set("Cookie", `${keyTokenName}=${token}`)
             .end(async (err: Error, res: any) => {
+                console.log(res.body);
+                
                 if (err) console.log(err);
                 else {
                     should.not.exist(err);

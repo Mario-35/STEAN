@@ -6,6 +6,11 @@
  *
  */
 
+/**
+ *
+ * @param input thing to test
+ * @returns bollean test
+ */
 export const isNull = <T>(input: T): boolean => {
     switch (typeof input) {
         case "string":

@@ -41,7 +41,7 @@ class Log {
   }
 
   public query(sql: unknown) {
-    if(_DEBUG) process.stdout.write(`${color(EColor.FgCyan)} ${showAll(sql)}${color( EColor.Reset )}`);
+    if(_DEBUG) process.stdout.write(`${color(EColor.FgYellow)} [Query] ==> \n${color(EColor.FgCyan)} ${showAll(sql)}${color( EColor.Reset )}\n`);
   }
 
   public queryError<T>(query: unknown, error: T) {  

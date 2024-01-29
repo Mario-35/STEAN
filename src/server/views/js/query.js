@@ -84,17 +84,11 @@ function buttonGo() {
 	if (importFile === true) {
 		hide(go);
 		console.log(submit.value);
-		show(submit);
-		hide(btnCreate);
-	} else if (_PARAMS.methods.includes("POST") && jsonDatas.innerText.includes('"create": {')) {
-		hide(go);
-		show(btnCreate);
 		hide(submit);
 	} else {
 		show(go);
 		canShowQueryButton();
 		hide(submit);
-		hide(btnCreate);
 	}
 }
 
@@ -170,7 +164,7 @@ function init() {
 	populateSelect(subentityOption, subs, subs.includes(_PARAMS.subentityOption) ? _PARAMS.subentityOption : _NONE, true);
 
 	populateSelect(entityOption, Object.keys(_PARAMS._DATAS), tempEntity);
-	populateSelect(services, _PARAMS.services, _PARAMS.host.split("/").pop());
+	populateSelect(services, Object.keys(_PARAMS.services), _PARAMS.host.split("/").pop());
 
 	populateSelect(methodOption, entityOption.value == "Loras" ? ["GET", "POST"] : _PARAMS.methods, _PARAMS.method ? _PARAMS.method : "GET");
 	hide(subExpandOption);

@@ -19,8 +19,11 @@ import { isGraph } from ".";
 import { DOUBLEQUOTEDCOMA } from "../constants";
 import { log } from "../log";
 
+// Default "blank" function
 const defaultFunction = (input: string | object) => input;
+// Default "blank" format function
 const defaultForwat = (input: PgVisitor): string => input.sql;
+
 const generateFields = (input: PgVisitor): string[] => {
   let fields: string[] = [];
   if (isGraph(input)) {
@@ -34,12 +37,15 @@ const generateFields = (input: PgVisitor): string[] => {
   return fields;
 };
 
-
-const generateGrahSql = (input: PgVisitor) => {
+/**
+ * 
+ * @param input PgVisitor
+ * @returns sSQL Query for graph
+ */
+const generateGrahSql = (input: PgVisitor): string => {
   input.intervalColumns = ["id", "step as date", "result"];
   if (isGraph(input)) input.intervalColumns.push("concat"); 
-  const table =
-  input.ctx._model[input.parentEntity ? input.parentEntity : input.entity].table;
+  const table = input.ctx._model[input.parentEntity ? input.parentEntity : input.entity].table;
   const id = input.parentId ? input.parentId : input.id;
   return queryAsJson({
     query:
@@ -51,13 +57,16 @@ const generateGrahSql = (input: PgVisitor) => {
   });
 };
 
+// all returns format functions
 const _returnFormats: { [key in Eformats]: IreturnFormat } = {
   xlsx: {
     name: "xlsx",
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     format: defaultFunction,
     generateSql: defaultForwat,
-  }, // IMPORTANT TO HAVE THIS BEFORE GRAPH
+  }, 
+
+  // IMPORTANT TO HAVE THIS BEFORE GRAPH
   json: {
     name: "json",
     type: "application/json",
@@ -73,13 +82,16 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
             fields: generateFields(input),
           });
     },
-  }, // IMPORTANT TO HAVE THIS BEFORE GRAPH
+  }, 
+  
+  // IMPORTANT TO HAVE THIS BEFORE GRAPH
   graphDatas: {
     name: "graphDatas",
     type: "application/json",
     format: defaultFunction,
     generateSql(input: PgVisitor) { return generateGrahSql(input); },
   },
+
   graph: {
     name: "graph",
     type: "text/html;charset=utf8",
@@ -121,6 +133,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
       return generateGrahSql(input);
     },
   },
+
   dataArray: {
     name: "dataArray",
     type: "application/json",
@@ -129,6 +142,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
       return queryAsDataArray(input);
     },
   },
+
   csv: {
     name: "csv",
     type: "text/csv",
@@ -156,6 +170,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
       return queryAsDataArray(input);
     },
   },
+
   txt: {
     name: "txt",
     type: "text/plain",
@@ -167,36 +182,42 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
       return queryAsJson({ query: input.sql, singular: false, count: false });
     },
   },
+
   sql: {
     name: "sql",
     type: "text/plain",
     format: defaultFunction,
     generateSql: defaultForwat,
   },
+
   html: {
     name: "html",
     type: "text/html;charset=utf8",
     format: defaultFunction,
     generateSql: defaultForwat,
   },
+
   css: {
     name: "css",
     type: "text/css;charset=utf8",
     format: defaultFunction,
     generateSql: defaultForwat,
   },
+
   js: {
     name: "js",
     type: "application/javascript;charset=utf8",
     format: defaultFunction,
     generateSql: defaultForwat,
   },
+
   png: {
     name: "png",
     type: "image/png",
     format: defaultFunction,
     generateSql: defaultForwat,
   },
+
   jpeg: {
     name: "jpeg",
     type: "image/jpeg",
@@ -209,18 +230,21 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
     format: defaultFunction,
     generateSql: defaultForwat,
   },
+
   icon: {
     name: "icon",
     type: "image/x-icon",
     format: defaultFunction,
     generateSql: defaultForwat,
   },
+
   ico: {
     name: "ico",
     type: "image/x-icon",
     format: defaultFunction,
     generateSql: defaultForwat,
   },
+  
   xml: {
     name: "xml",
     type: "application/xml",

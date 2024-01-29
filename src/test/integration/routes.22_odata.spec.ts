@@ -161,7 +161,7 @@ describe("Odata", () => {
             });
     });
 
-    it("Return Datastreams with obvervation expand complex select [9.3.2.1] & [9.3.2.2]", (done) => {
+    it("Return Datastreams with obvervation expand complex SELECT [9.3.2.1] & [9.3.2.2]", (done) => {
         const infos = {
             api: `{get} things(:id) expand with inner select`,
             apiName: `OdataExpandSelect`,
@@ -417,7 +417,8 @@ describe("Odata", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(26);
+                res.body.value.length.should.eql(2);
+                // res.body.value.length.should.eql(26);
                 res.body.should.include.keys("@iot.count", "value");
                 done();
             });
@@ -431,7 +432,7 @@ describe("Odata", () => {
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
-                res.body.value[0]["@iot.id"].should.eql(28);
+                res.body.value[0]["@iot.id"].should.eql(32);
                 res.body.value[0]["result"].should.eql(92);
                 res.body.should.include.keys("@iot.count", "value");
                 done();
@@ -456,7 +457,7 @@ describe("Odata", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(25);
+                res.body.value.length.should.eql(1);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 done();

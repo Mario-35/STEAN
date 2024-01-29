@@ -14,7 +14,7 @@ submit.onclick = () => {
 };
 
 services.addEventListener("change", () => {
-	window.location.href = `${_PARAMS.host.split(`/${_PARAMS.host.split("/").pop()}`)[0]}/${services.value}/${optVersion.value}/Query`;
+	window.location.href = `${_PARAMS.services[services.value].root}Query`;
 });
 
 preview.onclick = () => {
@@ -85,10 +85,6 @@ btnPostTemplate.onclick = () => {
 	});
 
 	beautifyDatas(getElement("jsonDatas"), result, "json");
-};
-
-btnCreate.onclick = async () => {
-	await createDb();
 };
 
 btnRoot.onclick = async () => {

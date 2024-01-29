@@ -18,12 +18,12 @@ const should = chai.should();
 
 const tests = {
     "/test/v1.1/Things?$filter=Datastreams/ObservedProperty/description eq 'PM something Number three'": 2,
-    "/test/v1.1/Observations?$filter=validTime gt 2016-01-02T01:01:01.123Z": 76,
+    "/test/v1.1/Observations?$filter=validTime gt 2016-01-02T01:01:01.123Z": 52,
     "/test/v1.1/Things?$filter=Datastreams/unitOfMeasurement/name eq 'PM 2.4 Particulates (ug/m3)'": 1,
     "/test/v1.1/Things?$filter=Datastreams/unitOfMeasurement/name eq 'PM 2.5 Particulates (ug/m3)'": 2,
     "/test/v1.1/Observations?$filter=result gt 90 or result eq 0.11": 4,
     "/test/v1.1/Observations?$filter=length(result) le 2": 9,
-    "/test/v1.1/Observations?$filter=resultTime gt 2021-01-02T01:01:01.123Z": 26,
+    "/test/v1.1/Observations?$filter=resultTime gt 2021-01-02T01:01:01.123Z": 2,
     "/test/v1.1/Observations?$filter=resultTime lt 2017-01-02T01:01:01.123Z": 42,
     "/test/v1.1/Observations?$filter=resultTime lt 2017-01-02T01:01:01.123Z and resultTime gt 2016-01-02T01:01:01.123Z": 20,
     // "/test/v1.1/Things?$filter=Datastreams/Observations/resultTime ge 2020-06-01T00:00:00Z and Datastreams/Observations/resultTime le 2022-07-01T00:00:00Z

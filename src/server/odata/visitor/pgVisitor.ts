@@ -20,6 +20,7 @@ import { EcolType, EextensionsType } from "../../enums";
 import { models } from "../../models";
 import { log } from "../../log";
 import { getColumnNameOrAlias, getColumnResult } from "../../db/helpers";
+import { _COLUMNSEPARATOR } from "../../constants";
 
 export class PgVisitor {
   public ctx: koa.Context;
@@ -32,8 +33,8 @@ export class PgVisitor {
   idLog: bigint | string = BigInt(0);
   id: bigint | string = BigInt(0);
   parentId: bigint | string = BigInt(0);
-  select = "";
   arrayNames: string[] = [];
+  select = "";
   where = "";
   orderby = "";
   intervalColumns: string[] | undefined = undefined;
@@ -58,7 +59,7 @@ export class PgVisitor {
   showRelations = true;
   results: IKeyString = {};
   sql = "";
-  debugOdata = isTest() ? false : false;
+  debugOdata = isTest() ? false : true;
   constructor(ctx: koa.Context, options = <SqlOptions>{}) {
     this.ctx = ctx;
     this.options = options;
@@ -75,8 +76,14 @@ export class PgVisitor {
     this.skip = 0;
   }
 
-  addToArrayNames(key: string) {    
-    if(!this.arrayNames.includes(key) && key.trim() !== "") this.arrayNames.push(key);
+  addToArrayNames(key: string | string[]) {
+    const addTo = (input: string[]) => {
+      input.forEach(key =>  {
+        key = key.includes(" AS ") ? key.split(" AS ")[1] : key;
+        if(!this.arrayNames.includes(key) && key.trim() !== "") this.arrayNames.push(key);      
+      });
+    }
+    addTo((typeof key === "string") ? [key] : key);    
   }
 
   addToIntervalColumns(input: string) {
@@ -96,11 +103,11 @@ export class PgVisitor {
           ? models.getEntity(this.ctx._config, this.entity || this.parentEntity || this.navigationProperty) 
           : undefined;    
     const options: IcolumnOption = {table: false, as: false, cast: false, numeric: this.numeric, test: this.createOptions()};
-    const temp = input === "result" ? getColumnResult(true, this.isSelect(context)) : tempEntity ? getColumnNameOrAlias(this.ctx._config, tempEntity, input, options) : undefined;
-    if (temp) return temp;
+    const columnName = input === "result" ? getColumnResult(true, this.isSelect(context)) : tempEntity ? getColumnNameOrAlias(this.ctx._config, tempEntity, input, options) : undefined;
+    if (columnName) return columnName;
     if (this.isSelect(context) && tempEntity && tempEntity.relations[input]) {
-      const entity = models.getEntityName(this.ctx._config ,input);       
-      return tempEntity && entity ? `CONCAT('${this.options.rootBase}${tempEntity.name}(', "${tempEntity.table}"."id", ')/${this.ctx._model[entity].name}') AS "${this.ctx._model[entity].name}@iot.navigationLink"` : undefined;    
+      const entityName = models.getEntityName(this.ctx._config ,input);       
+      return tempEntity && entityName ? `CONCAT('${this.options.rootBase}${tempEntity.name}(', "${tempEntity.table}"."id", ')/${entityName}') AS "${entityName}@iot.navigationLink"` : undefined;    
     }   
   }
 
@@ -230,7 +237,7 @@ export class PgVisitor {
     this.VisitRessources(node.value.query, context);
   }
 
-  asGetSql(): string | undefined {
+  createGetSql(): string | undefined {
     try {
       return createGetSql(this);
     } catch (error) {
@@ -238,17 +245,17 @@ export class PgVisitor {
     }
   }
 
-  asPatchSql(datas: object, configName: string): string | undefined {
+  createPatchSql(datas: object): string | undefined {
     try {
-      return createPostSql(datas, configName, this);
+      return createPostSql(datas, this);
     } catch (error) {
       return undefined;
     }
   }
 
-  asPostSql(datas: object, configName: string): string | undefined {
+  createPostSql(datas: object): string | undefined {
     try {
-      return createPostSql(datas, configName, this);
+      return createPostSql(datas, this);
     } catch (error) {
       return undefined;
     }
@@ -261,8 +268,7 @@ export class PgVisitor {
   clear(input: string) {    
     if (input.includes('[START]')) {
       input = input.split('[START]').join("(");
-      input = input.split('[END]').join('') +')';
-      
+      input = input.split('[END]').join('') +')';      
     }
     return input;    
   }
@@ -319,6 +325,7 @@ export class PgVisitor {
           console.log(formatLog.result("node.raw", node.raw));
           console.log(formatLog.result("this.where", this.where)); 
           console.log(formatLog.result("this.select", this.select)); 
+          console.log(formatLog.result("this.arrayNames", this.arrayNames)); 
           console.log(formatLog.debug("context", context));
         }
 
@@ -480,10 +487,10 @@ export class PgVisitor {
   protected VisitSelectItem(node: Token, context: IodataContext) {
     const tempColumn = this.getColumn(node.raw, context); 
     context.identifier = tempColumn ? tempColumn : node.raw;
-    if (context.target) 
-    this[context.target] += tempColumn ? `${tempColumn},` : `${addDoubleQuotes(node.raw)},`; 
-      // this[context.target] += tempColumn ? `${tempColumn},` : node.raw;
-    this.showRelations = false;
+    if (context.target)
+      this[context.target] += tempColumn ? `${tempColumn}${_COLUMNSEPARATOR}` : `${addDoubleQuotes(node.raw)}${_COLUMNSEPARATOR}`; 
+      this.addToArrayNames(context.identifier.includes(" AS ") ? context.identifier.split(" AS ")[1] : context.identifier);
+      this.showRelations = false;
   }
 
   protected VisitAndExpression(node: Token, context: IodataContext) {

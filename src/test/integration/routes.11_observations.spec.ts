@@ -237,7 +237,7 @@ describe("endpoint : Observations", () => {
                 });
         });
 
-        it("Return Observations with multiple select odata", (done) => {
+        it("Return Observations with multiple SELECT odata", (done) => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get with Multi Select`,
                 apiName: `GetSelectPhenomenonTime${entity.name}`,
@@ -577,7 +577,7 @@ describe("endpoint : Observations", () => {
                     res.type.should.equal("application/json");
                     res.body.should.include.keys(testsKeys);
                     const observationId = res.body["@iot.id"];
-                    executeQuery("select id::int from observation where featureofinterest_id = (select id from featureofinterest order by id desc limit 1);").then((testRes) => {
+                    executeQuery("select id::int from observation WHERE featureofinterest_id = (SELECT id from featureofinterest order by id desc limit 1);").then((testRes) => {
                             testRes["id"].should.eql(observationId);
                             addToApiDoc({ ...infos, result: limitResult(res) });
                             done();
@@ -634,6 +634,36 @@ describe("endpoint : Observations", () => {
                 });
         });
 
+        it("Return error if There is no Stream", (done) => {
+            chai.request(server)
+                .post(`/test/${testVersion}/${entity.name}`)
+                .send({
+                    "phenomenonTime": "2017-02-07T18:02:00.000Z",
+                    "resultTime": "2017-02-07T18:02:05.000Z",
+                    "result": {
+                        "soil temperature": 10.1,
+                        "soil moisture": 10.2
+                    },
+                    "FeatureOfInterest": {
+                        "name": "Au Comptoir Vénitien[9]",
+                        "description": "Au Comptoir Vénitien",
+                        "encodingType": "application/vnd.geo+json",
+                        "feature": {
+                            "type": "Point",
+                            "coordinates": [48.11829243294942, -1.717928984533772]
+                        }
+                    }
+                })
+                .set("Cookie", `${keyTokenName}=${token}`)
+                .end(async (err: any, res: any) => {
+                    should.not.exist(err);
+                    res.status.should.equal(404);
+                    res.type.should.equal("application/json");
+                    res.body.detail.should.eql("No Datastream or MultiDatastream found");
+                    done();
+                });
+        });
+
         it("Return error results are different of multiObservationDataTypes", (done) => {
             const datas = {
                 "phenomenonTime": "2017-02-07T18:02:00.000Z",
@@ -677,6 +707,8 @@ describe("endpoint : Observations", () => {
                     done();
                 });
         });
+
+
     });
 
     describe(`{patch} ${entity.name} ${nbColorTitle}[10.3]`, () => {

@@ -8,7 +8,7 @@
 
 import koa from "koa";
 import { formatLog } from ".";
-import { addDoubleQuotes, hidePasswordInJSON, isTest } from "../helpers";
+import { addDoubleQuotes, hidePassword, isTest } from "../helpers";
 import { executeSqlValues } from "../db/helpers";
 import { models } from "../models";
 import { log } from "../log";
@@ -20,10 +20,16 @@ export const writeToLog = async ( ctx: koa.Context, ...error: any[] ): Promise<v
   if (ctx._log && ctx._log.method != "GET") {
     ctx._log.code = error && error["code"] ? +error["code"] : +ctx.response.status;
     ctx._log.error = error;
-    ctx._log.datas = hidePasswordInJSON(ctx._log.datas);    
-    if (ctx.body && ctx.body && typeof ctx.body === "string") ctx._log.returnid = JSON.parse(ctx.body)["@iot.id"]; const code = Math.floor(ctx._log.code / 100);
+    ctx._log.datas = hidePassword(ctx._log.datas); 
+    try {
+      if (ctx.body && ctx.body && typeof ctx.body === "string") ctx._log.returnid = JSON.parse(ctx.body)["@iot.id"];       
+    } catch (error) {
+      ctx._log.returnid = undefined;
+    }   
+    const code = Math.floor(ctx._log.code / 100);
+    if (code == 2 || code == 3 )return;
+    
     if (ctx._odata && ctx._odata.idLog && BigInt(ctx._odata.idLog) > 0 && code !== 2 ) return;
-    console.log(formatLog.debug("Write To logs", ctx._log));    
     await executeSqlValues(ctx._config, `INSERT INTO ${addDoubleQuotes(models.DBFull(ctx._config).Logs.table)} ${models.createInsertValues(ctx._config, ctx._log, models.DBFull(ctx._config).Logs.name)} returning id`).then((res: object) =>{
       if (!isTest()) console.log(formatLog.url(`${ctx._rootName}Logs(${res[0]})`));      
     }).catch((error) => {
@@ -31,3 +37,5 @@ export const writeToLog = async ( ctx: koa.Context, ...error: any[] ): Promise<v
     });
   }
 };
+
+

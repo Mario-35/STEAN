@@ -2,6 +2,7 @@
  * Index of The API.
  *
  * @copyright 2020-present Inrae
+ * @review 29-01-2024
  * @author mario.adam@inrae.fr
  *
  */
@@ -19,7 +20,7 @@ import path from "path";
 import { HELMET_CONFIG, APP_KEY, TEST, ADMIN, APP_NAME, APP_VERSION, _OK } from "./constants";
 import { serverConfig } from "./configuration";
 import { PgVisitor } from "./odata";
-import { IconfigFile, Ientities, IKeyString, Ilog, IuserToken } from "./types";
+import { IconfigFile, Ientities, Ilog, IuserToken } from "./types";
 import favicon from 'koa-favicon';
 import { models } from "./models";
 import { log } from "./log";
@@ -31,7 +32,7 @@ declare module "koa" {
     _linkBase: string;
     _config: IconfigFile;
     _odata: PgVisitor;
-    _datas: IKeyString;
+    _datas: object;
     _user: IuserToken;
     _log: Ilog | undefined;
     _model: Ientities;

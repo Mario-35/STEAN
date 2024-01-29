@@ -2,12 +2,13 @@
  * Common class entity.
  *f
  * @copyright 2020-present Inrae
+ * @review 29-01-2024
  * @author mario.adam@inrae.fr
  *
  */
 
 import koa from "koa";
-import { addDoubleQuotes, asyncForEach, returnFormats } from "../../helpers/index";
+import { addDoubleQuotes, returnFormats } from "../../helpers/index";
 import { formatLog } from "../../logger";
 import { IreturnResult } from "../../types";
 import { executeSqlValues, removeKeyFromUrl } from "../helpers";
@@ -64,7 +65,7 @@ export class Common {
     };
   }
 
-  // create the nextLink
+  // Create the nextLink
   public nextLink = (resLength: number): string | undefined => {
     if (this.ctx._odata.limit < 1) return;
     const max: number =
@@ -74,7 +75,7 @@ export class Common {
     if (resLength >= max) return `${encodeURI(this.nextLinkBase)}${ this.nextLinkBase.includes("?") ? "&" : "?" }$top=${this.ctx._odata.limit}&$skip=${ this.ctx._odata.skip + this.ctx._odata.limit }`;
   };
 
-  // create the prevLink
+  // Create the prevLink
   public prevLink = (resLength: number): string | undefined => {
     if (this.ctx._odata.limit < 1) return;
     const prev = this.ctx._odata.skip - this.ctx._odata.limit;
@@ -85,8 +86,7 @@ export class Common {
   // Return all items
   async getAll(): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
-    // create query
-    const sql = this.ctx._odata.asGetSql();
+    const sql = this.ctx._odata.createGetSql();
 
     if (!sql) return;
 
@@ -111,7 +111,7 @@ export class Common {
   async getSingle(_idInput: bigint | string): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     // create query
-    const sql = this.ctx._odata.asGetSql();
+    const sql = this.ctx._odata.createGetSql();
 
     if (!sql) return;
 
@@ -120,26 +120,27 @@ export class Common {
 
     // build return result
     return await executeSqlValues(this.ctx._config, sql).then((res: object) => {           
-      if (this.ctx._odata.select && this.ctx._odata.onlyValue) return this.createReturnResult({ body: String(res[ this.ctx._odata.select == "id" ? "@iot.id" : 0 ]), });
+      if (this.ctx._odata.select && this.ctx._odata.onlyValue) return this.createReturnResult({ body: String(res[ this.ctx._odata.select[0] == "id" ? "@iot.id" : 0 ]), });
       if (res[0] > 0) return this.createReturnResult({ id: +res[0], nextLink: this.nextLink(res[0]), prevLink: this.prevLink(res[0]), body: res[1][0], });
     }).catch((err: Error) => this.ctx.throw(400, { code: 400, detail: err }) );
   }
 
   async addWultipleLines(dataInput: object | undefined): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
-    const results:object[] = [];
-    await asyncForEach(Object(dataInput), async (datas: object) => {
+    if (this.ctx._log) this.ctx._log.datas = {datas: "Multilines not saved in logs"};
+    const sqls:string[] = Object(dataInput).map((datas: object) => {
       const modifiedDatas = this.formatDataInput(datas);
-      if (modifiedDatas) {
-        const sql = this.ctx._odata.asPostSql(modifiedDatas, this.ctx._config.name);   
-        if (!sql) return;          
-        await executeSqlValues(this.ctx._config, sql)
-        .then((res: object) => results.push(res[0][0]) )
-        .catch((err: Error) => {        
+      if (modifiedDatas && this.ctx._odata.createPostSql) {
+        const sql = this.ctx._odata.createPostSql(modifiedDatas);
+        if (sql) return sql;
+      }
+    });
+    const results:object[] = [];
+    await executeSqlValues(this.ctx._config, sqls.join(";")).then((res: object) => results.push(res[0]) )
+        .catch((err: Error) => { 
+          console.log(err);      
           this.ctx.throw(400, { code: 400, detail: err["detail"] });
         });
-      }  
-    });
     return this.createReturnResult({
       body: results,
     });
@@ -147,12 +148,11 @@ export class Common {
 
   // Post an item
   async post(dataInput: object | undefined): Promise<IreturnResult | undefined> {
-    console.log(formatLog.whereIam());      
+    console.log(formatLog.whereIam());
     dataInput = this.formatDataInput(dataInput);
-
     if (!dataInput) return;
     // create query
-    const sql = this.ctx._odata.asPostSql(dataInput, this.ctx._config.name);
+    const sql = this.ctx._odata.createPostSql(dataInput);
     if (!sql) return;
     if (this.ctx._odata.resultFormat === returnFormats.sql)
       return this.createReturnResult({ body: sql });
@@ -173,8 +173,8 @@ export class Common {
         }
       })
       .catch((err: Error) => {    
-      const code = getErrorCode(err, 400);     
-      this.ctx.throw(code, { code: code, detail: err.message });
+        const code = getErrorCode(err, 400);     
+        this.ctx.throw(code, { code: code, detail: err.message });
       });
   }
 
@@ -183,7 +183,7 @@ export class Common {
     console.log(formatLog.whereIam()); 
     dataInput = this.formatDataInput(dataInput);
     if (!dataInput) return;
-    const sql = this.ctx._odata.asPatchSql(dataInput, this.ctx._config.name);
+    const sql = this.ctx._odata.createPatchSql(dataInput);
     if (!sql) return;
     if (this.ctx._odata.resultFormat === returnFormats.sql)
       return this.createReturnResult({ body: sql });

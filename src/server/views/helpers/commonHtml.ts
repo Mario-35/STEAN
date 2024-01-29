@@ -9,7 +9,7 @@
 /* eslint-disable quotes */
 
 import { formatLog } from "../../logger";
-import { cleanUrl, removeAllQuotes, replacer } from "../../helpers";
+import { cleanUrl, removeAllQuotes, bigIntReplacer } from "../../helpers";
 import { addCssFile, listaddCssFiles } from "../css";
 import { addJsFile, listaddJsFiles } from "../js";
 import { APP_VERSION } from "../../constants";
@@ -76,7 +76,7 @@ export const commonHtml = (input: string, params: IqueryOptions): string => {
         replaceInResult(`<script src="${fileWithOutMin(item)}"></script>`, `<script>${addJsFile(item)}</script>`);
     });
     
-    return result.join("").replace("_PARAMS={}", "_PARAMS=" + JSON.stringify(params, replacer))
+    return result.join("").replace("_PARAMS={}", "_PARAMS=" + JSON.stringify(params, bigIntReplacer))
         .replace("// @start@", start)
         .replace("@version@", APP_VERSION)
         .replace("@action@", action);

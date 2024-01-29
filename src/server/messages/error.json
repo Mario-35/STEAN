@@ -1,6 +1,7 @@
 {
 	"alreadyPresent": "Already present",
 	"inConfigFile": "Error in config file",
+	"configFileError": "Config not correct",
 	"configName": "Configname $1 not found",
 	"noNameIdentified": "No name indentified",
     "notPresentInConfigName": "$1 : not present in config File",  
@@ -22,7 +23,7 @@
 	"noHeaderCsv": "No Header found in csv file",
 	"noId": "No id found for : ",
 	"noIds": "One of id not found for : ",
-	"noStream": "No datastream or multiDatastream found",
+	"noStream": "No Datastream or MultiDatastream found",
 	"noStreamDeveui": "No datastream or multiDatastream found for deveui : ",
 	"noValidDate": "No valid date found",
 	"observationExist": "Observation already exist",

@@ -36,6 +36,7 @@
     "PostThingsLocation",
     "PostThingExistLocation",
     "PostThingLocationDatastream",
+    "PostThingWithInnerPosts",
     "PatchThings",
     "PatchLocationThings",
     "PatchExistLocationThings",

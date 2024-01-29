@@ -7,37 +7,36 @@
  */
 
 import koa from "koa";
-import { IKeyString } from "../types";
 
 /**
  *
  * @param ctx Koa context
- * @returns string or undefined
+ * @returns object
  */
 
-export const configCtx = (ctx: koa.Context): IKeyString => {
+export const configCtx = (ctx: koa.Context): object => {
   return {
-    _linkBase: `"${ctx._linkBase}"`,
-    name: `"${ctx._config.name}"`,
-    _rootName: `"${ctx._rootName}"`,
-    _urlversion: `"${ctx._urlversion}"`,
-    method: `"${ctx.method}"`,
-    url: `"${ctx.url}"`,
-    originalUrl: `"${ctx.originalUrl}"`,
-    origin: `"${ctx.origin}"`,
-    href: `"${ctx.href}"`,
-    path: `"${ctx.path}"`,
-    querystring: `"${ctx.querystring}"`,
-    host: `"${ctx.host}"`,
-    hostname: `"${ctx.hostname}"`,
-    fresh: `"${ctx.fresh}"`,
-    stale: `"${ctx.stale}"`,
-    socket: `"${ctx.socket}"`,
-    protocol: `"${ctx.protocol}"`,
-    secure: `"${ctx.secure}"`,
-    ip: `"${ctx.ip}"`,
-    ips: `"${ctx.ips}"`,
-    subdomains: `"${ctx.subdomains}"`,
+    "_linkBase": `"${ctx._linkBase}"`,
+    "name": `"${ctx._config.name}"`,
+    "_rootName": `"${ctx._rootName}"`,
+    "_urlversion": `"${ctx._urlversion}"`,
+    "method": `"${ctx.method}"`,
+    "url": `"${ctx.url}"`,
+    "originalUrl": `"${ctx.originalUrl}"`,
+    "origin": `"${ctx.origin}"`,
+    "href": `"${ctx.href}"`,
+    "path": `"${ctx.path}"`,
+    "querystring": `"${ctx.querystring}"`,
+    "host": `"${ctx.host}"`,
+    "hostname": `"${ctx.hostname}"`,
+    "fresh": `"${ctx.fresh}"`,
+    "stale": `"${ctx.stale}"`,
+    "socket": `"${ctx.socket}"`,
+    "protocol": `"${ctx.protocol}"`,
+    "secure": `"${ctx.secure}"`,
+    "ip": `"${ctx.ip}"`,
+    "ips": `"${ctx.ips}"`,
+    "subdomains": `"${ctx.subdomains}"`,
     "is()": `"${ctx.is()}"`,
     "accepts()": `"${ctx.accepts()}"`,
     "acceptsEncodings()": `"${ctx.acceptsEncodings()}"`,

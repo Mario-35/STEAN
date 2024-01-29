@@ -9,7 +9,6 @@
 import koa from "koa";
 import { serverConfig } from "../../configuration";
 import { versionString } from "../../constants";
-import { getMetrics } from "../../db/monitoring";
 import { EextensionsType } from "../../enums";
 import { IKeyString, Iuser } from "../../types";
 import { addCssFile } from "../css";
@@ -30,46 +29,35 @@ export class CreateHtmlView {
         this.ctx = ctx;
     }
 
-    addSubmitButton(label: string ) {
+    private addSubmitButton(label: string ) {
       return `<div class="group"> <input type="submit" class="button" value="${label}"> </div>`;
     }
 
-    addButton(action: string, label: string ) {
+    private addButton(action: string, label: string ) {
       return `<div class="group"> <a href="${action}" class="button" >${label}</a> </div>`;
     }
 
-    addCheckBox(input: {
-      id: string, 
-      checked: boolean, 
-      label?: string
-    }) {
+    private addCheckBox(input: { id: string, checked: boolean, label?: string }) {
       return `<div class="group"> <input id="${input.id}" type="checkbox" class="check" ${input.checked === true ? 'checked' : ''}> <label for="${input.id}"><span class="icon"></span> ${input.label ? input.label : input.id}</label> </div>`;
     }
     
-    addTextInput(input: {
-      id: string, 
-      label: string, 
-      value: any, 
-      alert?: string, 
-      name?: string, 
-      toolType?: string,
-      password?: boolean
-    }) {
-    return `<div class="group">
-    <label for="${input.id}" class="label">${input.label}</label>
-    ${ input.toolType ? `<div class='tooltip help'>
-      <span>?</span>
-      <div class='content'>
-        <b></b>
-        <p>${input.toolType}</p>
-      </div>
-      </div>` : ``
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private addTextInput(input: { id: string, label: string, value: any, alert?: string, name?: string, toolType?: string, password?: boolean }) {
+      return `<div class="group">
+        <label for="${input.id}" class="label">${input.label}</label>
+        ${ input.toolType ? `<div class='tooltip help'>
+          <span>?</span>
+          <div class='content'>
+            <b></b>
+            <p>${input.toolType}</p>
+          </div>
+          </div>` : ``
+        }
+        <input id="${input.id}" name="${input.name ? input.name : input.id}" type="${input.password ? input.password == true ? 'password' : 'text' : 'text' }" class="input" value="${input.value}">
+        ${input.alert ? input.alert : ''}
+      </div>`;
     }
-    <input id="${input.id}" name="${input.name ? input.name : input.id}" type="${input.password ? input.password == true ? 'password' : 'text' : 'text' }" class="input" value="${input.value}">
-    ${input.alert ? input.alert : ''}
-  </div>`;
-  }
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public config = (datas: { config: string | undefined ; body?: any; why?: IKeyString }): string => {
       try {
         const conf = serverConfig.getConfig("essai");        
@@ -139,7 +127,7 @@ export class CreateHtmlView {
       }
 
     };
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public login = (datas: { login: boolean; body?: any; why?: IKeyString }): string => {
         const alert = (name: string): string => {
             return datas.why && datas.why[name] ? `<div class="alert">${datas.why[name]}</div>` : "";
@@ -190,7 +178,7 @@ export class CreateHtmlView {
                   </body>                  
                 </html>`;
     };
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public userEdit = (datas: { body?: any; why?: IKeyString }): string => {
         const user = datas.body;
         const alert = (name: string): string => (datas.why && datas.why[name] ? `<div class="alert">${datas.why[name]}</div>` : "");
@@ -255,22 +243,5 @@ export class CreateHtmlView {
         )} <body> <div class="login-wrap"> <div class="login-html"> <h1>Error.</h1> <div class="hr"></div> <h3>On error page</h3> <h3>${message}</h3> <div class="hr"></div> <div id="outer"> <div class="inner"> <a href="/Login" class="button-submit" >Login</a> </div> <div class="inner"> <a href="${
             this.ctx._linkBase + `/${versionString(this.ctx._config.apiVersion)}/Query`
         }" class="button" >query</a> </div> </div> </div> </body> </html>`;
-    };
-
-    public infos = async (): Promise<string> => {
-      const infos = await getMetrics("all");         
-        return infos ? `<!DOCTYPE html> <html> ${this.head(
-            "Infos",
-            "user"
-        )} <body> <div class="login-html"> <div class="table-wrapper"> <table class="fl-table"> <tbody>
-        Version : ${infos["versionFull"][0]["version"]}<br>
-        Extensions : ${infos["get_extensions"][0]["extension"]}<br>
-        Uptime : ${infos["get_uptime"][0]["pg_postmaster_start_time"]}<br>
-        Size : ${infos["dump_pgdatabase_size"].filter((e: any) => e.datname === this.ctx._config.name)[0]["size"]}<br>
-        </tbody></table> </div> ${this.foot([
-            { href: this.ctx._linkBase + `/${versionString(this.ctx._config.apiVersion)}/`, class: "button-submit", name: "Root" },
-            { href: this.ctx._linkBase + `/${versionString(this.ctx._config.apiVersion)}/Query`, class: "button", name: "Query" },
-            { href: this.ctx._linkBase.split(this.ctx._config.name)[0], class: "button-logout", name: "Documentation" }
-        ])} </div> </body> </html> ` : '';
     };
   }

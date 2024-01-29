@@ -1,8 +1,18 @@
+/**
+ * Constant for TDD.
+ *
+ * @copyright 2020-present Inrae
+ * @review 29-10-2024
+ * @author mario.adam@inrae.fr
+ *
+ */
+
 import fs from "fs";
 import path from "path";
 import { TEST } from "../../server/constants";
 import { Ientity } from "../../server/types";
 import conf from "../../server/configuration/test.json";
+import util from "util";
 import apidocJson from "../apidoc.json";
 import { models } from "../../server/models";
 export const identification = { "username": conf[TEST].pg.user, "password": conf[TEST].pg.password };
@@ -27,6 +37,9 @@ export const geoPos: { [key: string]: number[] } = {
 export const positions = Object.values(geoPos);
 export const nbColor = "\x1b[36m";
 export const nbColorTitle = "\x1b[35m";
+export const testLog = (input: any) => {
+    process.stdout.write(util.inspect(input, { showHidden: false, depth: null, colors: false, }));
+}
 
 const reqLines: string[] = [""];
 
@@ -272,7 +285,7 @@ export const infos = {
     },
 
     FeaturesOfInterest: {
-        definition: "An Observation results in a value being assigned to a phenomenon. The phenomenon is a property of a feature, the latter being the FeatureOfInterest of the Observation [OGC and ISO 19156:2011]. In the context of the Internet of Things, many Observations’ FeatureOfInterest can be the Location of the Thing. For example, the FeatureOfInterest of a wifi-connect thermostat can be the Location of the thermostat (i.e., the living room where the thermostat is located in). In the case of remote sensing, the FeatureOfInterest can be the geographical area or volume that is being sensed.",
+        definition: "An Observation results in a value being assigned to a phenomenon. The phenomenon is a property of a feature, the latter being the FeatureOfInterest of the Observation [OGC and ISO 19156:2011]. In the context of the Internet of Things, many Observations’ FeatureOfInterest can be the Location of the Thing. For example, the FeatureOfInterest of a wifi-connect thermostat can be the Location of the thermostat (i.e., the living room WHERE the thermostat is located in). In the case of remote sensing, the FeatureOfInterest can be the geographical area or volume that is being sensed.",
         reference: "https://docs.ogc.org/is/18-088/18-088.html#featureofinterest",
         columns: {
             id: definitions.id,
@@ -582,7 +595,7 @@ export const apiInfos = {
     ${blank(2)}Upon successful completion the service SHALL respond with either 201 Created, or 204 No Content.
     ${blank(2)}In addition, the link between entities SHALL be established upon creating an entity. Two use cases SHALL be considered: (1) link to existing entities when creating an entity, and (2) create related entities when creating an entity. The requests for these two use cases are described in the following subsection.
     ${blank(2)}When clients create resources in a SensorThings service, they SHALL follow the integrity constraints listed in Table 24. For example, a Datastream entity SHALL link to a Thing entity. When a client wants to create a Datastream entity, the client needs to either (1) create a linked Thing entity in the same request or (2) link to an already created Thing entity. The complete integrity constraints for creating resources are shown in the following table.
-    ${blank(2)}Special case #1 - When creating an Observation entity that links to a FeatureOfInterest entity: Sometimes the FeatureOfInterest of an Observation is the Location of the Thing. For example, a wifi-connected thermostat’s temperature observation’s feature-of-interest can be the location of the smart thermostat, that is the room where the smart thermostat is located in.
+    ${blank(2)}Special case #1 - When creating an Observation entity that links to a FeatureOfInterest entity: Sometimes the FeatureOfInterest of an Observation is the Location of the Thing. For example, a wifi-connected thermostat’s temperature observation’s feature-of-interest can be the location of the smart thermostat, that is the room WHERE the smart thermostat is located in.
     ${blank(2)}In this case, when a client creates an Observation entity, the client SHOULD omit the link to a FeatureOfInterest entity in the POST body message and SHOULD not create a related FeatureOfInterest entity with deep insert. And if the service detects that there is no link to a FeatureOfInterest entity in the POST body message that creates an Observation entity, the service SHALL either (1) create a FeatureOfInterest entity by using the location property from the Location of the Thing entity when there is no FeatureOfInterest whose location property is from the Location of the Thing entity or (2) link to the FeatureOfInterest whose location property is from the Location of the Thing entity.
     ${blank(2)}Special case #2: In the context of IoT, many Observations’ resultTime and phenomenonTime cannot be distinguished or the resultTime is not available. In this case, when a client creates an Observation entity, the client MAY omit the resultTime and the service SHOULD assign a null value to the resultTime.
     ${blank(1)}<table> <thead> <tr> <th style="width: 30%">Scenario</th> <th style="width: 70%">Integrity Constraints</th> </tr> </thead> <tbody> <tr> <td>Create a Thing entity</td> <td></td> </tr> <tr> <td>Create a Location entity</td> <td></td> </tr> <tr> <td>Create a Datastream entity</td> <td>SHALL link to a Thing entity</br>SHALL link to a Sensor entity.</br>SHALL link to an ObservedProperty entity.</td> </tr> <tr> <td>Create a Sensor entity</td> <td></td> </tr> <tr> <td>Create an ObservedProperty entity</td> <td></td> </tr> <tr> <td>Create an Observation entity</td> <td>SHALL link to a Datastream or MultiDatastream entity.</br>SHALL link to a FeatureOfInterest entity. If no link specified, the service SHALL create a FeatureOfInterest entity from the content of the Location entities.</td> </tr> <tr> <td>Create a FeatureOfInterest entity</td> <td></td> </tr> </tbody> </table>`,

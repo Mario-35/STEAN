@@ -439,40 +439,43 @@ describe("endpoint : MultiDatastream", () => {
     describe(`{post} ${entity.name} ${nbColorTitle}[10.2]`, () => {
         it(`Return added ${entity.name} ${nbColor}[10.2.1]`, (done) => {
             const datas = {
-                description: "Air quality readings",
-                name: `Air quality readings ${getNB(entity.name)}`,
-                Thing: {
+                "description": "Air quality readings",
+                "name": `Air quality readings ${getNB(entity.name)}`,
+                "Thing": {
                     "@iot.id": 2
                 },
-                Sensor: {
+                "Sensor": {
                     "@iot.id": 1
                 },
-                multiObservationDataTypes: ["Measurement", "Measurement"],
-                unitOfMeasurements: [
+                "multiObservationDataTypes": ["Measurement", "Measurement"],
+                "unitOfMeasurements": [
                     {
-                        symbol: "%",
-                        name: `${getNB("humidity")}`,
-                        definition: "http://unitsofmeasure.org/ucum.html"
+                        "symbol": "%",
+                        "name": `${getNB("humidity")}`,
+                        "definition": "http://unitsofmeasure.org/ucum.html"
                     },
                     {
-                        name: `${getNB("Temperature")}`,
-                        symbol: "°",
-                        definition: "http://unitsofmeasure.org/blank.html"
+                        "name": `${getNB("Temperature")}`,
+                        "symbol": "°",
+
+                        "definition": "http://unitsofmeasure.org/blank.html"
                     }
                 ],
-                ObservedProperties: [
+                "ObservedProperties": [
                     {
-                        name: `${getNB("humidity")}`,
-                        definition: "humidity",
-                        description: "valeur en pourcentage du taux d'humidity de l'air"
+                        "name": `${getNB("humidity")}`,
+                        "definition": "humidity",
+                        "description": "valeur en pourcentage du taux d'humidity de l'air"
                     },
                     {
-                        name: `${getNB("Temperature")}`,
-                        definition: "Temperature",
-                        description: "valeur en degré de la Temperature de l'air"
+                        "name": `${getNB("Temperature")}`,
+                        "definition": "Temperature",
+                        "description": "valeur en degré de la Temperature de l'air"
                     }
                 ]
             };
+            console.log(datas);
+            
             const infos = {
                 api: `{post} ${entity.name} Post with existing Thing And Sensor`,
                 apiName: `PostExistingThing${entity.name}`,

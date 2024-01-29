@@ -11,7 +11,7 @@ import { Common } from "./common";
 import { formatLog } from "../../logger";
 import { IreturnResult } from "../../types";
 import { serverConfig } from "../../configuration";
-import { hidePasswordIn } from "../../helpers";
+import { hidePassword } from "../../helpers";
 import { errors } from "../../messages/";
 import { EuserRights } from "../../enums";
 import { ADMIN } from "../../constants";
@@ -28,7 +28,7 @@ export class Users extends Common {
     if (this.ctx._user?.PDCUAS[EuserRights.SuperAdmin] === true || this.ctx._user?.PDCUAS[EuserRights.Admin] === true ) {
       const temp = await executeSqlValues(serverConfig.getConfig(ADMIN), `SELECT ${models.getSelectColumnList(models.DBAdmin(serverConfig.getConfig(ADMIN)).Users)} FROM "user" ORDER BY "id"`);      
       return this.createReturnResult({
-        body: hidePasswordIn(temp),
+        body: hidePassword(temp),
       });
     } else this.ctx.throw(401, { code: 401, detail: errors[401] });
   }

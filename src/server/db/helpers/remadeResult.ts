@@ -38,7 +38,7 @@ const getSortedKeys = async ( config: IconfigFile, inputID: string, synonym: obj
 export const remadeResult = async ( ctx: koa.Context, step: number ): Promise<string> => {
   let progression = 1;
   const getObservations = await serverConfig
-    .getConnection(ctx._config.name)`select * from observation where result->'value' is null or result->'value' = '[null, null, null]' order by id ${
+    .getConnection(ctx._config.name)`select * from observation WHERE result->'value' is null or result->'value' = '[null, null, null]' order by id ${
         step > 0 ? `LIMIT ${step}` : ""
       }`;
   await asyncForEach(getObservations["rows"], async (elem: object) => {
@@ -133,9 +133,9 @@ export const remadeResult = async ( ctx: koa.Context, step: number ): Promise<st
     }
   });
   const decodedPayload = await serverConfig.getConnection(ctx._config.name)`select 
-    (select count(*) from observation where result->'value' is null) as "a traiter",
-    (select count(*) from observation where result->'value' is null and result is not null) as "avec infos",
-    (select count(*) from observation where result->'value' is null and result is null) as "sans infos",
-    (select count(*) from observation where result->'value' = '[null, null, null]') as "Tous null"`;
+    (SELECT count(*) from observation WHERE result->'value' is null) as "a traiter",
+    (SELECT count(*) from observation WHERE result->'value' is null and result is not null) as "avec infos",
+    (SELECT count(*) from observation WHERE result->'value' is null and result is null) as "sans infos",
+    (SELECT count(*) from observation WHERE result->'value' = '[null, null, null]') as "Tous null"`;
   return decodedPayload["rows"];
 };

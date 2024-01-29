@@ -55,35 +55,34 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
       return;
     // register html page or registration new user route
     case "REGISTER":
-      const body = ctx.request.body;
-      const isObject = typeof body !== "string";
+      const isObject = typeof ctx.request.body !== "string";
       const why: IKeyString = {};
       // Username
-      if (isObject && body["username"].trim() === "") {
+      if (isObject && ctx.request.body["username"].trim() === "") {
         why["username"] = msg(errors.empty, "username");
       } else {
         const user = await executeSqlValues(serverConfig.getConfig(ADMIN), `SELECT "username" FROM "user" WHERE username = '${ctx.request.body["username"]}' LIMIT 1`);
         if (user) why["username"] = errors.alreadyPresent;
       }
       // Email
-      if (isObject && body["email"].trim() === "") {
+      if (isObject && ctx.request.body["email"].trim() === "") {
         why["email"] = msg(errors.empty, "email");
       } else {
-        if (emailIsValid(body["email"]) === false)
+        if (emailIsValid(ctx.request.body["email"]) === false)
           why["email"] = msg(errors.invalid, "email");
       }
       // Password
-      if (isObject && body["password"].trim() === "") {
+      if (isObject && ctx.request.body["password"].trim() === "") {
         why["password"] = msg(errors.empty, "password");
       }
       // Repeat password
-      if (isObject && (body["repeat"] as string).trim() === "") {
+      if (isObject && (ctx.request.body["repeat"] as string).trim() === "") {
         why["repeat"] = msg(errors.empty, "repeat password");
       } else {
-        if (body["password"] != body.repeat) {
+        if (ctx.request.body["password"] != ctx.request.body.repeat) {
           why["repeat"] = errors.passowrdDifferent;
         } else {
-          if (checkPassword(body["password"]) === false)
+          if (checkPassword(ctx.request.body["password"]) === false)
             why["password"] = msg(errors.invalid, "password");
         }
       }
@@ -134,7 +133,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
       } else ctx.throw(400);
     } else if (ctx.request.type.startsWith("multipart/form-data")) {
       // If upload datas
-      const getDatas = async (): Promise<IKeyString> => {
+      const getDatas = async (): Promise<object> => {
         console.log(formatLog.head("getDatas ..."));
         return new Promise(async (resolve, reject) => {
           await upload(ctx)
@@ -155,7 +154,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
         const objectAccess = new apiAccess(ctx);
         const returnValue: IreturnResult | undefined | void =
           await objectAccess.post();
-        if (ctx._datas) fs.unlinkSync(ctx._datas.file);
+        if (ctx._datas) fs.unlinkSync(ctx._datas["file"]);
         if (returnValue) {
           if (ctx._datas["source"] == "query") {
             const temp = await createIqueryFromContext(ctx);

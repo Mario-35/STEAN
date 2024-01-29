@@ -5,9 +5,9 @@
  * @author mario.adam@inrae.fr
  *
  */
-import { ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_DB, NODE_ENV, setReady, TEST, TIMESTAMP, _DEBUG, _ERRORFILE, _NOTOK, _OK, _WEB, } from "../constants";
-import { addSimpleQuotes, asyncForEach, decrypt, encrypt, hidePasswordIn, isProduction, isTest, unikeList, } from "../helpers";
-import { IconfigFile, IdbConnection } from "../types";
+import { ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_DB, NODE_ENV, setReady, TEST, TIMESTAMP, versionString, _DEBUG, _ERRORFILE, _NOTOK, _OK, _WEB, } from "../constants";
+import { addSimpleQuotes, asyncForEach, decrypt, encrypt, hidePassword, isProduction, isTest, unikeList, } from "../helpers";
+import { IconfigFile, IdbConnection, IserviceLink } from "../types";
 import { errors, infos, msg } from "../messages";
 import { createDatabase, executeSql} from "../db/helpers";
 import { app } from "..";
@@ -19,12 +19,12 @@ import postgres from "postgres";
 import { triggers } from "../db/createDb/triggers";
 import { formatLog } from "../logger";
 import { log } from "../log";
+import koa from "koa";
 
 // class to logCreate configs environements
 class Configuration {
   static configs: { [key: string]: IconfigFile } = {};
-  static filePath: fs.PathOrFileDescriptor;
-  
+  static filePath: fs.PathOrFileDescriptor;  
   static jsonConfiguration: JSON;
   static ports: number[] = [];
   static queries: { [key: string]: string[] } = {};
@@ -38,10 +38,10 @@ class Configuration {
       if (this.validJSONConfig(Configuration.jsonConfiguration)) Object.keys(Configuration.jsonConfiguration).forEach((element: string) => {
         Configuration.configs[element] = this.formatConfig(element);
       }); else {
-        log.error("Config Not correct");
+        log.error(errors.configFileError);
         process.exit(112);
       }
-      if (isProduction() && fileContent[32] != ".") this.writeConfig();      
+      if (process.env.NODE_ENV?.trim() === "production" && fileContent[32] != ".") this.writeConfig();      
       // rewrite file (to update config modification)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -49,6 +49,37 @@ class Configuration {
       log.error("Config Not correct", error["message"]);
       process.exit(111);      
     }
+  }
+  getLinkBase = (ctx: koa.Context, name: string): IserviceLink  => {
+    const protocol = ctx.request.headers["x-forwarded-proto"]
+        ? ctx.request.headers["x-forwarded-proto"]
+        : Configuration.configs[name].forceHttps && Configuration.configs[name].forceHttps == true
+        ? "https"
+        : ctx.protocol;
+        // make linkbase
+    let linkBase = ctx.request.headers["x-forwarded-host"]
+        ? `${protocol}://${ctx.request.headers["x-forwarded-host"].toString()}`
+        : ctx.request.header.host
+        ? `${protocol}://${ctx.request.header.host}`
+        : "";
+      // make  rootName
+      if (!linkBase.includes(name)) linkBase +=  "/" + name;
+      const version = versionString(Configuration.configs[name].apiVersion)
+      return {
+        linkBase: linkBase,
+        version: version,
+        root : process.env.NODE_ENV?.trim() === "test"
+          ? `proxy/${version}/`
+          : `${linkBase}/${version}/`,
+        model : `https://app.diagrams.net/?lightbox=1&edit=_blank#U${linkBase}/${version}/draw`
+      };
+   }
+  public getAllInfos(ctx: koa.Context): { [key: string]: IserviceLink } {
+    const result = {};    
+    this.getConfigs().forEach((conf: string) => {
+      result[conf] =  this.getLinkBase(ctx, conf)
+    });
+    return result;
   }
 
   public getConfig(name: string) {
@@ -202,7 +233,7 @@ class Configuration {
         .forEach((connectName: string) => {
           Object.keys(update["decoders"]).forEach((name: string) => {
             const hash = this.hashCode(update["decoders"][name]);
-            this.addToQueries( connectName, `update decoder set code='${update["decoders"][name]}', hash = '${hash}' where name = '${name}' and hash <> '${hash}' ` );
+            this.addToQueries( connectName, `update decoder set code='${update["decoders"][name]}', hash = '${hash}' WHERE name = '${name}' and hash <> '${hash}' ` );
           });
         });
       }
@@ -345,7 +376,7 @@ class Configuration {
       Configuration.configs[addedConfig.name] = this.formatConfig(addedConfig);
       await this.addToServer(addedConfig.name);
       this.writeConfig();
-      hidePasswordIn(addedConfig);
+      hidePassword(addedConfig);
       return addedConfig;
     } catch (error) {
       return undefined;
@@ -441,5 +472,4 @@ class Configuration {
       });
   }
 }
-
 export const serverConfig = new Configuration(__dirname + `/${NODE_ENV}.json`);

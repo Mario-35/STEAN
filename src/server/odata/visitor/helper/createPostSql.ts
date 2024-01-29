@@ -12,11 +12,14 @@ import { formatLog } from "../../../logger";
 import { Ientity, IKeyString } from "../../../types";
 import { EoperationType } from "../../../enums/";
 import { PgVisitor } from "../PgVisitor";
-import { createPgQuery } from ".";
+import { createPgQuery, formatInsertEntityData } from ".";
 import { queryAsJson } from "../../../db/queries";
 import { models } from "../../../models";
 import { log } from "../../../log";
-export function createPostSql(datas: object, configName: string, main: PgVisitor): string {
+
+
+export function createPostSql(datas: object, main: PgVisitor): string {
+    console.log(formatLog.whereIam());
     let sqlResult = "";
     const queryMaker: {
         [key: string]: {
@@ -80,7 +83,6 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
             if (queryMaker[element].datas.hasOwnProperty("@iot.id")) {
                 const searchId = queryMaker[element].datas["@iot.id"];
                 returnValue.push( `, ${element} AS (select verifyId('${queryMaker[element].table}', ${searchId}) as id)` );
-                // returnValue.push( `, ${element} AS (select "id" from "${queryMaker[element].table}" where "id" = ${searchId})` );
             } else if (queryMaker[element].datas.hasOwnProperty("@iot.name")) {
                 const searchByName = queryMaker[element].datas["@iot.name"];
                 returnValue.push( `, ${element} AS (select "id" from "${queryMaker[element].table}" where "name" = '${searchByName}')` );
@@ -88,14 +90,15 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
                 returnValue.push(`, ${element} AS (`);
                 if (main.id) {
                     if (queryMaker[element].type == EoperationType.Association) 
-                        returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${models.createInsertValues(main.ctx._config, queryMaker[element].datas)} on conflict ("${Object.keys(queryMaker[element].datas).join('","')}") do update set ${models.createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = ${BigInt(main.id).toString()}`);
+                        returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${models.createInsertValues(main.ctx._config, formatInsertEntityData(queryMaker[element].table, queryMaker[element].datas, main))} on conflict ("${Object.keys(queryMaker[element].datas).join('","')}") do update set ${models.createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = ${BigInt(main.id).toString()}`);
                     else
-                        returnValue.push(`UPDATE "${queryMaker[element].table}" set ${models.createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = (select verifyId('${queryMaker[element].table}', ${main.id}) as id)`);
-                } else returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${models.createInsertValues(main.ctx._config, queryMaker[element].datas)}`);                            
+                        returnValue.push(`UPDATE "${queryMaker[element].table}" SET ${models.createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = (select verifyId('${queryMaker[element].table}', ${main.id}) as id)`);
+                } else returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${models.createInsertValues(main.ctx._config, formatInsertEntityData(queryMaker[element].table, queryMaker[element].datas, main))}`);                            
                     returnValue.push(`RETURNING ${postEntity.table == queryMaker[element].table ? allFields : queryMaker[element].keyId})`);
+
+                
             }
         });
-        // format object quotes
         return returnValue.join("\n").replace(/\'@/g, "").replace(/\@'/g, "");
     };
     
@@ -317,6 +320,7 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
         }
     }
     const root = start(datas);
+
     
     if ((names[postEntity.table] && queryMaker[postEntity.table] && queryMaker[postEntity.table].datas) || root === undefined) {
         queryMaker[postEntity.table].datas = Object.assign(root as object, queryMaker[postEntity.table].datas);
@@ -328,7 +332,7 @@ export function createPostSql(datas: object, configName: string, main: PgVisitor
             ? root && Object.entries(root).length > 0
             ? `WITH ${postEntity.table} AS (UPDATE ${addDoubleQuotes(postEntity.table)} set ${models.createUpdateValues(root)} WHERE "id" = (select verifyId('${postEntity.table}', ${main.id}) as id) RETURNING ${allFields})`
                 : `WITH ${postEntity.table} AS (SELECT * FROM ${addDoubleQuotes(postEntity.table)} WHERE "id" = ${main.id.toString()})`
-                : `WITH ${postEntity.table} AS (INSERT INTO ${addDoubleQuotes(postEntity.table)} ${models.createInsertValues(main.ctx._config, root)} RETURNING ${allFields})`
+                : `WITH ${postEntity.table} AS (INSERT INTO ${addDoubleQuotes(postEntity.table)} ${models.createInsertValues(main.ctx._config, formatInsertEntityData(postEntity.name, root, main))} RETURNING ${allFields})`
                 );
             }
     const temp = createPgQuery(main, main); 

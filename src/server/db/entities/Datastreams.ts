@@ -20,15 +20,10 @@ export class Datastreams extends Common {
     console.log(formatLog.whereIam());
     if (input) {
       if (input["observationType"]) {
-        if (
-          !this.ctx._model.Datastreams.columns[
-            "observationType"
-          ].verify?.list.includes(input["observationType"])
-        )
+        if ( !this.ctx._model.Datastreams.columns[ "observationType" ].verify?.list.includes(input["observationType"]) )
           this.ctx.throw(400, { code: 400, detail: errors["observationType"] });
       } else
-        input["observationType"] =
-        this.ctx._model.Datastreams.columns["observationType"].verify?.default;
+        input["observationType"] = this.ctx._model.Datastreams.columns["observationType"].verify?.default;
     }
     return input;
   }

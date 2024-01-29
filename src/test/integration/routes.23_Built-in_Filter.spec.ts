@@ -25,7 +25,7 @@ const addToApiDoc = (input: IApiInput) => {
 addToApiDoc({
     api: `{infos} /BuiltInOperators Infos`,
     apiName: "InfosBuiltInOperators",
-    apiDescription: `The $filter system query option allows clients to filter a collection of entities that are addressed by a request URL. The expression specified with $filter is evaluated for each entity in the collection, and only items where the expression evaluates to true SHALL be included in the response. Entities for which the expression evaluates to false or to null, or which reference properties that are unavailable due to permissions, SHALL be omitted from the response.${apiInfos["9.3.3.5.1"]}`,
+    apiDescription: `The $filter system query option allows clients to filter a collection of entities that are addressed by a request URL. The expression specified with $filter is evaluated for each entity in the collection, and only items WHERE the expression evaluates to true SHALL be included in the response. Entities for which the expression evaluates to false or to null, or which reference properties that are unavailable due to permissions, SHALL be omitted from the response.${apiInfos["9.3.3.5.1"]}`,
     apiReference: "https://docs.ogc.org/is/18-088/18-088.html#requirement-request-data-filter",
     result: ""
 });

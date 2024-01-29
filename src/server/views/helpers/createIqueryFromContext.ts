@@ -44,7 +44,7 @@ export const createIqueryFromContext = async (ctx: koa.Context): Promise<IqueryO
         graph: ctx.url.includes("$resultFormat=graph"),
         admin: ctx._config.name === 'admin',
         metrics: ["all"].concat(metrics as Array<string>),
-        services: serverConfig.getConfigs(),
+        services: serverConfig.getAllInfos(ctx),
         _DATAS: ctx._model
     };
 };

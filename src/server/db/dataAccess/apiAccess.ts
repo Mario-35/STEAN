@@ -20,14 +20,14 @@ export class apiAccess implements Icomon {
   readonly myEntity: Common | undefined;
   readonly ctx: koa.Context;
 
-  constructor(ctx: koa.Context) {
-    this.ctx = ctx;
-    const entityName = models.getEntityName(this.ctx._config, this.ctx._odata.entity);
-    if (entityName && entityName in entities) {
+  constructor(ctx: koa.Context, entity?: string) {
+    this.ctx = ctx;    
+    const entityName = models.getEntityName(this.ctx._config, entity ? entity : this.ctx._odata.entity);
+    if (entityName && entityName in entities) {      
       this.myEntity = new entities[(this.ctx, entityName)](ctx);
     } 
   }
-
+  
   formatDataInput(input: object | undefined): object | undefined {
     console.log(formatLog.whereIam());
     return this.myEntity ? this.myEntity.formatDataInput(input) : input;
@@ -43,12 +43,12 @@ export class apiAccess implements Icomon {
     if (this.myEntity) return await this.myEntity.getSingle(idInput);
   }
 
-  async post(): Promise<IreturnResult | undefined> {
+  async post(dataInput?: object | undefined): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     if (this.myEntity) 
       return isObjectArray(this.ctx.request.body)
-      ? await this.myEntity.addWultipleLines(this.ctx.request.body)
-      : await this.myEntity.post(this.ctx.request.body);
+      ? await this.myEntity.addWultipleLines(dataInput || this.ctx.request.body)
+      : await this.myEntity.post(dataInput || this.ctx.request.body);
   }
 
   async update(idInput: bigint | string): Promise<IreturnResult | undefined> {

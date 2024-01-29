@@ -27,6 +27,7 @@ export function createQueryString(main: PgVisitor, element: PgVisitor): string {
 }
 
 export function createPgQuery(main: PgVisitor, element: PgVisitor): IpgQuery | undefined { 
+    console.log(formatLog.whereIam()); 
     const select: string[] | undefined = getColumnsList(element.entity, main, element);     
     if (select) {
         const realEntityName = models.getEntityName(main.ctx._config, element.entity);
@@ -42,7 +43,6 @@ export function createPgQuery(main: PgVisitor, element: PgVisitor): IpgQuery | u
                         query: createQueryString(main,item), 
                         singular : models.isSingular(main.ctx._config, name),                        
                         count: false })}) AS ${addDoubleQuotes(name)}`;
-                    main.addToArrayNames(name);
                 }
             });
             relations.forEach((rel: string) => {                    

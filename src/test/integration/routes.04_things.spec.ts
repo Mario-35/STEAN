@@ -199,7 +199,7 @@ describe("endpoint : Thing [8.2.1]", () => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get Select with @iot.id`,
                 apiName: `Get${entity.name}SelectIot`,
-                apiDescription: "Get with select with @iot.id.",
+                apiDescription: "Get with SELECT with @iot.id.",
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#expand",
                 apiExample: {
                     http: `/${testVersion}/${entity.name}?$select=name,description,@iot.id`,
@@ -240,7 +240,7 @@ describe("endpoint : Thing [8.2.1]", () => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get Select with navigation link`,
                 apiName: `Get${entity.name}SelectNavLink`,
-                apiDescription: "Get select with navigation link",
+                apiDescription: "Get SELECT with navigation link",
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#expand",
                 apiExample: {
                     http: `/${testVersion}/${entity.name}?$select=name,description,Datastreams`,
@@ -370,11 +370,11 @@ describe("endpoint : Thing [8.2.1]", () => {
                 });
         });
 
-        it(`Return ${entity.name} Expand Locations With select inside ${nbColor}[9.3.2.1]`, (done) => {
+        it(`Return ${entity.name} Expand Locations With SELECT inside ${nbColor}[9.3.2.1]`, (done) => {
             const infos = {
                 api: `{get} ${entity.name}(:id) Get Expand with Select`,
                 apiName: `Get${entity.name}ExpandSelect`,
-                apiDescription: `Get Expand Locations of a specific Thing with a select inside.${apiInfos["9.3.2.1"]}`,
+                apiDescription: `Get Expand Locations of a specific Thing with a SELECT inside.${apiInfos["9.3.2.1"]}`,
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#expand",
                 apiExample: {
                     http: `/${testVersion}/${entity.name}(6)?$expand=Locations($select=location)`,
@@ -872,7 +872,7 @@ describe("endpoint : Thing [8.2.1]", () => {
                     {
                         "name": "Air Temperature DS",
                         "description": "Datastream for recording temperature",
-                        "observationType": "Measurement",
+                        "observationType": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",                        
                         "unitOfMeasurement": {
                             "name": `Degree Celsius ${getNB("unitOfMeasurement")}`,
                             "symbol": "degC",
@@ -933,6 +933,119 @@ describe("endpoint : Thing [8.2.1]", () => {
                                 .catch((e) => console.log(e));
                         })
                         .catch((e) => console.log(e));
+                });
+        });
+
+        it(`POST ${entity.name} with Inner Posts`, (done) => {
+            const datas = {
+                "description": "Thing One For inner Post",
+                "name": "Thing One For inner Post",
+                "properties": {
+                  "reference": "first"
+                },
+                "Locations": [
+                  {
+                    "description": "location for Thing One",
+                    "name": "location name Thing One",
+                    "location": {
+                      "type": "Point",
+                      "coordinates": [
+                        -117.05,
+                        51.05
+                      ]
+                    },
+                    "encodingType": "application/vnd.geo+json"
+                  }
+                ],
+                "Datastreams": [
+                  {
+                    "unitOfMeasurement": {
+                      "name": "Lumen",
+                      "symbol": "lm",
+                      "definition": "http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html/Lumen"
+                    },
+                    "description": "datastream premier",
+                    "name": "datastream name premier",
+                    "observationType": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+                    "ObservedProperty": {
+                      "name": "Luminous Flux",
+                      "definition": "http://www.qudt.org/qudt/owl/1.0.0/quantity/Instances.html/LuminousFlux",
+                      "description": "observedProperty flux"
+                    },
+                    "Sensor": {
+                      "description": "sensor premier",
+                      "name": "sensor name premier",
+                      "encodingType": "application/pdf",
+                      "metadata": "Light flux sensor"
+                    },
+                    "Observations": [
+                      {
+                        "phenomenonTime": "2015-03-03T00:00:00Z",
+                        "result": 3
+                      },
+                      {
+                        "phenomenonTime": "2015-03-04T00:00:00Z",
+                        "result": 4
+                      }
+                    ]
+                  },
+                  {
+                    "unitOfMeasurement": {
+                      "name": "Centigrade",
+                      "symbol": "C",
+                      "definition": "http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html/Lumen"
+                    },
+                    "description": "datastream second",
+                    "name": "datastream name second",
+                    "observationType": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+                    "ObservedProperty": {
+                      "name": "Tempretaure",
+                      "definition": "http://www.qudt.org/qudt/owl/1.0.0/quantity/Instances.html/Tempreture",
+                      "description": "observedProperty second"
+                    },
+                    "Sensor": {
+                      "description": "sensor second",
+                      "name": "sensor name second",
+                      "encodingType": "application/pdf",
+                      "metadata": "Tempreture sensor"
+                    },
+                    "Observations": [
+                      {
+                        "phenomenonTime": "2015-03-05T00:00:00Z",
+                        "result": 5
+                      },
+                      {
+                        "phenomenonTime": "2015-03-06T00:00:00Z",
+                        "result": 6
+                      }
+                    ]
+                  }
+                ]
+              };
+            const infos = {
+                api: `{post} ${entity.name} Post with Inner Posts`,
+                apiName: "PostThingWithInnerPosts",
+                apiDescription: "Create a Thing with with Inner Posts.",
+                apiReference: "",
+                apiExample: {
+                    http: `/${testVersion}/${entity.name}`,
+                    curl: defaultPost("curl", "KEYHTTP", datas),
+                    javascript: defaultPost("javascript", "KEYHTTP", datas),
+                    python: defaultPost("python", "KEYHTTP", datas)
+                },
+                apiParamExample: datas
+            };
+            chai.request(server)
+                .post(`/test${infos.apiExample.http}`)
+                .send(infos.apiParamExample)
+                .set("Cookie", `${keyTokenName}=${token}`)
+                .end((err: Error, res: any) => {
+                    should.not.exist(err);
+                    res.status.should.equal(201);
+                    res.type.should.equal("application/json");
+                    res.body.should.include.keys(testsKeys);
+                    res.body["name"].should.equal("Thing One For inner Post");
+                    done();
                 });
         });
     });

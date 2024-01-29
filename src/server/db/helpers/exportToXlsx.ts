@@ -4,7 +4,7 @@ import postgres from "postgres";
 import { serverConfig } from "../../configuration";
 import { log } from "../../log";
 import { EextensionsType } from "../../enums";
-import { addDoubleQuotes, asyncForEach, hidePasswordIn } from "../../helpers";
+import { addDoubleQuotes, asyncForEach, getUrlKey, hidePassword, removeEmpty } from "../../helpers";
 import { models } from "../../models";
 
 const addConfigToExcel = async ( workbook: Excel.Workbook, config: object ) => {
@@ -113,32 +113,39 @@ const exportToXlsx = async (ctx: koa.Context) => {
 };
 
 const exportToJson = async (ctx: koa.Context) => {
-  const result = { "create": hidePasswordIn(serverConfig.getConfig(ctx._config.name))};
+  // get config with hidden password
+  const result = { "create": hidePassword(serverConfig.getConfig(ctx._config.name))};
+  // get entites list
   const entities = Object.keys(ctx._model).filter((e: string) => ctx._model[e].createOrder > 0);
+  // remove key ebservation by ThingsLocations
   entities[entities.indexOf('Observations')] = ctx._model.ThingsLocations.name;
-  console.log(entities);
-
+  // async loop
   await asyncForEach(
+    // Entities list
     entities,
+    // Action
     async (entity: string) => {
       if(Object.keys(ctx._model[entity].columns)) {
-        const cols = Object.keys(ctx._model[entity].columns).filter((e: string) => e != "id" && !e.endsWith('_id') && e[0] != '_' && ctx._model[entity].columns[e].create != "");
+        // Create columns list
+        const columnList = Object.keys(ctx._model[entity].columns).filter((e: string) => e != "id" && !e.endsWith('_id') && e[0] != '_' && ctx._model[entity].columns[e].create != "");
+        // Create relations list
         const rels = [""];
         Object.keys(ctx._model[entity].columns).filter((e: string) => e.endsWith('_id')).forEach((e: string) => {
           const table = e.split("_")[0];
-          const entity = models.getEntityName(ctx._config, table);
-          const temp = `(select "name" FROM "${table}" where "${table}"."id" = id LIMIT 1) AS "${entity}"`;
-          rels.push(temp);
+          rels.push(`CASE WHEN "${e}" ISNULL THEN NULL ELSE JSON_BUILD_OBJECT('@iot.name', (SELECT REPLACE (name, '''', '''''') FROM "${table}" WHERE "${table}"."id" = ${e} LIMIT 1)) END AS "${e}"`);          
         });   
-        
-        const myCols = cols.map(e => addDoubleQuotes(e)).join();
-        
-        if (myCols.length <= 1) rels.shift();
-        const sql = `select ${myCols}${rels.length > 1 ? rels.join() : ""}\n from "${ctx._model[entity].table}" LIMIT 200`;  
+        const columnListWithQuotes = columnList.map(e => addDoubleQuotes(e)).join();        
+        if (columnListWithQuotes.length <= 1) rels.shift();
+        // Bulid query
+        const sql = `select ${columnListWithQuotes}${rels.length > 1 ? rels.join() : ""}\n from "${ctx._model[entity].table}" LIMIT ${getUrlKey(ctx.request.url, "limit") || ctx._config.nb_page}`;
+        // Execute query
         const temp = await serverConfig.getConnection(ctx._config.name).unsafe(sql);  
-        result[entity] = (temp);
+        // remove null and store datas result 
+        result[entity] = removeEmpty(temp);        
       }  
   });
+  // remove default columnListWithQuotes
+  delete result["FeaturesOfInterest"][0];
   return result;
 };
 

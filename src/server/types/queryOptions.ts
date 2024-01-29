@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * query interface.
  *
@@ -6,7 +7,7 @@
  *
  */
 
-import { Ientities, Iuser } from ".";
+import { Ientities, IserviceLink, Iuser } from ".";
 
 export interface IqueryOptions {
     user: Iuser;
@@ -18,7 +19,7 @@ export interface IqueryOptions {
     method?: string;
     options: string;
     version: string;
-    services: string[];
+    services: { [key: string]: IserviceLink };
     host: string;
     datas?: JSON;
     results?: JSON | string;

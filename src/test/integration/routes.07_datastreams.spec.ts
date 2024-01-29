@@ -561,7 +561,7 @@ describe("endpoint : Datastream", () => {
 
         it(`Return added ${entity.name} from Thing`, (done) => {
             const datas = {
-                "name": "Air Temperature DS",
+                "name": "Air Temperature DS [6]",
                 "description": "Datastream for recording temperature [6]",
                 "unitOfMeasurement": {
                     "name": `Degree Celsius ${getNB("unitOfMeasurement")}`,

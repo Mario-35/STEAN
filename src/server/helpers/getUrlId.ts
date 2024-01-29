@@ -6,10 +6,15 @@
  *
  */
 
-export function getUrlId(input: string): string | undefined {
+/**
+ * 
+ * @param input url string 
+ * @returns id 
+ */
+export const getUrlId = (input: string): string | undefined => {
     try {
         return input.split("(")[1].split(")")[0];
     } catch (error) {        
         return undefined;
     }
-}
+};

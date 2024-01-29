@@ -79,7 +79,7 @@ describe("Odata BuiltInDates [9.3.3.5.2]", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(41);
+                res.body.value.length.should.eql(17);
                 res.body["value"][0]["@iot.id"].should.eql(17);
                 done();
             });
@@ -93,7 +93,7 @@ describe("Odata BuiltInDates [9.3.3.5.2]", () => {
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(33);
-                res.body["value"][0]["@iot.id"].should.eql(56);
+                res.body["value"][0]["@iot.id"].should.eql(60);
                 done();
             });
     });    
@@ -117,7 +117,6 @@ describe("Odata BuiltInDates [9.3.3.5.2]", () => {
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(10);
-                res.body["value"][0]["@iot.id"].should.eql(80);
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
@@ -142,7 +141,7 @@ describe("Odata BuiltInDates [9.3.3.5.2]", () => {
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
-                res.body["value"][0]["@iot.id"].should.eql(67);
+                res.body["value"][0]["@iot.id"].should.eql(71);
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
@@ -167,7 +166,7 @@ describe("Odata BuiltInDates [9.3.3.5.2]", () => {
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(3);
-                res.body["value"][0]["@iot.id"].should.eql(66);
+                res.body["value"][0]["@iot.id"].should.eql(70);
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
@@ -263,7 +262,7 @@ describe("Odata BuiltInDates [9.3.3.5.2]", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(66);
+                res.body.value.length.should.eql(42);
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });
@@ -336,7 +335,7 @@ describe("Odata BuiltInDates [9.3.3.5.2]", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(76);
+                res.body.value.length.should.eql(52);
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 done();
             });

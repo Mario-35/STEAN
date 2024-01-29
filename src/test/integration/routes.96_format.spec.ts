@@ -3,6 +3,7 @@
  * TDD for Format API.
  *
  * @copyright 2020-present Inrae
+ * @review 29-10-2024
  * @author mario.adam@inrae.fr
  *
  */
@@ -10,7 +11,7 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, limitResult, testVersion } from "./constant";
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, limitResult, testVersion, testLog } from "./constant";
 import { server } from "../../server/index";
 
 chai.use(chaiHttp);
@@ -69,7 +70,7 @@ describe("Output formats", () => {
                     // res.body[0]["dataArray@iot.count"].eql(24);
                     res.body[0].component.length.should.eql(4);
                     res.body[0].component[0].should.eql("id");  
-                    res.body[0].dataArray.length.should.eql(24);
+                    res.body[0].dataArray.length.should.eql(25);
                     res.body[0].dataArray = [res.body[0].dataArray[0], res.body[0].dataArray[1], " ... "];
                     addToApiDoc({ ...infos, result: res });
                     done();
@@ -92,9 +93,48 @@ describe("Output formats", () => {
                     res.body[0].component.length.should.eql(2);
                     res.body[0]['dataArray@iot.count'].should.eql(23);
                     res.body[0].dataArray.length.should.eql(23);
-                    // res.body[0].dataArray[1][1].should.eql(0.1);  
                     res.body[0].dataArray = [res.body[0].dataArray[0], res.body[0].dataArray[1], " ... "];
                     addToApiDoc({ ...infos, result: res});
+                    done();
+                });
+        });
+
+        it("Return Observations expand Datastream name in dataArray format.", (done) => {
+            chai.request(server)
+                .get(`/test/${testVersion}/Observations?$expand=Datastream($select=name)&$select=phenomenonTime,result&$resultFormat=dataArray`)
+                .end((err: Error, res: any) => {
+                    should.not.exist(err);
+                    res.status.should.equal(200);
+                    res.type.should.equal("application/json");
+                    res.body[0]["component"].should.includes('Datastream->name');
+                    res.body[0]['dataArray@iot.count'].should.eql(52);
+                    done();
+                });
+        });
+        it("Return Observations expand Datastream id in dataArray format.", (done) => {
+            chai.request(server)
+                .get(`/test/${testVersion}/Observations?$expand=Datastream($select=id)&$select=phenomenonTime,result&$resultFormat=dataArray`)
+                .end((err: Error, res: any) => {
+                    should.not.exist(err);
+                    testLog(res.body);
+                    res.status.should.equal(200);
+                    res.type.should.equal("application/json");
+                    res.body[0]["component"].should.includes('Datastream->id');
+                    res.body[0]['dataArray@iot.count'].should.eql(52);
+                    done();
+                });
+        });
+        it("Return Observations expand Datastream id and name in dataArray format.", (done) => {
+            chai.request(server)
+                .get(`/test/${testVersion}/Observations?$expand=Datastream($select=id,name)&$select=phenomenonTime,result&$resultFormat=dataArray`)
+                .end((err: Error, res: any) => {
+                    testLog(res.body);
+                    should.not.exist(err);
+                    res.status.should.equal(200);
+                    res.type.should.equal("application/json");
+                    res.body[0]["component"].should.includes('Datastream->id');
+                    res.body[0]["component"].should.includes('Datastream->name');
+                    res.body[0]['dataArray@iot.count'].should.eql(52);
                     done();
                 });
         });

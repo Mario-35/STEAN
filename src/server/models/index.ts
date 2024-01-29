@@ -1,5 +1,5 @@
 import { serverConfig } from "../configuration";
-import { DEFAULT_API_VERSION, ESCAPE_ARRAY_JSON, ESCAPE_SIMPLE_QUOTE, TEST, versionString } from "../constants";
+import { DEFAULT_API_VERSION, ESCAPE_ARRAY_JSON, REMOVE_FIRST_END_CHAR, ESCAPE_SIMPLE_QUOTE, TEST, versionString } from "../constants";
 import { log } from "../log";
 import { _STREAM } from "../db/constants";
 import { executeSqlValues } from "../db/helpers";
@@ -10,12 +10,13 @@ import { errors, msg } from "../messages";
 import { IconfigFile, Ientities, Ientity, IKeyBoolean, IstreamInfos } from "../types";
 import koa from "koa";
 import fs from "fs";
+import { formatLog } from "../logger";
 
 const testVersion = (input: string) => Object.keys(Models.models).includes(input);
+const makeIDAlias = (alias: boolean) => `"id"${alias === true ? ` AS "@iot.id"`: ''}`;
 
 class Models {
   static models : { [key: string]: Ientities; } = {};
-  static makeIDAlias = '"id" AS "@iot.id"';
   // Create Object FOR DEFAULT_API_VERSION
   constructor() { 
       Models.models[DEFAULT_API_VERSION] = {
@@ -32,8 +33,8 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias() {
-                  return Models.makeIDAlias;
+                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
+                  return makeIDAlias(test && test["as"] === true ? true : false);
                 },
                 type: "number",
               },
@@ -45,7 +46,7 @@ class Models {
                 type: "text",
               },
               description: {
-                create: "text NOT NULL",
+                create: "text NOT NULL DEFAULT 'no description'::text",
                 columnAlias() {
                   return `"description"`;
                 },
@@ -60,8 +61,8 @@ class Models {
             relations: {
               Locations: {
                 type: Erelations.belongsToMany,
-                expand: `"location"."id" in (select "thing_location"."location_id" from "thing_location" where "thing_location"."thing_id" = "thing"."id")`,
-                link: `"location"."id" in (select "thing_location"."location_id" from "thing_location" where "thing_location"."thing_id" = $ID)`,
+                expand: `"location"."id" in (SELECT "thing_location"."location_id" from "thing_location" WHERE "thing_location"."thing_id" = "thing"."id")`,
+                link: `"location"."id" in (SELECT "thing_location"."location_id" from "thing_location" WHERE "thing_location"."thing_id" = $ID)`,
                 entityName: "Locations",
                 tableName: "thing_location",
                 relationKey: "location_id",
@@ -70,8 +71,8 @@ class Models {
               },
               HistoricalLocations: {
                 type: Erelations.hasMany,
-                expand: `"historical_location"."id" in (select "historical_location"."id" from "historical_location" where "historical_location"."thing_id" = "thing"."id")`,
-                link: `"historical_location"."id" in (select "historical_location"."id" from "historical_location" where "historical_location"."thing_id" = $ID)`,
+                expand: `"historical_location"."id" in (SELECT "historical_location"."id" from "historical_location" WHERE "historical_location"."thing_id" = "thing"."id")`,
+                link: `"historical_location"."id" in (SELECT "historical_location"."id" from "historical_location" WHERE "historical_location"."thing_id" = $ID)`,
                 entityName: "HistoricalLocations",
                 tableName: "historicalLocation",
                 relationKey: "thing_id",
@@ -80,8 +81,8 @@ class Models {
               },
               Datastreams: {
                 type: Erelations.hasMany,
-                expand: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."thing_id" = "thing"."id")`,
-                link: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."thing_id" = $ID)`,
+                expand: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."thing_id" = "thing"."id")`,
+                link: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."thing_id" = $ID)`,
                 entityName: "Datastreams",
                 tableName: "datastream",
                 relationKey: "thing_id",
@@ -90,8 +91,8 @@ class Models {
               },
               MultiDatastreams: {
                 type: Erelations.hasMany,
-                expand: `"multidatastream"."id" in (select "multidatastream"."id" from "multidatastream" where "multidatastream"."thing_id" = "thing"."id")`,
-                link: `"multidatastream"."id" in (select "multidatastream"."id" from "multidatastream" where "multidatastream"."thing_id" = $ID)`,
+                expand: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."thing_id" = "thing"."id")`,
+                link: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."thing_id" = $ID)`,
                 entityName: "MultiDatastreams",
                 tableName: "multidatastream",
                 relationKey: "thing_id",
@@ -114,8 +115,8 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias() {
-                  return Models.makeIDAlias;
+                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
+                  return makeIDAlias(test && test["as"] === true ? true : false);
                 },
                 type: "number",
               },
@@ -153,8 +154,8 @@ class Models {
             relations: {
               Observations: {
                 type: Erelations.hasMany,
-                expand: `"observation"."id" in (select "observation"."id" from "observation" where "observation"."featureofinterest_id" = "featureofinterest"."id")`,
-                link: `"observation"."id" in (select "observation"."id" from "observation" where "observation"."featureofinterest_id" = $ID)`,
+                expand: `"observation"."id" in (SELECT "observation"."id" from "observation" WHERE "observation"."featureofinterest_id" = "featureofinterest"."id")`,
+                link: `"observation"."id" in (SELECT "observation"."id" from "observation" WHERE "observation"."featureofinterest_id" = $ID)`,
                 entityName: "Observations",
                 tableName: "observation",
                 relationKey: "featureofinterest_id",
@@ -163,8 +164,8 @@ class Models {
               },
               Datastreams: {
                 type: Erelations.hasMany,
-                expand: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."_default_foi" = "featureofinterest"."id")`,
-                link: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."_default_foi" = $ID)`,
+                expand: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."_default_foi" = "featureofinterest"."id")`,
+                link: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."_default_foi" = $ID)`,
                 entityName: "Datastreams",
                 tableName: "datastream",
                 relationKey: "_default_foi",
@@ -193,8 +194,8 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias() {
-                  return Models.makeIDAlias;
+                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
+                  return makeIDAlias(test && test["as"] === true ? true : false);
                 },
                 type: "number",
               },
@@ -240,8 +241,8 @@ class Models {
             relations: {
               Things: {
                 type: Erelations.belongsToMany,
-                expand: `"thing"."id" in (select "thing_location"."thing_id" from "thing_location" where "thing_location"."location_id" = "location"."id")`,
-                link: `"thing"."id" in (select "thing_location"."thing_id" from "thing_location" where "thing_location"."location_id" = $ID)`,
+                expand: `"thing"."id" in (SELECT "thing_location"."thing_id" from "thing_location" WHERE "thing_location"."location_id" = "location"."id")`,
+                link: `"thing"."id" in (SELECT "thing_location"."thing_id" from "thing_location" WHERE "thing_location"."location_id" = $ID)`,
                 entityName: "Things",
                 tableName: "thing_location",
                 relationKey: "location_id",
@@ -250,8 +251,8 @@ class Models {
               },
               HistoricalLocations: {
                 type: Erelations.belongsToMany,
-                expand: `"historical_location"."id" in (select "historical_location"."id" from "historical_location" where "historical_location"."thing_id" in (select "thing_location"."thing_id" from "thing_location" where "thing_location"."location_id" = "location"."id"))`,
-                link: `"historical_location"."id" in (select "historical_location"."id" from "historical_location" where "historical_location"."thing_id" in (select "thing_location"."thing_id" from "thing_location" where "thing_location"."location_id" = $ID))`,
+                expand: `"historical_location"."id" in (SELECT "historical_location"."id" from "historical_location" WHERE "historical_location"."thing_id" in (SELECT "thing_location"."thing_id" from "thing_location" WHERE "thing_location"."location_id" = "location"."id"))`,
+                link: `"historical_location"."id" in (SELECT "historical_location"."id" from "historical_location" WHERE "historical_location"."thing_id" in (SELECT "thing_location"."thing_id" from "thing_location" WHERE "thing_location"."location_id" = $ID))`,
                 entityName: "HistoricalLocations",
                 tableName: "location_historical_location",
                 relationKey: "location_id",
@@ -274,8 +275,8 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias() {
-                  return Models.makeIDAlias;
+                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
+                  return makeIDAlias(test && test["as"] === true ? true : false);
                 },
                 type: "bigint"
               },
@@ -309,7 +310,7 @@ class Models {
               Things: {
                 type: Erelations.belongsTo,
                 expand: `"thing"."id" = "historical_location"."thing_id"`,
-                link: `"thing"."id" = (select "historical_location"."thing_id" from "historical_location" where "historical_location"."id" = $ID)`,
+                link: `"thing"."id" = (SELECT "historical_location"."thing_id" from "historical_location" WHERE "historical_location"."id" = $ID)`,
                 entityName: "Things",
                 tableName: "thing",
                 relationKey: "thing_id",
@@ -318,8 +319,8 @@ class Models {
               },
               Locations: {
                 type: Erelations.belongsToMany,
-                expand: `"location"."id" in (select "location"."id" from "location" where "location"."id" in (select "thing_location"."location_id" from "thing_location" where "thing_location"."thing_id" = "historical_location"."thing_id"))`,
-                link: `"location"."id" in (select "location"."id" from "location" where "location"."id" in (select "thing_location"."location_id" from "thing_location" where "thing_location"."thing_id" in (select "historical_location"."thing_id" from "historical_location" where "historical_location"."id" = $ID)))`,
+                expand: `"location"."id" in (SELECT "location"."id" from "location" WHERE "location"."id" in (SELECT "thing_location"."location_id" from "thing_location" WHERE "thing_location"."thing_id" = "historical_location"."thing_id"))`,
+                link: `"location"."id" in (SELECT "location"."id" from "location" WHERE "location"."id" in (SELECT "thing_location"."location_id" from "thing_location" WHERE "thing_location"."thing_id" in (SELECT "historical_location"."thing_id" from "historical_location" WHERE "historical_location"."id" = $ID)))`,
                 entityName: "locationsHistoricalLocations",
                 tableName: "location_historical_location",
                 relationKey: "historical_location_id",
@@ -386,8 +387,8 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias() {
-                  return Models.makeIDAlias;
+                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
+                  return makeIDAlias(test && test["as"] === true ? true : false);
                 },
                 type: "number",
               },
@@ -422,7 +423,7 @@ class Models {
               Datastreams: {
                 type: Erelations.hasMany,
                 // expand: "err: 501 : Not Implemented.",
-                expand: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."observedproperty_id" = "observedproperty"."id")`,
+                expand: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."observedproperty_id" = "observedproperty"."id")`,
                 link: `"datastream"."id" in (SELECT "datastream"."id" FROM "datastream" WHERE "datastream"."observedproperty_id" = $ID)`,
                 entityName: "Datastreams",
                 tableName: "datastream",
@@ -456,8 +457,8 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias() {
-                  return Models.makeIDAlias;
+                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
+                  return makeIDAlias(test && test["as"] === true ? true : false);
                 },
                 type: "number",
               },
@@ -502,8 +503,8 @@ class Models {
             relations: {
               Datastreams: {
                 type: Erelations.hasMany,
-                expand: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."id" = "sensor"."id")`,
-                link: `"datastream"."id" in (select "datastream"."id" from "datastream" where "datastream"."sensor_id" = $ID)`,
+                expand: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."id" = "sensor"."id")`,
+                link: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."sensor_id" = $ID)`,
                 entityName: "Datastreams",
                 tableName: "datastream",
                 relationKey: "sensor_id",
@@ -512,8 +513,8 @@ class Models {
               },
               MultiDatastreams: {
                 type: Erelations.hasMany,
-                expand: `"multidatastream"."id" in (select "multidatastream"."id" from "multidatastream" where "multidatastream"."id" = "sensor"."id")`,
-                link: `"multidatastream"."id" in (select "multidatastream"."id" from "multidatastream" where "multidatastream"."sensor_id" = $ID)`,
+                expand: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."id" = "sensor"."id")`,
+                link: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."sensor_id" = $ID)`,
                 entityName: "MultiDatastreams",
                 tableName: "multidatastream",
                 relationKey: "sensor_id",
@@ -536,8 +537,8 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias() {
-                  return Models.makeIDAlias;
+                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
+                  return makeIDAlias(test && test["as"] === true ? true : false);
                 },
                 type: "number",
               },
@@ -658,7 +659,7 @@ class Models {
               Thing: {
                 type: Erelations.belongsTo,
                 expand: `"thing"."id" = "datastream"."thing_id"`,
-                link: `"thing"."id" = (select "datastream"."thing_id" from "datastream" where "datastream"."id" =$ID)`,
+                link: `"thing"."id" = (SELECT "datastream"."thing_id" from "datastream" WHERE "datastream"."id" =$ID)`,
                 entityName: "Things",
                 tableName: "datastream",
                 relationKey: "id",
@@ -668,7 +669,7 @@ class Models {
               Sensor: {
                 type: Erelations.belongsTo,
                 expand: `"sensor"."id" = "datastream"."sensor_id"`,
-                link: `"sensor"."id" = (select "datastream"."sensor_id" from "datastream" where "datastream"."id" =$ID)`,
+                link: `"sensor"."id" = (SELECT "datastream"."sensor_id" from "datastream" WHERE "datastream"."id" =$ID)`,
         
                 entityName: "Sensors",
                 tableName: "datastream",
@@ -679,7 +680,7 @@ class Models {
               ObservedProperty: {
                 type: Erelations.belongsTo,
                 expand: `"observedproperty"."id" = "datastream"."observedproperty_id"`,
-                link: `"observedproperty"."id" = (select "datastream"."observedproperty_id" from "datastream" where "datastream"."id" =$ID)`,
+                link: `"observedproperty"."id" = (SELECT "datastream"."observedproperty_id" from "datastream" WHERE "datastream"."id" =$ID)`,
                 entityName: "ObservedProperties",
                 tableName: "datastream",
                 relationKey: "id",
@@ -688,8 +689,8 @@ class Models {
               },
               Observations: {
                 type: Erelations.hasMany,
-                expand: `"observation"."id" in (select "observation"."id" from "observation" where "observation"."datastream_id" = "datastream"."id" ORDER BY "observation"."resultTime" ASC)`,
-                link: `"observation"."id" in (select "observation"."id" from "observation" where "observation"."datastream_id" = $ID ORDER BY "observation"."resultTime" ASC)`,
+                expand: `"observation"."id" in (SELECT "observation"."id" from "observation" WHERE "observation"."datastream_id" = "datastream"."id" ORDER BY "observation"."resultTime" ASC)`,
+                link: `"observation"."id" in (SELECT "observation"."id" from "observation" WHERE "observation"."datastream_id" = $ID ORDER BY "observation"."resultTime" ASC)`,
                 entityName: "Observations",
                 tableName: "observation",
                 relationKey: "datastream_id",
@@ -698,8 +699,8 @@ class Models {
               },
               Loras: {
                 type: Erelations.belongsTo,
-                expand: `"lora"."id" = (select "lora"."id" from "lora" where "lora"."datastream_id" = "datastream"."id")`,
-                link: `"lora"."id" = (select "lora"."id" from "lora" where "lora"."datastream_id" = $ID)`,
+                expand: `"lora"."id" = (SELECT "lora"."id" from "lora" WHERE "lora"."datastream_id" = "datastream"."id")`,
+                link: `"lora"."id" = (SELECT "lora"."id" from "lora" WHERE "lora"."datastream_id" = $ID)`,
                 entityName: "loras",
                 tableName: "lora",
                 relationKey: "datastream_id",
@@ -750,8 +751,8 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias() {
-                  return Models.makeIDAlias;
+                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
+                  return makeIDAlias(test && test["as"] === true ? true : false);
                 },
                 type: "number",
               },
@@ -872,8 +873,7 @@ class Models {
               Thing: {
                 type: Erelations.belongsTo,
                 expand: `"thing"."id" = "multidatastream"."thing_id"`,
-                link: `"thing"."id" = (select "multidatastream"."thing_id" from "multidatastream" where "multidatastream"."id" =$ID)`,
-        
+                link: `"thing"."id" = (SELECT "multidatastream"."thing_id" from "multidatastream" WHERE "multidatastream"."id" =$ID)`,        
                 entityName: "Things",
                 tableName: "multidatastream",
                 relationKey: "id",
@@ -883,7 +883,7 @@ class Models {
               Sensor: {
                 type: Erelations.belongsTo,
                 expand: `"sensor"."id" = "multidatastream"."sensor_id"`,
-                link: `"sensor"."id" = (select "multidatastream"."sensor_id" from "multidatastream" where "multidatastream"."id" =$ID)`,
+                link: `"sensor"."id" = (SELECT "multidatastream"."sensor_id" from "multidatastream" WHERE "multidatastream"."id" =$ID)`,
                 entityName: "Sensors",
                 tableName: "multidatastream",
                 relationKey: "id",
@@ -892,8 +892,8 @@ class Models {
               },
               Observations: {
                 type: Erelations.hasMany,
-                expand: `"observation"."id" in (select "observation"."id" from "observation" where "observation"."multidatastream_id" = "multidatastream"."id")`,
-                link: `"observation"."id" in (select "observation"."id" from "observation" where "observation"."multidatastream_id" = $ID)`,
+                expand: `"observation"."id" in (SELECT "observation"."id" from "observation" WHERE "observation"."multidatastream_id" = "multidatastream"."id")`,
+                link: `"observation"."id" in (SELECT "observation"."id" from "observation" WHERE "observation"."multidatastream_id" = $ID)`,
         
                 entityName: "Observations",
                 tableName: "observation",
@@ -913,8 +913,8 @@ class Models {
               },
               Loras: {
                 type: Erelations.belongsTo,
-                expand: `"lora"."id" = (select "lora"."id" from "lora" where "lora"."multidatastream_id" = "multidatastream"."id")`,
-                link: `"lora"."id" = (select "lora"."id" from "lora" where "lora"."multidatastream_id" = $ID)`,
+                expand: `"lora"."id" = (SELECT "lora"."id" from "lora" WHERE "lora"."multidatastream_id" = "multidatastream"."id")`,
+                link: `"lora"."id" = (SELECT "lora"."id" from "lora" WHERE "lora"."multidatastream_id" = $ID)`,
                 entityName: "loras",
                 tableName: "lora",
                 relationKey: "multidatastream_id",
@@ -1007,8 +1007,8 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias() {
-                  return Models.makeIDAlias;
+                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
+                  return makeIDAlias(test && test["as"] === true ? true : false);
                 },
                 type: "number",
               },
@@ -1086,17 +1086,19 @@ class Models {
 
               payload: {
                 create: "",
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 columnAlias(config: IconfigFile, test: IKeyBoolean | undefined) {
-                  return config.extensions.includes("lora")
+                  return config.extensions.includes(EextensionsType.lora)
                   ? `CASE WHEN result->'payload' notnull THEN result->>'payload' WHEN result->'valueskeys' notnull THEN result->>'valueskeys' WHEN result->'value' notnull THEN result->>'value' END AS payload` 
                   : ""; },
                 type: "string",
               },
               deveui: {
                 create: "",
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 columnAlias(config: IconfigFile, test: IKeyBoolean | undefined) {
-                  return config.extensions.includes("lora")
-                  ? `CASE WHEN multidatastream_id notnull  THEN (select deveui from lora where multidatastream_id = observation.multidatastream_id) WHEN datastream_id notnull  THEN (select deveui from lora where datastream_id = observation.datastream_id) END AS deveui`
+                  return config.extensions.includes(EextensionsType.lora)
+                  ? `CASE WHEN multidatastream_id NOTNULL THEN (SELECT deveui FROM lora WHERE multidatastream_id = observation.multidatastream_id) WHEN datastream_id NOTNULL THEN (SELECT deveui FROM lora WHERE datastream_id = observation.datastream_id) END AS deveui`
                   : "";
                 },
                 type: "string",
@@ -1174,8 +1176,8 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias() {
-                  return Models.makeIDAlias;
+                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
+                  return makeIDAlias(test && test["as"] === true ? true : false);
                 },
                 type: "bigint"
               },
@@ -1282,8 +1284,8 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias() {
-                  return Models.makeIDAlias;
+                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
+                  return makeIDAlias(test && test["as"] === true ? true : false);
                 },
                 type: "number",
               },
@@ -1332,8 +1334,8 @@ class Models {
             relations: {
               Loras: {
                 type: Erelations.hasMany,
-                expand: `"lora"."id" in (select "lora"."id" from "lora" where "lora"."decoder_id" = "decoder"."id")`,
-                link: `"lora"."id" in (select "lora"."id" from "lora" where "lora"."decoder_id" = $ID)`,
+                expand: `"lora"."id" in (SELECT "lora"."id" from "lora" WHERE "lora"."decoder_id" = "decoder"."id")`,
+                link: `"lora"."id" in (SELECT "lora"."id" from "lora" WHERE "lora"."decoder_id" = $ID)`,
                 entityName: "Loras",
                 tableName: "lora",
                 relationKey: "decoder_id",
@@ -1356,8 +1358,8 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias() {
-                  return Models.makeIDAlias;
+                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
+                  return makeIDAlias(test && test["as"] === true ? true : false);
                 },
                 type: "number",
               },
@@ -1414,6 +1416,8 @@ class Models {
             constraints: {
               lora_pkey: 'PRIMARY KEY ("id")',
               lora_unik_deveui: 'UNIQUE ("deveui")',
+              lora_datastream_unik_id: 'UNIQUE ("datastream_id")',
+              lora_multidatastream_unik_id: 'UNIQUE ("multidatastream_id")',
               lora_datastream_fkey: 'FOREIGN KEY ("datastream_id") REFERENCES "datastream"("id") ON UPDATE CASCADE ON DELETE CASCADE',
               lora_multidatastream_fkey: 'FOREIGN KEY ("multidatastream_id") REFERENCES "multidatastream"("id") ON UPDATE CASCADE ON DELETE CASCADE',
               lora_decoder_fkey: 'FOREIGN KEY ("decoder_id") REFERENCES "decoder"("id") ON UPDATE CASCADE ON DELETE CASCADE',
@@ -1465,15 +1469,15 @@ class Models {
             createOrder: -1,
             order: -1,
             canPost: true,
-            extensions: [EextensionsType.logger],
+            extensions: [EextensionsType.logs],
             orderBy: `"date DESC"`,
             count: this.makeCount("logs"),
             visible: true,
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias() {
-                  return Models.makeIDAlias;
+                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
+                  return makeIDAlias(test && test["as"] === true ? true : false);
                 },
                 type: "number",
               },
@@ -1643,7 +1647,7 @@ class Models {
             table: "",
             createOrder: -1,
             order: -1,
-            extensions: [EextensionsType.logger, EextensionsType.admin],
+            extensions: [EextensionsType.logs, EextensionsType.admin],
             orderBy: `"name"`,
             count: this.makeCount("config"),
             visible: false,
@@ -1710,55 +1714,35 @@ class Models {
             });
   }
 
-  getColsName(entity: Ientity) {
-    return Object.keys(entity.columns).filter((word) => !word.includes("_") && !word.includes("id")); 
-  }
 
   getDraw(ctx: koa.Context) {
     const deleteId = (id: string) => {
       const start = `<mxCell id="${id}"`;
       const end = "</mxCell>";
-      const temp = fileContent.split(start)[1].split(end)[0];
-      fileContent = fileContent.replace(`${start}${temp}${end}`, "");
-      
+      fileContent = fileContent.replace(`${start}${fileContent.split(start)[1].split(end)[0]}${end}`, "");      
     };
     const entities = Models.models[ctx._config.apiVersion];
-    // const height = (entity: Ientity) => (this.getColsName(entity).length * 13) + 30;
-    const cols = (entity: Ientity) => {
-    let result = "";
-    this.getColsName(entity).forEach((e: string) => {
-        result += ` &lt;p style=&quot;margin: 0px; margin-left: 8px;&quot;&gt;${e}: ${entity.columns[e].type.toUpperCase()}&lt;/p&gt;`;        
-      });
-      return result;
-    };
-
-    let fileContent = fs.readFileSync(__dirname + `/model.xml`, "utf8");
-    if(!ctx._config.extensions.includes("logs")) deleteId("124");
-    if(!ctx._config.extensions.includes("multiDatastream")) {
-      deleteId("114");
-      deleteId("115");
-      deleteId("117");
-      deleteId("118");
-      deleteId("119");
-      deleteId("116");
-      deleteId("120");
-      deleteId("121");
+    let fileContent = fs.readFileSync(__dirname + `/model.drawio`, "utf8");
+    fileContent = fileContent.replace('&gt;Version&lt;', `&gt;version : ${versionString(ctx._config.apiVersion)}&lt;`);
+    if(!ctx._config.extensions.includes(EextensionsType.logs)) deleteId("124");
+    if(!ctx._config.extensions.includes(EextensionsType.multiDatastream)) {
+      ["114" ,"115" ,"117" ,"118" ,"119" ,"116" ,"120" ,"121"].forEach(e => deleteId(e));
       fileContent = fileContent.replace(`&lt;hr&gt;COLUMNS.${entities.MultiDatastreams.name}`, "");
       fileContent = fileContent.replace(`&lt;hr&gt;COLUMNS.${entities.MultiDatastreams.name}`, "");
       fileContent = fileContent.replace(`&lt;strong&gt;${entities.MultiDatastreams.singular}&lt;/strong&gt;`, "");
     }
-    Object.keys(entities).forEach((e: string) => {
-      fileContent = fileContent.replace(`COLUMNS.${entities[e].name}`, cols(entities[e]));
+    Object.keys(entities).forEach((strEntity: string) => {
+      fileContent = fileContent.replace(`COLUMNS.${entities[strEntity].name}`, this.getColumnListNameWithoutId(entities[strEntity]).map((colName: string) => `&lt;p style=&quot;margin: 0px; margin-left: 8px;&quot;&gt;${colName}: ${entities[strEntity].columns[colName].type.toUpperCase()}&lt;/p&gt;`).join(""));
     });
 
     return fileContent;
   }
   
   getInfos(ctx: koa.Context) {
+    const temp = serverConfig.getLinkBase(ctx, ctx._config.name)
     const result = {
-      version : versionString(ctx._config.apiVersion),
+      ... temp,
       ready : ctx._config.connection ? true : false,
-      model : `https://app.diagrams.net/?lightbox=1&edit=_blank#U${ctx._linkBase}/${versionString(ctx._config.apiVersion)}/draw`
     };
     const extensions = {};
     switch (ctx._config.apiVersion) {
@@ -1770,12 +1754,13 @@ class Models {
         result["Ogc link"] = "https://docs.ogc.org/is/15-078r6/15-078r6.html";
         break;
     }
-    if (ctx._config.extensions.includes("tasking")) extensions["tasking"] = "https://docs.ogc.org/is/17-079r1/17-079r1.html";
-    if (ctx._config.extensions.includes("logs")) extensions["logs"] = `${ctx._linkBase}/${versionString(ctx._config.apiVersion)}/Logs`;
+    if (ctx._config.extensions.includes(EextensionsType.tasking)) extensions["tasking"] = "https://docs.ogc.org/is/17-079r1/17-079r1.html";
+    if (ctx._config.extensions.includes(EextensionsType.logs)) extensions["logs"] = `${ctx._linkBase}/${versionString(ctx._config.apiVersion)}/Logs`;
       
     result["extensions"] = extensions;
     return result;
   }
+
   private makeCount(table: string) {
     return `SELECT count(DISTINCT id) from "${table}" AS count`;
   }
@@ -1845,8 +1830,8 @@ class Models {
     return testVersion(nb);
   }
 
-  private filtering(config: IconfigFile) {
-    const entities = Object.keys(Models.models[config.apiVersion]).filter((e) => [ EextensionsType.base, EextensionsType.logger, ... config.extensions, ].some((r) => Models.models[config.apiVersion][e].extensions.includes(r)));
+  private filtering(config: IconfigFile) {    
+    const entities = Object.keys(Models.models[config.apiVersion]).filter((e) => [ EextensionsType.base, EextensionsType.logs, ... config.extensions, ].some((r) => Models.models[config.apiVersion][e].extensions.includes(r)));
     return Object.fromEntries(Object.entries(Models.models[config.apiVersion]).filter( ([k]) => entities.includes(k))) as Ientities;
   }
 
@@ -1865,6 +1850,7 @@ class Models {
     if (typeof config === "string") {
       const nameConfig = serverConfig.getConfigNameFromName(config);
       if(!nameConfig) throw new Error(errors.configName);
+      if (testVersion(serverConfig.getConfig(nameConfig).apiVersion) === false) this.createVersion(serverConfig.getConfig(nameConfig).apiVersion);
       config = serverConfig.getConfig(nameConfig);
     }  
     return Models.models[config.apiVersion];
@@ -1887,9 +1873,9 @@ class Models {
     if(config && search) {        
       const tempModel = Models.models[config.apiVersion];
       const testString: string | undefined = search
+          .trim()
           .match(/[a-zA-Z_]/g)
-          ?.join("")
-          .trim();
+          ?.join("");
 
       return tempModel && testString
           ? tempModel.hasOwnProperty(testString)
@@ -1930,6 +1916,10 @@ class Models {
       return Object.keys(input.columns).filter((word) => !word.includes("_")).map((e: string) => `${addDoubleQuotes(input.table)}.${addDoubleQuotes(e)}`);
   }
 
+  getColumnListNameWithoutId(input: Ientity) {
+    return Object.keys(input.columns).filter((word) => !word.includes("_") && !word.includes("id")); 
+  }
+
   public isColumnType(config: IconfigFile, entity: Ientity | string, column: string , test: string): boolean {
     if (config && entity) {
       const tempEntity = this.getEntity(config, entity);
@@ -1938,42 +1928,52 @@ class Models {
     return false;
   }
 
-  public formatColumnValue(value: any, type: string): string | undefined {
-    if (value) switch (value) {
-      case void 0:
-        return '';
-      case null:
-        return 'null';
-        case value.isRawInstance:
-          return value.toQuery();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public formatColumnValue(columnName: string, value: any, type: string): string | undefined {
+    console.log(formatLog.whereIam());
+    switch (typeof value ) {
+      case "object" :
+        return value.hasOwnProperty("@iot.name") 
+        ? `(SELECT "id" FROM "${columnName.split("_")[0]}" WHERE "name" = '${value["@iot.name"]}')`
+        : `'${JSON.stringify(value)}'`;
       default:
-        switch (type) {
-          case 'number':
-            return value;
-          case 'bool':
-            if (value === 'false') value = 0;
-            return `'${value ? 1 : 0}'`;
-          case 'json':
-          case 'jsonb':
-            if (isObject(value)) return addSimpleQuotes(ESCAPE_SIMPLE_QUOTE(JSON.stringify(value)));
-            return "JSON ERROR";
-          case 'text[]':
-            const temp = ESCAPE_ARRAY_JSON(String(value));
-            if (temp) return addSimpleQuotes(temp);
-            return "ARRAY ERROR";
+        if (value) switch (value) {
+          case void 0:
+            return '';
+          case null:
+            return 'null';
+            case value.isRawInstance:
+              return value.toQuery();
           default:
-            break;
+            switch (type) {
+              case 'number':
+                return value;
+              case 'bool':
+                if (value === 'false') value = 0;
+                return `'${value ? 1 : 0}'`;
+              case 'json':
+              case 'jsonb':
+                if (isObject(value)) return addSimpleQuotes(ESCAPE_SIMPLE_QUOTE(JSON.stringify(value)));
+                return "JSON ERROR";
+              case 'text[]':
+                const temp = ESCAPE_ARRAY_JSON(String(value));
+                if (temp) return addSimpleQuotes(temp);
+                return "ARRAY ERROR";
+              default:
+                break;
+            }
+            if (String(value).startsWith("(SELECT")) return `${value}`;
+            try {
+                return value.includes("'") ? addSimpleQuotes(ESCAPE_SIMPLE_QUOTE(value)): addSimpleQuotes(value);
+            } catch (error) {            
+                return addSimpleQuotes(value);
+            }
         }
-        if (String(value).startsWith("(SELECT")) return `${value}`;
-        try {
-            return value.includes("'") ? addSimpleQuotes(ESCAPE_SIMPLE_QUOTE(value)): addSimpleQuotes(value);
-        } catch (error) {            
-            return addSimpleQuotes(value);
-        }
-    }
+    } 
   }
 
-  public createUpdateValues = (input : object ): string => { 
+  public createUpdateValues = (input : object ): string => {
+    console.log(formatLog.whereIam());
     const result:string[] = [];
     Object.keys(input).forEach((e: string) => {
           result.push(`${addDoubleQuotes(e)} = ${addSimpleQuotes(ESCAPE_SIMPLE_QUOTE(input[e]))}`);
@@ -1982,33 +1982,82 @@ class Models {
   };
 
   public createInsertValues = (config: IconfigFile, input : object, entityName?: string): string => {
+      console.log(formatLog.whereIam());
       if (config && input) {
           const keys:string[] = [];
           const values:string[] = [];            
           if (entityName) {
               const entity = this.getEntity(config, entityName);
               if (!entity) return "";
-              Object.keys(input).forEach((e: string) => {                
-                  if (input[e] && entity.columns[e]) {
-                      const temp = this.formatColumnValue(input[e], entity.columns[e].type);
-                      if (temp) {
-                          keys.push(addDoubleQuotes(e));
-                          values.push(temp);
-                      }
-                  }                
-              });
-          } else {
-              Object.keys(input).forEach((e: string) => {
-                  if (input[e]) {
+              Object.keys(input).forEach((e: string) => {  
+                  if (input[e] && entity.columns[e]) {                
+                    const temp = this.formatColumnValue(e, input[e], entity.columns[e].type);
+                    if (temp) {
                       keys.push(addDoubleQuotes(e));
-                      values.push(typeof input[e] === "string" ? addSimpleQuotes(ESCAPE_SIMPLE_QUOTE(input[e])) : input[e] );
-                  }
-              });
-          }
+                      values.push(e === "result" ? `'{"value": ${e}}'::jsonb`: temp);
+                    }               
+                  }                
+                });
+              } else {
+                Object.keys(input).forEach((e: string) => {
+                  if (input[e]) {
+                    if (input[e].startsWith && input[e].startsWith('"{') && input[e].endsWith('}"')) input[e] = REMOVE_FIRST_END_CHAR(input[e], '"');
+                    else if (input[e].startsWith && input[e].startsWith('{"@iot.name"')) input[e] = `(SELECT "id" FROM "${e.split("_")[0]}" WHERE "name" = '${JSON.parse(REMOVE_FIRST_END_CHAR(input[e], '"'))["@iot.name"]}')`;
+                    keys.push(addDoubleQuotes(e));
+                    values.push(typeof input[e] === "string" 
+                                                ? input[e].startsWith("(SELECT") 
+                                                  ? input[e]
+                                                  : addSimpleQuotes(ESCAPE_SIMPLE_QUOTE(input[e])) 
+                                                : e === "result" ? `'{"value": ${input[e]}}'::jsonb`: ESCAPE_SIMPLE_QUOTE(input[e]));
+                }
+            });
+          }          
           return `(${keys.join()}) VALUES (${values.join()})`;  
       }
       return "";
   };
+
+  public getRoot(ctx: koa.Context) {
+    console.log(formatLog.whereIam());
+    let expectedResponse: object[] = [];
+    Object.keys(ctx._model)
+      .filter((elem: string) => ctx._model[elem].order > 0)
+      .sort((a, b) => (ctx._model[a].order > ctx._model[b].order ? 1 : -1))
+      .forEach((value: string) => {
+        expectedResponse.push({
+          name: ctx._model[value].name,
+          url: `${ctx._linkBase}/${versionString(ctx._config.apiVersion)}/${value}`,
+        });
+      });
+    
+    switch (ctx._config.apiVersion) {
+      case "1.0":
+        return {
+          value : expectedResponse.filter((elem) => Object.keys(elem).length)
+        };    
+      case "1.1":
+        expectedResponse = expectedResponse.filter((elem) => Object.keys(elem).length);    
+        const conformance:string[] = [];
+        conformance.push("https://docs.ogc.org/is/18-088/18-088.html");
+        conformance.push("https://docs.ogc.org/is/18-088/18-088.html#uri-components");
+        conformance.push("https://docs.ogc.org/is/18-088/18-088.html#resource-path");
+        conformance.push("https://docs.ogc.org/is/18-088/18-088.html#requesting-data");
+        conformance.push("https://docs.ogc.org/is/18-088/18-088.html#create-update-delete");
+        // conformance.push("https://docs.ogc.org/is/18-088/18-088.html#batch-requests");
+        if(ctx._config.extensions.includes(EextensionsType.multiDatastream)) conformance.push("https://docs.ogc.org/is/18-088/18-088.html#multidatastream-extension");
+        if(ctx._config.extensions.includes(EextensionsType.mqtt)) conformance.push("https://docs.ogc.org/is/18-088/18-088.html#create-observation-dataarray");
+        // conformance.push("https://docs.ogc.org/is/18-088/18-088.html#mqtt-extension");
+        conformance.push("http://docs.oasis-open.org/odata/odata-json-format/v4.01/odata-json-format-v4.01.html");
+        conformance.push("https://datatracker.ietf.org/doc/html/rfc4180");
+        return {
+          value : expectedResponse.filter((elem) => Object.keys(elem).length),
+          serverSettings : {"conformance" : conformance}
+        };  
+        
+        default:
+          break;
+      }
+  }
 
   public init() {
     if (isTest()) {      

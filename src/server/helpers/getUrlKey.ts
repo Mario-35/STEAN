@@ -6,6 +6,12 @@
  *
  */
 
+/**
+ * 
+ * @param input url string 
+ * @param key  
+ * @returns string value 
+ */
 export function getUrlKey(input: string, key: string): string | undefined {
     let result: string | undefined = undefined;
     try {

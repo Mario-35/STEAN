@@ -16,7 +16,7 @@ import { IreturnResult } from "../types";
 import { EuserRights } from "../enums";
 import { createQueryHtml } from "../views/query";
 import { CreateHtmlView, createIqueryFromContext } from "../views/helpers/";
-import { getRouteFromPath } from "./helpers";
+import { getRouteFromPath, sqlStopDbName } from "./helpers";
 import { DefaultState, Context } from "koa";
 import { createOdata } from "../odata";
 import { infos } from "../messages";
@@ -27,6 +27,7 @@ import { remadeResult } from "../db/helpers/remadeResult";
 import { replayPayload } from "../db/queries";
 import { executeAdmin, executeSql, exportService } from "../db/helpers";
 import { models } from "../models";
+import { createService } from "../db/createDb";
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 // ALl others
 unProtectedRoutes.get("/(.*)", async (ctx) => {
@@ -35,43 +36,52 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       ? true
       : false
     : true;
-  let returnToBody: any = undefined;
-  switch (getRouteFromPath(ctx.path).toUpperCase()) {    
+  switch (getRouteFromPath(ctx.path).toUpperCase()) {  
+    // Root path  
     case `V${ctx._config.apiVersion}`:
-      const expectedResponse: object[] = [];      
-      if (isAdmin(ctx) && !adminWithSuperAdminAccess) ctx.throw(401);
-        Object.keys(ctx._model)
-        .filter((elem: string) => ctx._model[elem].order > 0)
-        .sort((a, b) => (ctx._model[a].order > ctx._model[b].order ? 1 : -1))
-        .forEach((value: string) => {
-          expectedResponse.push({
-            name: ctx._model[value].name,
-            url: `${ctx._linkBase}/${versionString(ctx._config.apiVersion)}/${value}`,
-          });
-        });
       ctx.type = returnFormats.json.type;
-      ctx.body = {
-        value: expectedResponse.filter((elem) => Object.keys(elem).length),
-      };
+      ctx.body = models.getRoot(ctx);
       break;
-
+    // error show in html if query call
     case "ERROR":
-      returnToBody = new CreateHtmlView(ctx);
+      const bodyError = new CreateHtmlView(ctx);
       ctx.type = returnFormats.html.type;
-      ctx.body = returnToBody.error("what ?");
+      ctx.body = bodyError.error("what ?");
       return;
-
+    // export service
     case "EXPORT":
       ctx.type = returnFormats.json.type;
       ctx.body = await exportService(ctx);
       return;
-
-    case "REGISTER":
-      returnToBody = new CreateHtmlView(ctx);
-      ctx.type = returnFormats.html.type;
-      ctx.body = returnToBody.login({ login: false });
+    // User login
+    case "LOGIN":
+      if (ensureAuthenticated(ctx)) ctx.redirect(`${ctx._rootName}status`);
+      else {
+        const bodyLogin = new CreateHtmlView(ctx);
+        ctx.type = returnFormats.html.type;
+        ctx.body = bodyLogin.login({ login: true });
+      }
       return;
-
+    // Status user 
+    case "STATUS":
+      if (ensureAuthenticated(ctx)) {
+        const user = await getAuthenticatedUser(ctx);
+        if (user) {
+          const bodyStatus = new CreateHtmlView(ctx);
+          ctx.type = returnFormats.html.type;
+          ctx.body = bodyStatus.status(user);
+          return;
+        }
+      }
+      ctx.redirect(`${ctx._rootName}login`);
+      return;
+    // Create user 
+    case "REGISTER":
+      const bodyLogin = new CreateHtmlView(ctx);
+      ctx.type = returnFormats.html.type;
+      ctx.body = bodyLogin.login({ login: false });
+      return;
+    // Logout user
     case "LOGOUT":
       ctx.cookies.set("jwt-session");
       if ( ctx.request.header.accept && ctx.request.header.accept.includes("text/html") )
@@ -81,7 +91,17 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         message: infos.logoutOk,
       };
       return;
-
+    // Only to get user Infos
+    case "USER":
+      const id = getUrlId(ctx.url.toUpperCase());
+      if (id && decodeToken(ctx)?.PDCUAS[EuserRights.SuperAdmin] === true) {
+        const user = await userAccess.getSingle(id);
+        const bodyUuerEdit = new CreateHtmlView(ctx);
+        ctx.type = returnFormats.html.type;
+        ctx.body = bodyUuerEdit.userEdit({ body: user });
+      } else ctx.throw(401);
+      return;      
+    // Execute Sql query pass in url 
     case "SQL":
       let sql = getUrlKey(ctx.request.url, "query");
       if (sql) {
@@ -91,161 +111,79 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         ctx.body = [resultSql];
       }
       return;
-
-    case "LOGIN":
-      if (ensureAuthenticated(ctx)) ctx.redirect(`${ctx._rootName}status`);
-      else {
-        returnToBody = new CreateHtmlView(ctx);
-        ctx.type = returnFormats.html.type;
-        ctx.body = returnToBody.login({ login: true });
-      }
+    // Show draw.io model
+    case "DRAW":
+      ctx.type = returnFormats.xml.type;
+      ctx.body = models.getDraw(ctx);
       return;
+    // Infos and link of a services    
     case "READY":
-      const moi = {};
-      serverConfig.getConfigs().flatMap(
-        (e) => (moi[e] = serverConfig.getConfig(e).connection ? true : false)
-      );
+      createService(ctx);
       ctx.type = returnFormats.json.type;
-      ctx.body = {
-        status: _READY,
-        databases: moi,
-      };
+      ctx.body = models.getInfos(ctx);
       return;
-
-      case "DRAW":
-        console.log(ctx._odata);
-        ctx.type = returnFormats.xml.type;
-        ctx.body = models.getDraw(ctx);
-        return;
-
-      case "INFOS":
-        ctx.type = returnFormats.json.type;
-        ctx.body = models.getInfos(ctx);
-        return;
-
-      
-    case "STATUS":
-      if (ensureAuthenticated(ctx)) {
-        const user = await getAuthenticatedUser(ctx);
-        if (user) {
-          returnToBody = new CreateHtmlView(ctx);
-          ctx.type = returnFormats.html.type;
-          ctx.body = returnToBody.status(user);
-          return;
-        }
-      }
-      ctx.redirect(`${ctx._rootName}login`);
+    case "INFOS":
+      ctx.type = returnFormats.json.type;
+      ctx.body = models.getInfos(ctx);
       return;
-
+    // TODO REMOVE
     case "REDORESULT":
       const step = getUrlId(ctx.url.toUpperCase());
       if (step) {
-        returnToBody = await remadeResult(ctx, +step);
-        if (returnToBody) {
+        const tempResult = await remadeResult(ctx, +step);
+        if (tempResult) {
           ctx.type = returnFormats.json.type;
-          ctx.body = returnToBody;
+          ctx.body = tempResult;
         }
       }
       return;
-
+    // TODO REMOVE
     case "TOOL":
-      returnToBody = await replayPayload();
-      if (returnToBody) {
         ctx.type = returnFormats.json.type;
-        ctx.body = returnToBody;
-      }
+        ctx.body = replayPayload();
       return;
 
     case "METRICS":
-      returnToBody = getUrlKey(ctx.href, "query");
-      if (returnToBody) {
+      const tempUrlKey = getUrlKey(ctx.href, "query");
+      if (tempUrlKey) {
         ctx.type = returnFormats.json.type;
-        ctx.body = await getMetrics(returnToBody);
+        ctx.body = await getMetrics(tempUrlKey);
       }
       return;
-
-    case "USER":
-      // Only to get user Infos
-      const id = getUrlId(ctx.url.toUpperCase());
-      if (id && decodeToken(ctx)?.PDCUAS[EuserRights.SuperAdmin] === true) {
-        const user = await userAccess.getSingle(id);
-        returnToBody = new CreateHtmlView(ctx);
-        ctx.type = returnFormats.html.type;
-        ctx.body = returnToBody.userEdit({ body: user });
-      } else ctx.throw(401);
-      return;
-
-    case "REDEMO":
-      // create DB test
-      console.log(formatLog.head("reDemo"));
-      await serverConfig
-        .getConnection(ADMIN)`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'demo';`
-        .then(async () => {
-          await serverConfig.getConnection(ADMIN)`DROP DATABASE IF EXISTS demo`;
-          returnToBody = await createDatabase("demo");
-          if (returnToBody) {
-            ctx.status = 201;
-            ctx.body = returnToBody;
-          } else {
-            ctx.status = 400;
-            ctx.redirect(`${ctx._rootName}error`);
-          }
-        });
-      return;
+    case "REDOAGRHYS": // TODO REMOVE
     case "DROP":
       // create DB test
       console.log(formatLog.head("drop database"));
       if (ctx._config.canDrop === true) {        
-        const dbName = ctx._config.pg.database;
-        // await ctx._config.db?.end();
-        await executeAdmin(`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND datname = ${addSimpleQuotes(dbName)}`).then(async () => {
+        const dbName = getRouteFromPath(ctx.path).toUpperCase() == "REDOAGRHYS" ? "agrhys" : ctx._config.pg.database;
+        await executeAdmin(sqlStopDbName(addSimpleQuotes(dbName))).then(async () => {
             await executeAdmin(`DROP DATABASE IF EXISTS ${dbName}`);
-            returnToBody = await createDatabase(dbName);
-            if (returnToBody) {
+            try {
               ctx.status = 201;
-              ctx.body = returnToBody;
-            } else {
+              ctx.body = await createDatabase(dbName);              
+            } catch (error) {
               ctx.status = 400;
               ctx.redirect(`${ctx._rootName}error`);
             }
           });
       }
       return;
-    case "REDOAGRHYS":
-      // create DB test
-      console.log(formatLog.head("redoAgrhys"));
-      await serverConfig
-        .getConnection(ADMIN)`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'agrhys';`
-        .then(async () => {
-          await serverConfig.getConnection(ADMIN)`DROP DATABASE IF EXISTS agrhys`;
-          returnToBody = await createDatabase("agrhys");
-          if (returnToBody) {
-            ctx.status = 201;
-            ctx.body = returnToBody;
-          } else {
-            ctx.status = 400;
-            ctx.redirect(`${ctx._rootName}error`);
-          }
-        });
-      return;
+    // Create DB test
     case "CREATEDB":
-      // create DB test
       console.log(formatLog.head("GET createDB"));
-      returnToBody = await createDatabase(TEST);
-      if (returnToBody) {
+      try {
         ctx.status = 201;
-        ctx.body = returnToBody;
-      } else {
+        ctx.body = await createDatabase(TEST);        
+      } catch (error) {
         ctx.status = 400;
         ctx.redirect(`${ctx._rootName}error`);
       }
       return;
-
+    // Drop DB test
     case "REMOVEDBTEST":
-      // create DB test
       console.log(formatLog.head("GET remove DB test"));
       const returnDel = await serverConfig
-        .getConnection(ADMIN)`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'test';`
+        .getConnection(ADMIN)`${sqlStopDbName('test')}`
         .then(async () => {
           await serverConfig.getConnection(ADMIN)`DROP DATABASE IF EXISTS test`;
           return true;
@@ -258,28 +196,33 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         ctx.redirect(`${ctx._rootName}error`);
       }
       return;
-        
-      case "QUERY":        
-        if (!adminWithSuperAdminAccess) ctx.redirect(`${ctx._rootName}login`);
-        returnToBody = await createIqueryFromContext(ctx);
-        ctx.set("script-src", "self");
-        ctx.set("Content-Security-Policy", "self");
-        ctx.type = returnFormats.html.type;
-        ctx.body = createQueryHtml(returnToBody);
-        return;      
+    // Return Query HTML Page Tool    
+    case "QUERY":        
+      if (!adminWithSuperAdminAccess) ctx.redirect(`${ctx._rootName}login`);
+      const tempContext = await createIqueryFromContext(ctx);
+      ctx.set("script-src", "self");
+      ctx.set("Content-Security-Policy", "self");
+      ctx.type = returnFormats.html.type;
+      ctx.body = createQueryHtml(tempContext);
+      return;      
   } // END Switch
 
-  // API REQUEST  
+  // API GET REQUEST  
   if (ctx.path.includes(`/${versionString(ctx._config.apiVersion)}`) || ctx._urlversion) {
     console.log(formatLog.head(`unProtected GET ${versionString(ctx._config.apiVersion)}`));
+    // decode odata url infos
     const odataVisitor = await createOdata(ctx);    
-    if (odataVisitor) ctx._odata = odataVisitor;
-    if (ctx._odata) {
-      if (ctx._odata.returnNull === true) { ctx.body = { values: [] }; return; }
+    if (odataVisitor) {
+      ctx._odata = odataVisitor;
+      if (ctx._odata.returnNull === true) { 
+        ctx.body = { values: [] }; 
+        return;
+      }
       console.log(formatLog.head(`GET ${versionString(ctx._config.apiVersion)}`));
+      // Create api object
       const objectAccess = new apiAccess(ctx);
       if (objectAccess) {
-        //API Root
+        // Get all
         if (ctx._odata.entity && Number(ctx._odata.id) === 0) {
           const returnValue = await objectAccess.getAll();
           if (returnValue) {
@@ -295,7 +238,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
             ctx.type = ctx._odata.resultFormat.type;
             ctx.body = ctx._odata.resultFormat.format(datas as object, ctx);
           } else ctx.throw(404);
-        // Id requested
+        // Get One
         } else if ( (ctx._odata.id && typeof ctx._odata.id == "bigint" && ctx._odata.id > 0) || (typeof ctx._odata.id == "string" && ctx._odata.id != "") ) {
           const returnValue: IreturnResult | undefined = await objectAccess.getSingle(ctx._odata.id);
           if (returnValue && returnValue.body) {
@@ -305,6 +248,6 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         } else ctx.throw(400);
       }
     }
-  }
+  }  
 });
 

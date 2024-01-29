@@ -12,7 +12,7 @@ export interface Ilog{
     code: number;
     url: string;
     database: string;
-    datas: JSON;
+    datas: object;
     user_id: string;
     error?: object;
   }

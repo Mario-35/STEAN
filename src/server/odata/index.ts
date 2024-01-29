@@ -39,7 +39,7 @@ const escapesOdata = (input: string) : string => {
 };
 
 
-export const createOdata = async ( ctx: koa.Context ): Promise<PgVisitor | undefined> => {
+export const createOdata = async (ctx: koa.Context): Promise<PgVisitor | undefined> => {
   // blonk url if not defined
   const blankUrl = `$top=${ctx._config.nb_page ? ctx._config.nb_page : 200}`;
   
@@ -57,10 +57,9 @@ export const createOdata = async ( ctx: koa.Context ): Promise<PgVisitor | undef
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .split(ctx._urlversion ? ctx._urlversion : versionString(ctx._config.apiVersion))[1];
-   
-    if (urlSrc && urlSrc.trim() != "") urlSrc = escapesOdata(urlSrc);
-    
-    const clean = (replaceThis: string, by?: string) => urlSrc = urlSrc.split(replaceThis).join(by ? by : "");
+
+  if (urlSrc && urlSrc.trim() != "") urlSrc = escapesOdata(urlSrc);    
+  const clean = (replaceThis: string, by?: string) => urlSrc = urlSrc.split(replaceThis).join(by ? by : "");
 
   // function to remove element in url
   const removeElement = (input: string) => {

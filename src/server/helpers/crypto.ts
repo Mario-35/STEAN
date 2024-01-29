@@ -10,13 +10,23 @@ import crypto from "crypto";
 import { APP_KEY } from "../constants";
 import { log } from "../log";
 
-export const encrypt = (text: string): string => {
+/**
+ * 
+ * @param input string 
+ * @returns encrypted string
+ */
+export const encrypt = (input: string): string => {
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv("aes-256-ctr", APP_KEY, iv);
-  const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
+  const encrypted = Buffer.concat([cipher.update(input), cipher.final()]);
   return `${iv.toString("hex")}.${encrypted.toString("hex")}`;
 };
 
+/**
+ * 
+ * @param input string 
+ * @returns decrypted string
+ */
 export const decrypt = (input: string): string => {
   input = input.split("\r\n").join("");
   if (typeof input === "string" && input[32] == ".") {      

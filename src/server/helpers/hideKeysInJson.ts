@@ -6,7 +6,14 @@
  *
  */
 
-export const hideKeysInJson = (obj: object, keys: string[]): object => {
+/**
+ *
+ * @param object string 
+ * @param key or array of keys to hide
+ * @returns object without keys
+ */
+export const hideKeysInJson = (obj: object, keys: string | string[] = ""): object => {
+  if (typeof keys === "string") keys = [keys];
   for (const [k, v] of Object.entries(obj)) {
     keys.forEach((key) => {
       if (k.includes(key)) delete obj[k];

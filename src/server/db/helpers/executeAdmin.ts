@@ -11,7 +11,7 @@ import { ADMIN } from "../../constants";
 import { log } from "../../log";
 
 export const executeAdmin = async (query: string): Promise<object> => {
-    log.query(`\n${query}`);
+    log.query(`${query}`);
     return new Promise(async function (resolve, reject) {
         await serverConfig.getConnection(ADMIN).unsafe(query).then((res: object) => {                            
             resolve(res);

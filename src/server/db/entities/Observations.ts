@@ -49,11 +49,24 @@ export class Observations extends Common {
         }
         dataInput["result"] = { value: Object.values(dataInput["result"]), valueskeys: dataInput["result"], };
       }
-    } else if (dataInput["result"] && typeof dataInput["result"] != "object")
-      dataInput["result"] = this.ctx._config.extensions.includes( EextensionsType.numeric )
-                            ? dataInput["result"]
-                            : { value: dataInput["result"] };
+    } 
+    else if ((dataInput["Datastream"] && dataInput["Datastream"] != null) || (this.ctx._odata.parentEntity && this.ctx._odata.parentEntity.startsWith("Datastream")) ) {     
+      if (dataInput["result"] && typeof dataInput["result"] != "object")
+          dataInput["result"] = this.ctx._config.extensions.includes( EextensionsType.numeric )
+                                ? dataInput["result"]
+                                : { value: dataInput["result"] };
+    } else if (this.ctx.request.method === "POST") {
+      this.ctx.throw(404, { code: 404, detail: errors.noStream });
+    }
     return dataInput;
+  }
+
+  formatDataInput(input: object | undefined): object | undefined {
+    console.log(formatLog.whereIam());
+    if (input) {
+      if(!input["resultTime"] && input["phenomenonTime"]) input["resultTime"] = input["phenomenonTime"];
+    }
+    return input;
   }
 
   async post(dataInput: object): Promise<IreturnResult | undefined> {

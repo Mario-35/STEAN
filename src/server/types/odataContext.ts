@@ -11,6 +11,7 @@ import { EcolType } from "../enums";
 
 export interface IodataContext {
     key: string | undefined;
+    entity: string | undefined;
     target: string | undefined;
     identifier: string | undefined;
     identifierType: EcolType | undefined;
