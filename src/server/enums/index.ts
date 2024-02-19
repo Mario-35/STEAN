@@ -15,5 +15,6 @@ export { Eformats } from "./formats";
 export { EobservationType } from "./observationType";
 export { EoperationType } from "./operationType";
 export { Erelations } from "./relations";
+export { Esecurity } from "./security";
 export { EuserRights } from "./userRights";
 

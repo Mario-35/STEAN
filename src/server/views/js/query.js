@@ -51,21 +51,7 @@ function tabEnabledDisabled(objName, test) {
 }
 
 
-function updateBuilder() {
-	const ent = getEntityName(SubOrNot());
-	if (!ent) return;
-	const columns = getColumnsList(ent);
-	const fields = [];
-	columns.forEach(e => {
-		fields.push({
-			"value": e,
-			"label": e,
-			"type": _PARAMS._DATAS[ent].columns[e] && _PARAMS._DATAS[ent].columns[e].type ? _PARAMS._DATAS[ent].columns[e].type : "text",
-		});
-	});
-	if (builder) builder.clear("query-builder", fields);
-	else builder = new QueryBuilder("query-builder", fields);
-}
+
 
 function canShowQueryButton() {
 	EnabledOrDisabled([go, btnShowLinks], (!testNull(subentityOption) && testNull(idOption)) ? false : true);
@@ -155,25 +141,26 @@ function init() {
 	header("==== Init ====");
 	hide(datas);
 
+	isAdmin = _PARAMS.decodedUrl.service === "admin";
 	if (isDebug) console.log(_PARAMS);
 	new SplitterBar(container, first, two);
 	wait(false);
-	const tempEntity = _PARAMS.entity || "Things";
+	const tempEntity = _PARAMS.entity || isAdmin === true ? "Configs" : "Things";
 	populateSelect(entityOption, getEntityList(), tempEntity);
 	const subs = getRelationsList(tempEntity);
 	populateSelect(subentityOption, subs, subs.includes(_PARAMS.subentityOption) ? _PARAMS.subentityOption : _NONE, true);
 
 	populateSelect(entityOption, Object.keys(_PARAMS._DATAS), tempEntity);
-	populateSelect(services, Object.keys(_PARAMS.services), _PARAMS.host.split("/").pop());
+	populateSelect(services, Object.keys(_PARAMS.services), _PARAMS.decodedUrl.root.split("/").pop());
 
 	populateSelect(methodOption, entityOption.value == "Loras" ? ["GET", "POST"] : _PARAMS.methods, _PARAMS.method ? _PARAMS.method : "GET");
 	hide(subExpandOption);
-	idOption.value = _PARAMS.id;
+	idOption.value = _PARAMS.decodedUrl.idStr | _PARAMS.decodedUrl.id;
 
 	refresh();
 	populateMultiSelect("queryMetric", _PARAMS.metrics);
-	optVersion.value = 'v' + _PARAMS.version;
-	optHost.value = _PARAMS.host;
+	optVersion.value =  _PARAMS.decodedUrl.version;
+	optHost.value = _PARAMS.decodedUrl.linkbase;
 	if (_PARAMS.datas) datas.json_value = _PARAMS.datas;
 	queryOptions.value = _PARAMS.options;
 

@@ -7,6 +7,7 @@
  */
 // log debug test
 let isDebug = false;
+let isAdmin = false;
 
 const _NONE = "none";
 

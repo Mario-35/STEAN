@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * TDD for Format API.
+ * TDD for Configs API.
  *
  * @copyright 2020-present Inrae
  * @review 29-10-2024
@@ -11,7 +11,7 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, limitResult, testVersion, testLog } from "./constant";
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, limitResult, testVersion } from "./constant";
 import { server } from "../../server/index";
 
 chai.use(chaiHttp);
@@ -34,14 +34,14 @@ addToApiDoc({
 describe("Output formats", () => {
     describe("{get} resultFormat csv", () => {
         it("Return result in csv format.", (done) => {
-            const infos = {
+            const infos:Iinfos  = {
                 api: `{get} ResultFormat as csv`,
                 apiName: "FormatCsv",
                 apiDescription: 'Use $resultFormat=csv to get datas as csv format.<br><img class="tabLogo" src="./assets/csv.jpg" alt="csv result">',
                 apiExample: { http: `/${testVersion}/Datastreams(1)/Observations?$top=20&$resultFormat=csv` }
             };
             chai.request(server)
-                .get(`/test${infos.apiExample.http}`)
+                .get(`/test${infos.url}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -55,14 +55,14 @@ describe("Output formats", () => {
 
     describe("{get} resultFormat dataArray", () => {
         it("Return Things in dataArray format.", (done) => {
-            const infos = {
+            const infos:Iinfos  = {
                 api: `{get} Things Things as dataArray`,
                 apiName: "FormatThingdataArray",
                 apiDescription: 'Use $resultFormat=dataArray to get datas as dataArray format.',
                 apiExample: { http: `/${testVersion}/Things?$resultFormat=dataArray` }
             };
             chai.request(server)
-                .get(`/test${infos.apiExample.http}`)
+                .get(`/test${infos.url}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -78,14 +78,14 @@ describe("Output formats", () => {
         });
         
         it("Return Datastream/Observations in dataArray format.", (done) => {
-            const infos = {
+            const infos:Iinfos  = {
                 api: `{get} Datastream Observations as dataArray`,
                 apiName: "FormatDataStreamdataArray",
                 apiDescription: 'Use $resultFormat=dataArray to get datas as dataArray format.',
                 apiExample: { http: `/${testVersion}/Datastreams(1)/Observations?$resultFormat=dataArray&$select=id,result` }
             };
             chai.request(server)
-                .get(`/test${infos.apiExample.http}`)
+                .get(`/test${infos.url}`)
                 .end((err: Error, res: any) => { 
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -106,7 +106,7 @@ describe("Output formats", () => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
-                    res.body[0]["component"].should.includes('Datastream->name');
+                    res.body[0]["component"].should.includes('Datastream');
                     res.body[0]['dataArray@iot.count'].should.eql(52);
                     done();
                 });
@@ -116,7 +116,6 @@ describe("Output formats", () => {
                 .get(`/test/${testVersion}/Observations?$expand=Datastream($select=id)&$select=phenomenonTime,result&$resultFormat=dataArray`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
-                    testLog(res.body);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
                     res.body[0]["component"].should.includes('Datastream->id');
@@ -128,7 +127,6 @@ describe("Output formats", () => {
             chai.request(server)
                 .get(`/test/${testVersion}/Observations?$expand=Datastream($select=id,name)&$select=phenomenonTime,result&$resultFormat=dataArray`)
                 .end((err: Error, res: any) => {
-                    testLog(res.body);
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
@@ -142,14 +140,14 @@ describe("Output formats", () => {
 
     describe("{get} resultFormat graph", () => {
         it("Return result in graph format.", (done) => {
-            const infos = {
+            const infos:Iinfos  = {
                 api: `{get} ResultFormat as graph`,
                 apiName: "FormatGraph",
                 apiDescription: 'Use $resultFormat=graph to get datas into graphical representation.<br><img class="tabLogo" src="./assets/graph.png" alt="graph result">',
                 apiExample: { http: `/${testVersion}/Datastreams(1)/Observations?$resultFormat=graph` }
             };
             chai.request(server)
-                .get(`/test${infos.apiExample.http}`)
+                .get(`/test${infos.url}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -162,7 +160,7 @@ describe("Output formats", () => {
     
     describe("{get} resultFormat graphDatas", () => {
         it("Return result in graphDatas format.", (done) => {
-            const infos = {
+            const infos:Iinfos  = {
                 api: `{get} ResultFormat as graphDatas`,
                 apiName: "FormatGraphDatas",
                 apiDescription: "Use $resultFormat=graphDatas to get datas into echarts compatible format.",
@@ -170,7 +168,7 @@ describe("Output formats", () => {
                 apiReference: "https://echarts.apache.org/en/index.html"
             };
             chai.request(server)
-                .get(`/test${infos.apiExample.http}`)
+                .get(`/test${infos.url}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);

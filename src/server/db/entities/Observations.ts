@@ -20,20 +20,20 @@ export class Observations extends Common {
   constructor(ctx: koa.Context) {
     super(ctx);
   }
-
+  // Prepare odservations 
   async prepareInputResult(dataInput: object): Promise<object> {
     console.log(formatLog.whereIam());
     // IF MultiDatastream
-    if ( (dataInput["MultiDatastream"] && dataInput["MultiDatastream"] != null) || (this.ctx._odata.parentEntity && this.ctx._odata.parentEntity.startsWith("MultiDatastream")) ) {
+    if ( (dataInput["MultiDatastream"] && dataInput["MultiDatastream"] != null) || (this.ctx.odata.parentEntity && this.ctx.odata.parentEntity.startsWith("MultiDatastream")) ) {
       // get search ID
       const searchID: bigint | undefined =
         dataInput["MultiDatastream"] && dataInput["MultiDatastream"] != null
           ? BigInt(dataInput["MultiDatastream"]["@iot.id"])
-          : getBigIntFromString(this.ctx._odata.parentId);
+          : getBigIntFromString(this.ctx.odata.parentId);
 
       if (!searchID) this.ctx.throw(404, { code: 404, detail: msg(errors.noFound, "MultiDatastreams"), });
       // Search uint keys
-      const tempSql = await executeSqlValues(this.ctx._config, queryMultiDatastreamsUnitsKeys(searchID) );      
+      const tempSql = await executeSqlValues(this.ctx.config, queryMultiDatastreamsUnitsKeys(searchID) );      
       const multiDatastream = tempSql[0];
       if (dataInput["result"] && typeof dataInput["result"] == "object") {
         console.log(formatLog.debug( "result : keys", `${Object.keys(dataInput["result"]).length} : ${ multiDatastream.length }` ));
@@ -50,9 +50,9 @@ export class Observations extends Common {
         dataInput["result"] = { value: Object.values(dataInput["result"]), valueskeys: dataInput["result"], };
       }
     } 
-    else if ((dataInput["Datastream"] && dataInput["Datastream"] != null) || (this.ctx._odata.parentEntity && this.ctx._odata.parentEntity.startsWith("Datastream")) ) {     
+    else if ((dataInput["Datastream"] && dataInput["Datastream"] != null) || (this.ctx.odata.parentEntity && this.ctx.odata.parentEntity.startsWith("Datastream")) ) {     
       if (dataInput["result"] && typeof dataInput["result"] != "object")
-          dataInput["result"] = this.ctx._config.extensions.includes( EextensionsType.numeric )
+          dataInput["result"] = this.ctx.config.extensions.includes( EextensionsType.numeric )
                                 ? dataInput["result"]
                                 : { value: dataInput["result"] };
     } else if (this.ctx.request.method === "POST") {
@@ -63,9 +63,8 @@ export class Observations extends Common {
 
   formatDataInput(input: object | undefined): object | undefined {
     console.log(formatLog.whereIam());
-    if (input) {
+    if (input) 
       if(!input["resultTime"] && input["phenomenonTime"]) input["resultTime"] = input["phenomenonTime"];
-    }
     return input;
   }
 
@@ -78,7 +77,7 @@ export class Observations extends Common {
   async update( idInput: bigint, dataInput: object | undefined ): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     if (dataInput) dataInput = await this.prepareInputResult(dataInput);
-    if (dataInput) dataInput["validTime"] = await getDBDateNow(this.ctx._config);
+    if (dataInput) dataInput["validTime"] = await getDBDateNow(this.ctx.config);
     return await super.update(idInput, dataInput);
   }
 }

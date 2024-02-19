@@ -34,7 +34,7 @@
                   const temp = element.split('(');
                   entityOption.value = temp[0];
                   idOption.value = temp[1].replace(')', '');
-                } else entityOption.value = getEntityName(element);          
+                } else entityOption.value = getEntityName(element);
               } else if (index === 1) {
                 if (element.includes('?')) queryOptions.value = element;
                 else if (_PARAMS._DATAS[getEntityName(element)]) populateSelect(subentityOption, Object.keys(_PARAMS._DATAS[entityOption.value].relations), element, true);
@@ -52,12 +52,12 @@
             const element = getElement(`${temp[0]}Option`);
             if(element) {
               switch (element.type ) {
-                case "checkbox":                  
+                case "checkbox":
                   setChecked(element.id, temp[1] === "true" ? true : false);
-                  break;              
+                  break;
                 case "select-multiple":
                   multiSelects[element.id].setValue(temp[1].split(","));
-                  break;              
+                  break;
                 default:
                   element.value = temp[1];
                   break;
@@ -66,7 +66,7 @@
 
         }
       });
-      canShowQueryButton();      
+      canShowQueryButton();
       return decode;
     } catch (error) {
       console.log(error);
@@ -107,7 +107,7 @@
         directLink = directLink + "/" + entityOption.value + "(" + index + ")";
         queryLink = queryLink + `&entity=${entityOption.value}&id=${index}`;
       } else {
-        if (entityOption.value == "Loras" && idOption.value != "") {
+        if (entityOption.value == "Loras" && idOption.value != "" && idOption.value != "0") {
           directLink = directLink + "/" + entityOption.value + "(" + idOption.value + ")";
           queryLink = queryLink + `&entity=${entityOption.value}&id=${index}`;
         }
@@ -204,3 +204,4 @@
     }
     return { "direct" : directLink, "query": queryLink};
   }
+  

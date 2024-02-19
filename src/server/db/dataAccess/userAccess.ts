@@ -16,14 +16,15 @@ const cols = () => Object.keys(models.DBAdmin(serverConfig.getConfig(ADMIN)).Use
 export const userAccess = {
   getAll: async () => {
     const query = await serverConfig
-      .getConnection(ADMIN)<Iuser[]>`SELECT ${serverConfig.getConnection(ADMIN)(cols())} FROM ${serverConfig.getConnection(ADMIN)(models.DBAdmin(serverConfig.getConfig(ADMIN)).Users.table)} ORDER BY id`;       
+      .getConnection(ADMIN)<Iuser[]>`SELECT ${serverConfig.getConnection(ADMIN)(cols())} FROM ${serverConfig.getConnection(ADMIN)(models.DBAdmin(serverConfig.getConfig(ADMIN)).Users.table)} ORDER BY id`;
     return query[0];
   },
 
-  getSingle: async (id: string) => {
+  getSingle: async (id: string | number) => {
+    id = (typeof id === "number") ? String(id) : id;    
     const query = await serverConfig
-      .getConnection(ADMIN)<Iuser[]>`SELECT ${serverConfig.getConnection(ADMIN)(cols())} FROM ${serverConfig.getConnection(ADMIN)(models.DBAdmin(serverConfig.getConfig(ADMIN)).Users.table)} WHERE id = ${+id} LIMIT 1`;       
-    if (query.length === 1) return query[0];
+      .getConnection(ADMIN)<Iuser[]>`SELECT ${serverConfig.getConnection(ADMIN)(cols())} FROM ${serverConfig.getConnection(ADMIN)(models.DBAdmin(serverConfig.getConfig(ADMIN)).Users.table)} WHERE id = ${+id} LIMIT 1`;
+      if (query.length === 1) return query[0];
   },
 
   post: async (data: Iuser) => {

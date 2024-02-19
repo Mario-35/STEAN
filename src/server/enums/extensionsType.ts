@@ -9,6 +9,7 @@
 
 export enum EextensionsType { 
     base = "base",
+    security = "security",
     logs = "logs",
     admin = "admin",
     lora = "lora",

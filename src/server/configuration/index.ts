@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-import { ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_DB, NODE_ENV, setReady, TEST, TIMESTAMP, versionString, _DEBUG, _ERRORFILE, _NOTOK, _OK, _WEB, } from "../constants";
+import { ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_API_VERSION, DEFAULT_DB, NODE_ENV, setReady, TEST, TIMESTAMP, versionString, _DEBUG, _ERRORFILE, _NOTOK, _OK, _WEB, } from "../constants";
 import { addSimpleQuotes, asyncForEach, decrypt, encrypt, hidePassword, isProduction, isTest, unikeList, } from "../helpers";
 import { IconfigFile, IdbConnection, IserviceLink } from "../types";
 import { errors, infos, msg } from "../messages";
@@ -51,11 +51,11 @@ class Configuration {
     }
   }
   getLinkBase = (ctx: koa.Context, name: string): IserviceLink  => {
-    const protocol = ctx.request.headers["x-forwarded-proto"]
-        ? ctx.request.headers["x-forwarded-proto"]
-        : Configuration.configs[name].forceHttps && Configuration.configs[name].forceHttps == true
-        ? "https"
-        : ctx.protocol;
+    const protocol:string = ctx.request.headers["x-forwarded-proto"]
+          ? ctx.request.headers["x-forwarded-proto"].toString()
+          : Configuration.configs[name].forceHttps && Configuration.configs[name].forceHttps === true
+            ? "https"
+            : ctx.protocol;
         // make linkbase
     let linkBase = ctx.request.headers["x-forwarded-host"]
         ? `${protocol}://${ctx.request.headers["x-forwarded-host"].toString()}`
@@ -66,11 +66,12 @@ class Configuration {
       if (!linkBase.includes(name)) linkBase +=  "/" + name;
       const version = versionString(Configuration.configs[name].apiVersion)
       return {
+        protocol: protocol,
         linkBase: linkBase,
         version: version,
         root : process.env.NODE_ENV?.trim() === "test"
-          ? `proxy/${version}/`
-          : `${linkBase}/${version}/`,
+          ? `proxy/${version}`
+          : `${linkBase}/${version}`,
         model : `https://app.diagrams.net/?lightbox=1&edit=_blank#U${linkBase}/${version}/draw`
       };
    }
@@ -162,7 +163,7 @@ class Configuration {
   }
 
   public getConnectionAdminFor(name: string): postgres.Sql<Record<string, unknown>> {
-    const input = Configuration.configs[name].pg;
+    const input = Configuration.configs[ADMIN].pg;
     return postgres(`postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${DEFAULT_DB}`,
     {
       debug: _DEBUG,          
@@ -322,7 +323,7 @@ class Configuration {
       ? ["base", ... String(input["extensions"]).split(",")]
       : ["base"];
     extensions = unikeList(extensions);
-    const version = String(input["apiVersion"]).trim();
+    const version = goodDbName === "admin" ? DEFAULT_API_VERSION : String(input["apiVersion"]).trim();
     const returnValue: IconfigFile = {
       name: goodDbName,
       port:
@@ -411,14 +412,14 @@ class Configuration {
 
   // test in boolean exist if not and logCreate is true then logCreate DB
   private async tryToCreateDB(connectName: string): Promise<boolean> {
+    log.booting("Try create Database", Configuration.configs[connectName].pg.database);
     return await createDatabase(connectName)
       .then(async () => {
         log.booting(`${infos.db} ${infos.create} [${Configuration.configs[connectName].pg.database}]`, _OK );
         this.createDbConnectionFromConfigName(connectName);
         return true;
       })
-      .catch((err: Error) => {
-        console.log(err);        
+      .catch((err: Error) => {;        
         log.error(msg(infos.create, infos.db), err.message);
         return false;
       });

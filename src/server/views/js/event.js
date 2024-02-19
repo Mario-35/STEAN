@@ -154,7 +154,7 @@ go.onclick = async (e) => {
 				});
 				const value = await response.text();
 				if (response.status == 401) {
-					window.location.href = `${_PARAMS.inkBase}/${_PARAMS.version}/login`;
+					window.location.href = `${_PARAMS.decodedUrl.root}/login`;
 				}
 				wait(false);
 				updateWinJsonResult(JSON.parse(value), `[${methodOption.value}]:${url}`);

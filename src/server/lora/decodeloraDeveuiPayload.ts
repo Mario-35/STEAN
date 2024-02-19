@@ -15,7 +15,7 @@ import { ILoraDecoder } from "../types";
 
 export const decodeloraDeveuiPayload = async ( ctx: koa.Context, loraDeveui: string, payload: string ): Promise<ILoraDecoder| undefined> => {
   console.log(formatLog.debug(`decodeLoraPayload deveui : [${loraDeveui}]`, payload));  
-  return await executeSql(ctx._config, `SELECT "name", "code", "nomenclature", "synonym" FROM "${ctx._model.Decoders.table}" WHERE id = (SELECT "decoder_id" FROM "${ctx._model.Loras.table}" WHERE "deveui" = '${loraDeveui}') LIMIT 1`)
+  return await executeSql(ctx.config, `SELECT "name", "code", "nomenclature", "synonym" FROM "${ctx.model.Decoders.table}" WHERE id = (SELECT "decoder_id" FROM "${ctx.model.Loras.table}" WHERE "deveui" = '${loraDeveui}') LIMIT 1`)
     .then((res: object) => {
         return decodingPayload(
           {

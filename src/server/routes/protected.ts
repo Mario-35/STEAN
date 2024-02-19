@@ -11,7 +11,6 @@ import { apiAccess, userAccess } from "../db/dataAccess";
 import { isAllowedTo, returnFormats, upload } from "../helpers";
 import fs from "fs";
 import koa from "koa";
-import { checkPassword, emailIsValid, getRouteFromPath, } from "./helpers";
 import { formatLog } from "../logger";
 import { IKeyString, IreturnResult, Iuser } from "../types";
 import { DefaultState, Context } from "koa";
@@ -25,23 +24,21 @@ import { loginUser } from "../authentication";
 import { ADMIN } from "../constants";
 import { executeSqlValues } from "../db/helpers";
 import { serverConfig } from "../configuration";
+import { checkPassword, emailIsValid } from "./helper";
 
 export const protectedRoutes = new Router<DefaultState, Context>();
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
-  switch (getRouteFromPath(ctx.path).toUpperCase()) {
+  switch (ctx.decodedUrl.path.toUpperCase()) {
     // login html page or connection login
     case "LOGIN":
-      if (ctx.request["token"]) ctx.redirect(`${ctx._rootName}status`);
+      if (ctx.request["token"]) ctx.redirect(`${ctx.decodedUrl.root}/status`);
       await loginUser(ctx).then((user: Iuser | undefined) => {
         if (user) {
           ctx.status = 200;
-          if (
-            ctx.request.header.accept &&
-            ctx.request.header.accept.includes("text/html")
-          )
-            ctx.redirect(`${ctx._rootName}Status`);
+          if ( ctx.request.header.accept && ctx.request.header.accept.includes("text/html") )
+            ctx.redirect(`${ctx.decodedUrl.root}/Status`);
           else
             ctx.body = {
               message: infos.loginOk,
@@ -91,7 +88,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
         try {
           await userAccess.post(ctx.request.body);
         } catch (error) {
-          ctx.redirect(`${ctx._rootName}error`);
+          ctx.redirect(`${ctx.decodedUrl.root}/error`);
         }
       } else {
         const createHtml = new CreateHtmlView(ctx);
@@ -108,23 +105,22 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
       const user = await userAccess.update(ctx.request.body);
       if (user) {
         ctx.login(user);
-        ctx.redirect(`${ctx._rootName}admin`);
+        ctx.redirect(`${ctx.decodedUrl.root}/admin`);
       } else {
         ctx.status = 400;
-        ctx.redirect(`${ctx._rootName}error`);
+        ctx.redirect(`${ctx.decodedUrl.root}/error`);
       }
       return;
   }
 
   // Add new lora observation this is a special route without ahtorisatiaon to post (deveui and correct payload limit risks)
-  if ((ctx._user && ctx._user.id > 0) || ctx.request.url.includes("/Lora")) {
-    if ( ctx.request.type.startsWith("application/json") && Object.keys(ctx.request.body).length > 0 ) {
+  if ((ctx.user && ctx.user.id > 0) || ctx.request.url.includes("/Lora")) {
+    if (ctx.request.type.startsWith("application/json") && Object.keys(ctx.request.body).length > 0) {
       const odataVisitor = await createOdata(ctx);
-      if (odataVisitor) ctx._odata = odataVisitor;
-      if (ctx._odata) {
+      if (odataVisitor) ctx.odata = odataVisitor;
+      if (ctx.odata) {
         const objectAccess = new apiAccess(ctx);
-        const returnValue: IreturnResult | undefined | void =
-          await objectAccess.post();
+        const returnValue: IreturnResult | undefined | void = await objectAccess.post();
         if (returnValue) {
           returnFormats.json.type;
           ctx.status = 201;
@@ -145,27 +141,29 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
             });
         });
       };
-      ctx._datas = await getDatas();
+      ctx.datas = await getDatas();
       
       const odataVisitor = await createOdata(ctx);
-      if (odataVisitor) ctx._odata = odataVisitor;
-      if (ctx._odata) {
+      if (odataVisitor) ctx.odata = odataVisitor;
+      if (ctx.odata) {
         console.log(formatLog.head("POST FORM"));
         const objectAccess = new apiAccess(ctx);
         const returnValue: IreturnResult | undefined | void =
           await objectAccess.post();
-        if (ctx._datas) fs.unlinkSync(ctx._datas["file"]);
+        if (ctx.datas) fs.unlinkSync(ctx.datas["file"]);
         if (returnValue) {
-          if (ctx._datas["source"] == "query") {
+          if (ctx.datas["source"] == "query") {
             const temp = await createIqueryFromContext(ctx);
-            ctx.type = "html";
-            ctx.body = createQueryHtml({
-              ...temp,
-              results: JSON.stringify({
-                added: returnValue.total,
-                value: returnValue.body,
-              }),
-            });
+            if (temp) {
+              ctx.type = "html";
+              ctx.body = createQueryHtml({
+                ...temp,
+                results: JSON.stringify({
+                  added: returnValue.total,
+                  value: returnValue.body,
+                }),
+              });
+            }
           } else {
             returnFormats.json.type;
             ctx.status = 201;
@@ -179,9 +177,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
       // payload is malformed
       ctx.throw(400, { details: errors.payloadIsMalformed });
     }
-  } else {
-    ctx.throw(401);
-  }
+  } else ctx.throw(401);
 });
 
 protectedRoutes.patch("/(.*)", async (ctx) => {
@@ -190,13 +186,13 @@ protectedRoutes.patch("/(.*)", async (ctx) => {
     Object.keys(ctx.request.body).length > 0
   ) {
     const odataVisitor = await createOdata(ctx);
-    if (odataVisitor) ctx._odata = odataVisitor;
-    if (ctx._odata) {
+    if (odataVisitor) ctx.odata = odataVisitor;
+    if (ctx.odata) {
       console.log(formatLog.head("PATCH"));
       const objectAccess = new apiAccess(ctx);
-      if (ctx._odata.id) {
+      if (ctx.odata.id) {
         const returnValue: IreturnResult | undefined | void =
-          await objectAccess.update(ctx._odata.id);
+          await objectAccess.update(ctx.odata.id);
         if (returnValue) {
           returnFormats.json.type;
           ctx.status = 200;
@@ -216,16 +212,16 @@ protectedRoutes.patch("/(.*)", async (ctx) => {
 protectedRoutes.delete("/(.*)", async (ctx) => {
   if (isAllowedTo(ctx, EuserRights.Delete) === true) {
     const odataVisitor = await createOdata(ctx);
-    if (odataVisitor) ctx._odata = odataVisitor;
-    if (ctx._odata) {
+    if (odataVisitor) ctx.odata = odataVisitor;
+    if (ctx.odata) {
       console.log(formatLog.head("DELETE"));
       const objectAccess = new apiAccess(ctx);
-      if (!ctx._odata.id) ctx.throw(400, { detail: errors.idRequired });
-      const returnValue = await objectAccess.delete(ctx._odata.id);
+      if (!ctx.odata.id) ctx.throw(400, { detail: errors.idRequired });
+      const returnValue = await objectAccess.delete(ctx.odata.id);
       if (returnValue && returnValue.id && returnValue.id > 0) {
         returnFormats.json.type;
         ctx.status = 204;
-      } else ctx.throw(404, { code: 404, detail: errors.noId + ctx._odata.id });
+      } else ctx.throw(404, { code: 404, detail: errors.noId + ctx.odata.id });
     } else {
       ctx.throw(404);
     }

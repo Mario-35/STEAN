@@ -383,7 +383,7 @@ const numberStr = [
     `WITH historical_location AS (INSERT INTO "historical_location" ("thing_id", "time") values (7, '2014-12-11T13:59:59.00+08:00') RETURNING *)SELECT * FROM historical_location;`,
   ];
   
-  export const testsDatas = (): string[] => {
+  export const testsDatasSupprimer = (): string[] => {
     const result: string[] = [
       `WITH decoder AS (INSERT INTO "decoder" (
           "name", 

@@ -10,8 +10,9 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult, testVersion } from "./constant";
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult, testVersion, Iinfos } from "./constant";
 import { server } from "../../server/index";
+import { addGetTest, addStartNewTest } from "./tests";
 
 
 chai.use(chaiHttp);
@@ -33,81 +34,88 @@ addToApiDoc({
 });
    
 describe("Odata BuiltInMath [9.3.3.5.2]", () => {
-    it("round(result) eq 12", (done) => {
-        const infos = {
+    it("round(result) eq 63", (done) => {
+        const infos:Iinfos  = {
             api: "{get} Observations Round",
+            url: `/${testVersion}/Observations?$filter=round(result) eq 63`,
             apiName: "BuiltInMathRound",
             apiDescription: "The round function rounds the input numeric parameter to the nearest numeric value with no decimal component. The mid-point between two integers is rounded away from zero, i.e. 0.5 is rounded to 1 and ‑0.5 is rounded to -1.",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
-            apiExample: { http: `/${testVersion}/Observations?$filter=round(result) eq 12`,
+            apiExample: { http: "/test",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
         };
         chai.request(server)
-            .get(`/test${infos.apiExample.http}`)
-            .end((err: Error, res: any) => {                
+            .get(`/test${infos.url}`)
+            .end((err: Error, res: any) => {
+                addStartNewTest("Built in Maths");
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(2);
+                res.body.value.length.should.eql(3);
                 addToApiDoc({ ...infos, result: limitResult(res) });
+                addGetTest(infos);
                 done();
             });
     });
 
-    it("floor(result) eq 11", (done) => {
-        const infos = {
+    it("floor(result) eq 63", (done) => {
+        const infos:Iinfos  = {
             api: "{get} Observations Floor",
+            url: `/${testVersion}/Observations?$filter=floor(result) eq 63`,
             apiName: "BuiltInMathFloor",
             apiDescription: "The floor function rounds the input numeric parameter down to the nearest numeric value with no decimal component. The floorMethodCallExpr syntax rule defines how the floor function is invoked.",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
-            apiExample: { http: `/${testVersion}/Observations?$filter=floor(result) eq 11`,
+            apiExample: { http: "/test",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
         };
         chai.request(server)
-            .get(`/test${infos.apiExample.http}`)
+            .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(2);
+                res.body.value.length.should.eql(1);
                 addToApiDoc({ ...infos, result: limitResult(res) });
+                addGetTest(infos);
                 done();
             });
     });
 
-    it("ceiling(result) eq 12", (done) => {
-        const infos = {
+    it("ceiling(result) eq 63", (done) => {
+        const infos:Iinfos  = {
             api: "{get} Observations Ceiling",
+            url: `/${testVersion}/Observations?$filter=ceiling(result) eq 63`,
             apiName: "BuiltInMathCeiling",
             apiDescription: "The ceiling function rounds the input numeric parameter up to the nearest numeric value with no decimal component. The ceilingMethodCallExpr syntax rule defines how the ceiling function is invoked.",
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
-            apiExample: { http: `/${testVersion}/Observations?$filter=ceiling(result) eq 12`,
+            apiExample: { http: "/test",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
         };
         chai.request(server)
-            .get(`/test${infos.apiExample.http}`)
+            .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(2);
+                res.body.value.length.should.eql(3);
                 addToApiDoc({ ...infos, result: limitResult(res) });
+                addGetTest(infos);
                 done();
             });
     });
 
     it("Save and write apiDoc", (done) => {
         generateApiDoc(docs, "apiDocBuiltInMath.js");
-        done();
+                done();
     });
 
 });

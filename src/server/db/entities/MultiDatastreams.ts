@@ -49,11 +49,11 @@ export class MultiDatastreams extends Common {
         .replace("]", "}");
 
     if (input["observationType"]) {
-      if ( !this.ctx._model.MultiDatastreams.columns[ "observationType" ].verify?.list.includes(input["observationType"]) )
+      if ( !this.ctx.model.MultiDatastreams.columns[ "observationType" ].verify?.list.includes(input["observationType"]) )
         this.ctx.throw(400, { code: 400, detail: errors["observationType"] });
     } else
       input["observationType"] =
-      this.ctx._model.MultiDatastreams.columns["observationType"].verify?.default;
+      this.ctx.model.MultiDatastreams.columns["observationType"].verify?.default;
 
     return input;
   }

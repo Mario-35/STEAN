@@ -16,6 +16,7 @@ import { cleanUrl } from "../../helpers";
  * */
 
 export const removeKeyFromUrl = (input: string, keys: string[]): string => {
+  // Clean input
   input = decodeURIComponent(input);
   if (!input.includes("?")) return input;
   const firstSplit = input.split("?");
@@ -26,5 +27,6 @@ export const removeKeyFromUrl = (input: string, keys: string[]): string => {
       if (!( keys.includes(temp[0]) || keys.includes(`${temp[0].replace("$", "")}`))) returnValue.push(element);
     }
   });
-  return cleanUrl(`${firstSplit[0]}?${ returnValue[0] && returnValue[0].startsWith("$") ? "" : "$" }${returnValue.join("&")}` );
+ return cleanUrl(`${firstSplit[0]}?${ returnValue[0] && returnValue[0].startsWith("$") ? "" : "$" }${returnValue.join("&")}` );
 };
+ 

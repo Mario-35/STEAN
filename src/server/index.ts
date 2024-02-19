@@ -19,23 +19,22 @@ import serve from "koa-static";
 import path from "path";
 import { HELMET_CONFIG, APP_KEY, TEST, ADMIN, APP_NAME, APP_VERSION, _OK } from "./constants";
 import { serverConfig } from "./configuration";
-import { PgVisitor } from "./odata";
-import { IconfigFile, Ientities, Ilog, IuserToken } from "./types";
 import favicon from 'koa-favicon';
 import { models } from "./models";
 import { log } from "./log";
+import { IdecodedUrl, Ientities, Ilog, IuserToken } from "./types";
+import { PgVisitor } from "./odata";
 
 // Extend koa context (no ts test on it)
 declare module "koa" {
   // Underscore to identify own context
   interface DefaultContext {
-    _linkBase: string;
-    _config: IconfigFile;
-    _odata: PgVisitor;
-    _datas: object;
-    _user: IuserToken;
-    _log: Ilog | undefined;
-    _model: Ientities;
+    decodedUrl: IdecodedUrl;
+    odata: PgVisitor;
+    datas: object;
+    user: IuserToken;
+    log: Ilog | undefined;
+    model: Ientities;
   }
 }
 

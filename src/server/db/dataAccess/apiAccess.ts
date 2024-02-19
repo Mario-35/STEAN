@@ -22,7 +22,7 @@ export class apiAccess implements Icomon {
 
   constructor(ctx: koa.Context, entity?: string) {
     this.ctx = ctx;    
-    const entityName = models.getEntityName(this.ctx._config, entity ? entity : this.ctx._odata.entity);
+    const entityName = models.getEntityName(this.ctx.config, entity ? entity : this.ctx.odata.entity);
     if (entityName && entityName in entities) {      
       this.myEntity = new entities[(this.ctx, entityName)](ctx);
     } 

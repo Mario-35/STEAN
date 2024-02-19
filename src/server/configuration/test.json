@@ -1,12 +1,27 @@
 {
     "admin": {
+        "name": "admin",
+        "port": 8029,
         "pg": {
             "host": "localhost",
+            "port": 5432,
             "user": "postgres",
             "password": "mario29",
-            "database": "admin"
+            "database": "admin",
+            "retry": 2
         },
-        "log": "tests.log"
+        "apiVersion": "1.0",
+        "date_format": "DD/MM/YYYY hh:mi:ss",
+        "webSite": "no web site",
+        "nb_page": 1000,
+        "forceHttps": false,
+        "alias": [],
+        "extensions": [
+            "base"
+        ],
+        "highPrecision": false,
+        "canDrop": false,
+        "logFile": "tests.log"
     },
     "test": {
         "name": "test",
@@ -22,10 +37,44 @@
         "apiVersion": "1.1",
         "date_format": "DD/MM/YYYY hh:mm:ss",
         "webSite": "no web site",
+        "nb_page": 1000,
+        "forceHttps": false,
+        "alias": [],
+        "extensions": [
+            "base",
+            "multiDatastream",
+            "lora",
+            "logs"
+        ],
+        "highPrecision": false,
+        "canDrop": false,
+        "logFile": ""
+    },
+    "essai": {
+        "name": "essai",
+        "port": 8029,
+        "pg": {
+            "host": "localhost",
+            "port": 5432,
+            "user": "sensorapi",
+            "password": "mario29",
+            "database": "essai",
+            "retry": 2
+        },
+        "apiVersion": "1.1",
+        "date_format": "DD/MM/YYYY hh:mi:ss",
+        "webSite": "http://sensorthings.geosas.fr/apidoc/",
         "nb_page": 200,
         "forceHttps": false,
-        "retry": 2,
-        "extensions": [ "multiDatastream", "lora", "logs" ],
+        "alias": [
+            ""
+        ],
+        "extensions": [
+            "base",
+            "logs"
+        ],
+        "highPrecision": false,
+        "canDrop": true,
         "logFile": ""
     }
 }

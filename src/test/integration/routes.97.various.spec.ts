@@ -10,6 +10,8 @@ process.env.NODE_ENV = "test";
 import chai from "chai";
 import chaiHttp from "chai-http";
 import { server } from "../../server/index";
+import { Iinfos } from "./constant";
+import { addGetTest, addStartNewTest } from "./tests";
 
 
 chai.use(chaiHttp);
@@ -17,15 +19,13 @@ chai.use(chaiHttp);
 const should = chai.should();
 
 const tests = {
-    "/test/v1.1/Things?$filter=Datastreams/ObservedProperty/description eq 'PM something Number three'": 2,
-    "/test/v1.1/Observations?$filter=validTime gt 2016-01-02T01:01:01.123Z": 52,
-    "/test/v1.1/Things?$filter=Datastreams/unitOfMeasurement/name eq 'PM 2.4 Particulates (ug/m3)'": 1,
-    "/test/v1.1/Things?$filter=Datastreams/unitOfMeasurement/name eq 'PM 2.5 Particulates (ug/m3)'": 2,
-    "/test/v1.1/Observations?$filter=result gt 90 or result eq 0.11": 4,
-    "/test/v1.1/Observations?$filter=length(result) le 2": 9,
-    "/test/v1.1/Observations?$filter=resultTime gt 2021-01-02T01:01:01.123Z": 2,
-    "/test/v1.1/Observations?$filter=resultTime lt 2017-01-02T01:01:01.123Z": 42,
-    "/test/v1.1/Observations?$filter=resultTime lt 2017-01-02T01:01:01.123Z and resultTime gt 2016-01-02T01:01:01.123Z": 20,
+    "/test/v1.1/Things?$filter=Datastreams/ObservedProperty/description eq 'Description of A classic Observed Property'": 1,
+    "/test/v1.1/Observations?$filter=phenomenonTime gt 2023-10-13T06:37:13+02:00": 6,
+    "/test/v1.1/Things?$filter=Datastreams/unitOfMeasurement/name eq 'Pression'": 1,
+    "/test/v1.1/Things?$filter=Datastreams/unitOfMeasurement/name eq 'PM 2.5 Particulates (ug/m3)'": 1,
+    "/test/v1.1/Observations?$filter=result gt 290 or result eq 250": 28,
+    "/test/v1.1/Observations?$filter=length(result) le 2": 25,
+    
     // "/test/v1.1/Things?$filter=Datastreams/Observations/resultTime ge 2020-06-01T00:00:00Z and Datastreams/Observations/resultTime le 2022-07-01T00:00:00Z
     // "/test/v1.1/Things?$filter=name eq 'it''s a quote'",
     // "/test/v1.1/Things?$filter=name eq 'it''''s two quotes'",
@@ -44,9 +44,20 @@ const tests = {
     // "/test/v1.1/Locations?$filter=st_within(geography'POINT(7.5 52.75)', location)",
     // "/test/v1.1/Observations?$filter=validTime gt 2016-01-02T01:01:01.000Z/2016-01-03T23:59:59.999Z sub duration'P1D'"
 };
-describe("Various tests", () => {
+describe("Various Get tests", () => {
+    before((done) => {
+        addStartNewTest("Various");
+				done();
+	});
     Object.keys(tests).forEach((test: string) => {
         it(test, (done) => {
+            const infos: Iinfos = {
+				api: `result => ${+tests[test]} : `,
+				url: test,
+				apiName: "",
+				apiDescription: "",
+				apiReference: ""
+			};
             chai.request(server)
                 .get(test)
                 .end((err: Error, res: any) => {
@@ -54,6 +65,7 @@ describe("Various tests", () => {
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
                     res.body["@iot.count"].should.eql(+tests[test]);
+					addGetTest(infos);                    
                     done();
                 });
         });

@@ -104,8 +104,8 @@ export const streamCsvFileInPostgreSql = async ( ctx: koa.Context, paramsFile: I
     const cols:string[] = [];
     sqlRequest.columns.forEach((value) => cols.push(`"${value}" varchar(255) NULL`));
     const createTable = `CREATE TABLE public."${paramsFile.tempTable}" ( id serial4 NOT NULL, ${cols}, CONSTRAINT ${paramsFile.tempTable}_pkey PRIMARY KEY (id));`;
-    await executeSql(ctx._config, createTable);
-    const writable = serverConfig.getConnection(ctx._config.name).unsafe(`COPY ${paramsFile.tempTable}  (${sqlRequest.columns.join( "," )}) FROM STDIN WITH(FORMAT csv, DELIMITER ';'${ paramsFile.header })`).writable();
+    await executeSql(ctx.config, createTable);
+    const writable = serverConfig.getConnection(ctx.config.name).unsafe(`COPY ${paramsFile.tempTable}  (${sqlRequest.columns.join( "," )}) FROM STDIN WITH(FORMAT csv, DELIMITER ';'${ paramsFile.header })`).writable();
   
     readable
       .pipe(addAbortSignal(controller.signal, await writable))
@@ -129,7 +129,7 @@ export const streamCsvFileInPostgreSql = async ( ctx: koa.Context, paramsFile: I
           `${index == 0 ? "WITH" : ","} updated${
             index + 1
           } AS (INSERT into "${
-            ctx._model.Observations.table
+            ctx.model.Observations.table
           }" ("${csvColumn.stream.type?.toLowerCase()}_id", "featureofinterest_id", "phenomenonTime","resultTime", "result", "resultQuality") SELECT ${
             csvColumn.stream.id
           }, ${csvColumn.stream.FoId},  ${sqlRequest.dateSql}, ${

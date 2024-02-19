@@ -61,7 +61,7 @@ export class CreateHtmlView {
     public config = (datas: { config: string | undefined ; body?: any; why?: IKeyString }): string => {
       try {
         const conf = serverConfig.getConfig("essai");        
-        // const conf = datas.config ? serverConfig.getConfig(datas.config] : serverConfig.createBlankConfig(this.ctx._configName);        
+        // const conf = datas.config ? serverConfig.getConfig(datas.config] : serverConfig.createBlankConfig(this.ctx.configName);        
         const alert = (name: string): string => {
             return datas.why && datas.why[name] ? `<div class="alert">${datas.why[name]}</div>` : "";
         };
@@ -76,7 +76,7 @@ export class CreateHtmlView {
                   <input id="tab-2" type="radio" name="tab" class="sign-up">
                   <label for="tab-2" class="tab">Database</label>
                   <div class="login-form">
-                    <form action="${this.ctx._linkBase}/${versionString(this.ctx._config.apiVersion)}/config" method="post">
+                    <form action="${this.ctx.decodedUrl.linkbase}/${versionString(this.ctx.config.apiVersion)}/config" method="post">
                       <div class="sign-in-htm">
                         <div class="group">
                           <label for="user" class="label">config name</label>
@@ -145,14 +145,14 @@ export class CreateHtmlView {
                               datas.login ? "" : "checked"
                           }><label for="tab-2" class="tab">Sign Up</label>
                           <div class="login-form">
-                            <form action="${this.ctx._linkBase}/${versionString(this.ctx._config.apiVersion)}/login" method="post">
+                            <form action="${this.ctx.decodedUrl.linkbase}/${versionString(this.ctx.config.apiVersion)}/login" method="post">
                               <div class="sign-in-htm">
                                 ${this.addTextInput({id: "user", name: "username", label: "Username", value: ""})}
                                 ${this.addTextInput({id: "pass", name: "password", label: "Password", value: "", password: true})}
                                 ${this.addCheckBox({id: "check", checked: true, label: "Keep me Signed in"})}
                                 ${this.addSubmitButton("Sign In")}
                                 <div class="hr"></div>
-                                ${this.addButton(`${this.ctx._linkBase}/${versionString(this.ctx._config.apiVersion)}/Query`, "Return to Query")}
+                                ${this.addButton(`${this.ctx.decodedUrl.linkbase}/${versionString(this.ctx.config.apiVersion)}/Query`, "Return to Query")}
                                 <div class="foot-lnk">
                                   <a href="#forgot">Forgot Password?</a>
                                 </div>
@@ -230,9 +230,9 @@ export class CreateHtmlView {
             user.username
         }</h3> <h3>Hosting : ${user.database == "all" ? "all" : config ? serverConfig.getConfig(config).pg.host : "Not Found"}</h3> <h3>Database : ${user.database}</h3> <h3>Status : ${
             user.admin
-        }</h3> ${user.superAdmin ? `<div class="inner"> <a href="${this.ctx._linkBase}/admin" class="button-admin" >users</a> </div>` : ""} ${this.foot([
-            { href: this.ctx._linkBase + `/${versionString(this.ctx._config.apiVersion)}/Logout`, class: "button-logout", name: "Logout" },
-            { href: this.ctx._linkBase + `/${versionString(this.ctx._config.apiVersion)}/Query`, class: "button", name: "Query" }
+        }</h3> ${user.superAdmin ? `<div class="inner"> <a href="${this.ctx.decodedUrl.linkbase}/admin" class="button-admin" >users</a> </div>` : ""} ${this.foot([
+            { href: this.ctx.decodedUrl.linkbase + `/${versionString(this.ctx.config.apiVersion)}/Logout`, class: "button-logout", name: "Logout" },
+            { href: this.ctx.decodedUrl.linkbase + `/${versionString(this.ctx.config.apiVersion)}/Query`, class: "button", name: "Query" }
         ])} </div> </div> </body> </html> `;
     };
 
@@ -241,7 +241,7 @@ export class CreateHtmlView {
             "Error",
             "user"
         )} <body> <div class="login-wrap"> <div class="login-html"> <h1>Error.</h1> <div class="hr"></div> <h3>On error page</h3> <h3>${message}</h3> <div class="hr"></div> <div id="outer"> <div class="inner"> <a href="/Login" class="button-submit" >Login</a> </div> <div class="inner"> <a href="${
-            this.ctx._linkBase + `/${versionString(this.ctx._config.apiVersion)}/Query`
+            this.ctx.decodedUrl.linkbase + `/${versionString(this.ctx.config.apiVersion)}/Query`
         }" class="button" >query</a> </div> </div> </div> </body> </html>`;
     };
   }

@@ -10,9 +10,10 @@
 
  import chai from "chai";
  import chaiHttp from "chai-http";
- import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, identification, keyTokenName, defaultPost, getNB, limitResult, apiInfos, showHide, nbColor, nbColorTitle, testVersion, _RAWDB } from "./constant";
+ import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, identification, keyTokenName, defaultPost, limitResult, apiInfos, showHide, nbColor, nbColorTitle, testVersion, _RAWDB, Iinfos, defaultGet } from "./constant";
  import { server } from "../../server/index";
  import { Ientity } from "../../server/types";
+import { addGetTest, addPostTest, addStartNewTest } from "./tests";
  
  const testsKeys = [
      "@iot.id",
@@ -32,10 +33,7 @@
  
  const docs: IApiDoc[] = [];
  const entity: Ientity = _RAWDB.Loras;
- // const entityObs: Ientity = _RAWDB.Observations;
- let firstLoraID = "";
- let firstLoraDEVEUI = ""; 
- 
+
  const addToApiDoc = (input: IApiInput) => {
      docs.push(prepareToApiDoc(input, entity.name));
  };
@@ -64,64 +62,286 @@
      });
  
      describe(`{get} ${entity.name} ${nbColorTitle}[9.2]`, () => {
-        it(`Return all ${entity.name} ${nbColor}[9.2.2]`, (done) => {
-             const infos = {
-                api: `{get} ${entity.name} Get all`,
-                apiName: `GetAll${entity.name}`,
-                apiDescription: `Retrieve all ${entity.name}.${showHide(`Get${entity.name}`, apiInfos["9.2.2"])}`,
-                apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-collection-entities",
-                apiExample: { http: `/${testVersion}/${entity.name}` },
-                apiSuccess: ["{number} id @iot.id", "{relation} selfLink @iot.selfLink", ...success]
-             };
-            chai.request(server)
-                .get(`/test/${testVersion}/${entity.name}`)
-                .end((err, res) => {
-                    should.not.exist(err);
-                    res.status.should.equal(200);
-                    res.type.should.equal("application/json");
-                    // res.body.value.length.should.eql(4);
-                    res.body.should.include.keys("@iot.count", "value");
-                    res.body.value[0].should.include.keys(testsKeys);
-                    addToApiDoc({ ...infos, result: limitResult(res) });
-                    firstLoraDEVEUI = res.body.value[0].deveui;
-                    firstLoraID = res.body.value[0]["@iot.id"];
-                    done();
-                });
-         });
+		it(`Return all ${entity.name} ${nbColor}[9.2.2]`, (done) => {
+			const infos: Iinfos = {
+				api: `{get} ${entity.name} Get all`,
+				url: `/${testVersion}/${entity.name}`,
+				apiName: `GetAll${entity.name}`,
+				apiDescription: `Retrieve all ${entity.name}.${showHide(`Get${entity.name}`, apiInfos["9.2.2"])}`,
+				apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-collection-entities",
+				apiExample: {
+					http: `/test`,
+					curl: defaultGet("curl", "KEYHTTP"),
+					javascript: defaultGet("javascript", "KEYHTTP"),
+					python: defaultGet("python", "KEYHTTP")
+				},
+				apiSuccess: ["{number} id @iot.id", "{relation} selfLink @iot.selfLink", ...success]
+			};
+
+			chai.request(server)
+				.get(`/test${infos.url}`)
+				.end((err, res) => {
+					addStartNewTest(entity.name);
+					should.not.exist(err);
+					res.status.should.equal(200);
+					res.type.should.equal("application/json");
+					addToApiDoc({
+						...infos,
+						result: limitResult(res)
+					});
+					docs[docs.length - 1].apiErrorExample = JSON.stringify({
+						"code": 404,
+						"message": "Not Found"
+					}, null, 4);
+					addGetTest(infos);
+					done();
+				});
+		});
+
+		it(`Return ${entity.name} id: 1 ${nbColor}[9.2.3]`, (done) => {
+			const infos: Iinfos = {
+				api: `{get} ${entity.name}(:id) Get one`,
+				url: `/${testVersion}/${entity.name}(1)`,
+				apiName: `GetOne${entity.name}`,
+				apiDescription: `Get a specific ${entity.singular}.${apiInfos["9.2.3"]}`,
+				apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-entity",
+				apiExample: {
+					http: "/test",
+					curl: defaultGet("curl", "KEYHTTP"),
+					javascript: defaultGet("javascript", "KEYHTTP"),
+					python: defaultGet("python", "KEYHTTP")
+				}
+			};
+			chai.request(server)
+				.get(`/test${infos.url}`)
+				.end((err: Error, res: any) => {
+					should.not.exist(err);
+					res.status.should.equal(200);
+					res.type.should.equal("application/json");
+					res.body.should.include.keys(testsKeys);
+					res.body["@iot.id"].should.eql(1);
+					res.body["@iot.selfLink"].should.contain(`${entity.name}(1)`);
+					res.body["Decoder@iot.navigationLink"].should.contain(`${entity.name}(1)/Decoder`);
+					res.body["Datastream@iot.navigationLink"].should.contain(`${entity.name}(1)/Datastream`);
+					res.body["MultiDatastream@iot.navigationLink"].should.contain(`${entity.name}(1)/MultiDatastream`);
+					addToApiDoc({
+						...infos,
+						result: res
+					});
+					addGetTest(infos);
+					done();
+				});
+		});
+
+		it(`Return ${entity.name} deveui: 2CF7F1202520017E`, (done) => {
+			const infos: Iinfos = {
+				api: `{get} ${entity.name}(:deveui) Get one`,
+				url: `/${testVersion}/${entity.name}(2CF7F1202520017E)`,
+				apiName: `GetOne${entity.name}`,
+				apiDescription: `Get a specific ${entity.singular}.${apiInfos["9.2.3"]}`,
+				apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-entity",
+				apiExample: {
+					http: "/test",
+					curl: defaultGet("curl", "KEYHTTP"),
+					javascript: defaultGet("javascript", "KEYHTTP"),
+					python: defaultGet("python", "KEYHTTP")
+				}
+			};
+			chai.request(server)
+				.get(`/test${infos.url}`)
+				.end((err: Error, res: any) => {
+					should.not.exist(err);
+					res.status.should.equal(200);
+					res.type.should.equal("application/json");
+					res.body.should.include.keys(testsKeys);
+					res.body["@iot.id"].should.eql(2);
+                    res.body["@iot.selfLink"].should.contain(`${entity.name}(2)`);
+					res.body["Decoder@iot.navigationLink"].should.contain(`${entity.name}(2)/Decoder`);
+					res.body["Datastream@iot.navigationLink"].should.contain(`${entity.name}(2)/Datastream`);
+					res.body["MultiDatastream@iot.navigationLink"].should.contain(`${entity.name}(2)/MultiDatastream`);
+                    addToApiDoc({
+						...infos,
+						result: res
+					});
+					addGetTest(infos);
+					done();
+				});
+		});
  
-         it("should respond with a single Lora [9.2.3]", (done) => {
-             const infos = {
-                 api: `{get} ${entity.name}(:id) Get one`,
-                 apiName: `GetOne${entity.name}`,
-                 apiDescription: "Get a specific Lora.",
-                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-entity",
-                 apiExample: { http: `/${testVersion}/${entity.name}(${firstLoraDEVEUI})` }
-             };
-             chai.request(server)
-                 .get(`/test${infos.apiExample.http}`)
-                 .end((err: Error, res: any) => {
-                     should.not.exist(err);
-                     res.status.should.equal(200);
-                     res.type.should.equal("application/json");
-                     res.body["@iot.selfLink"].should.contain(`/Loras(${firstLoraID})`);
-                     res.body["@iot.id"].should.eql(Number(firstLoraID));
-                     addToApiDoc({ ...infos, result: limitResult(res) });
-                     done();
-                 });
-         });
- 
-         it("should throw an error if the Lora does not exist", (done) => {
-             chai.request(server)
-                 .get(`/test/${testVersion}/${entity.name}(NOTHINGTOFOUND)`)
-                 .end((err, res) => {
-                     should.not.exist(err);
-                     res.status.should.equal(404);
-                     res.type.should.equal("application/json");
-                     res.body["detail"].should.include("NOTHINGTOFOUND not found");
-                     docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);
-                     done();
-                 });
-         });
+         it(`Return error if ${entity.name} not exist ${nbColor}[9.2.4]`, (done) => {
+			const infos: Iinfos = {
+				api: `Return error if ${entity.name} not exist`,
+				url: `/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`,
+				apiName: "",
+				apiDescription: "",
+				apiReference: ""
+			};
+			chai.request(server)
+				.get(`/test${infos.url}`)
+				.end((err, res) => {
+					should.not.exist(err);
+					res.status.should.equal(404);
+					res.type.should.equal("application/json");
+					docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4).replace(Number.MAX_SAFE_INTEGER.toString(), "1");
+					addGetTest(infos);
+					done();
+				});
+		});
+
+        it(`Return ${entity.name} Subentity Datastream ${nbColor}[9.2.6]`, (done) => {
+            const name = "Datastream";
+			const infos: Iinfos = {
+				api: `{get} ${entity.name}(:id) Get Subentity ${name}`,
+				url: `/${testVersion}/${entity.name}(5)/${name}`,
+				apiName: "",
+				apiDescription: "",
+				apiReference: ""
+			};
+			chai.request(server)
+				.get(`/test${infos.url}`)
+				.end((err: Error, res: any) => {
+					should.not.exist(err);
+					res.status.should.equal(200);
+					res.type.should.equal("application/json");
+					const id = Number(res.body.value[0]["@iot.id"]);
+					res.body.value[0]["@iot.selfLink"].should.contain(`${name}s(${id})`);
+					res.body.value[0]["Thing@iot.navigationLink"].should.contain(`/${name}s(${id})/Thing`);
+					res.body.value[0]["Sensor@iot.navigationLink"].should.contain(`/${name}s(${id})/Sensor`);
+					res.body.value[0]["ObservedProperty@iot.navigationLink"].should.contain(`/${name}s(${id})/ObservedProperty`);
+					res.body.value[0]["Observations@iot.navigationLink"].should.contain(`/${name}s(${id})/Observations`);
+					res.body.value[0]["Lora@iot.navigationLink"].should.contain(`/${name}s(${id})/Lora`);
+					addGetTest(infos);
+					done();
+				});
+		});
+
+        it(`Return ${entity.name} Subentity MultiDatastream ${nbColor}[9.2.6]`, (done) => {
+            const name = "MultiDatastream";
+			const infos: Iinfos = {
+				api: `{get} ${entity.name}(:id) Get Subentity ${name}`,
+				url: `/${testVersion}/${entity.name}(4)/${name}`,
+				apiName: "",
+				apiDescription: "",
+				apiReference: ""
+			};
+			chai.request(server)
+				.get(`/test${infos.url}`)
+				.end((err: Error, res: any) => {
+					should.not.exist(err);
+					res.status.should.equal(200);
+					res.type.should.equal("application/json");
+					const id = Number(res.body.value[0]["@iot.id"]);
+					res.body.value[0]["@iot.selfLink"].should.contain(`${name}s(${id})`);
+					res.body.value[0]["Thing@iot.navigationLink"].should.contain(`/${name}s(${id})/Thing`);
+					res.body.value[0]["Sensor@iot.navigationLink"].should.contain(`/${name}s(${id})/Sensor`);
+					res.body.value[0]["ObservedProperties@iot.navigationLink"].should.contain(`/${name}s(${id})/ObservedProperties`);
+					res.body.value[0]["Observations@iot.navigationLink"].should.contain(`/${name}s(${id})/Observations`);
+					res.body.value[0]["Lora@iot.navigationLink"].should.contain(`/${name}s(${id})/Lora`);
+					addGetTest(infos);
+					done();
+				});
+		});
+
+        it(`Return ${entity.name} Subentity Decoder ${nbColor}[9.2.6]`, (done) => {
+            const name = "Decoder";
+			const infos: Iinfos = {
+				api: `{get} ${entity.name}(:id) Get Subentity ${name}`,
+				url: `/${testVersion}/${entity.name}(4)/${name}`,
+				apiName: "",
+				apiDescription: "",
+				apiReference: ""
+			};
+			chai.request(server)
+				.get(`/test${infos.url}`)
+				.end((err: Error, res: any) => {
+					should.not.exist(err);
+					res.status.should.equal(200);
+					res.type.should.equal("application/json");
+					const id = Number(res.body.value[0]["@iot.id"]);
+					res.body.value[0]["@iot.selfLink"].should.contain(`${name}s(${id})`);
+					res.body.value[0]["Loras@iot.navigationLink"].should.contain(`${name}s(${id})/Loras`);
+					addGetTest(infos);
+					done();
+				});
+		});
+
+		it(`Return ${entity.name} Expand Datastream ${nbColor}[9.3.2.1]`, (done) => {
+			const name = "Datastream";
+			const infos: Iinfos = {
+				api: `{get} return ${entity.name} Expand ${name}`,
+				url: `/${testVersion}/${entity.name}(5)?$expand=${name}`,
+				apiName: "",
+				apiDescription: "",
+				apiReference: ""
+			};
+			chai.request(server)
+				.get(`/test${infos.url}`)
+				.end((err: Error, res: any) => {
+					should.not.exist(err);
+					res.status.should.equal(200);
+					res.type.should.equal("application/json");
+					const id = res.body[name]["@iot.id"];
+                    res.body[name]["Thing@iot.navigationLink"].should.contain(`/${name}s(${id})/Thing`);
+					res.body[name]["Sensor@iot.navigationLink"].should.contain(`/${name}s(${id})/Sensor`);
+					res.body[name]["ObservedProperty@iot.navigationLink"].should.contain(`/${name}s(${id})/ObservedProperty`);
+					res.body[name]["Observations@iot.navigationLink"].should.contain(`/${name}s(${id})/Observations`);
+					res.body[name]["Lora@iot.navigationLink"].should.contain(`/${name}s(${id})/Lora`);
+					addGetTest(infos);
+					done();
+				});
+		});
+
+        it(`Return ${entity.name} Expand MultiDatastream ${nbColor}[9.3.2.1]`, (done) => {
+			const name = "MultiDatastream";
+			const infos: Iinfos = {
+				api: `{get} return ${entity.name} Expand ${name}`,
+				url: `/${testVersion}/${entity.name}(4)?$expand=${name}`,
+				apiName: "",
+				apiDescription: "",
+				apiReference: ""
+			};
+			chai.request(server)
+				.get(`/test${infos.url}`)
+				.end((err: Error, res: any) => {
+					should.not.exist(err);
+					res.status.should.equal(200);
+					res.type.should.equal("application/json");
+					const id = res.body[name]["@iot.id"];
+					res.body[name]["@iot.selfLink"].should.contain(`${name}s(${id})`);
+					res.body[name]["Thing@iot.navigationLink"].should.contain(`/${name}s(${id})/Thing`);
+					res.body[name]["Sensor@iot.navigationLink"].should.contain(`/${name}s(${id})/Sensor`);
+					res.body[name]["ObservedProperties@iot.navigationLink"].should.contain(`/${name}s(${id})/ObservedProperties`);
+					res.body[name]["Observations@iot.navigationLink"].should.contain(`/${name}s(${id})/Observations`);
+
+                    
+					addGetTest(infos);
+					done();
+				});
+		});
+        
+        it(`Return ${entity.name} Expand Decoder ${nbColor}[9.3.2.1]`, (done) => {
+			const name = "Decoder";
+			const infos: Iinfos = {
+				api: `{get} return ${entity.name} Expand ${name}`,
+				url: `/${testVersion}/${entity.name}(4)?$expand=${name}`,
+				apiName: "",
+				apiDescription: "",
+				apiReference: ""
+			};
+			chai.request(server)
+				.get(`/test${infos.url}`)
+				.end((err: Error, res: any) => {
+					should.not.exist(err);
+					res.status.should.equal(200);
+					res.type.should.equal("application/json");
+					const id = res.body[name]["@iot.id"];
+					res.body[name]["@iot.selfLink"].should.contain(`${name}s(${id})`);
+					res.body[name]["Loras@iot.navigationLink"].should.contain(`/${name}s(${id})/Loras`);
+					addGetTest(infos);
+					done();
+				});
+		});      
+
      });
  
      describe(`{post} ${entity.name} ${nbColorTitle}[10.2]`, () => {
@@ -133,15 +353,16 @@
                  "Decoder": {
                      "@iot.id": 1
                  },
-                 "name": `My new ${getNB(entity.name)}`,
+                 "name": "Another lora Name",
                  "description": "My new Lora Description",
                  "deveui": "8cf9574000009L8C"
              };
-             const infos = {
+             const infos:Iinfos  = {
                  api: `{post} ${entity.name} Post MultiDatastream basic`,
+                 url: `/${testVersion}/${entity.name}`,
                  apiName: `Post${entity.name}MultiDatastream`,
                  apiDescription: `Post a new ${entity.name}.${showHide(`Post${entity.name}`, apiInfos["10.2"])}`, apiExample: {
-                     http: `/${testVersion}/${entity.name}`,
+					http: "/test",
                      curl: defaultPost("curl", "KEYHTTP", datas),
                      javascript: defaultPost("javascript", "KEYHTTP", datas),
                      python: defaultPost("python", "KEYHTTP", datas)
@@ -149,7 +370,7 @@
                  apiParamExample: datas
              };
              chai.request(server)
-                 .post(`/test${infos.apiExample.http}`)
+                 .post(`/test/${infos.url}`)
                  .send(infos.apiParamExample)
                  .set("Cookie", `${keyTokenName}=${token}`)
                  .end((err: Error, res: any) => {                    
@@ -158,7 +379,8 @@
                      res.type.should.equal("application/json");
                      res.body.should.include.keys(testsKeys);
                      addToApiDoc({ ...infos, result: limitResult(res) });
-                     done();
+					addPostTest(infos, datas);
+                    done();
                  });
          });
  
@@ -172,13 +394,14 @@
                  },
                  "name": "Lora for datastream",
                  "description": "My new Lora Description",
-                 "deveui": "70b3d5e75e014f06"
+                 "deveui": "70b3d5e75e014f026"
              };
-             const infos = {
+             const infos:Iinfos  = {
                  api: `{post} ${entity.name} Post Datastream basic`,
+                 url: `/${testVersion}/${entity.name}`,
                  apiName: `Post${entity.name}Datastream`,
                  apiDescription: `Post a new ${entity.name}.${showHide(`Post${entity.name}`, apiInfos["10.2"])}`, apiExample: {
-                     http: `/${testVersion}/${entity.name}`,
+					http: "/test",
                      curl: defaultPost("curl", "KEYHTTP", datas),
                      javascript: defaultPost("javascript", "KEYHTTP", datas),
                      python: defaultPost("python", "KEYHTTP", datas)
@@ -186,7 +409,7 @@
                  apiParamExample: datas
              };
              chai.request(server)
-                 .post(`/test${infos.apiExample.http}`)
+                 .post(`/test/${infos.url}`)
                  .send(infos.apiParamExample)
                  .set("Cookie", `${keyTokenName}=${token}`)
                  .end((err: Error, res: any) => {  
@@ -195,46 +418,57 @@
                      res.type.should.equal("application/json");
                      res.body.should.include.keys(testsKeys);
                      addToApiDoc({ ...infos, result: limitResult(res) });
-                     done();
+					addPostTest(infos, datas);
+                    done();
                  });
          });
 
          it("should return an error because datastream not exist", (done) => {
+            const datas = {
+                "Datastream": {
+                    "@iot.id": 155
+                },
+                "Decoder": {
+                    "@iot.id": 3
+                },
+                "name": "Lora for datastream",
+                "description": "My new Lora Description",
+                "deveui": "70b3d5e75e014f06"
+            };
+            const infos:Iinfos  = {
+                api : `{post} return Error if the payload is malformed`,
+                url : `/${testVersion}/${entity.name}`,
+                apiName: "",
+                apiDescription: "",
+                apiReference: ""
+            };
              chai.request(server)
-                 .post(`/test/${testVersion}/${entity.name}`)
-                 .send({
-                    "Datastream": {
-                        "@iot.id": 155
-                    },
-                    "Decoder": {
-                        "@iot.id": 3
-                    },
-                    "name": "Lora for datastream",
-                    "description": "My new Lora Description",
-                    "deveui": "70b3d5e75e014f06"
-                })
+             .post(`/test${infos.url}`)
+                 .send(datas)
                  .set("Cookie", `${keyTokenName}=${token}`)
                  .end((err: Error, res: any) => {
                      should.not.exist(err);
                      res.status.should.equal(404);
                      res.body["detail"].should.contain('exist no datastream ID --> 155');
-                     done();
+					addPostTest(infos, datas);
+                    done();
                  });
          });
  
          it("should return the Lora observation that was added", (done) => {
              const datas = {
-                 "deveui": "8CF9574000002D1D",
+                 "deveui": "2CF7F1202520017E",
                  "timestamp": "2021-10-18T14:53:44+02:00",
                  "payload_ciphered": null,
                  "frame": "010610324200000107103E4900009808"
              };
-             const infos = {
+             const infos:Iinfos  = {
                  api: `{post} ${entity.name} Post observation basic`,
+                 url: `/${testVersion}/${entity.name}`,
                  apiName: `Post${entity.name}Observation`,
                  apiDescription: `Post a new Observation in a Lora Thing.`,
                  apiExample: {
-                     http: `/${testVersion}/${entity.name}`,
+                    http: "/test",
                      curl: defaultPost("curl", "KEYHTTP", datas),
                      javascript: defaultPost("javascript", "KEYHTTP", datas),
                      python: defaultPost("python", "KEYHTTP", datas)
@@ -242,7 +476,7 @@
                  apiParamExample: datas
              };
              chai.request(server)
-                 .post(`/test${infos.apiExample.http}`)
+                 .post(`/test/${infos.url}`)
                  .send(infos.apiParamExample)
                  .set("Cookie", `${keyTokenName}=${token}`)
                  .end((err: Error, res: any) => {
@@ -253,7 +487,8 @@
                      res.body["result"][0].should.eql(18.75);
                      res.body["result"][1].should.eql(16.946);
                      addToApiDoc({ ...infos, result: limitResult(res) });
-                     done();
+					addPostTest(infos, datas);
+                    done();
                  });
          });
  
@@ -264,12 +499,13 @@
                 "payload_ciphered": null,
                 "frame": "AA010610324200000107103E4900009808"
             };
-            const infos = {
+            const infos:Iinfos  = {
                 api: `{post} ${entity.name} Post observation payload basic`,
+                url: `/${testVersion}/${entity.name}`,
                 apiName: `Post${entity.name}ObservationError`,
                 apiDescription: `Post a new Observation in a Lora Thing.`,
                 apiExample: {
-                    http: `/${testVersion}/${entity.name}`,
+					http: "/test",
                     curl: defaultPost("curl", "KEYHTTP", datas),
                     javascript: defaultPost("javascript", "KEYHTTP", datas),
                     python: defaultPost("python", "KEYHTTP", datas)
@@ -277,31 +513,32 @@
                 apiParamExample: datas
             };
             chai.request(server)
-                .post(`/test${infos.apiExample.http}`)
+                .post(`/test/${infos.url}`)
                 .send(infos.apiParamExample)
                 .set("Cookie", `${keyTokenName}=${token}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(400);
                     res.type.should.equal("application/json");
-                    // res.body["detail"].should.eql('Decoding Payload error');
+                    addPostTest(infos, datas);
                     done();
                 });
         });
 
          it("should return Error Invalid Payload Message", (done) => {
             const datas = {
-                "deveui": "8CF9574000002D1D",
+                "deveui": "8CF9574000002D2D",
                 "timestamp": "2021-10-18T14:53:44+02:00",
                 "payload_ciphered": null,
                 "frame": "AA010610324200000107103E4900009808"
             };
-            const infos = {
+            const infos:Iinfos  = {
                 api: `{post} ${entity.name} Post basic`,
+                url: `/${testVersion}/${entity.name}`,
                 apiName: `Post${entity.name}InvalidPayload`,
                 apiDescription: `Post a new Observation in a Lora Thing.`,
                 apiExample: {
-                    http: `/${testVersion}/${entity.name}`,
+					http: "/test",
                     curl: defaultPost("curl", "KEYHTTP", datas),
                     javascript: defaultPost("javascript", "KEYHTTP", datas),
                     python: defaultPost("python", "KEYHTTP", datas)
@@ -309,7 +546,7 @@
                 apiParamExample: datas
             };
             chai.request(server)
-                .post(`/test${infos.apiExample.http}`)
+                .post(`/test/${infos.url}`)
                 .send(infos.apiParamExample)
                 .set("Cookie", `${keyTokenName}=${token}`)
                 .end((err: Error, res: any) => {
@@ -317,37 +554,48 @@
                     res.status.should.equal(400);
                     res.type.should.equal("application/json");
                     res.body["detail"].should.eql('Invalid Payload');
+					addPostTest(infos, datas);
                     done();
                 });
         });
 
-         it(`Return Error if the payload is malformed ${nbColor}[10.2.2]`, (done) => {
-             chai.request(server)
-                 .post(`/test/${testVersion}/${entity.name}`)
-                 .send({})
-                 .set("Cookie", `${keyTokenName}=${token}`)
-                 .end((err: Error, res: any) => {
-                     should.not.exist(err);
-                     res.status.should.equal(400);
-                     res.type.should.equal("application/json");
-                     docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);
-                     done();
-                 });
-         });
+        it(`Return Error if the payload is malformed ${nbColor}[10.2.2]`, (done) => {
+            const infos:Iinfos  = {
+                api : `{post} return Error if the payload is malformed`,
+                url : `/${testVersion}/${entity.name}`,
+                apiName: "",
+                apiDescription: "",
+                apiReference: ""
+            };
+            chai.request(server)
+                .post(`/test${infos.url}`)
+                .send({})
+                .set("Cookie", `${keyTokenName}=${token}`)
+                .end((err: Error, res: any) => {
+                    should.not.exist(err);
+                    res.status.should.equal(400);
+                    res.type.should.equal("application/json");
+                    docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);
+                    addPostTest(infos, {});
+                    done();
+                });
+        });
+
  
          it("should return that Observation already exist", (done) => {
              const datas = {
-                "deveui": "8CF9574000002D1D",
+                "deveui": "2CF7F1202520017E",
                 "timestamp": "2021-10-18T14:53:44+02:00",
                 "payload_ciphered": null,
                 "frame": "010610324200000107103E4900009808"
             };
-             const infos = {
+             const infos:Iinfos  = {
                  api: `{post} ${entity.name} Post Duplicate`,
+                 url: `/${testVersion}/${entity.name}`,
                  apiName: `Post${entity.name}Duplicate`,
                  apiDescription: "Post a new Duplicate Lora Observation.",
                  apiExample: {
-                     http: `/${testVersion}/${entity.name}`,
+					http: "/test",
                      curl: defaultPost("curl", "KEYHTTP", datas),
                      javascript: defaultPost("javascript", "KEYHTTP", datas),
                      python: defaultPost("python", "KEYHTTP", datas)
@@ -355,7 +603,7 @@
                  apiParamExample: datas
              };
              chai.request(server)
-                 .post(`/test${infos.apiExample.http}`)
+                 .post(`/test/${infos.url}`)
                  .send(infos.apiParamExample)
                  .set("Cookie", `${keyTokenName}=${token}`)
                  .end((err: Error, res: any) => {                    
@@ -363,28 +611,29 @@
                      res.status.should.equal(409);
                      res.type.should.equal("application/json");
                      res.body["detail"].should.eql("Observation already exist");
-                     done();
+					addPostTest(infos, datas);
+                    done();
                  });
          });
  
          it("should return the Observation that was added with Sort", (done) => {
              const datas = {
                 "data": {
-                  "Battery": 50,
                   "Temperature": 25,
                   "moisture": 100
                 },
-                "deveui": "8cf9574000002d4d",
-                "sensor_id": "8cf9574000002d4d",
+                "deveui": "2CF7F1202520017E",
+                "sensor_id": "2CF7F1202520017E",
                 "timestamp": "2021-10-15T14:53:44+02:00",
                 "payload_ciphered": null
               };
-             const infos = {
+             const infos:Iinfos  = {
                  api: `{post} ${entity.name} Post Sort`,
+                 url: `/${testVersion}/${entity.name}`,
                  apiName: `Post${entity.name}Sort`,
                  apiDescription: "Post a new Lora Observation Sorted.",
                  apiExample: {
-                     http: `/${testVersion}/${entity.name}`,
+					http: "/test",
                      curl: defaultPost("curl", "KEYHTTP", datas),
                      javascript: defaultPost("javascript", "KEYHTTP", datas),
                      python: defaultPost("python", "KEYHTTP", datas)
@@ -393,7 +642,7 @@
                  apiParamExample: datas
              };
              chai.request(server)
-                 .post(`/test${infos.apiExample.http}`)
+                 .post(`/test/${infos.url}`)
                  .send(infos.apiParamExample)
                  .set("Cookie", `${keyTokenName}=${token}`)
                  .end((err: Error, res: any) => {
@@ -403,27 +652,28 @@
                      res.body["@iot.selfLink"].should.contain("/Observations(");
                      res.body["result"][0].should.eql(100);
                      res.body["result"][1].should.eql(25);
-                     res.body["result"][2].should.eql(50);
                      addToApiDoc({ ...infos, result: limitResult(res) });
-                     done();
+					addPostTest(infos, datas);
+                    done();
                  });
          });
  
          it("should return the Observation with data null", (done) => {
              const datas = {
                  "data": null,
-                 "deveui": "8cf9574000002d4d",
-                 "sensor_id": "8cf9574000002d4d",
+                 "deveui": "2CF7F1202520017E",
+                 "sensor_id": "2CF7F1202520017E",
                  "timestamp": "2021-10-15T14:53:44+02:00",
                  "payload_ciphered": null,
                  "payload_deciphered": ""
              };
-             const infos = {
+             const infos:Iinfos  = {
                  api: `{post} ${entity.name} Post Data Null`,
+                 url: `/${testVersion}/${entity.name}`,
                  apiName: `Post${entity.name}Null`,
                  apiDescription: "Post a new Lora Observation With Data null.",
                  apiExample: {
-                     http: `/${testVersion}/${entity.name}`,
+					http: "/test",
                      curl: defaultPost("curl", "KEYHTTP", datas),
                      javascript: defaultPost("javascript", "KEYHTTP", datas),
                      python: defaultPost("python", "KEYHTTP", datas)
@@ -432,7 +682,7 @@
                  apiParamExample: datas
              };
              chai.request(server)
-                 .post(`/test${infos.apiExample.http}`)
+                 .post(`/test/${infos.url}`)
                  .send(infos.apiParamExample)
                  .set("Cookie", `${keyTokenName}=${token}`)
                  .end((err: Error, res: any) => {
@@ -440,7 +690,8 @@
                      res.status.should.equal(400);
                      res.type.should.equal("application/json");
                      res.body["detail"].should.eql("Data is missing or Null");
-                     done();
+					addPostTest(infos, datas);
+                    done();
                  });
          });
  
@@ -451,18 +702,19 @@
                      "nothing": 25,
                      "dontknow": 100
                  },
-                 "deveui": "8cf9574000002d4d",
-                 "sensor_id": "8cf9574000002d4d",
+                 "deveui": "2CF7F1202520017E",
+                 "sensor_id": "2CF7F1202520017E",
                  "timestamp": "2021-10-15T14:53:44+02:00",
                  "payload_ciphered": null,
                  "payload_deciphered": ""
              };
-             const infos = {
+             const infos:Iinfos  = {
                  api: `{post} ${entity.name} Post Data Nots`,
+                 url: `/${testVersion}/${entity.name}`,
                  apiName: `Post${entity.name}DataNotCorrespond`,
                  apiDescription: "Post a new Lora Observation Data not corresponding.",
                  apiExample: {
-                     http: `/${testVersion}/${entity.name}`,
+					http: "/test",
                      curl: defaultPost("curl", "KEYHTTP", datas),
                      javascript: defaultPost("javascript", "KEYHTTP", datas),
                      python: defaultPost("python", "KEYHTTP", datas)
@@ -470,7 +722,7 @@
                  apiParamExample: datas
              };
              chai.request(server)
-                 .post(`/test${infos.apiExample.http}`)
+                 .post(`/test/${infos.url}`)
                  .send(infos.apiParamExample)
                  .set("Cookie", `${keyTokenName}=${token}`)
                  .end((err: Error, res: any) => {
@@ -479,7 +731,7 @@
                      res.type.should.equal("application/json");
                      res.body["detail"].should.include("Data not corresponding");
                      generateApiDoc(docs, `apiDoc${entity.name}.js`);
-                     
+                     addPostTest(infos, datas);
                      done();
                  });
          });
@@ -494,7 +746,7 @@
      //                 const myId = thingObject.deveui;
  
      //                 const lengthBeforeDelete = items.length;
-     //                 const infos = {
+     //                 const infos:Iinfos  = {
      //                     api: `{delete} ${entity.name} Delete one`,
      //                     apiName: `Delete${entity.name}`,
      //                     apiDescription: "Delete an Lora Observation.",
@@ -506,7 +758,7 @@
      //                     }
      //                 };
      //                 chai.request(server)
-     //                     .delete(`/test${infos.apiExample.http}`)
+     //                     .delete(`/test${infos.url}`)
      //                     .set("Cookie", `${keyTokenName}=${token}`)
      //                     .end((err: Error, res: any) => {
      //                         should.not.exist(err);

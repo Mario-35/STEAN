@@ -18,7 +18,7 @@ import * as entities from "../../../db/entities";
  * @returns formated postgresSQL Insert
  */
 export function formatInsertEntityData(entity: string, datas: object, main: PgVisitor): object {
-    const goodEntity = models.getEntityName(main.ctx._config, entity);
+    const goodEntity = models.getEntityName(main.ctx.config, entity);
     if (goodEntity && goodEntity in entities) {
         try {
             const objectEntity = new apiAccess(main.ctx, entity);

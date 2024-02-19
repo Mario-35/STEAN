@@ -12,7 +12,7 @@ import { isTest } from "../../helpers";
 import { IconfigFile } from "../../types";
 
 export const executeSql = async (config: IconfigFile, query: string): Promise<object> => {
-    log.query(`${query}`);
+    log.query(query);
     return new Promise(async function (resolve, reject) {
         await serverConfig.getConnection(config.name).unsafe(query).then((res: object) => {                            
             resolve(res);

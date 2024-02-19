@@ -7,7 +7,7 @@
  *
  */
 
-import { Ientities, IserviceLink, Iuser } from ".";
+import { IdecodedUrl, Ientities, IserviceLink, Iuser } from ".";
 
 export interface IqueryOptions {
     user: Iuser;
@@ -15,12 +15,10 @@ export interface IqueryOptions {
     metrics: string[] | {[key: string] : any};
     entity: string;
     subentity?: string;
-    id: string;
     method?: string;
     options: string;
-    version: string;
     services: { [key: string]: IserviceLink };
-    host: string;
+    decodedUrl: IdecodedUrl;
     datas?: JSON;
     results?: JSON | string;
     graph: boolean;

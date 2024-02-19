@@ -2,25 +2,25 @@
  * queryAsDataArray.
  *
  * @copyright 2020-present Inrae
+ * @review 27-01-2024
  * @author mario.adam@inrae.fr
  *
  */
 
 import { queryAsJson } from ".";
-import { _COLUMNSEPARATOR } from "../../constants";
-import { addDoubleQuotes, removeAllQuotes } from "../../helpers";
+import { _COLUMNSEPARATOR, _NEWLINE } from "../../constants";
+import { addDoubleQuotes, addSimpleQuotes, removeAllQuotes } from "../../helpers";
 import { PgVisitor } from "../../odata";
 
 export const queryAsDataArray = (input: PgVisitor): string => {
-  let names:string[] = input.arrayNames;
-  input.includes.forEach((include) => {
-    names = names.concat(include.arrayNames.map(e => `${addDoubleQuotes(include.entity)}->'${removeAllQuotes(e)}'`));
-  });
-  const cols = input.parentEntity ? names.map(e => addDoubleQuotes(e)) : names;
+  const names:string[] = input.arrayNames.map(e => removeAllQuotes(e));
+  // create names
+  input.includes.forEach((include) => { names.push(include.entity); });
+  // Return SQL query
   return queryAsJson({
-    query: `SELECT (ARRAY['${names
-      .map((e: string) => removeAllQuotes(e))
-      .join( "','" )}']) as "component", count(*) as "dataArray@iot.count", jsonb_agg(allkeys) as "dataArray" FROM (SELECT json_build_array(${cols.join()}) as allkeys FROM (${input.sql}) as p) as l`,
+    query: `SELECT (ARRAY[${_NEWLINE}\t${names
+      .map((e: string) => addSimpleQuotes(e))
+      .join( `,${_NEWLINE}\t`)}]) as "component", count(*) as "dataArray@iot.count", jsonb_agg(allkeys) as "dataArray" FROM (SELECT json_build_array(${_NEWLINE}\t${names.map((e: string) => addDoubleQuotes(e)).join(`,${_NEWLINE}\t`)}) as allkeys FROM (${input.sql}) as p) as l`,
     singular: false,
     count: false,
   });

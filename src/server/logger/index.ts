@@ -7,7 +7,7 @@
  *
  */
 import util from "util";
-import { color, TEST, TIMESTAMP, _DEBUG, _ERRORFILE, _WEB } from "../constants";
+import { TEST, color,  TIMESTAMP, _DEBUG, _ERRORFILE, _WEB } from "../constants";
 import fs from "fs";
 import Koa from "koa";
 import { EColor } from "../enums";

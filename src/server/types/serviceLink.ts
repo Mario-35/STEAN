@@ -8,6 +8,7 @@
 
 
 export interface IserviceLink {
+    protocol: string;
     linkBase: string;
     version: string;
     root: string;

@@ -31,10 +31,10 @@ export const color = (col: number) => `\x1b[${col}m`;
 export const DEFAULT_API_VERSION = "1.0";
 export const DEFAULT_DB = "postgres";
 export const DOUBLEQUOTEDCOMA = '",\n"';
+export const _NEWLINE = '\r\n';
 export const _COLUMNSEPARATOR = '@|@';
 export const ESCAPE_ARRAY_JSON = (input: string) => input ? input.replace("[", "{") .replace("]", "}") : undefined;
 export const ESCAPE_SIMPLE_QUOTE = (input: string) => input.replace(/[']+/g, "''");
-export const REMOVE_FIRST_END_CHAR = (input: string, char: string) => input[0] === char[0] && input[input.length - 1] === char[0] ? input.slice(0, -1).slice(1).trim() : input;
 export const HELMET_CONFIG = Object.freeze({
   defaultSrc: ["'self'"],
   scriptSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com"],

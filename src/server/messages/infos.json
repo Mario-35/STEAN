@@ -16,5 +16,6 @@
     "classConstructor" : "class $1 override $2",
     "tryCreateUser" : "Try to create user => ",
     "createAdminUser" : "create user => ",
-    "updateUser" : "update user => "
+    "updateUser" : "update user => ",
+    "MultilinesNotSaved" : "Multilines not saved in logs"
 }

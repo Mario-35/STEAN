@@ -25,7 +25,7 @@ export class Users extends Common {
 
   async getAll(): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
-    if (this.ctx._user?.PDCUAS[EuserRights.SuperAdmin] === true || this.ctx._user?.PDCUAS[EuserRights.Admin] === true ) {
+    if (this.ctx.user?.PDCUAS[EuserRights.SuperAdmin] === true || this.ctx.user?.PDCUAS[EuserRights.Admin] === true ) {
       const temp = await executeSqlValues(serverConfig.getConfig(ADMIN), `SELECT ${models.getSelectColumnList(models.DBAdmin(serverConfig.getConfig(ADMIN)).Users)} FROM "user" ORDER BY "id"`);      
       return this.createReturnResult({
         body: hidePassword(temp),

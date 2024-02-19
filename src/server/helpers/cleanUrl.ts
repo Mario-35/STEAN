@@ -13,6 +13,7 @@
  */
 
 export const cleanUrl = (input: string): string => {
+    input = input.replace("?&$", "?$");
     while (["$", "&", "?"].includes(input[input.length - 1])) {
         input = input.slice(0, -1);
     }

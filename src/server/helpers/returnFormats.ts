@@ -27,7 +27,7 @@ const defaultForwat = (input: PgVisitor): string => input.sql;
 const generateFields = (input: PgVisitor): string[] => {
   let fields: string[] = [];
   if (isGraph(input)) {
-    const table = input.ctx._model[input.parentEntity ? input.parentEntity : input.entity].table;
+    const table = input.ctx.model[input.parentEntity ? input.parentEntity : input.entity].table;
     fields = [
       `(SELECT ${table}."description" FROM ${table} WHERE ${table}."id" = ${
         input.parentId ? input.parentId : input.id
@@ -45,11 +45,11 @@ const generateFields = (input: PgVisitor): string[] => {
 const generateGrahSql = (input: PgVisitor): string => {
   input.intervalColumns = ["id", "step as date", "result"];
   if (isGraph(input)) input.intervalColumns.push("concat"); 
-  const table = input.ctx._model[input.parentEntity ? input.parentEntity : input.entity].table;
+  const table = input.ctx.model[input.parentEntity ? input.parentEntity : input.entity].table;
   const id = input.parentId ? input.parentId : input.id;
   return queryAsJson({
     query:
-      table === input.ctx._model.Datastreams.table
+      table === input.ctx.model.Datastreams.table
         ? queryGraphDatastream(table, id, queryInterval(input))
         : queryGraphMultiDatastream( table, id, input.splitResult, queryInterval(input) ),
     singular: false,
@@ -78,7 +78,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
             query: input.sql,
             singular: false,
             count: true,
-            fullCount: input.count === true ? input.ctx._model[input.entity].count : undefined,
+            fullCount: input.count === true ? input.ctx.model[input.entity].count : undefined,
             fields: generateFields(input),
           });
     },
@@ -101,10 +101,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
       const height = String(100 / Object.entries(input).length).split(".")[0];
       if (typeof input === "object") {
         Object.entries(input).forEach((element: object, index: number) => {
-          graphNames.push(
-            `<button type="button" id="btngraph${index}" onclick="graph${index}.remove(); btngraph${index}.remove()"">X</button> 
-            <div id="graph${index}" style="width:95%; height:${height}%;"></div>`
-          );
+          graphNames.push( `<button type="button" id="btngraph${index}" onclick="graph${index}.remove(); btngraph${index}.remove()"">X</button> <div id="graph${index}" style="width:95%; height:${height}%;"></div>` );
           const infos = element[1]["description"]
             ? `${[
                 element[1]["description"],
@@ -114,18 +111,15 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
             : `${element[1]["infos"].split("|").join(DOUBLEQUOTEDCOMA)}`;
           const formatedData = `const value${index} = [${element[1]["datas"]}]; 
           const infos${index} = ["${infos}"];`;
-          formatedDatas.push(`
-                ${formatedData}
-                showGraph("graph${index}", infos${index}, value${index})`);
+          formatedDatas.push(` ${formatedData} showGraph("graph${index}", infos${index}, value${index})`);
         });
       }
       return `<html lang="fr"> <head>
       <style>${addCssFile("dygraph.css")}</style> <!-- htmlmin:ignore --><script>${addJsFile( "dygraph.js" )}</script><!-- htmlmin:ignore -->
       ${graphNames.join("")}
-       
         <script>
         ${addJsFile("graph.js")}
-          const linkBase = "${ctx._linkBase}/${ctx._config.apiVersion}";
+          const linkBase = "${ctx.decodedUrl.root}";
           ${formatedDatas.join("")}                             
         </script>`;
     },

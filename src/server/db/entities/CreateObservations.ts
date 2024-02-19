@@ -51,7 +51,7 @@ export class CreateObservations extends Common {
               : `${separateur}${elem}${separateur}`
             : `${separateur}{${elem}}${separateur}`
           : index === this.indexResult && type === "VALUES"
-          ? this.ctx._config.extensions.includes(EextensionsType.numeric)
+          ? this.ctx.config.extensions.includes(EextensionsType.numeric)
             ? elem
             : `'{"value": ${elem}}'`
           : elem
@@ -75,8 +75,8 @@ export class CreateObservations extends Common {
     const returnValue: string[] = [];
     let total = 0;
     // verify is there JSON data
-    if (this.ctx._datas) {
-      const datasJson = JSON.parse(this.ctx._datas["datas"]);
+    if (this.ctx.datas) {
+      const datasJson = JSON.parse(this.ctx.datas["datas"]);
       if (!datasJson["columns"])
         this.ctx.throw(404, { code: 404, detail: errors.noColumn });
       const myColumns: IcsvColumn[] = [];
@@ -85,7 +85,7 @@ export class CreateObservations extends Common {
         Object.keys(datasJson["columns"]),
         async (key: string) => {
           const tempStreamInfos = await models.getStreamInfos(
-            this.ctx._config,
+            this.ctx.config,
             datasJson["columns"][key] as JSON
           );
           if (tempStreamInfos) {
@@ -111,7 +111,7 @@ export class CreateObservations extends Common {
 
       const paramsFile: IcsvFile = {
         tempTable: `temp${Date.now().toString()}`,
-        filename: this.ctx._datas["file"],
+        filename: this.ctx.datas["file"],
         columns: myColumns,
         header:
           datasJson["header"] && datasJson["header"] == true ? ", HEADER" : "",
@@ -122,7 +122,7 @@ export class CreateObservations extends Common {
           console.log(formatLog.debug("streamCsvFileInPostgreSql", _OK));
             console.log(formatLog.result("query", res));
             // Execute query
-            if (res) await executeSql(this.ctx._config, res).then(async (returnResult: object) => {
+            if (res) await executeSql(this.ctx.config, res).then(async (returnResult: object) => {
               console.log(formatLog.debug("SQL Executing", _OK));
               returnResult = returnResult[0];
               returnValue.push(
@@ -145,14 +145,14 @@ export class CreateObservations extends Common {
         });
     } else {
       /// classic Create
-      const dataStreamId = await models.getStreamInfos(this.ctx._config, dataInput);
+      const dataStreamId = await models.getStreamInfos(this.ctx.config, dataInput);
       if (!dataStreamId)
         this.ctx.throw(404, { code: 404, detail: errors.noStream });
       else {
         await asyncForEach(dataInput["dataArray"], async (elem: string[]) => {
           const keys = [`"${dataStreamId.type?.toLowerCase()}_id"`].concat( this.createListColumnsValues( "COLUMNS", dataInput["components"] ) );
           const values = this.createListColumnsValues("VALUES", [ String(dataStreamId.id), ...elem, ]);
-          await executeSqlValues(this.ctx._config, `INSERT INTO "observation" (${keys}) VALUES (${values}) RETURNING id`)
+          await executeSqlValues(this.ctx.config, `INSERT INTO "observation" (${keys}) VALUES (${values}) RETURNING id`)
             .then((res: object) => {
               returnValue.push(
                 this.linkBase.replace("Create", "") +
@@ -169,7 +169,7 @@ export class CreateObservations extends Common {
                   dataInput["duplicate"] &&
                   dataInput["duplicate"].toUpperCase() === "DELETE"
                 ) {
-                  await executeSqlValues(this.ctx._config, `delete FROM "observation" WHERE 1=1 ` +
+                  await executeSqlValues(this.ctx.config, `delete FROM "observation" WHERE 1=1 ` +
                         keys
                           .map((e, i) => `AND ${e} = ${values[i]}`)
                           .join(" ") +

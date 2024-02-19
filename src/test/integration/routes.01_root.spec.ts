@@ -4,13 +4,14 @@ import chai from "chai";
 import chaiHttp from "chai-http";
 import fs from "fs";
 import path from "path";
-import { IApiDoc, prepareToApiDoc, generateApiDoc, IApiInput, apiInfos, blank, testVersion } from "./constant";
+import { IApiDoc, prepareToApiDoc, generateApiDoc, IApiInput, apiInfos, blank, testVersion, Iinfos } from "./constant";
 
 chai.use(chaiHttp);
 
 const should = chai.should();
 
 import { server } from "../../server/index";
+import { addGetTest, addStartNewTest } from "./tests";
 
 const docs: IApiDoc[] = [];
 
@@ -54,12 +55,13 @@ describe("endpoint : index", () => {
     describe(`GET /${testVersion}/ [9.2.1]`, () => {
 
         it("should return json", (done) => {
-            const infos = {
+            const infos:Iinfos  = {
                 api: "{get}  resource path",
+                url: `/${testVersion}/`,
                 apiName: "rootSensorThings",
                 apiDescription: `Access to all resources begins at the base resource path.`,
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#resource-path",
-                apiExample: { http: `/${testVersion}/` },
+                apiExample: { http: "/test" },
                 apiSuccess: [
                     "{relation} Datastreams Get all datastreams.",
                     "{relation} MultiDatastreams Get all multidatastreams.",
@@ -76,8 +78,9 @@ describe("endpoint : index", () => {
             };
 
             chai.request(server)
-                .get(`/test/${infos.apiExample.http}`)
+                .get(`/test/${infos.url}`)
                 .end((err, res) => {
+					addStartNewTest("Root");
                     should.not.exist(err);
                     res.status.should.eql(200);
                     res.type.should.eql("application/json");
@@ -94,18 +97,19 @@ describe("endpoint : index", () => {
                     res.body.value[10].url.should.contain("/Decoders");
                     docs.push(prepareToApiDoc({ ...infos, result: res }, "SensorThings"));
                     generateApiDoc(docs, "apiSensorThings.js");
-
+					addGetTest(infos);
                     done();
                 });
         });        
 
         it("should return json", (done) => {
-            const infos = {
+            const infos:Iinfos  = {
                 api: "{get}  resource path",
+                url: `/${testVersion}/`,
                 apiName: "rootSensorThings",
                 apiDescription: `Access to all resources begins at the base resource path.`,
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#resource-path",
-                apiExample: { http: `/${testVersion}/` },
+                apiExample: { http: `/test` },
                 apiSuccess: [
                     "{relation} Datastreams Get all datastreams.",
                     "{relation} MultiDatastreams Get all multidatastreams.",
@@ -122,7 +126,7 @@ describe("endpoint : index", () => {
             };
 
             chai.request(server)
-                .get(`/test/${infos.apiExample.http}`)
+                .get(`/test${infos.url}`)
                 .end((err, res) => {
                     should.not.exist(err);
                     res.status.should.eql(200);
@@ -139,17 +143,19 @@ describe("endpoint : index", () => {
                     res.body.value[9].url.should.contain("/Loras");
                     res.body.value[10].url.should.contain("/Decoders");
                     docs.push(prepareToApiDoc({ ...infos, result: res }, "SensorThings"));
+					addGetTest(infos);
                     done();
                 });
         });
 
         it("should inform on result", (done) => {
-            const infos = {
+            const infos:Iinfos  = {
                 api: "{get} resource result",
+                url: `/${testVersion}/`,
                 apiName: "resultSensorThings",
                 apiDescription: `Stean use differents type of result : ${apiInfos["0"]}`,
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#resource-path",
-                apiExample: { http: `/${testVersion}/` },
+                apiExample: { http: `/test` },
                 apiSuccess: [
                     "{relation} Datastreams Get all datastreams.",
                     "{relation} MultiDatastreams Get all multidatastreams.",
@@ -166,7 +172,7 @@ describe("endpoint : index", () => {
             };
 
             chai.request(server)
-                .get(`/test/${infos.apiExample.http}`)
+                .get(`/test${infos.url}`)
                 .end((err, res) => {
                     should.not.exist(err);
                     res.status.should.eql(200);
@@ -184,7 +190,7 @@ describe("endpoint : index", () => {
                     res.body.value[10].url.should.contain("/Decoders");
                     docs.push(prepareToApiDoc({ ...infos, result: res }, "SensorThings"));
                     generateApiDoc(docs, "apiSensorThings.js");
-
+					addGetTest(infos);
                     done();
                 });
         });

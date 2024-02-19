@@ -9,9 +9,10 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, IApiInput, prepareToApiDoc, generateApiDoc, identification, keyTokenName, limitResult, testVersion } from "./constant";
+import { IApiDoc, IApiInput, prepareToApiDoc, generateApiDoc, identification, keyTokenName, limitResult, testVersion, Iinfos } from "./constant";
 
 import { server } from "../../server/index";
+import { addPostFile, addStartNewTest } from "./tests";
 
 chai.use(chaiHttp);
 
@@ -70,21 +71,23 @@ describe("CSV Import", function () {
             .post(`/test/${testVersion}/login`)
             .send(identification)
             .end((err: Error, res: any) => {
+				addStartNewTest("Import");
                 token = String(res.body["token"]);
                 done();
             });
     });
     
     it("should return 12 observations added from csv file", (done) => {
-        const infos = {
+        const infos:Iinfos  = {
             api: `{post} CreateObservations with simple csv attached file`,
+            url: `/${testVersion}/CreateObservations`,
             apiName: "PostImportSimple",
             apiDescription: "Import simple csv file",
-            apiExample: { http: `/${testVersion}/CreateObservations` },
+            apiExample: { http: "/test" },
             apiParamExample: simple
         };
         chai.request(server)
-            .post(`/test${infos.apiExample.http}`)
+            .post(`/test/${infos.url}`)
             .field("Content-Type", "multipart/form-data")
             .field("datas", JSON.stringify(infos.apiParamExample))
             .field("method", "POST")
@@ -100,20 +103,22 @@ describe("CSV Import", function () {
                 }
                 should.not.exist(err);
                 addToApiDoc({ ...infos, result: limitResult(res) });
+                addPostFile(infos);
                 done();
             });
     });
 
     it("should insert 0 observations for duplicates values", (done) => {
-        const infos = {
+        const infos:Iinfos  = {
             api: `{post} CreateObservations with simple csv attached file`,
+            url: `/${testVersion}/CreateObservations`,
             apiName: "PostImportSimpleDuplicates",
             apiDescription: "Import simple csv file",
-            apiExample: { http: `/${testVersion}/CreateObservations` },
+            apiExample: { http: "/test" },
             apiParamExample: simple
         };
         chai.request(server)
-            .post(`/test${infos.apiExample.http}`)
+            .post(`/test/${infos.url}`)
             .field("Content-Type", "multipart/form-data")
             .field("datas", JSON.stringify(infos.apiParamExample))
             .field("method", "POST")
@@ -128,21 +133,23 @@ describe("CSV Import", function () {
                 }
                 should.not.exist(err);
                 docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);
+                addPostFile(infos);
                 done();
             });
     });
 
     it("should return 10 observations added from csv file", (done) => {
-        const infos = {
+        const infos:Iinfos  = {
             api: `{post} CreateObservations with multi csv attached file`,
+            url: `/${testVersion}/CreateObservations`,
             apiName: "PostImportMulti",
             apiDescription: "Import multi csv file",
-            apiExample: { http: `/${testVersion}/CreateObservations` },
+            apiExample: { http: "/test" },
             apiParamExample: multi
         };
 
         chai.request(server)
-            .post(`/test${infos.apiExample.http}`)
+            .post(`/test/${infos.url}`)
             .field("Content-Type", "multipart/form-data")
             .field("datas", JSON.stringify(infos.apiParamExample))
             .field("method", "POST")
@@ -156,21 +163,23 @@ describe("CSV Import", function () {
                     res.should.have.status(201);
                     res.body[0].should.eql("Add 5 observations from multi.csv");
                     addToApiDoc({ ...infos, result: limitResult(res) });
-                    done();
+                    addPostFile(infos);
+                done();
                 }
             });
     });
 
     it("should insert 0 observations for duplicates values", (done) => {
-        const infos = {
+        const infos:Iinfos  = {
             api: `{post} CreateObservations with multi csv attached file`,
+            url: `/${testVersion}/CreateObservations`,
             apiName: "PostImportMultiDuplicates",
             apiDescription: "Import multi csv file",
-            apiExample: { http: `/${testVersion}/CreateObservations` },
+            apiExample: { http: "/test" },
             apiParamExample: multi
         };
         chai.request(server)
-            .post(`/test${infos.apiExample.http}`)
+            .post(`/test/${infos.url}`)
             .field("Content-Type", "multipart/form-data")
             .field("datas", JSON.stringify(infos.apiParamExample))
             .field("method", "POST")
@@ -186,6 +195,7 @@ describe("CSV Import", function () {
                 should.not.exist(err);
                 docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);
                 generateApiDoc(docs, "Import.js");                
+                addPostFile(infos);
                 done();
             });
     });

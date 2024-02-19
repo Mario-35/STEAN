@@ -38,7 +38,7 @@ export const commonHtml = (input: string, params: IqueryOptions): string => {
         }
     };
 
-    const action = `${params.host}/${params.version}/CreateObservations`;    
+    const action = `${params.decodedUrl.root}/${params.decodedUrl.version}/CreateObservations`;    
 
     const start = params.results ? "jsonObj = JSON.parse(`" + params.results + "`); jsonViewer.showJSON(jsonObj);" : "";
 

@@ -29,9 +29,11 @@ export class Loras extends Common {
     console.log(formatLog.whereIam());
     const result = {};
     const listKeys = ["deveui", "DevEUI", "sensor_id", "frame"];
-    if (notNull(dataInput["payload_deciphered"])) this.stean["frame"] = dataInput["payload_deciphered"].toUpperCase();
+    if (notNull(dataInput["payload_deciphered"])) 
+      this.stean["frame"] = dataInput["payload_deciphered"].toUpperCase();
     Object.entries(dataInput).forEach( ([k, v]) => (result[listKeys.includes(k) ? k.toLowerCase() : k] = listKeys.includes( k ) ? v.toUpperCase() : v) );
-    if (!isNaN(dataInput["timestamp"])) result["timestamp"] = new Date( dataInput["timestamp"] * 1000 ).toISOString();
+    if (!isNaN(dataInput["timestamp"])) 
+      result["timestamp"] = new Date( dataInput["timestamp"] * 1000 ).toISOString();
     return result;
   }
 
@@ -61,7 +63,7 @@ export class Loras extends Common {
       return await super.post(this.stean);
     }
 
-    // search for Datastream
+    // search for Datastream 
     if (notNull(dataInput["Datastream"])) {
       if (!notNull(dataInput["deveui"])) {
         if (silent) return this.createReturnResult({ body: errors.deveuiMessage });
@@ -77,9 +79,11 @@ export class Loras extends Common {
       else this.ctx.throw(400, { code: 400, detail: errors.deveuiMessage });
     }
 
-    const stream = await executeSql(this.ctx._config, queryStreamFromDeveui(this.stean["deveui"])).then((res: object) => {
+    const stream = await executeSql(this.ctx.config, queryStreamFromDeveui(this.stean["deveui"])).then((res: object) => {
       if (res[0]["multidatastream"] != null) return res[0]["multidatastream"][0];
       if (res[0]["datastream"] != null) return res[0]["datastream"][0];
+      console.log(res);
+      
       this.ctx.throw(400, { code: 400, detail: errors.deveuiMessage });      
     });
     console.log(formatLog.debug("stream", stream));
@@ -153,6 +157,7 @@ export class Loras extends Common {
       });
       
       console.log(formatLog.debug("Values", listOfSortedValues));
+      console.log(listOfSortedValues);
 
       if ( Object.values(listOfSortedValues).filter((word) => word != null) .length < 1 ) {
         const errorMessage = `${errors.dataNotCorresponding} [${stream["keys"]}] with [${Object.keys(this.stean["formatedDatas"])}]`;
@@ -205,10 +210,10 @@ export class Loras extends Common {
                   DOUBLEQUOTEDCOMA
                 )}") AS (values (${Object.values(insertObject).join()}))
                 , searchDuplicate AS (SELECT * FROM "${
-                  this.ctx._model.Observations.table
+                  this.ctx.model.Observations.table
                 }" WHERE ${searchDuplicate})
                 , observation1 AS (INSERT INTO  "${
-                  this.ctx._model.Observations.table
+                  this.ctx.model.Observations.table
                 }" ("${Object.keys(insertObject).join(
                   DOUBLEQUOTEDCOMA
       )}") SELECT * FROM myValues WHERE NOT EXISTS (SELECT * FROM searchDuplicate)
@@ -222,20 +227,20 @@ export class Loras extends Common {
                   "(SELECT observation1.COLUMN FROM observation1), "
                 )} (SELECT multidatastream1.id FROM multidatastream1) AS multidatastream, (SELECT multidatastream1.thing_id FROM multidatastream1) AS thing)
                  SELECT coalesce(json_agg(t), '[]') AS result FROM result1 AS t`;
-      return await executeSqlValues(this.ctx._config, sql).then(async (res: object) => {
+      return await executeSqlValues(this.ctx.config, sql).then(async (res: object) => {
         // TODO MULTI 
         const tempResult = res[0][0];
         if (tempResult.id != null) {          
           const result = {
             "@iot.id": tempResult.id,
-            "@iot.selfLink": `${this.ctx._odata.options.rootBase}Observations(${tempResult.id})`,
+            "@iot.selfLink": `${this.ctx.decodedUrl.root}/Observations(${tempResult.id})`,
             phenomenonTime: `"${tempResult.phenomenonTime}"`,
             resultTime: `"${tempResult.resultTime}"`,
             result: tempResult["result"]["value"],
           };
 
-          Object.keys(this.ctx._model["Observations"].relations).forEach((word) => {
-            result[ `${word}@iot.navigationLink` ] = `${this.ctx._odata.options.rootBase}Observations(${tempResult.id})/${word}`;
+          Object.keys(this.ctx.model["Observations"].relations).forEach((word) => {
+            result[ `${word}@iot.navigationLink` ] = `${this.ctx.decodedUrl.root}/Observations(${tempResult.id})/${word}`;
           });
 
           return this.createReturnResult({ body: result, query: sql, });
@@ -245,7 +250,7 @@ export class Loras extends Common {
             this.ctx.throw(409, {
               code: 409,
               detail: errors.observationExist,
-              link: `${this.ctx._odata.options.rootBase}Observations(${[
+              link: `${this.ctx.decodedUrl.root}/Observations(${[
                 tempResult.duplicate,
               ]})`,
             });
@@ -256,10 +261,10 @@ export class Loras extends Common {
       const getFeatureOfInterest = getBigIntFromString(
         dataInput["FeatureOfInterest"]
       );
-      const searchFOI = await executeSql(this.ctx._config, 
+      const searchFOI = await executeSql(this.ctx.config, 
         getFeatureOfInterest
-          ? `SELECT coalesce((SELECT "id" FROM "${this.ctx._model.FeaturesOfInterest.table}" WHERE "id" = ${getFeatureOfInterest}), ${getFeatureOfInterest}) AS id `
-          : stream["_default_foi"] ? `SELECT id FROM "${this.ctx._model.FeaturesOfInterest.table}" WHERE id = ${stream["_default_foi"]}` : ""
+          ? `SELECT coalesce((SELECT "id" FROM "${this.ctx.model.FeaturesOfInterest.table}" WHERE "id" = ${getFeatureOfInterest}), ${getFeatureOfInterest}) AS id `
+          : stream["_default_foi"] ? `SELECT id FROM "${this.ctx.model.FeaturesOfInterest.table}" WHERE id = ${stream["_default_foi"]}` : ""
       );
       
       if (searchFOI[0].length < 1) {
@@ -297,16 +302,16 @@ export class Loras extends Common {
 
       const sql = `WITH "${VOIDTABLE}" AS (SELECT srid FROM "${VOIDTABLE}" LIMIT 1)
                , datastream1 AS (SELECT id, _default_foi, thing_id FROM "${
-                 this.ctx._model.Datastreams.table
+                 this.ctx.model.Datastreams.table
                }" WHERE id =${stream["id"]})
                , myValues ( "${Object.keys(insertObject).join(
                 DOUBLEQUOTEDCOMA
                )}") AS (values (${Object.values(insertObject).join()}))
                , searchDuplicate AS (SELECT * FROM "${
-                 this.ctx._model.Observations.table
+                 this.ctx.model.Observations.table
                }" WHERE ${searchDuplicate})
                , observation1 AS (INSERT INTO  "${
-                 this.ctx._model.Observations.table
+                 this.ctx.model.Observations.table
                }" ("${Object.keys(insertObject).join(
                 DOUBLEQUOTEDCOMA
       )}") SELECT * FROM myValues
@@ -322,19 +327,19 @@ export class Loras extends Common {
                     )} (SELECT datastream1.id from datastream1) AS datastream, (SELECT datastream1.thing_id from datastream1) AS thing)
                 SELECT coalesce(json_agg(t), '[]') AS result FROM result1 AS t`;
 
-      return await executeSql(this.ctx._config, sql).then(async (res: object) => {
+      return await executeSql(this.ctx.config, sql).then(async (res: object) => {
         const tempResult = res[0].result[0];
         if (tempResult.id != null) {
           const result = {
             "@iot.id": tempResult.id,
-            "@iot.selfLink": `${this.ctx._odata.options.rootBase}Observations(${tempResult.id})`,
+            "@iot.selfLink": `${this.ctx.decodedUrl.root}/Observations(${tempResult.id})`,
             phenomenonTime: `"${tempResult.phenomenonTime}"`,
             resultTime: `"${tempResult.resultTime}"`,
             result: tempResult["result"]["value"],
           };
 
-          Object.keys(this.ctx._model["Observations"].relations).forEach((word) => {
-            result[ `${word}@iot.navigationLink` ] = `${this.ctx._odata.options.rootBase}Observations(${tempResult.id})/${word}`;
+          Object.keys(this.ctx.model["Observations"].relations).forEach((word) => {
+            result[ `${word}@iot.navigationLink` ] = `${this.ctx.decodedUrl.root}/Observations(${tempResult.id})/${word}`;
           });
 
           return this.createReturnResult({
@@ -347,7 +352,7 @@ export class Loras extends Common {
             this.ctx.throw(409, {
               code: 409,
               detail: errors.observationExist,
-              link: `${this.ctx._odata.options.rootBase}Observations(${[
+              link: `${this.ctx.decodedUrl.root}/Observations(${[
                 tempResult.duplicate,
               ]})`,
             });

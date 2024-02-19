@@ -15,35 +15,40 @@ import conf from "../../server/configuration/test.json";
 import util from "util";
 import apidocJson from "../apidoc.json";
 import { models } from "../../server/models";
+let NB = 0;
+export const nbAdd = () => {return `${++NB}`};
+
+
+
+
+
+
 export const identification = { "username": conf[TEST].pg.user, "password": conf[TEST].pg.password };
 export const testVersion = "v1.1";
 let nb = 0;
 export function getNB(message: string): string {nb +=1; return `${message} ${String(nb)}`;} 
 export const _RAWDB = models.DBFull(TEST);
-// Institut Agro Rennes-Angers 48.1140652783794, -1.7062956999598533 
-export const geoPos: { [key: string]: number[] } = {
-    "Centre commercial Grand Quartier" : [48.13765198324515, -1.6956051932646596],
-    "Polyclinic Saint Laurent" : [48.139101133693764, -1.6571222811169917],
-    "Golf municipal de Cesson-Sévigné": [48.12552590922048, -1.5889906727727678],
-    "Glaz Arena": [48.11472599868096, -1.594679622929148],
-    "Brin Herbe": [48.08416909630583, -1.601486946802519],
-    "E.Leclerc VERN SUR SEICHE": [48.06467042196109, -1.623116279666956],
-    "Écomusée du pays de Rennes": [48.07908248444603, -1.6664475955447595],
-    "Castorama": [48.089982264765595, -1.7050636226736864],
-    "The Mem": [48.089982264765595, -1.7050636226736864],
-    "Kenedy": [48.123242161802274, -1.7127016234011674],
-    "Institut Agro Rennes-Angers": [48.1140652783794, -1.7062956999598533 ]
-};
-export const positions = Object.values(geoPos);
 export const nbColor = "\x1b[36m";
 export const nbColorTitle = "\x1b[35m";
 export const testLog = (input: any) => {
     process.stdout.write(util.inspect(input, { showHidden: false, depth: null, colors: false, }));
 }
-
-const reqLines: string[] = [""];
+export const proxy = (moi: boolean) => moi === true ? 'http://localhost:8029/test' : apidocJson.proxy;
 
 const createJSON = (data: any) => JSON.stringify(data, null, 4).replace(/[\n]+/g, "|\t");
+
+export interface Iinfos {
+    api: string;
+    url: string;
+    apiName: string;
+    apiPermission?: string;
+    apiDescription: string;
+    apiReference?: string;
+    apiExample?: {[key: string]: string};
+    apiSuccess?: string[];
+    apiParam?: string[];
+    apiParamExample?: Object;
+}
 
 export const keyTokenName = "jwt-session";
 export interface IApiInput {
@@ -232,11 +237,6 @@ export const generateApiDoc = (input: IApiDoc[], filename: string): boolean => {
     return true;
 };
 
-export const writeAddToFile = (): void => {
-    fs.writeFileSync(path.resolve(__dirname, "../fileRequettes"), `${reqLines.join("\n")}`, {
-        encoding: "utf-8"
-    });
-};
 
 
 export const limitResult = (input: object, keyName?: string) => {  
@@ -256,7 +256,7 @@ const definitions = {
 const types = {
     id : "BigInt"
 };
-export const infos = {
+export const infos  = {
     Things: {
         definition: "A Thing is an object of the physical world (physical Things) or the information world (virtual Things) that is capable of being identified and integrated into communication networks<br>Thing is a good starting point to start creating the SensorThings model structure.<br><br>A Thing has Locations and one or more Datastreams to collect Observations. A minimal Thing can be created without a Location and Datastream and there are options to create a Things with a nested linked Location and Datastream.",
         reference: "https://docs.ogc.org/is/18-088/18-088.html#thing",

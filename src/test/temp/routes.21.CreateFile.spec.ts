@@ -54,7 +54,7 @@ describe(`CSV ${entity.name}`, function () {
     });
 
     it("Should return The Datastreams create to ingest csv file", (done) => {
-        const infos = {
+        const infos:Iinfos  = {
             api: `{post} CreateFile with csv attached file`,
             apiName: "CreateFilePost",
             apiDescription: "Import csv file",
@@ -62,7 +62,7 @@ describe(`CSV ${entity.name}`, function () {
         };
 
         chai.request(server)
-            .post(`/test${infos.apiExample.http}`)
+            .post(`/test/${infos.url}`)
             .field("Content-Type", "multipart/form-data")
             .field("method", "POST")
             .field("nb", "1")
@@ -86,7 +86,7 @@ describe(`CSV ${entity.name}`, function () {
     });
 
     it("Should return The Datastreams updated for file", (done) => {
-        const infos = {
+        const infos:Iinfos  = {
             api: `{post} CreateFile with same csv attached file [duplicate]`,
             apiName: "CreateFilePostDuplicate",
             apiDescription: "Import csv file [duplicate]",

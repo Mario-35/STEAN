@@ -12,18 +12,19 @@ import koa from "koa";
 import { getAuthenticatedUser } from "../../authentication";
 import { serverConfig } from "../../configuration";
 import { getMetrics } from "../../db/monitoring";
+import { decodeUrl } from "../../routes/helper/decodeUrl";
 import { IqueryOptions } from "../../types";
 
 
-export const createIqueryFromContext = async (ctx: koa.Context): Promise<IqueryOptions> => {
+export const createIqueryFromContext = async (ctx: koa.Context): Promise<IqueryOptions| undefined> => {
     const user = await getAuthenticatedUser(ctx); 
     const metrics = await getMetrics("keys"); 
+    const decodedUrl = decodeUrl(ctx);    
+    if (decodedUrl)
     return {
-        id: "",
         methods: ["GET"],
-        host: ctx._linkBase,
+        decodedUrl: decodedUrl,
         entity:  "",
-        version: ctx._config.apiVersion,
         options: ctx.querystring ? ctx.querystring : "",
         user: user
             ? user
@@ -42,9 +43,9 @@ export const createIqueryFromContext = async (ctx: koa.Context): Promise<IqueryO
               },
               // TODO universal return
         graph: ctx.url.includes("$resultFormat=graph"),
-        admin: ctx._config.name === 'admin',
+        admin: ctx.config.name === 'admin',
         metrics: ["all"].concat(metrics as Array<string>),
         services: serverConfig.getAllInfos(ctx),
-        _DATAS: ctx._model
+        _DATAS: ctx.model
     };
 };

@@ -88,7 +88,7 @@ function updateWinSqlQuery(input) {
 }
 
 function simpleClick(link) {
-	if (link.includes && link.includes(optHost.value)) {
+	if (link.includes && optHost && link.includes(optHost.value)) {
 		clear();
 		decodeUrl(link);
 		refresh();

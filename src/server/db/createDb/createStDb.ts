@@ -8,10 +8,9 @@
 
 import { createTable } from "../helpers";
 import { serverConfig } from "../../configuration";
-import { addDoubleQuotes, addSimpleQuotes, asyncForEach, isTest } from "../../helpers";
+import { addDoubleQuotes, addSimpleQuotes, asyncForEach } from "../../helpers";
 import { formatLog } from "../../logger";
 import { _RIGHTS } from "../constants";
-import { testsDatas } from "./testsDatas";
 import { IKeyString } from "../../types";
 import { EextensionsType } from "../../enums";
 import { _NOTOK, _OK } from "../../constants";
@@ -38,7 +37,7 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
       // create USER if not exist
       await adminConnection.unsafe(`SELECT COUNT(*) FROM pg_user WHERE usename = ${addSimpleQuotes(config.password)};`)
         .then(async (res: object) => {
-          if (res[0] == 0) {
+          if (res[0].count == 0) {            
             returnValue[`CREATE ROLE ${config.user}`] = await adminConnection.unsafe(`CREATE ROLE ${config.user} WITH PASSWORD ${addSimpleQuotes(config.password)} ${_RIGHTS}`)
               .then(() => _OK)
               .catch((err: Error) => err.message);
@@ -98,14 +97,14 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
     }
   );
 
-  if (isTest()) await serverConfig.getConnection(configName).begin(sql => {
-    testsDatas().forEach(async (query: string) => {
-      await sql.unsafe(query).catch((error: Error) => {
-        console.log(error);
-        process.exit(111);
-      });  
-    });
-  });
+  // if (isTest()) await serverConfig.getConnection(configName).begin(sql => {
+  //   testsDatas().forEach(async (query: string) => {
+  //     await sql.unsafe(query).catch((error: Error) => {
+  //       console.log(error);
+  //       process.exit(111);
+  //     });  
+  //   });
+  // });
 
   if ( serverConfig.getConfig(configName).extensions.includes( EextensionsType.numeric ) ) {
     await dbConnection.unsafe(`ALTER TABLE ${addDoubleQuotes(DB.Observations.table)} ALTER COLUMN 'result' TYPE float4 USING null;`)

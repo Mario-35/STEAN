@@ -410,3 +410,19 @@ class QueryBuilder {
 		return result;
 	}
 }
+
+function updateBuilder() {
+	const ent = getEntityName(SubOrNot());
+	if (!ent) return;
+	const columns = getColumnsList(ent);
+	const fields = [];
+	columns.forEach(e => {
+		fields.push({
+			"value": e,
+			"label": e,
+			"type": _PARAMS._DATAS[ent].columns[e] && _PARAMS._DATAS[ent].columns[e].type ? _PARAMS._DATAS[ent].columns[e].type : "text",
+		});
+	});
+	if (builder) builder.clear("query-builder", fields);
+	else builder = new QueryBuilder("query-builder", fields);
+}

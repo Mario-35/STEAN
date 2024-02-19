@@ -6,9 +6,8 @@
  *
  */
 
-import { Eentities } from "../enums";
+import { Eentities, Esecurity } from "../enums";
 import { Ientity } from "./entity";
-export { IcolumnOption } from "./columnOption";
 export { Icomon } from "./comon";
 export { IconfigFile } from "./configFile";
 export { IcsvColumn } from "./csvColumn";
@@ -28,7 +27,9 @@ export { IserviceLink } from "./serviceLink";
 export { IstreamInfos } from "./streamInfos";
 export { Iuser } from "./user";
 export { IuserToken } from "./userToken";
+export { IdecodedUrl } from "./decodedUrl";
 
 export interface IKeyBoolean { [key: string]: boolean; }
 export interface IKeyString { [key: string]: string; }
 export type Ientities = { [key in Eentities]: Ientity }
+export type Isecurity = { [key in Esecurity]: Ientity }

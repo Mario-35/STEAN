@@ -1,19 +1,21 @@
 import { serverConfig } from "../configuration";
-import { DEFAULT_API_VERSION, ESCAPE_ARRAY_JSON, REMOVE_FIRST_END_CHAR, ESCAPE_SIMPLE_QUOTE, TEST, versionString } from "../constants";
+import { DEFAULT_API_VERSION, TEST, versionString } from "../constants";
 import { log } from "../log";
 import { _STREAM } from "../db/constants";
 import { executeSqlValues } from "../db/helpers";
 import { queryAsJson } from "../db/queries";
 import { EcolType, EdatesType, EextensionsType, EobservationType, Erelations } from "../enums";
-import { addDoubleQuotes, addSimpleQuotes, deepClone, isObject, isTest } from "../helpers";
+import { addDoubleQuotes, deepClone, isTest } from "../helpers";
 import { errors, msg } from "../messages";
-import { IconfigFile, Ientities, Ientity, IKeyBoolean, IstreamInfos } from "../types";
+import { IconfigFile, Ientities, Ientity, IKeyBoolean, Isecurity, IstreamInfos } from "../types";
 import koa from "koa";
 import fs from "fs";
 import { formatLog } from "../logger";
+import conformance from "./conformance.json";
+
 
 const testVersion = (input: string) => Object.keys(Models.models).includes(input);
-const makeIDAlias = (alias: boolean) => `"id"${alias === true ? ` AS "@iot.id"`: ''}`;
+function makeIDAlias(alias: boolean | undefined) { return `"id"${alias && alias  === true ? ` AS "@iot.id"`: ''}` };
 
 class Models {
   static models : { [key: string]: Ientities; } = {};
@@ -33,22 +35,22 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
-                  return makeIDAlias(test && test["as"] === true ? true : false);
+                columnAlias(config: IconfigFile, test: IKeyBoolean) {
+                  return makeIDAlias(test["alias"] === true);
                 },
                 type: "number",
               },
               name: {
                 create: "text NOT NULL DEFAULT 'no name'::text",
                 columnAlias() {
-                  return `"name"`;
+                  return undefined;
                 },
                 type: "text",
               },
               description: {
                 create: "text NOT NULL DEFAULT 'no description'::text",
                 columnAlias() {
-                  return `"description"`;
+                  return undefined;
                 },
                 type: "text",
               }
@@ -106,7 +108,7 @@ class Models {
             name: "FeaturesOfInterest",
             singular: "FeatureOfInterest",
             table: "featureofinterest",
-            createOrder: 2,
+            createOrder: 4,
             order: 4,
             extensions: [EextensionsType.base],
             orderBy: `"id"`,
@@ -115,36 +117,36 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
-                  return makeIDAlias(test && test["as"] === true ? true : false);
+                columnAlias(config: IconfigFile, test: IKeyBoolean) {
+                  return makeIDAlias(test["alias"] === true);
                 },
                 type: "number",
               },
               name: {
                 create: "text NOT NULL DEFAULT 'no name'::text",
                 columnAlias() {
-                  return `"name"`;
+                  return undefined;
                 },
                 type: "text",
               },
               description: {
                 create: "text NOT NULL DEFAULT 'description'::text",
                 columnAlias() {
-                  return `"description"`;
+                  return undefined;
                 },
                 type: "text",
               },
               encodingType: {
                 create: "text NOT NULL",
                 columnAlias() {
-                  return `"encodingType"`;
+                  return undefined;
                 },
                 type: "text",
               },
               feature: {
                 create: "jsonb NOT NULL",
                 columnAlias() {
-                  return `"feature"`;
+                  return undefined;
                 },
                 type: "json",
                 test: "encodingType",
@@ -185,7 +187,7 @@ class Models {
             name: "Locations",
             singular: "Location",
             table: "location",
-            createOrder: 3,
+            createOrder: 2,
             order: 6,
             extensions: [EextensionsType.base],
             orderBy: `"id"`,
@@ -194,29 +196,29 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
-                  return makeIDAlias(test && test["as"] === true ? true : false);
+                columnAlias(config: IconfigFile, test: IKeyBoolean) {
+                  return makeIDAlias(test["alias"] === true);
                 },
                 type: "number",
               },
               name: {
                 create: "text NOT NULL DEFAULT 'no name'::text",
                 columnAlias() {
-                  return `"name"`;
+                  return undefined;
                 },
                 type: "text",
               },
               description: {
                 create: "text NOT NULL DEFAULT 'no description'::text",
                 columnAlias() {
-                  return `"description"`;
+                  return undefined;
                 },
                 type: "text",
               },
               encodingType: {
                 create: "text NOT NULL",
                 columnAlias() {
-                  return `"encodingType"`;
+                  return undefined;
                 },
                 dataList: {
                   GeoJSON: "application/vnd.geo+json",
@@ -226,7 +228,7 @@ class Models {
               location: {
                 create: "jsonb NOT NULL",
                 columnAlias() {
-                  return `"location"`;
+                  return undefined;
                 },
         
                 type: "json",
@@ -275,22 +277,22 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
-                  return makeIDAlias(test && test["as"] === true ? true : false);
+                columnAlias(config: IconfigFile, test: IKeyBoolean) {
+                  return makeIDAlias(test["alias"] === true);
                 },
                 type: "bigint"
               },
               time: {
                 create: "timestamptz NULL",
                 columnAlias() {
-                  return `"time"`;
+                  return undefined;
                 },
                 type: "date"
               },
               thing_id: {
                 create: "BIGINT NOT NULL",
                 columnAlias() {
-                  return `"thing_id"`;
+                  return undefined;
                 },
                 type: "bigint"
               },
@@ -306,7 +308,6 @@ class Models {
             },
             canPost: false,
             relations: {
-              // TODO NOT GOOD
               Things: {
                 type: Erelations.belongsTo,
                 expand: `"thing"."id" = "historical_location"."thing_id"`,
@@ -344,14 +345,14 @@ class Models {
               location_id: {
                 create: "BIGINT NOT NULL",
                 columnAlias() {
-                  return `"location_id"`;
+                  return undefined;
                 },
                 type: "bigint"
               },
               historical_location_id: {
                 create: "BIGINT NOT NULL",
                 columnAlias() {
-                  return `"historical_location_id"`;
+                  return undefined;
                 },
                 type: "bigint"
               },
@@ -378,7 +379,7 @@ class Models {
             name: "ObservedProperties",
             singular: "ObservedProperty",
             table: "observedproperty",
-            createOrder: 4,
+            createOrder: 5,
             order: 8,
             extensions: [EextensionsType.base],
             orderBy: `"id"`,
@@ -387,29 +388,29 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
-                  return makeIDAlias(test && test["as"] === true ? true : false);
+                columnAlias(config: IconfigFile, test: IKeyBoolean) {
+                  return makeIDAlias(test["alias"] === true);
                 },
                 type: "number",
               },
               name: {
                 create: "text NOT NULL DEFAULT 'no name'::text",
                 columnAlias() {
-                  return `"name"`;
+                  return undefined;
                 },
                 type: "text",
               },
               definition: {
                 create: "text NOT NULL DEFAULT 'definition'::text",
                 columnAlias() {
-                  return `"definition"`;
+                  return undefined;
                 },
                 type: "text",
               },
               description: {
                 create: "text NOT NULL DEFAULT 'description'::text",
                 columnAlias() {
-                  return `"description"`;
+                  return undefined;
                 },
                 type: "text",
               },
@@ -448,7 +449,7 @@ class Models {
             name: "Sensors",
             singular: "Sensor",
             table: "sensor",
-            createOrder: 5,
+            createOrder: 6,
             order: 9,
             extensions: [EextensionsType.base],
             orderBy: `"id"`,
@@ -457,29 +458,29 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
-                  return makeIDAlias(test && test["as"] === true ? true : false);
+                columnAlias(config: IconfigFile, test: IKeyBoolean) {
+                  return makeIDAlias(test["alias"] === true);
                 },
                 type: "number",
               },
               name: {
                 create: "text NOT NULL DEFAULT 'no name'::text",
                 columnAlias() {
-                  return `"name"`;
+                  return undefined;
                 },
                 type: "text",
               },
               description: {
                 create: "text NOT NULL DEFAULT 'no description'::text",
                 columnAlias() {
-                  return `"description"`;
+                  return undefined;
                 },
                 type: "text",
               },
               encodingType: {
                 create: "text NOT NULL DEFAULT 'application/pdf'::text",
                 columnAlias() {
-                  return `"encodingType"`;
+                  return undefined;
                 },
                 dataList: {
                   PDF: "application/pdf",
@@ -490,7 +491,7 @@ class Models {
               metadata: {
                 create: "text NOT NULL DEFAULT 'none.pdf'::text",
                 columnAlias() {
-                  return `"metadata"`;
+                  return undefined;
                 },
                 type: "text",
               },
@@ -503,7 +504,7 @@ class Models {
             relations: {
               Datastreams: {
                 type: Erelations.hasMany,
-                expand: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."id" = "sensor"."id")`,
+                expand: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."sensor_id" = "sensor"."id")`,
                 link: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."sensor_id" = $ID)`,
                 entityName: "Datastreams",
                 tableName: "datastream",
@@ -513,7 +514,7 @@ class Models {
               },
               MultiDatastreams: {
                 type: Erelations.hasMany,
-                expand: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."id" = "sensor"."id")`,
+                expand: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."sensor_id" = "sensor"."id")`,
                 link: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."sensor_id" = $ID)`,
                 entityName: "MultiDatastreams",
                 tableName: "multidatastream",
@@ -537,22 +538,22 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
-                  return makeIDAlias(test && test["as"] === true ? true : false);
+                columnAlias(config: IconfigFile, test: IKeyBoolean) {
+                  return makeIDAlias(test["alias"] === true);
                 },
                 type: "number",
               },
               name: {
                 create: "text NOT NULL DEFAULT 'no name'::text",
                 columnAlias() {
-                  return `"name"`;
+                  return undefined;
                 },
                 type: "text",
               },
               description: {
                 create: "text NOT NULL DEFAULT 'no description'::text",
                 columnAlias() {
-                  return `"description"`;
+                  return undefined;
                 },
                 type: "text",
               },
@@ -560,7 +561,7 @@ class Models {
                 create:
                   "text NOT NULL DEFAULT 'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement'::text",
                 columnAlias() {
-                  return `"observationType"`;
+                  return undefined;
                 },
                 type: "list",
                 verify: {
@@ -572,14 +573,14 @@ class Models {
               unitOfMeasurement: {
                 create: "jsonb NOT NULL",
                 columnAlias() {
-                  return `"unitOfMeasurement"`;
+                  return undefined;
                 },
                 type: "json",
               },
               observedArea: {
                 create: "geometry NULL",
                 columnAlias() {
-                  return `"observedArea"`;
+                  return undefined;
                 },
                 type: "json",
               },
@@ -600,56 +601,56 @@ class Models {
               _phenomenonTimeStart: {
                 create: "timestamptz NULL",
                 columnAlias() {
-                  return `"_phenomenonTimeStart"`;
+                  return undefined;
                 },
                 type: "date",
               },
               _phenomenonTimeEnd: {
                 create: "timestamptz NULL",
                 columnAlias() {
-                  return `_"phenomenonTimeEnd"`;
+                  return undefined;
                 },
                 type: "date",
               },
               _resultTimeStart: {
                 create: "timestamptz NULL",
                 columnAlias() {
-                  return `"_resultTimeStart"`;
+                  return undefined;
                 },
                 type: "date",
               },
               _resultTimeEnd: {
                 create: "timestamptz NULL",
                 columnAlias() {
-                  return `"_resultTimeEnd"`;
+                  return undefined;
                 },
                 type: "date",
               },
               thing_id: {
                 create: "BIGINT NOT NULL",
                 columnAlias() {
-                  return `"thing_id"`;
+                  return undefined;
                 },
                 type: "relation:Things",
               },
               observedproperty_id: {
                 create: "BIGINT NOT NULL",
                 columnAlias() {
-                  return `"observedproperty_id"`;
+                  return undefined;
                 },
                 type: "relation:ObservedProperties",
               },
               sensor_id: {
                 create: "BIGINT NOT NULL",
                 columnAlias() {
-                  return `"sensor_id"`;
+                  return undefined;
                 },
                 type: "relation:Sensor",
               },
               _default_foi: {
                 create: "BIGINT NOT NULL DEFAULT 1",
                 columnAlias() {
-                  return `"_default_foi"`;
+                  return undefined;
                 },
                 type: "relation:FeaturesOfInterest",
               },
@@ -669,8 +670,7 @@ class Models {
               Sensor: {
                 type: Erelations.belongsTo,
                 expand: `"sensor"."id" = "datastream"."sensor_id"`,
-                link: `"sensor"."id" = (SELECT "datastream"."sensor_id" from "datastream" WHERE "datastream"."id" =$ID)`,
-        
+                link: `"sensor"."id" = (SELECT "datastream"."sensor_id" from "datastream" WHERE "datastream"."id" =$ID)`,        
                 entityName: "Sensors",
                 tableName: "datastream",
                 relationKey: "id",
@@ -697,11 +697,11 @@ class Models {
                 entityColumn: "id",
                 tableKey: "id",
               },
-              Loras: {
+              Lora: {
                 type: Erelations.belongsTo,
                 expand: `"lora"."id" = (SELECT "lora"."id" from "lora" WHERE "lora"."datastream_id" = "datastream"."id")`,
                 link: `"lora"."id" = (SELECT "lora"."id" from "lora" WHERE "lora"."datastream_id" = $ID)`,
-                entityName: "loras",
+                entityName: "Loras",
                 tableName: "lora",
                 relationKey: "datastream_id",
                 entityColumn: "id",
@@ -751,29 +751,29 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
-                  return makeIDAlias(test && test["as"] === true ? true : false);
+                columnAlias(config: IconfigFile, test: IKeyBoolean) {
+                  return makeIDAlias(test["alias"] === true);
                 },
                 type: "number",
               },
               name: {
                 create: "text NOT NULL DEFAULT 'no name'::text",
                 columnAlias() {
-                  return `"name"`;
+                  return undefined;
                 },
                 type: "text",
               },
               description: {
                 create: "text NULL",
                 columnAlias() {
-                  return `"description"`;
+                  return undefined;
                 },
                 type: "text",
               },
               unitOfMeasurements: {
                 create: "jsonb NOT NULL",
                 columnAlias() {
-                  return `"unitOfMeasurements"`;
+                  return undefined;
                 },
                 type: "json",
               },
@@ -781,7 +781,7 @@ class Models {
                 create:
                   "text NOT NULL DEFAULT 'http://www.opengis.net/def/observation-type/ogc-om/2.0/om_complex-observation'::text",
                 columnAlias() {
-                  return `"observationType"`;
+                  return undefined;
                 },
                 type: "list",
                 verify: {
@@ -793,14 +793,14 @@ class Models {
               multiObservationDataTypes: {
                 create: "text[] NULL",
                 columnAlias() {
-                  return `"multiObservationDataTypes"`;
+                  return undefined;
                 },
                 type: "text[]",
               },
               observedArea: {
                 create: "geometry NULL",
                 columnAlias() {
-                  return `"observedArea"`;
+                  return undefined;
                 },
                 type: "json",
               },
@@ -821,49 +821,49 @@ class Models {
               _phenomenonTimeStart: {
                 create: "timestamptz NULL",
                 columnAlias() {
-                  return `"_phenomenonTimeStart"`;
+                  return undefined;
                 },
                 type: "date",
               },
               _phenomenonTimeEnd: {
                 create: "timestamptz NULL",
                 columnAlias() {
-                  return `"_phenomenonTimeEnd"`;
+                  return undefined;
                 },
                 type: "date",
               },
               _resultTimeStart: {
                 create: "timestamptz NULL",
                 columnAlias() {
-                  return `"_resultTimeStart"`;
+                  return undefined;
                 },
                 type: "date",
               },
               _resultTimeEnd: {
                 create: "timestamptz NULL",
                 columnAlias() {
-                  return `"_resultTimeEnd"`;
+                  return undefined;
                 },
                 type: "date",
               },
               thing_id: {
                 create: "BIGINT NOT NULL",
                 columnAlias() {
-                  return `"thing_id"`;
+                  return undefined;
                 },
                 type: "relation:Things",
               },
               sensor_id: {
                 create: "BIGINT NOT NULL",
                 columnAlias() {
-                  return `"sensor_id"`;
+                  return undefined;
                 },
                 type: "relation:Sensors",
               },
               _default_foi: {
                 create: "BIGINT NOT NULL DEFAULT 1",
                 columnAlias() {
-                  return `"_default_foi"`;
+                  return undefined;
                 },
                 type: "bigint"
               },
@@ -911,7 +911,7 @@ class Models {
                 entityColumn: "multidatastream_id",
                 tableKey: "multidatastream_id",
               },
-              Loras: {
+              Lora: {
                 type: Erelations.belongsTo,
                 expand: `"lora"."id" = (SELECT "lora"."id" from "lora" WHERE "lora"."multidatastream_id" = "multidatastream"."id")`,
                 link: `"lora"."id" = (SELECT "lora"."id" from "lora" WHERE "lora"."multidatastream_id" = $ID)`,
@@ -954,7 +954,7 @@ class Models {
             name: "MultiDatastreamObservedProperties",
             singular: "MultiDatastreamObservedProperty",
             table: "multi_datastream_observedproperty",
-            createOrder: -1,
+            createOrder: 9,
             order: -1,
             extensions: [EextensionsType.multiDatastream],
             orderBy: `"multidatastream_id"`,
@@ -964,14 +964,14 @@ class Models {
               multidatastream_id: {
                 create: "BIGINT NOT NULL",
                 columnAlias() {
-                  return `"multidatastream_id"`;
+                  return undefined;
                 },
                 type: "bigint"
               },
               observedproperty_id: {
                 create: "BIGINT NOT NULL",
                 columnAlias() {
-                  return `"observedproperty_id"`;
+                  return undefined;
                 },
                 type: "bigint"
               },
@@ -998,7 +998,7 @@ class Models {
             name: "Observations",
             singular: "Observation",
             table: "observation",
-            createOrder: 11,
+            createOrder: 12,
             order: 7,
             extensions: [EextensionsType.base],
             orderBy: `"phenomenonTime"`,
@@ -1007,79 +1007,76 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
-                  return makeIDAlias(test && test["as"] === true ? true : false);
+                columnAlias(config: IconfigFile, test: IKeyBoolean) {
+                  return makeIDAlias(test["alias"] === true);
                 },
                 type: "number",
               },
               phenomenonTime: {
                 create: "timestamptz NOT NULL",
                 columnAlias() {
-                  return `"phenomenonTime"`;
+                  return undefined;
                 },
                 type: "date",
               },
               result: {
                 create: "jsonb NULL",
                 columnAlias(config: IconfigFile, test: IKeyBoolean | undefined) {
-                  return test
-                    ? test["valuesKeys"] 
-                      ? `coalesce("result"-> 'valueskeys', "result"-> 'value')${test && test["as"] === true ? ` AS "result"`: ''}`
-                      : test["numeric"] && test["numeric"] === true
-                      ? `CASE WHEN jsonb_typeof("result"-> 'value') = 'number' THEN ("result"->>'value')::numeric END${test && test["as"] === true ? ` AS "result"`: ''}`
-                      : `"result"->'value'${test && test["as"] === true ? ` AS "result"`: ''}`
-                    : "result";
-        
-        
+                  if (!test) return "result";  
+                  if (test["valueskeys"] && test["valueskeys"] === true) 
+                    return `COALESCE("result"-> 'valueskeys', "result"-> 'value')${test && test["as"] === true ? ` AS "result"`: ''}`;
+                  if (test["numeric"] && test["numeric"] === true)
+                    return`CASE WHEN jsonb_typeof("result"-> 'value') = 'number' THEN ("result"->>'value')::numeric END${test && test["as"] === true ? ` AS "result"`: ''}`;
+                  return `"result"->'value'${test && test["as"] === true ? ` AS "result"`: ''}`;
                 },
                 type: "result",
               },
               resultTime: {
                 create: "timestamptz NOT NULL",
                 columnAlias() {
-                  return `"resultTime"`;
+                  return undefined;
                 },
                 type: "date",
               },
               resultQuality: {
                 create: "jsonb NULL",
                 columnAlias() {
-                  return `"resultQuality"`;
+                  return undefined;
                 },
                 type: "json",
               },
               validTime: {
                 create: "timestamptz DEFAULT CURRENT_TIMESTAMP",
                 columnAlias() {
-                  return `"validTime"`;
+                  return undefined;
                 },
                 type: "date",
               },
               parameters: {
                 create: "jsonb NULL",
                 columnAlias() {
-                  return `"parameters"`;
+                  return undefined;
                 },
                 type: "json",
               },
               datastream_id: {
                 create: "BIGINT NULL",
                 columnAlias() {
-                  return `"datastream_id"`;
+                  return undefined;
                 },
                 type: "relation:Datastreams",
               },
               multidatastream_id: {
                 create: "BIGINT NULL",
                 columnAlias() {
-                  return `"multidatastream_id"`;
+                  return undefined;
                 },
                 type: "relation:MultiDatastreams",
               },
               featureofinterest_id: {
                 create: "BIGINT NOT NULL DEFAULT 1",
                 columnAlias() {
-                  return `"featureofinterest_id"`;
+                  return undefined;
                 },
                 type: "relation:FeaturesOfInterest",
               },
@@ -1176,29 +1173,29 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
-                  return makeIDAlias(test && test["as"] === true ? true : false);
+                columnAlias(config: IconfigFile, test: IKeyBoolean) {
+                  return makeIDAlias(test["alias"] === true);
                 },
                 type: "bigint"
               },
               validTime: {
                 create: "timestamptz DEFAULT CURRENT_TIMESTAMP",
                 columnAlias() {
-                  return `"validTime"`;
+                  return undefined;
                 },
                 type: "date"
               },
               _result: {
                 create: "jsonb NULL",
                 columnAlias() {
-                  return `"_result"`;
+                  return undefined;
                 },
                 type: "json"
               },
               observation_id: {
                 create: "BIGINT NULL",
                 columnAlias() {
-                  return `"observation_id"`;
+                  return undefined;
                 },
                 type: "bigint"
               },
@@ -1232,7 +1229,7 @@ class Models {
             name: "ThingsLocations",
             singular: "ThingLocation",
             table: "thing_location",
-            createOrder: -1,
+            createOrder: 3,
             order: -1,
             extensions: [EextensionsType.base],
             orderBy: `"thing_id"`,
@@ -1242,14 +1239,14 @@ class Models {
               thing_id: {
                 create: "BIGINT NOT NULL",
                 columnAlias() {
-                  return `"thing_id"`;
+                  return undefined;
                 },
                 type: "bigint"
               },
               location_id: {
                 create: "BIGINT NOT NULL",
                 columnAlias() {
-                  return `"location_id"`;
+                  return undefined;
                 },
                 type: "bigint"
               },
@@ -1275,7 +1272,7 @@ class Models {
             name: "Decoders",
             singular: "Decoder",
             table: "decoder",
-            createOrder: 9,
+            createOrder: 10,
             order: 12,
             extensions: [EextensionsType.lora],
             orderBy: `"id"`,
@@ -1284,22 +1281,22 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
-                  return makeIDAlias(test && test["as"] === true ? true : false);
+                columnAlias(config: IconfigFile, test: IKeyBoolean) {
+                  return makeIDAlias(test["alias"] === true);
                 },
                 type: "number",
               },
               name: {
                 create: "text NOT NULL DEFAULT 'no name'::text",
                 columnAlias() {
-                  return `"name"`;
+                  return undefined;
                 },
                 type: "text",
               },
               hash: {
                 create: "text NULL",
                 columnAlias() {
-                  return `"hash"`;
+                  return undefined;
                 },
                 type: "text",
               },
@@ -1307,21 +1304,21 @@ class Models {
                 create:
                   "text NOT NULL DEFAULT 'const decoded = null; return decoded;'::text",
                 columnAlias() {
-                  return `"code"`;
+                  return undefined;
                 },
                 type: "text",
               },
               nomenclature: {
                 create: "text NOT NULL DEFAULT '{}'::text",
                 columnAlias() {
-                  return `"nomenclature"`;
+                  return undefined;
                 },
                 type: "jsonb",
               },
               synonym: {
                 create: "text NULL",
                 columnAlias() {
-                  return `"synonym"`;
+                  return undefined;
                 },
                 type: "jsonb",
               },
@@ -1349,7 +1346,7 @@ class Models {
             name: "Loras",
             singular: "Lora",
             table: "lora",
-            createOrder: 10,
+            createOrder: 11,
             order: 11,
             extensions: [EextensionsType.lora],
             orderBy: `"id"`,
@@ -1358,57 +1355,57 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
-                  return makeIDAlias(test && test["as"] === true ? true : false);
+                columnAlias(config: IconfigFile, test: IKeyBoolean) {
+                  return makeIDAlias(test["alias"] === true);
                 },
                 type: "number",
               },
               name: {
                 create: "text NOT NULL DEFAULT 'no name'::text",
                 columnAlias() {
-                  return `"name"`;
+                  return undefined;
                 },
                 type: "text",
               },
               description: {
                 create: "text NOT NULL DEFAULT 'no description'::text",
                 columnAlias() {
-                  return `"description"`;
+                  return undefined;
                 },
                 type: "text",
               },
               properties: {
                 create: "jsonb NULL",
                 columnAlias() {
-                  return `"properties"`;
+                  return undefined;
                 },
                 type: "json",
               },
               deveui: {
                 create: "text NOT NULL",
                 columnAlias() {
-                  return `"deveui"`;
+                  return undefined;
                 },
                 type: "text",
               },
               decoder_id: {
                 create: "BIGINT NOT NULL",
                 columnAlias() {
-                  return `"decoder_id"`;
+                  return undefined;
                 },
                 type: "relation:Decoders",
               },
               datastream_id: {
                 create: "BIGINT NULL",
                 columnAlias() {
-                  return `"datastream_id"`;
+                  return undefined;
                 },
                 type: "relation:Datastreams",
               },
               multidatastream_id: {
                 create: "BIGINT NULL",
                 columnAlias() {
-                  return `"multidatastream_id"`;
+                  return undefined;
                 },
                 type: "relation:MultiDatastreams",
               },
@@ -1476,71 +1473,71 @@ class Models {
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias(config: IconfigFile, test?: IKeyBoolean | undefined) {
-                  return makeIDAlias(test && test["as"] === true ? true : false);
+                columnAlias(config: IconfigFile, test: IKeyBoolean) {
+                  return makeIDAlias(test["alias"] === true);
                 },
                 type: "number",
               },
               date: {
                 create: "timestamptz DEFAULT CURRENT_TIMESTAMP",
                 columnAlias() {
-                  return `"date"`;
+                  return undefined;
                 },
                 type: "date",
               },
               user_id: {
                 create: "BIGINT",
                 columnAlias() {
-                  return `"user_id"`;
+                  return undefined;
                 },
                 type: "number",
               },
               method: {
                 create: "text",
                 columnAlias() {
-                  return `"method"`;
+                  return undefined;
                 },
                 type: "text",
               },
               code: {
                 create: "INT",
                 columnAlias() {
-                  return `"code"`;
+                  return undefined;
                 },
                 type: "number",
               },
               url: {
                 create: "text NOT NULL",
                 columnAlias() {
-                  return `"url"`;
+                  return undefined;
                 },
                 type: "text",
               },
               datas: {
                 create: "jsonb NULL",
                 columnAlias() {
-                  return `"datas"`;
+                  return undefined;
                 },
                 type: "json",
               },
               database: {
                 create: "text NULL",
                 columnAlias() {
-                  return `"database"`;
+                  return undefined;
                 },
                 type: "text",
               },
               returnid: {
                 create: "text NULL",
                 columnAlias() {
-                  return `"returnid"`;
+                  return undefined;
                 },
                 type: "text",
               },
               error: {
                 create: "jsonb NULL",
                 columnAlias() {
-                  return `"error"`;
+                  return undefined;
                 },
                 type: "json",
               },
@@ -1563,77 +1560,77 @@ class Models {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
                 columnAlias() {
-                  return `"id"`;
+                  return undefined;
                 },
                 type: "bigint"
               },
               username: {
                 create: "text NOT NULL UNIQUE",
                 columnAlias() {
-                  return `"username"`;
+                  return undefined;
                 },
                 type: "string"
               },
               email: {
                 create: "text NOT NULL",
                 columnAlias() {
-                  return `"email"`;
+                  return undefined;
                 },
                 type: "string"
               },
               password: {
                 create: "text NOT NULL",
                 columnAlias() {
-                  return `"password"`;
+                  return undefined;
                 },
                 type: "string"
               },
               database: {
                 create: "text NOT NULL",
                 columnAlias() {
-                  return `"database"`;
+                  return undefined;
                 },
                 type: "string"
               },
               canPost: {
                 create: "bool NULL",
                 columnAlias() {
-                  return `"canPost"`;
+                  return undefined;
                 },
                 type: "boolean"
               },
               canDelete: {
                 create: "bool NULL",
                 columnAlias() {
-                  return `"canDelete"`;
+                  return undefined;
                 },
                 type: "boolean"
               },
               canCreateUser: {
                 create: "bool NULL",
                 columnAlias() {
-                  return `"canCreateUser"`;
+                  return undefined;
                 },
                 type: "boolean"
               },
               canCreateDb: {
                 create: "bool NULL",
                 columnAlias() {
-                  return `"canCreateDb"`;
+                  return undefined;
                 },
                 type: "boolean"
               },
               admin: {
                 create: "bool NULL",
                 columnAlias() {
-                  return `"admin"`;
+                  return undefined;
                 },
                 type: "boolean"
               },
               superAdmin: {
                 create: "bool NULL",
                 columnAlias() {
-                  return `"superAdmin"`;
+                  return undefined;
                 },
                 type: "boolean"
               },
@@ -1646,10 +1643,10 @@ class Models {
             singular: "Config",
             table: "",
             createOrder: -1,
-            order: -1,
+            order: 20,
             extensions: [EextensionsType.logs, EextensionsType.admin],
             orderBy: `"name"`,
-            count: this.makeCount("config"),
+            count: "",
             visible: false,
             columns: {},
             canPost: true,
@@ -1694,6 +1691,377 @@ class Models {
       };                
   }
 
+  security(): Isecurity {
+  return  {
+    Users: {
+      name: "Users",
+      singular: "User",
+      table: "user",
+      createOrder: 1,
+      order: 0,
+      extensions: [EextensionsType.security],
+      orderBy: `"id"`,
+      count: this.makeCount("user"),
+      visible: true,
+      columns: {
+        id: {
+          create: "BIGINT GENERATED ALWAYS AS IDENTITY",
+          columnAlias(config: IconfigFile, test: IKeyBoolean) {          
+            return makeIDAlias(test["alias"] === true);
+          },
+          type: "number",
+        },
+        username: {
+          create: "text NOT NULL",
+          columnAlias() {
+            return undefined;
+          },
+          type: "text",
+        },
+        userpass: {
+          create: "text NOT NULL",
+          columnAlias() {
+            return undefined;
+          },
+          type: "text",
+        }
+      },
+      constraints: {
+        thing_pkey: 'PRIMARY KEY ("id")',
+        thing_unik_name: 'UNIQUE ("username")',
+      },
+      canPost: false,
+      relations: {
+        Locations: {
+          type: Erelations.belongsToMany,
+          expand: `"location"."id" in (SELECT "thing_location"."location_id" from "thing_location" WHERE "thing_location"."thing_id" = "thing"."id")`,
+          link: `"location"."id" in (SELECT "thing_location"."location_id" from "thing_location" WHERE "thing_location"."thing_id" = $ID)`,
+          entityName: "Locations",
+          tableName: "thing_location",
+          relationKey: "location_id",
+          entityColumn: "thing_id",
+          tableKey: "thing_id",
+        },
+        HistoricalLocations: {
+          type: Erelations.hasMany,
+          expand: `"historical_location"."id" in (SELECT "historical_location"."id" from "historical_location" WHERE "historical_location"."thing_id" = "thing"."id")`,
+          link: `"historical_location"."id" in (SELECT "historical_location"."id" from "historical_location" WHERE "historical_location"."thing_id" = $ID)`,
+          entityName: "HistoricalLocations",
+          tableName: "historicalLocation",
+          relationKey: "thing_id",
+          entityColumn: "id",
+          tableKey: "id",
+        },
+        Datastreams: {
+          type: Erelations.hasMany,
+          expand: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."thing_id" = "thing"."id")`,
+          link: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."thing_id" = $ID)`,
+          entityName: "Datastreams",
+          tableName: "datastream",
+          relationKey: "thing_id",
+          entityColumn: "id",
+          tableKey: "id",
+        },
+        MultiDatastreams: {
+          type: Erelations.hasMany,
+          expand: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."thing_id" = "thing"."id")`,
+          link: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."thing_id" = $ID)`,
+          entityName: "MultiDatastreams",
+          tableName: "multidatastream",
+          relationKey: "thing_id",
+          entityColumn: "id",
+          tableKey: "id",
+        },
+      },
+    },
+    Roles: {
+      name: "Roles",
+      singular: "Role",
+      table: "role",
+      createOrder: 1,
+      order: 10,
+      extensions: [EextensionsType.security],
+      orderBy: `"rolename"`,
+      count: this.makeCount("role"),
+      visible: true,
+      columns: {
+        rolename: {
+          create: "text NOT NULL",
+          columnAlias() {
+            return undefined;
+          },
+          type: "text",
+        },
+        description: {
+          create: "text NOT NULL DEFAULT 'no description'::text",
+          columnAlias() {
+            return undefined;
+          },
+          type: "text",
+        },
+        properties: {
+          create: "jsonb NULL",
+          columnAlias() {
+            return undefined;
+          },
+          type: "json",
+        },
+      },
+      constraints: {
+        thing_unik_name: 'UNIQUE ("rolename")',
+      },
+      canPost: false,
+      relations: {
+        Locations: {
+          type: Erelations.belongsToMany,
+          expand: `"location"."id" in (SELECT "thing_location"."location_id" from "thing_location" WHERE "thing_location"."thing_id" = "thing"."id")`,
+          link: `"location"."id" in (SELECT "thing_location"."location_id" from "thing_location" WHERE "thing_location"."thing_id" = $ID)`,
+          entityName: "Locations",
+          tableName: "thing_location",
+          relationKey: "location_id",
+          entityColumn: "thing_id",
+          tableKey: "thing_id",
+        },
+        HistoricalLocations: {
+          type: Erelations.hasMany,
+          expand: `"historical_location"."id" in (SELECT "historical_location"."id" from "historical_location" WHERE "historical_location"."thing_id" = "thing"."id")`,
+          link: `"historical_location"."id" in (SELECT "historical_location"."id" from "historical_location" WHERE "historical_location"."thing_id" = $ID)`,
+          entityName: "HistoricalLocations",
+          tableName: "historicalLocation",
+          relationKey: "thing_id",
+          entityColumn: "id",
+          tableKey: "id",
+        },
+        Datastreams: {
+          type: Erelations.hasMany,
+          expand: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."thing_id" = "thing"."id")`,
+          link: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."thing_id" = $ID)`,
+          entityName: "Datastreams",
+          tableName: "datastream",
+          relationKey: "thing_id",
+          entityColumn: "id",
+          tableKey: "id",
+        },
+        MultiDatastreams: {
+          type: Erelations.hasMany,
+          expand: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."thing_id" = "thing"."id")`,
+          link: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."thing_id" = $ID)`,
+          entityName: "MultiDatastreams",
+          tableName: "multidatastream",
+          relationKey: "thing_id",
+          entityColumn: "id",
+          tableKey: "id",
+        },
+      },
+    },
+    UsersRoles: {
+      name: "UsersRoles",
+      singular: "UsersRole",
+      table: "user_role",
+      createOrder: -1,
+      order: -1,
+      extensions: [EextensionsType.security],
+      orderBy: `"user_id"`,
+      count: this.makeCount("user_role"),
+      visible: false,
+      columns: {
+        user_id: {
+          create: "BIGINT NOT NULL",
+          columnAlias() {
+            return undefined;
+          },
+          type: "bigint"
+        },
+        role_id: {
+          create: "BIGINT NOT NULL",
+          columnAlias() {
+            return undefined;
+          },
+          type: "bigint"
+        },
+      },
+      canPost: false,
+      relations: {},
+      constraints: {
+        user_role_pkey: 'PRIMARY KEY ("user_id", "role_id")',
+        user_role_user_id_fkey:
+          'FOREIGN KEY ("user_id") REFERENCES "user"("id") ON UPDATE CASCADE ON DELETE CASCADE',
+          user_role_role_id_fkey:
+          'FOREIGN KEY ("role_id") REFERENCES "role"("id") ON UPDATE CASCADE ON DELETE CASCADE',
+      },
+      indexes: {
+        user_role_user_id:
+          'ON public."user_role" USING btree ("user_id")',
+          user_role_role_id:
+          'ON public."user_role" USING btree ("role_id")',
+      },
+    },
+    UserProjectRoles: {
+      name: "UserProjectRoles",
+      singular: "UserProjectRole",
+      table: "userprojectroles",
+      createOrder: 1,
+      order: 10,
+      extensions: [EextensionsType.security],
+      orderBy: `"rolename"`,
+      count: this.makeCount("role"),
+      visible: true,
+      columns: {
+        rolename: {
+          create: "text NOT NULL",
+          columnAlias() {
+            return undefined;
+          },
+          type: "text",
+        },
+        description: {
+          create: "text NOT NULL DEFAULT 'no description'::text",
+          columnAlias() {
+            return undefined;
+          },
+          type: "text",
+        },
+        properties: {
+          create: "jsonb NULL",
+          columnAlias() {
+            return undefined;
+          },
+          type: "json",
+        },
+      },
+      constraints: {
+        thing_unik_name: 'UNIQUE ("rolename")',
+      },
+      canPost: false,
+      relations: {
+        Locations: {
+          type: Erelations.belongsToMany,
+          expand: `"location"."id" in (SELECT "thing_location"."location_id" from "thing_location" WHERE "thing_location"."thing_id" = "thing"."id")`,
+          link: `"location"."id" in (SELECT "thing_location"."location_id" from "thing_location" WHERE "thing_location"."thing_id" = $ID)`,
+          entityName: "Locations",
+          tableName: "thing_location",
+          relationKey: "location_id",
+          entityColumn: "thing_id",
+          tableKey: "thing_id",
+        },
+        HistoricalLocations: {
+          type: Erelations.hasMany,
+          expand: `"historical_location"."id" in (SELECT "historical_location"."id" from "historical_location" WHERE "historical_location"."thing_id" = "thing"."id")`,
+          link: `"historical_location"."id" in (SELECT "historical_location"."id" from "historical_location" WHERE "historical_location"."thing_id" = $ID)`,
+          entityName: "HistoricalLocations",
+          tableName: "historicalLocation",
+          relationKey: "thing_id",
+          entityColumn: "id",
+          tableKey: "id",
+        },
+        Datastreams: {
+          type: Erelations.hasMany,
+          expand: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."thing_id" = "thing"."id")`,
+          link: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."thing_id" = $ID)`,
+          entityName: "Datastreams",
+          tableName: "datastream",
+          relationKey: "thing_id",
+          entityColumn: "id",
+          tableKey: "id",
+        },
+        MultiDatastreams: {
+          type: Erelations.hasMany,
+          expand: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."thing_id" = "thing"."id")`,
+          link: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."thing_id" = $ID)`,
+          entityName: "MultiDatastreams",
+          tableName: "multidatastream",
+          relationKey: "thing_id",
+          entityColumn: "id",
+          tableKey: "id",
+        },
+      },
+    },
+    Projects: {
+      name: "Users",
+      singular: "User",
+      table: "user",
+      createOrder: 1,
+      order: 0,
+      extensions: [EextensionsType.security],
+      orderBy: `"id"`,
+      count: this.makeCount("user"),
+      visible: true,
+      columns: {
+        id: {
+          create: "BIGINT GENERATED ALWAYS AS IDENTITY",
+          columnAlias(config: IconfigFile, test: IKeyBoolean) {
+            return makeIDAlias(test["alias"] === true);
+          },
+          type: "number",
+        },
+        username: {
+          create: "text NOT NULL",
+          columnAlias() {
+            return undefined;
+          },
+          type: "text",
+        },
+        userpass: {
+          create: "text NOT NULL",
+          columnAlias() {
+            return undefined;
+          },
+          type: "text",
+        }
+      },
+      constraints: {
+        thing_pkey: 'PRIMARY KEY ("id")',
+        thing_unik_name: 'UNIQUE ("username")',
+      },
+      canPost: false,
+      relations: {
+        Locations: {
+          type: Erelations.belongsToMany,
+          expand: `"location"."id" in (SELECT "thing_location"."location_id" from "thing_location" WHERE "thing_location"."thing_id" = "thing"."id")`,
+          link: `"location"."id" in (SELECT "thing_location"."location_id" from "thing_location" WHERE "thing_location"."thing_id" = $ID)`,
+          entityName: "Locations",
+          tableName: "thing_location",
+          relationKey: "location_id",
+          entityColumn: "thing_id",
+          tableKey: "thing_id",
+        },
+        HistoricalLocations: {
+          type: Erelations.hasMany,
+          expand: `"historical_location"."id" in (SELECT "historical_location"."id" from "historical_location" WHERE "historical_location"."thing_id" = "thing"."id")`,
+          link: `"historical_location"."id" in (SELECT "historical_location"."id" from "historical_location" WHERE "historical_location"."thing_id" = $ID)`,
+          entityName: "HistoricalLocations",
+          tableName: "historicalLocation",
+          relationKey: "thing_id",
+          entityColumn: "id",
+          tableKey: "id",
+        },
+        Datastreams: {
+          type: Erelations.hasMany,
+          expand: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."thing_id" = "thing"."id")`,
+          link: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."thing_id" = $ID)`,
+          entityName: "Datastreams",
+          tableName: "datastream",
+          relationKey: "thing_id",
+          entityColumn: "id",
+          tableKey: "id",
+        },
+        MultiDatastreams: {
+          type: Erelations.hasMany,
+          expand: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."thing_id" = "thing"."id")`,
+          link: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."thing_id" = $ID)`,
+          entityName: "MultiDatastreams",
+          tableName: "multidatastream",
+          relationKey: "thing_id",
+          entityColumn: "id",
+          tableKey: "id",
+        },
+      },
+    }
+
+
+  }
+}
+
   escape(input: string, ignore?: string) {
     let pattern = "";
     const map = {
@@ -1714,18 +2082,17 @@ class Models {
             });
   }
 
-
   getDraw(ctx: koa.Context) {
     const deleteId = (id: string) => {
       const start = `<mxCell id="${id}"`;
       const end = "</mxCell>";
       fileContent = fileContent.replace(`${start}${fileContent.split(start)[1].split(end)[0]}${end}`, "");      
     };
-    const entities = Models.models[ctx._config.apiVersion];
+    const entities = Models.models[ctx.config.apiVersion];
     let fileContent = fs.readFileSync(__dirname + `/model.drawio`, "utf8");
-    fileContent = fileContent.replace('&gt;Version&lt;', `&gt;version : ${versionString(ctx._config.apiVersion)}&lt;`);
-    if(!ctx._config.extensions.includes(EextensionsType.logs)) deleteId("124");
-    if(!ctx._config.extensions.includes(EextensionsType.multiDatastream)) {
+    fileContent = fileContent.replace('&gt;Version&lt;', `&gt;version : ${versionString(ctx.config.apiVersion)}&lt;`);
+    if(!ctx.config.extensions.includes(EextensionsType.logs)) deleteId("124");
+    if(!ctx.config.extensions.includes(EextensionsType.multiDatastream)) {
       ["114" ,"115" ,"117" ,"118" ,"119" ,"116" ,"120" ,"121"].forEach(e => deleteId(e));
       fileContent = fileContent.replace(`&lt;hr&gt;COLUMNS.${entities.MultiDatastreams.name}`, "");
       fileContent = fileContent.replace(`&lt;hr&gt;COLUMNS.${entities.MultiDatastreams.name}`, "");
@@ -1739,13 +2106,13 @@ class Models {
   }
   
   getInfos(ctx: koa.Context) {
-    const temp = serverConfig.getLinkBase(ctx, ctx._config.name)
+    const temp = serverConfig.getLinkBase(ctx, ctx.config.name)
     const result = {
       ... temp,
-      ready : ctx._config.connection ? true : false,
+      ready : ctx.config.connection ? true : false,
     };
     const extensions = {};
-    switch (ctx._config.apiVersion) {
+    switch (ctx.config.apiVersion) {
       case "1.1":
         result["Ogc link"] = "https://docs.ogc.org/is/18-088/18-088.html";
         break;
@@ -1754,8 +2121,8 @@ class Models {
         result["Ogc link"] = "https://docs.ogc.org/is/15-078r6/15-078r6.html";
         break;
     }
-    if (ctx._config.extensions.includes(EextensionsType.tasking)) extensions["tasking"] = "https://docs.ogc.org/is/17-079r1/17-079r1.html";
-    if (ctx._config.extensions.includes(EextensionsType.logs)) extensions["logs"] = `${ctx._linkBase}/${versionString(ctx._config.apiVersion)}/Logs`;
+    if (ctx.config.extensions.includes(EextensionsType.tasking)) extensions["tasking"] = "https://docs.ogc.org/is/17-079r1/17-079r1.html";
+    if (ctx.config.extensions.includes(EextensionsType.logs)) extensions["logs"] = `${ctx.decodedUrl.linkbase}/${versionString(ctx.config.apiVersion)}/Logs`;
       
     result["extensions"] = extensions;
     return result;
@@ -1831,7 +2198,7 @@ class Models {
   }
 
   private filtering(config: IconfigFile) {    
-    const entities = Object.keys(Models.models[config.apiVersion]).filter((e) => [ EextensionsType.base, EextensionsType.logs, ... config.extensions, ].some((r) => Models.models[config.apiVersion][e].extensions.includes(r)));
+    const entities = Object.keys(Models.models[config.apiVersion]).filter((e) => [ EextensionsType.base,  EextensionsType.logs, ... config.extensions, ].some((r) => Models.models[config.apiVersion][e].extensions.includes(r)));
     return Object.fromEntries(Object.entries(Models.models[config.apiVersion]).filter( ([k]) => entities.includes(k))) as Ientities;
   }
 
@@ -1842,8 +2209,7 @@ class Models {
 
   public filteredModelFromConfig(config: IconfigFile): Ientities {
     if (testVersion(config.apiVersion) === false) this.createVersion(config.apiVersion);
-
-    return this.filtering(config);
+    return config.name === "admin" ? this.DBAdmin(config) : this.filtering(config);
   }
   
   public DBFull(config: IconfigFile | string): Ientities {
@@ -1857,7 +2223,7 @@ class Models {
   }
   
   public DBAdmin(config: IconfigFile):Ientities {
-    const entities = Models.models[config ? config.apiVersion : DEFAULT_API_VERSION];
+    const entities = Models.models[DEFAULT_API_VERSION];
     return Object.fromEntries(Object.entries(entities).filter(([, v]) => v.extensions.includes(EextensionsType.admin))) as Ientities;
   } 
 
@@ -1928,130 +2294,41 @@ class Models {
     return false;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public formatColumnValue(columnName: string, value: any, type: string): string | undefined {
-    console.log(formatLog.whereIam());
-    switch (typeof value ) {
-      case "object" :
-        return value.hasOwnProperty("@iot.name") 
-        ? `(SELECT "id" FROM "${columnName.split("_")[0]}" WHERE "name" = '${value["@iot.name"]}')`
-        : `'${JSON.stringify(value)}'`;
-      default:
-        if (value) switch (value) {
-          case void 0:
-            return '';
-          case null:
-            return 'null';
-            case value.isRawInstance:
-              return value.toQuery();
-          default:
-            switch (type) {
-              case 'number':
-                return value;
-              case 'bool':
-                if (value === 'false') value = 0;
-                return `'${value ? 1 : 0}'`;
-              case 'json':
-              case 'jsonb':
-                if (isObject(value)) return addSimpleQuotes(ESCAPE_SIMPLE_QUOTE(JSON.stringify(value)));
-                return "JSON ERROR";
-              case 'text[]':
-                const temp = ESCAPE_ARRAY_JSON(String(value));
-                if (temp) return addSimpleQuotes(temp);
-                return "ARRAY ERROR";
-              default:
-                break;
-            }
-            if (String(value).startsWith("(SELECT")) return `${value}`;
-            try {
-                return value.includes("'") ? addSimpleQuotes(ESCAPE_SIMPLE_QUOTE(value)): addSimpleQuotes(value);
-            } catch (error) {            
-                return addSimpleQuotes(value);
-            }
-        }
-    } 
-  }
-
-  public createUpdateValues = (input : object ): string => {
-    console.log(formatLog.whereIam());
-    const result:string[] = [];
-    Object.keys(input).forEach((e: string) => {
-          result.push(`${addDoubleQuotes(e)} = ${addSimpleQuotes(ESCAPE_SIMPLE_QUOTE(input[e]))}`);
-      });
-    return result.join();
-  };
-
-  public createInsertValues = (config: IconfigFile, input : object, entityName?: string): string => {
-      console.log(formatLog.whereIam());
-      if (config && input) {
-          const keys:string[] = [];
-          const values:string[] = [];            
-          if (entityName) {
-              const entity = this.getEntity(config, entityName);
-              if (!entity) return "";
-              Object.keys(input).forEach((e: string) => {  
-                  if (input[e] && entity.columns[e]) {                
-                    const temp = this.formatColumnValue(e, input[e], entity.columns[e].type);
-                    if (temp) {
-                      keys.push(addDoubleQuotes(e));
-                      values.push(e === "result" ? `'{"value": ${e}}'::jsonb`: temp);
-                    }               
-                  }                
-                });
-              } else {
-                Object.keys(input).forEach((e: string) => {
-                  if (input[e]) {
-                    if (input[e].startsWith && input[e].startsWith('"{') && input[e].endsWith('}"')) input[e] = REMOVE_FIRST_END_CHAR(input[e], '"');
-                    else if (input[e].startsWith && input[e].startsWith('{"@iot.name"')) input[e] = `(SELECT "id" FROM "${e.split("_")[0]}" WHERE "name" = '${JSON.parse(REMOVE_FIRST_END_CHAR(input[e], '"'))["@iot.name"]}')`;
-                    keys.push(addDoubleQuotes(e));
-                    values.push(typeof input[e] === "string" 
-                                                ? input[e].startsWith("(SELECT") 
-                                                  ? input[e]
-                                                  : addSimpleQuotes(ESCAPE_SIMPLE_QUOTE(input[e])) 
-                                                : e === "result" ? `'{"value": ${input[e]}}'::jsonb`: ESCAPE_SIMPLE_QUOTE(input[e]));
-                }
-            });
-          }          
-          return `(${keys.join()}) VALUES (${values.join()})`;  
-      }
-      return "";
-  };
-
   public getRoot(ctx: koa.Context) {
     console.log(formatLog.whereIam());
     let expectedResponse: object[] = [];
-    Object.keys(ctx._model)
-      .filter((elem: string) => ctx._model[elem].order > 0)
-      .sort((a, b) => (ctx._model[a].order > ctx._model[b].order ? 1 : -1))
-      .forEach((value: string) => {
+    Object.keys(ctx.model)
+    .filter((elem: string) => ctx.model[elem].order > 0)
+    .sort((a, b) => (ctx.model[a].order > ctx.model[b].order ? 1 : -1))
+    .forEach((value: string) => {
         expectedResponse.push({
-          name: ctx._model[value].name,
-          url: `${ctx._linkBase}/${versionString(ctx._config.apiVersion)}/${value}`,
+          name: ctx.model[value].name,
+          url: `${ctx.decodedUrl.linkbase}/${versionString(ctx.config.apiVersion)}/${value}`,
         });
       });
     
-    switch (ctx._config.apiVersion) {
+    switch (ctx.config.apiVersion) {
       case "1.0":
         return {
           value : expectedResponse.filter((elem) => Object.keys(elem).length)
         };    
       case "1.1":
         expectedResponse = expectedResponse.filter((elem) => Object.keys(elem).length);    
-        const conformance:string[] = [];
-        conformance.push("https://docs.ogc.org/is/18-088/18-088.html");
-        conformance.push("https://docs.ogc.org/is/18-088/18-088.html#uri-components");
-        conformance.push("https://docs.ogc.org/is/18-088/18-088.html#resource-path");
-        conformance.push("https://docs.ogc.org/is/18-088/18-088.html#requesting-data");
-        conformance.push("https://docs.ogc.org/is/18-088/18-088.html#create-update-delete");
+        const list:string[] = [];
+        list.push(conformance["1.1"].root);
+        list.push("https://docs.ogc.org/is/18-088/18-088.html#uri-components");
+        list.push("https://docs.ogc.org/is/18-088/18-088.html#resource-path");
+        list.push("https://docs.ogc.org/is/18-088/18-088.html#requesting-data");
+        list.push("https://docs.ogc.org/is/18-088/18-088.html#create-update-delete");
         // conformance.push("https://docs.ogc.org/is/18-088/18-088.html#batch-requests");
-        if(ctx._config.extensions.includes(EextensionsType.multiDatastream)) conformance.push("https://docs.ogc.org/is/18-088/18-088.html#multidatastream-extension");
-        if(ctx._config.extensions.includes(EextensionsType.mqtt)) conformance.push("https://docs.ogc.org/is/18-088/18-088.html#create-observation-dataarray");
+        if(ctx.config.extensions.includes(EextensionsType.multiDatastream)) list.push("https://docs.ogc.org/is/18-088/18-088.html#multidatastream-extension");
+        if(ctx.config.extensions.includes(EextensionsType.mqtt)) list.push("https://docs.ogc.org/is/18-088/18-088.html#create-observation-dataarray");
         // conformance.push("https://docs.ogc.org/is/18-088/18-088.html#mqtt-extension");
-        conformance.push("http://docs.oasis-open.org/odata/odata-json-format/v4.01/odata-json-format-v4.01.html");
-        conformance.push("https://datatracker.ietf.org/doc/html/rfc4180");
+        list.push("http://docs.oasis-open.org/odata/odata-json-format/v4.01/odata-json-format-v4.01.html");
+        list.push("https://datatracker.ietf.org/doc/html/rfc4180");
         return {
           value : expectedResponse.filter((elem) => Object.keys(elem).length),
-          serverSettings : {"conformance" : conformance}
+          serverSettings : {"conformance" : list}
         };  
         
         default:

@@ -9,8 +9,9 @@
 import jsonwebtoken from "jsonwebtoken";
 import koa from "koa";
 import { IuserToken } from "../types";
+import { blankUserToken } from "../types/userToken";
 
-export const decodeToken = (ctx: koa.Context): IuserToken | undefined => {
+export const decodeToken = (ctx: koa.Context): IuserToken => {
   if (ctx.request["token"]) {
     const token = jsonwebtoken.decode(ctx.request["token"]);
     if (token && token["data"].id > 0)
@@ -21,4 +22,5 @@ export const decodeToken = (ctx: koa.Context): IuserToken | undefined => {
         PDCUAS: token["data"].PDCUAS,
       });
   }
+  return blankUserToken;
 };

@@ -18,7 +18,7 @@ export const isProduction = () => process.env.NODE_ENV?.trim() === "production" 
 export const isCsvOrArray = (input: PgVisitor) => [returnFormats.dataArray, returnFormats.csv].includes(input.resultFormat) ? true : undefined;
 export const isGraph = (input: PgVisitor) => [returnFormats.graph, returnFormats.graphDatas].includes(input.resultFormat) ? true : undefined;
 export const isObservation = (input: Ientity | string) => typeof input === "string" ? input === "Observations": input.name === "Observations";
-export const isAdmin = (ctx: Koa.Context): boolean => ctx._config && ctx._config.name === ADMIN;
-export const isAllowedTo = (ctx: Koa.Context, what: EuserRights): boolean => ctx._user && ctx._user.PDCUAS[what];
+export const isAdmin = (ctx: Koa.Context): boolean => ctx.config && ctx.config.name === ADMIN;
+export const isAllowedTo = (ctx: Koa.Context, what: EuserRights): boolean => ctx.user && ctx.user.PDCUAS[what];
 export const isObjectArray = (what: object) => Object.prototype.toString.call(what) === '[object Array]'; 
 export const isObject = (value: unknown) => typeof value === 'object' && value !== null;

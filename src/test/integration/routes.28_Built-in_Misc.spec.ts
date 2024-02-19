@@ -10,8 +10,9 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult, testVersion } from "./constant";
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult, testVersion, Iinfos } from "./constant";
 import { server } from "../../server/index";
+import { addGetTest, addStartNewTest } from "./tests";
 
 
 chai.use(chaiHttp);
@@ -34,79 +35,106 @@ addToApiDoc({
    
 describe("Odata BuiltInMisc", () => {
     it("interval(1 hour)", (done) => {
-        const infos = {
+        const infos:Iinfos  = {
             api: "{get} Observations Interval",
+            url: `/${testVersion}/Datastreams(3)/Observations?$interval=1 hour`,
             apiName: "BuiltInMiscInterval",
             apiDescription: "The interval keyword rounds the input postgresSql interval (see reference below) parameter to the nearest interval.",
             apiReference: "https://www.postgresql.org/docs/15/ecpg-pgtypes.html#ECPG-PGTYPES-INTERVAL",
-            apiExample: { http: `/${testVersion}/Datastreams(3)/Observations?$interval=1 hour`,
+            apiExample: { http: "/test",
                             curl: defaultGet("curl", "KEYHTTP"),
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
         };
         chai.request(server)
-            .get(`/test${infos.apiExample.http}`)
-            .end((err: Error, res: any) => { 
+            .get(`/test${infos.url}`)
+            .end((err: Error, res: any) => {
+                addStartNewTest("Built in Miscs");
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body["@iot.count"].should.eql(77);
-                res.body.value.length.should.eql(77);
-                res.body["value"][0]["@iot.id"].should.eql(3);
-                res.body["value"][0]["phenomenonTime"].should.eql('2016-11-10T03:00:00');
+                res.body["@iot.count"].should.eql(276);
+                res.body["value"][0]["@iot.id"].should.eql(49);
+                res.body["value"][0]["phenomenonTime"].should.eql('2023-03-01T11:00:00');
                 res.body["value"][1]["@iot.id"].should.eql(0);
-                res.body["value"][1]["phenomenonTime"].should.eql('2016-11-10T04:00:00');
+                res.body["value"][1]["phenomenonTime"].should.eql('2023-03-01T12:00:00');
                 addToApiDoc({ ...infos, result: limitResult(res) });
+                addGetTest(infos);
                 done();
             });
     });
 
     it("interval(15 min)", (done) => {
+        const infos: Iinfos = {
+            api: `{get} interval(15 min)`,
+            url: `/${testVersion}/Datastreams(3)/Observations?$interval=15 min`,
+            apiName: "",
+            apiDescription: "",
+            apiReference: ""
+        };
         chai.request(server)
-            .get(`/test/${testVersion}/Datastreams(3)/Observations?$interval=15 min`)
+            .get(`/test${infos.url}`)
             .end((err: Error, res: any) => { 
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body["value"][0]["@iot.id"].should.eql(3);
-                res.body["value"][0]["phenomenonTime"].should.eql('2016-11-10T02:30:00');
+                res.body["@iot.count"].should.eql(1101);
+                res.body["value"][0]["@iot.id"].should.eql(49);
+                res.body["value"][0]["phenomenonTime"].should.eql('2023-03-01T11:00:00');
                 res.body["value"][1]["@iot.id"].should.eql(0);
-                res.body["value"][1]["phenomenonTime"].should.eql('2016-11-10T02:45:00');
+                res.body["value"][1]["phenomenonTime"].should.eql('2023-03-01T11:15:00');
+                addGetTest(infos);
                 done();
             });
     });
 
     it("interval(1 min)", (done) => {
+        const infos: Iinfos = {
+            api: `{get} interval(1 min)`,
+            url: `/${testVersion}/Datastreams(3)/Observations?$interval=1 min`,
+            apiName: "",
+            apiDescription: "",
+            apiReference: ""
+        };
         chai.request(server)
-            .get(`/test/${testVersion}/Datastreams(3)/Observations?$interval=1 min`)
+            .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {     
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body["value"][0]["@iot.id"].should.eql(3);
-                res.body["value"][0]["phenomenonTime"].should.eql('2016-11-10T02:16:00');
+                res.body["@iot.count"].should.eql(16501);
+                res.body["value"][0]["@iot.id"].should.eql(49);
+                res.body["value"][0]["phenomenonTime"].should.eql('2023-03-01T10:50:00');
                 res.body["value"][1]["@iot.id"].should.eql(0);
-                res.body["value"][1]["phenomenonTime"].should.eql('2016-11-10T02:17:00');
+                res.body["value"][1]["phenomenonTime"].should.eql('2023-03-01T10:51:00');
+                addGetTest(infos);
                 done();
             });
     });
 
     it("interval(1 day)", (done) => {
+        const infos: Iinfos = {
+            api: `{get} interval(1 day)`,
+            url: `/${testVersion}/Datastreams(4)/Observations?$interval=1 day`,
+            apiName: "",
+            apiDescription: "",
+            apiReference: ""
+        };
         chai.request(server)
-            .get(`/test/${testVersion}/Datastreams(4)/Observations?$interval=1 day`)
+            .get(`/test${infos.url}`)
             .end((err: Error, res: any) => { 
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body["@iot.count"].should.eql(6038);
-                res.body.value.length.should.eql(6038);
-                res.body["value"][0]["@iot.id"].should.eql(89);
-                res.body["value"][0]["phenomenonTime"].should.eql('2000-05-02T02:00:00');
-                res.body["value"][1]["@iot.id"].should.eql(90);
-                res.body["value"][1]["phenomenonTime"].should.eql('2000-05-03T02:00:00');
-                res.body["value"][5]["@iot.id"].should.eql(0);
-                res.body["value"][5]["phenomenonTime"].should.eql('2000-05-07T02:00:00');
+                res.body["@iot.count"].should.eql(12);
+                res.body["value"][0]["@iot.id"].should.eql(73);
+                res.body["value"][0]["phenomenonTime"].should.eql('2023-04-02T02:00:00');
+                res.body["value"][1]["@iot.id"].should.eql(74);
+                res.body["value"][1]["phenomenonTime"].should.eql('2023-04-03T02:00:00');
+                res.body["value"][5]["@iot.id"].should.eql(78);
+                res.body["value"][5]["phenomenonTime"].should.eql('2023-04-07T02:00:00');
+                addGetTest(infos);
                 done();
             });
     });

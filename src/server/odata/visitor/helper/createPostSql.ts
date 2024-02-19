@@ -16,6 +16,7 @@ import { createPgQuery, formatInsertEntityData } from ".";
 import { queryAsJson } from "../../../db/queries";
 import { models } from "../../../models";
 import { log } from "../../../log";
+import { createInsertValues, createUpdateValues } from "../../../models/helpers";
 
 
 export function createPostSql(datas: object, main: PgVisitor): string {
@@ -30,8 +31,8 @@ export function createPostSql(datas: object, main: PgVisitor): string {
         };
     } = {};
     const tempEntity = main.entity;
-    const postEntity: Ientity = main.ctx._model[tempEntity == "CreateFile" ? "Datastreams" : tempEntity];
-    const postParentEntity: Ientity | undefined = main.parentEntity ? main.ctx._model[main.parentEntity ] : undefined;
+    const postEntity: Ientity = main.ctx.model[tempEntity == "CreateFile" ? "Datastreams" : tempEntity];
+    const postParentEntity: Ientity | undefined = main.parentEntity ? main.ctx.model[main.parentEntity ] : undefined;
     const names: IKeyString = {
         [postEntity.table]: postEntity.table
     };
@@ -90,13 +91,11 @@ export function createPostSql(datas: object, main: PgVisitor): string {
                 returnValue.push(`, ${element} AS (`);
                 if (main.id) {
                     if (queryMaker[element].type == EoperationType.Association) 
-                        returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${models.createInsertValues(main.ctx._config, formatInsertEntityData(queryMaker[element].table, queryMaker[element].datas, main))} on conflict ("${Object.keys(queryMaker[element].datas).join('","')}") do update set ${models.createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = ${BigInt(main.id).toString()}`);
+                        returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${createInsertValues(main.ctx.config, formatInsertEntityData(queryMaker[element].table, queryMaker[element].datas, main))} on conflict ("${Object.keys(queryMaker[element].datas).join('","')}") do update set ${createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = ${BigInt(main.id).toString()}`);
                     else
-                        returnValue.push(`UPDATE "${queryMaker[element].table}" SET ${models.createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = (select verifyId('${queryMaker[element].table}', ${main.id}) as id)`);
-                } else returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${models.createInsertValues(main.ctx._config, formatInsertEntityData(queryMaker[element].table, queryMaker[element].datas, main))}`);                            
+                        returnValue.push(`UPDATE "${queryMaker[element].table}" SET ${createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = (select verifyId('${queryMaker[element].table}', ${main.id}) as id)`);
+                } else returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${createInsertValues(main.ctx.config, formatInsertEntityData(queryMaker[element].table, queryMaker[element].datas, main))}`);                            
                     returnValue.push(`RETURNING ${postEntity.table == queryMaker[element].table ? allFields : queryMaker[element].keyId})`);
-
-                
             }
         });
         return returnValue.join("\n").replace(/\'@/g, "").replace(/\@'/g, "");
@@ -268,9 +267,9 @@ export function createPostSql(datas: object, main: PgVisitor): string {
          * @param value Datas to process
          */
         const subBlock = (key: string, value: object) => {
-            const entityNameSearch = models.getEntityName(main.ctx._config, key);
+            const entityNameSearch = models.getEntityName(main.ctx.config, key);
             if (entityNameSearch) {
-                const newEntity = main.ctx._model[entityNameSearch];
+                const newEntity = main.ctx.model[entityNameSearch];
                 const name = createName(newEntity.table);
                 names[newEntity.table] = name;
                 const test = start(value, newEntity, entity);
@@ -309,9 +308,9 @@ export function createPostSql(datas: object, main: PgVisitor): string {
 
 
     if (main.parentEntity) {
-        const entityName =models.getEntityName(main.ctx._config, main.parentEntity);
+        const entityName =models.getEntityName(main.ctx.config, main.parentEntity);
         console.log(formatLog.debug("Found entity : ", entityName));
-        const callEntity = entityName ? main.ctx._model[entityName] : undefined;
+        const callEntity = entityName ? main.ctx.model[entityName] : undefined;
         const id: bigint | undefined =
         typeof main.parentId== "string" ? getBigIntFromString(main.parentId) : main.parentId;
         if (entityName && callEntity && id && id > 0) {
@@ -330,9 +329,9 @@ export function createPostSql(datas: object, main: PgVisitor): string {
         sqlResult = queryMakerToString(
             main.id
             ? root && Object.entries(root).length > 0
-            ? `WITH ${postEntity.table} AS (UPDATE ${addDoubleQuotes(postEntity.table)} set ${models.createUpdateValues(root)} WHERE "id" = (select verifyId('${postEntity.table}', ${main.id}) as id) RETURNING ${allFields})`
+            ? `WITH ${postEntity.table} AS (UPDATE ${addDoubleQuotes(postEntity.table)} set ${createUpdateValues(root)} WHERE "id" = (select verifyId('${postEntity.table}', ${main.id}) as id) RETURNING ${allFields})`
                 : `WITH ${postEntity.table} AS (SELECT * FROM ${addDoubleQuotes(postEntity.table)} WHERE "id" = ${main.id.toString()})`
-                : `WITH ${postEntity.table} AS (INSERT INTO ${addDoubleQuotes(postEntity.table)} ${models.createInsertValues(main.ctx._config, formatInsertEntityData(postEntity.name, root, main))} RETURNING ${allFields})`
+                : `WITH ${postEntity.table} AS (INSERT INTO ${addDoubleQuotes(postEntity.table)} ${createInsertValues(main.ctx.config, formatInsertEntityData(postEntity.name, root, main))} RETURNING ${allFields})`
                 );
             }
     const temp = createPgQuery(main, main); 

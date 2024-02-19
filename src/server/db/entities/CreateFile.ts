@@ -36,17 +36,17 @@ export class CreateFile extends Common {
     }
     const createDataStream = async () => {
       const nameOfFile = paramsFile.filename.split("/").reverse()[0];
-      const copyCtx = Object.assign({}, ctx._odata);
-      const tempId = ctx._odata.id.toString();
-      ctx._odata.entity = this.ctx._model.Datastreams.name;
+      const copyCtx = Object.assign({}, ctx.odata);
+      const tempId = ctx.odata.id.toString();
+      ctx.odata.entity = this.ctx.model.Datastreams.name;
 
       // IMPORTANT TO ADD instead update
-      ctx._odata.id = "";
-      ctx._odata.resultFormat = returnFormats.json;
-      ctx._log = undefined;
-      const objectDatastream = new entities[this.ctx._model.Datastreams.name]( ctx );
+      ctx.odata.id = "";
+      ctx.odata.resultFormat = returnFormats.json;
+      ctx.log = undefined;
+      const objectDatastream = new entities[this.ctx.model.Datastreams.name]( ctx );
       const myDatas = {
-        name: `${this.ctx._model.Datastreams.name} import file ${nameOfFile}`,
+        name: `${this.ctx.model.Datastreams.name} import file ${nameOfFile}`,
         description: "Description in meta ?",
         observationType:
           "http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation",
@@ -72,18 +72,18 @@ export class CreateFile extends Common {
       try {
         return await objectDatastream.post(myDatas);
       } catch (error) {
-        ctx._odata.where = `"name" ~* '${nameOfFile}'`;
+        ctx.odata.where = `"name" ~* '${nameOfFile}'`;
         const returnValueError = await objectDatastream.getAll();
-        ctx._odata = copyCtx;
+        ctx.odata = copyCtx;
         if (returnValueError) {
           returnValueError.body = returnValueError.body
             ? returnValueError.body[0]
             : {};
-          if (returnValueError.body) await executeSqlValues(ctx._config, `DELETE FROM "${this.ctx._model.Observations.table}" WHERE "datastream_id" = ${returnValueError.body["@iot.id"]}`);
+          if (returnValueError.body) await executeSqlValues(ctx.config, `DELETE FROM "${this.ctx.model.Observations.table}" WHERE "datastream_id" = ${returnValueError.body["@iot.id"]}`);
           return returnValueError;
         }
       } finally {
-        ctx._odata = copyCtx;
+        ctx.odata = copyCtx;
       }
     };
 
@@ -100,22 +100,22 @@ export class CreateFile extends Common {
         "hour" varchar(255) NULL,
         ${cols}, 
         CONSTRAINT ${paramsFile.tempTable}_pkey PRIMARY KEY (id));`;
-        await executeSqlValues(ctx._config, createTable);
-      const writable = serverConfig.getConnection(ctx._config.name).unsafe(`COPY ${paramsFile.tempTable}  (${headers.join( "," )}) FROM STDIN WITH(FORMAT csv, DELIMITER ';'${ paramsFile.header })`).writable();
+        await executeSqlValues(ctx.config, createTable);
+      const writable = serverConfig.getConnection(ctx.config.name).unsafe(`COPY ${paramsFile.tempTable}  (${headers.join( "," )}) FROM STDIN WITH(FORMAT csv, DELIMITER ';'${ paramsFile.header })`).writable();
       return await new Promise<string | undefined>(async (resolve, reject) => {
       
       readable
         .pipe(addAbortSignal(controller.signal, await writable))
         .on('close', async () => {
           // TODO DATES !!!!
-          const sql = `INSERT INTO "${ this.ctx._model.Observations.table }" 
+          const sql = `INSERT INTO "${ this.ctx.model.Observations.table }" 
                     ("datastream_id", "phenomenonTime", "resultTime", "result") 
                     SELECT '${String(
                       returnValue.body["@iot.id"]
                     )}', '2021-09-17T14:56:36+02:00', '2021-09-17T14:56:36+02:00', json_build_object('value',ROW_TO_JSON(p)) FROM (SELECT * FROM ${
                       paramsFile.tempTable
                     }) AS p`;
-          await serverConfig.getConnection(this.ctx._config.name).unsafe(sql);          
+          await serverConfig.getConnection(this.ctx.config.name).unsafe(sql);          
           resolve(returnValue["body"]);
         })
         .on('error', (err) => {
@@ -137,12 +137,12 @@ export class CreateFile extends Common {
     
   async post(dataInput: object): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam(dataInput));
-    if (this.ctx._datas) {
+    if (this.ctx.datas) {
       const myColumns: IcsvColumn[] = [];
         return this.createReturnResult({
           body: await this.streamCsvFileInPostgreSqlFileInDatastream( this.ctx, {
             tempTable: `temp${Date.now().toString()}`,
-            filename: this.ctx._datas["file"],
+            filename: this.ctx.datas["file"],
             columns: myColumns,
             header: ", HEADER",
             stream: [], // only for interface

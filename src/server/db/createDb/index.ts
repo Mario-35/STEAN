@@ -10,9 +10,8 @@ import { ADMIN } from "../../constants";
 import { IKeyString } from "../../types";
 import { createAdminDB } from "./createAdminDB";
 import { createSTDB } from "./createStDb";
+export { testDatas } from "./tests";
 
-
-export { createService } from "./createService";
 
 export const createDatabase = async ( configName: string ): Promise<IKeyString> => {
   return configName.toUpperCase() === ADMIN.toUpperCase()
