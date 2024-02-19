@@ -24,26 +24,33 @@ export const prepareDatas = (dataInput: object, entity: string): object => {
 }
 
 export const createService = async (dataInput: object): Promise<object> => {
-    const results = {};
-    const serviceName = dataInput["create"]["name"];
-    const config = serverConfig.getConfig(serviceName);
-    const mess = `Database [${serviceName}]`; 
+  const results = {};
+  const serviceName = dataInput["create"]["name"];
+  const config = serverConfig.getConfig(serviceName);
+  const mess = `Database [${serviceName}]`; 
+    const createDB = async () => {
+      try {  
+        await createSTDB(serviceName);
+        results[`Create ${mess}`  ] = _OK;
+      } catch (error) {
+        results[`Create ${mess}`] = _NOTOK;
+        console.log(error);        
+      }      
+    }
     await executeAdmin(sqlStopDbName(addSimpleQuotes(serviceName))).then(async () => {
       await executeAdmin(`DROP DATABASE IF EXISTS ${serviceName}`).then(async () => {
         results[`Drop ${mess}`] = _OK;
-        try {  
-          await createSTDB(serviceName);
-          results[`Create ${mess}`  ] = _OK;
-        } catch (error) {
-          results[`Create ${mess}`] = _NOTOK;
-          console.log(error);        
-        }
+        await createDB();
       }).catch((error: any) => {
         results[`Drop ${mess}`] = _NOTOK;
         console.log(error);        
       });
+      //  else await createDB();
+    }).catch(async (err: any) => {
+      if (err["code"] === "3D000") {
+        await createDB();
+      }
     });
-    // await executeAdmin(`commit;`);
 
     const tmp = models.filteredModelFromConfig(config);
     

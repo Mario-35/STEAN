@@ -9,7 +9,7 @@ import { ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_API_VERSION, DEFAULT_DB, N
 import { addSimpleQuotes, asyncForEach, decrypt, encrypt, hidePassword, isProduction, isTest, unikeList, } from "../helpers";
 import { IconfigFile, IdbConnection, IserviceLink } from "../types";
 import { errors, infos, msg } from "../messages";
-import { createDatabase, executeSql} from "../db/helpers";
+import { createDatabase, createService, executeSql} from "../db/helpers";
 import { app } from "..";
 import { EColor, EextensionsType } from "../enums";
 import fs from "fs";
@@ -20,6 +20,7 @@ import { triggers } from "../db/createDb/triggers";
 import { formatLog } from "../logger";
 import { log } from "../log";
 import koa from "koa";
+import { testDatas } from "../db/createDb";
 
 // class to logCreate configs environements
 class Configuration {
@@ -35,9 +36,12 @@ class Configuration {
       Configuration.filePath = file;
       const fileContent = fs.readFileSync(file, "utf8");
       Configuration.jsonConfiguration = JSON.parse(decrypt(fileContent));
-      if (this.validJSONConfig(Configuration.jsonConfiguration)) Object.keys(Configuration.jsonConfiguration).forEach((element: string) => {
-        Configuration.configs[element] = this.formatConfig(element);
-      }); else {
+      if (this.validJSONConfig(Configuration.jsonConfiguration)) {
+        Object.keys(Configuration.jsonConfiguration).forEach((element: string) => {
+          Configuration.configs[element] = this.formatConfig(element);
+        });
+        this.createConfigTest();
+      }else {
         log.error(errors.configFileError);
         process.exit(112);
       }
@@ -50,6 +54,19 @@ class Configuration {
       process.exit(111);      
     }
   }
+  private async createConfigTest() {
+    if (isTest()) return;
+		const result = Configuration.configs[ADMIN];
+		result.name = TEST;
+    result.pg.database = TEST;
+    result.nb_page = 1000;
+    result.extensions = ["base", "multiDatastream", "lora", "logs"];
+    result.canDrop = true;
+    result.logFile = "";
+    result.connection = undefined;
+    Configuration.configs[TEST] = this.formatConfig(result);
+	}
+
   getLinkBase = (ctx: koa.Context, name: string): IserviceLink  => {
     const protocol:string = ctx.request.headers["x-forwarded-proto"]
           ? ctx.request.headers["x-forwarded-proto"].toString()
@@ -467,7 +484,8 @@ class Configuration {
           if (returnResult === false) log.error(formatLog.error(err));
         } else if (err["code"] === "3D000" && logCreate == true) {
           console.log(formatLog.debug( msg(infos.tryCreate, infos.db), Configuration.configs[connectName].pg.database ));
-          returnResult = await this.tryToCreateDB(connectName);
+          if (!isTest() && connectName === TEST) await createService(testDatas);
+          else returnResult = await this.tryToCreateDB(connectName);
         } else log.error(formatLog.error(err));
         return returnResult;
       });

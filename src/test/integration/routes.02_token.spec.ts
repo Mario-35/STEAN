@@ -4,7 +4,7 @@ import chai from "chai";
 import chaiHttp from "chai-http";
 import fs from "fs";
 import path from "path";
-import { IApiDoc, prepareToApiDoc, IApiInput, identification, generateApiDoc, testVersion, _RAWDB, Iinfos } from "./constant";
+import { IApiDoc, prepareToApiDoc, IApiInput, identification, generateApiDoc, testVersion, _RAWDB, Iinfos, testLog } from "./constant";
 
 chai.use(chaiHttp);
 
@@ -52,6 +52,7 @@ describe("Identification : Token", () => {
                 .type("form")
                 .send(identification)
                 .end((err: Error, res: any) => {
+                    testLog(res.body);
 					addStartNewTest("Token");
                     should.not.exist(err);
                     res.body.should.include.keys("token");

@@ -165,27 +165,9 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       }
       return;
     // Create DB test
-    case "CREATEDBTEST2":        
-        ctx.body =  {
-          "Drop Database [mario]": "✔️️",
-          "Create Database [mario]": "✔️️",
-          "Things": "✔️️",
-          "Locations": "✔️️",
-          "FeaturesOfInterest": "✔️️",
-          "ObservedProperties": "✔️️",
-          "Sensors": "✔️️",
-          "Datastreams": "✔️️",
-          "MultiDatastreams": "✔️️",
-          "Decoders": "✔️️",
-          "Loras": "✔️️",
-          "ThingsLocations": "✔️️"
-        },    
-        ctx.status = 201;
-      return;
     case "CREATEDBTEST":
       console.log(formatLog.head("GET createDB"));
-      try {
-        // ctx.body = await createDatabase(TEST);        
+      try {        
         ctx.body =  await createService(testDatas),    
         ctx.status = 201;
       } catch (error) {

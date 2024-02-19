@@ -17,12 +17,6 @@ import apidocJson from "../apidoc.json";
 import { models } from "../../server/models";
 let NB = 0;
 export const nbAdd = () => {return `${++NB}`};
-
-
-
-
-
-
 export const identification = { "username": conf[TEST].pg.user, "password": conf[TEST].pg.password };
 export const testVersion = "v1.1";
 let nb = 0;
@@ -33,7 +27,12 @@ export const nbColorTitle = "\x1b[35m";
 export const testLog = (input: any) => {
     process.stdout.write(util.inspect(input, { showHidden: false, depth: null, colors: false, }));
 }
-export const proxy = (moi: boolean) => moi === true ? 'http://localhost:8029/test' : apidocJson.proxy;
+export const proxy = (moi: boolean) => moi !== true ? 'http://localhost:8029/test' : `${apidocJson.proxy}/test`;
+
+
+console.log("===========================> ");
+console.log(proxy);
+
 
 const createJSON = (data: any) => JSON.stringify(data, null, 4).replace(/[\n]+/g, "|\t");
 
@@ -546,7 +545,7 @@ export const listOfColumns = (inputEntity: Ientity) => {
     Object.keys(infosEntity.columns).forEach((elem: string) => {
         const optional = (inputEntity.columns[elem] && inputEntity.columns[elem].create.includes("NOT NULL")) ? elem : `[${elem}]`;
         success.push(`{${inputEntity.columns[elem] && inputEntity.columns[elem].type ? inputEntity.columns[elem].type : "none"}} ${elem} ${infosEntity["columns"][elem] || elem}`);
-        if (!inputEntity.columns[elem].create.includes("GENERATED"))
+        if (inputEntity.columns[elem] && !inputEntity.columns[elem].create.includes("GENERATED"))
             params.push(`{${inputEntity.columns[elem].type}} ${optional} ${infosEntity["type"] && infosEntity["type"][elem] ? infosEntity["type"][elem] : ""}`);
     });
     Object.keys(inputEntity.relations).forEach((elem: string) => {
