@@ -27,7 +27,7 @@ export const encrypt = (input: string): string => {
  * @param input string 
  * @returns decrypted string
  */
-export const decrypt = (input: string): string => {
+export const decrypt = (input: string): string => {  
   input = input.split("\r\n").join("");
   if (typeof input === "string" && input[32] == ".") {      
     try {

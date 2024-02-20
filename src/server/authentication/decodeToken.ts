@@ -12,7 +12,7 @@ import { IuserToken } from "../types";
 import { blankUserToken } from "../types/userToken";
 
 export const decodeToken = (ctx: koa.Context): IuserToken => {
-  if (ctx.request["token"]) {
+  if (ctx.request["token"]) {    
     const token = jsonwebtoken.decode(ctx.request["token"]);
     if (token && token["data"].id > 0)
       return Object.freeze({

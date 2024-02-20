@@ -28,6 +28,9 @@ export const testLog = (input: any) => {
     process.stdout.write(util.inspect(input, { showHidden: false, depth: null, colors: false, }));
 }
 export const proxy = (moi: boolean) => moi !== true ? 'http://localhost:8029/test' : `${apidocJson.proxy}/test`;
+import packageJson from "../../../package.json";
+export const VERSION = packageJson.version;
+
 
 
 console.log("===========================> ");

@@ -14,6 +14,7 @@ import { models } from "../../models";
 import { createInsertValues } from "../../models/helpers";
 import { sqlStopDbName } from "../../routes/helper";
 import { createSTDB } from "../createDb/createStDb";
+import { userAccess } from "../dataAccess";
 
 export const prepareDatas = (dataInput: object, entity: string): object => {
   if (entity === "Observations") {
@@ -32,6 +33,18 @@ export const createService = async (dataInput: object): Promise<object> => {
       try {  
         await createSTDB(serviceName);
         results[`Create ${mess}`  ] = _OK;
+        await userAccess.post(serviceName, {
+          username: config.pg.user,
+          email: "default@email.com",
+          password: config.pg.password,
+          database: config.pg.database,
+          canPost: true,
+          canDelete: true,
+          canCreateUser: true,
+          canCreateDb: true,
+          superAdmin: false,
+          admin: false
+      });
       } catch (error) {
         results[`Create ${mess}`] = _NOTOK;
         console.log(error);        

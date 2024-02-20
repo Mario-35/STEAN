@@ -97,15 +97,6 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
     }
   );
 
-  // if (isTest()) await serverConfig.getConnection(configName).begin(sql => {
-  //   testsDatas().forEach(async (query: string) => {
-  //     await sql.unsafe(query).catch((error: Error) => {
-  //       console.log(error);
-  //       process.exit(111);
-  //     });  
-  //   });
-  // });
-
   if ( serverConfig.getConfig(configName).extensions.includes( EextensionsType.numeric ) ) {
     await dbConnection.unsafe(`ALTER TABLE ${addDoubleQuotes(DB.Observations.table)} ALTER COLUMN 'result' TYPE float4 USING null;`)
       .catch((error: Error) => {

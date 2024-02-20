@@ -32,7 +32,7 @@ export const protectedRoutes = new Router<DefaultState, Context>();
 protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
   switch (ctx.decodedUrl.path.toUpperCase()) {
     // login html page or connection login
-    case "LOGIN":
+    case "LOGIN":      
       if (ctx.request["token"]) ctx.redirect(`${ctx.decodedUrl.root}/status`);
       await loginUser(ctx).then((user: Iuser | undefined) => {
         if (user) {
@@ -86,7 +86,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
 
       if (Object.keys(why).length === 0) {
         try {
-          await userAccess.post(ctx.request.body);
+          await userAccess.post(ctx.config.name, ctx.request.body);
         } catch (error) {
           ctx.redirect(`${ctx.decodedUrl.root}/error`);
         }
@@ -102,7 +102,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
       return;
 
     case "USER":
-      const user = await userAccess.update(ctx.request.body);
+      const user = await userAccess.update(ctx.config.name, ctx.request.body);
       if (user) {
         ctx.login(user);
         ctx.redirect(`${ctx.decodedUrl.root}/admin`);

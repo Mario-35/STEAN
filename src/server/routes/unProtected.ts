@@ -30,6 +30,7 @@ import { sqlStopDbName } from "./helper";
 import { createService } from "../db/helpers";
 
 
+
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 // ALl others
 unProtectedRoutes.get("/(.*)", async (ctx) => {

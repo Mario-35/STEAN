@@ -7,12 +7,12 @@ import chaiHttp from "chai-http";
 chai.use(chaiHttp);
 
 import { server } from "../../server/index";
-import { testVersion, _RAWDB } from "./constant";
+import { testVersion, VERSION, _RAWDB } from "./constant";
 import { AddToTestFile } from "./tests";
 
 const should = chai.should();
 const n = [_RAWDB.Things.name, _RAWDB.Locations.name, _RAWDB.HistoricalLocations.name, _RAWDB.Datastreams.name, _RAWDB.MultiDatastreams.name, _RAWDB.Sensors.name, _RAWDB.ObservedProperties.name, _RAWDB.Observations.name, _RAWDB.CreateObservations.name, _RAWDB.Loras.name, "Various"];
-AddToTestFile(`\r\r# <a id="start">TEST : ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()}</a>\r\r`);
+AddToTestFile(`\r\r# <a id="start">TEST : ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()}</a> version[${VERSION}]\r\r`);
 AddToTestFile(`${n.map(e => `[${e}](#${e})`)}\r\r`);
 
 

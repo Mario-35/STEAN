@@ -27,15 +27,23 @@ export const userAccess = {
       if (query.length === 1) return query[0];
   },
 
-  post: async (data: Iuser) => {
+  post: async (configName: string, data: Iuser) => {
+    // if (configName === "ADMIN") return;    
     return await serverConfig
-      .getConnection(ADMIN).unsafe(`INSERT INTO "user" ("email", "password", "database", "canPost", "canDelete", "canCreateUser", "canCreateDb", "superAdmin", "admin") 
-      VALUES ('${data.username}', '${data.email}', '${encrypt(data.password)}', '${data.database || "all"}', ${data.canPost || false}, ${data.canDelete || false}, ${data.canCreateUser || false}, ${data.canCreateDb || false}, ${data.superAdmin || false}, ${data.admin || false}) 
-      RETURNING *`);
+      .getConnection(configName).unsafe(`INSERT INTO "user" ("username", "email", "password", "database", "canPost", "canDelete", "canCreateUser", "canCreateDb", "superAdmin", "admin") 
+       VALUES ('${data.username}', '${data.email}', '${encrypt(data.password)}', '${data.database || "all"}', ${data.canPost || false}, ${data.canDelete || false}, ${data.canCreateUser || false}, ${data.canCreateDb || false}, ${data.superAdmin || false}, ${data.admin || false}) 
+      RETURNING *`).catch(async (err) => {
+        if (err.code === "23505") {          
+           const id = await serverConfig.getConnection(configName).unsafe(`SELECT id FROM "user" WHERE "username" = '${data.username}'`);
+            if (id[0]) {
+              data.id = id[0].id;
+              return await serverConfig .getConnection(configName).unsafe(`UPDATE "user" SET "username" = '${data.username}', "email" = '${data.email}', "database" = '${data.database}', "canPost" = ${data.canPost || false}, "canDelete" = ${data.canDelete || false}, "canCreateUser" = ${data.canCreateUser || false}, "canCreateDb" = ${data.canCreateDb || false}, "superAdmin" = ${data.superAdmin || false}, "admin" = ${data.admin || false} WHERE "id" = ${data.id} RETURNING *`);
+            }
+        }
+      })
   },
 
-  update: async (data: Iuser): Promise<Iuser | any> => {
-    return await serverConfig
-      .getConnection(ADMIN).unsafe(`UPDATE "user" SET "username" = '${data.username}', "email" = '${data.email}', "database" = '${data.database}', "canPost" = ${data.canPost || false}, "canDelete" = ${data.canDelete || false}, "canCreateUser" = ${data.canCreateUser || false}, "canCreateDb" = ${data.canCreateDb || false}, "superAdmin" = ${data.superAdmin || false}, "admin" = ${data.admin || false} WHERE "id" = ${data.id} RETURNING *`);
+  update: async (configName: string, data: Iuser): Promise<Iuser | any> => {    
+    return await serverConfig .getConnection(configName).unsafe(`UPDATE "user" SET "username" = '${data.username}', "email" = '${data.email}', "database" = '${data.database}', "canPost" = ${data.canPost || false}, "canDelete" = ${data.canDelete || false}, "canCreateUser" = ${data.canCreateUser || false}, "canCreateDb" = ${data.canCreateDb || false}, "superAdmin" = ${data.superAdmin || false}, "admin" = ${data.admin || false} WHERE "id" = ${data.id} RETURNING *`);
   }
 };

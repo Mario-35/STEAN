@@ -67,7 +67,7 @@ export const testDatas = {
 		"pg": {
 			"host": "localhost",
 			"port": 5432,
-			"user": "sensorapi",
+			"user": "postgres",
 			"password": "mario29",
 			"database": "test",
 			"retry": 2

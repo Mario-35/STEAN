@@ -21,6 +21,7 @@ import { formatLog } from "../logger";
 import { log } from "../log";
 import koa from "koa";
 import { testDatas } from "../db/createDb";
+import { userAccess } from "../db/dataAccess";
 
 // class to logCreate configs environements
 class Configuration {
@@ -55,7 +56,7 @@ class Configuration {
     }
   }
   private async createConfigTest() {
-    if (isTest()) return;
+  if (isTest()) return;
 		const result = Configuration.configs[ADMIN];
 		result.name = TEST;
     result.pg.database = TEST;
@@ -197,9 +198,7 @@ class Configuration {
       debug: _DEBUG,
       max : 20,            
       connection : { application_name : `${APP_NAME} ${APP_VERSION}` },
-    },
-  );
-
+    });
   }
   
   public createDbConnectionFromConfigName(input: string): postgres.Sql<Record<string, unknown>> {
@@ -314,11 +313,7 @@ class Configuration {
   
   public getConfigNameFromName = (name: string): string | undefined => {
     if (name) {
-      const databaseName = isTest()
-        ? "test"
-        : Object.keys(Configuration.configs).includes(name)
-        ? name
-        : undefined;
+      const databaseName = Object.keys(Configuration.configs).includes(name) ? name : undefined;
       if (databaseName) return databaseName;
       let aliasName: undefined | string = undefined;
       Object.keys(Configuration.configs).forEach((configName: string) => {
@@ -405,7 +400,18 @@ class Configuration {
   public async addToServer(key: string): Promise<boolean> {  
     await this.isDbExist(key, true)
       .then(async (res: boolean) => {
-        // await serverConfig.logCreateUser(key);
+          await userAccess.post(key, {
+            username: Configuration.configs[key].pg.user,
+            email: "default@email.com",
+            password: Configuration.configs[key].pg.password,
+            database: Configuration.configs[key].pg.database,
+            canPost: true,
+            canDelete: true,
+            canCreateUser: true,
+            canCreateDb: true,
+            superAdmin: false,
+            admin: false
+          });
         log.booting(`\x1b[37mDatabase => ${key}\x1b[39m on line`, res ? _WEB : _NOTOK);
         const port = Configuration.configs[key].port;
         if (port > 0) {
@@ -484,8 +490,9 @@ class Configuration {
           if (returnResult === false) log.error(formatLog.error(err));
         } else if (err["code"] === "3D000" && logCreate == true) {
           console.log(formatLog.debug( msg(infos.tryCreate, infos.db), Configuration.configs[connectName].pg.database ));
-          if (!isTest() && connectName === TEST) await createService(testDatas);
-          else returnResult = await this.tryToCreateDB(connectName);
+          if (!isTest() && connectName === TEST) {
+            await createService(testDatas);
+          } else returnResult = await this.tryToCreateDB(connectName);
         } else log.error(formatLog.error(err));
         return returnResult;
       });

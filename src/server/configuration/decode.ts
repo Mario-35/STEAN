@@ -28,8 +28,8 @@ const decrypt = (input: string, key: string): string => {
 
 function decode(file: fs.PathOrFileDescriptor) {
   const APP_KEY = fs.readFileSync(__dirname + "/.key", "utf8") || "zLwX893Mtt9Rc0TKvlInDXuZTFj9rxDV";
-  const fileTemp = fs.readFileSync(file, "utf8");
-  console.log(decrypt(fileTemp, APP_KEY)); 
+  const fileTemp = fs.readFileSync(file, "utf8");  
+  return decrypt(fileTemp, APP_KEY); 
 }
 
-decode(__dirname + `/production.json`);
+process.stdout.write(decode(__dirname + `/production.json`) + "\n");

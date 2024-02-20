@@ -10,7 +10,7 @@ import { Iuser } from "../types";
 import jsonwebtoken from "jsonwebtoken";
 import { APP_KEY } from "../constants";
 
-export const createToken = (input: Iuser, password: string) => {
+export const createToken = (input: Iuser, password: string) => {  
   return jsonwebtoken.sign(
     {
       data: {
