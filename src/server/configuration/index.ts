@@ -180,6 +180,17 @@ class Configuration {
     return Configuration.configs[name].connection || this.createDbConnection(Configuration.configs[name].pg);
   }
 
+  public getConnectionAdminForImport(): postgres.Sql<Record<string, unknown>> {
+    const input = Configuration.configs[ADMIN].pg;
+    return postgres(`postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/admin`,
+    {
+      debug: _DEBUG,          
+      connection           : {
+        application_name   : `${APP_NAME} ${APP_VERSION}`,
+      }
+    }
+    );
+  }
   public getConnectionAdminFor(name: string): postgres.Sql<Record<string, unknown>> {
     const input = Configuration.configs[ADMIN].pg;
     return postgres(`postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${DEFAULT_DB}`,
@@ -189,7 +200,7 @@ class Configuration {
         application_name   : `${APP_NAME} ${APP_VERSION}`,
       }
     }
-  );
+    );
   }
 
   // return postgres.js connection from Connection

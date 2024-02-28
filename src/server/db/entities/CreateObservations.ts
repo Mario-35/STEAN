@@ -60,11 +60,13 @@ export class CreateObservations extends Common {
     return res;
   }
 
+  // Bad request
   async getAll(): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     this.ctx.throw(400, { code: 400 });
   }
-
+  
+  // Bad request
   async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam(idInput));
     this.ctx.throw(400, { code: 400 });
@@ -75,76 +77,83 @@ export class CreateObservations extends Common {
     const returnValue: string[] = [];
     let total = 0;
     // verify is there JSON data
-    if (this.ctx.datas) {
+    
+    if (this.ctx.datas) {      
       const datasJson = JSON.parse(this.ctx.datas["datas"]);
-      if (!datasJson["columns"])
-        this.ctx.throw(404, { code: 404, detail: errors.noColumn });
+      if (!datasJson["columns"]) this.ctx.throw(404, { code: 404, detail: errors.noColumn });
       const myColumns: IcsvColumn[] = [];
       const streamInfos: IstreamInfos[] = [];
       await asyncForEach(
         Object.keys(datasJson["columns"]),
         async (key: string) => {
-          const tempStreamInfos = await models.getStreamInfos(
-            this.ctx.config,
-            datasJson["columns"][key] as JSON
-          );
+          const tempStreamInfos = await models.getStreamInfos( this.ctx.config, datasJson["columns"][key] as JSON );
           if (tempStreamInfos) {
             streamInfos.push(tempStreamInfos);
-            myColumns.push({
-              column: key,
-              stream: tempStreamInfos,
-            });
-          } else
-            this.ctx.throw(
-              404,
-              msg(
-                errors.noValidStream,
-                util.inspect(datasJson["columns"][key], {
-                  showHidden: false,
-                  depth: null,
-                  colors: false,
-                })
-              )
-            );
+            myColumns.push({ column: key, stream: tempStreamInfos, });
+          } else this.ctx.throw( 404, msg( errors.noValidStream, util.inspect(datasJson["columns"][key], { showHidden: false, depth: null, colors: false, }) ) );
         }
       );
 
       const paramsFile: IcsvFile = {
         tempTable: `temp${Date.now().toString()}`,
-        filename: this.ctx.datas["file"],
+        filename: dataInput["import"] || this.ctx.datas["file"],
         columns: myColumns,
-        header:
-          datasJson["header"] && datasJson["header"] == true ? ", HEADER" : "",
+        header: datasJson["header"] && datasJson["header"] == true ? ", HEADER" : "",
         stream: streamInfos,
       };
-      await streamCsvFileInPostgreSql(this.ctx, paramsFile)
-        .then(async (res) => {
+      await streamCsvFileInPostgreSql(this.ctx, paramsFile).then(async (res) => {
           console.log(formatLog.debug("streamCsvFileInPostgreSql", _OK));
             console.log(formatLog.result("query", res));
             // Execute query
             if (res) await executeSql(this.ctx.config, res).then(async (returnResult: object) => {
               console.log(formatLog.debug("SQL Executing", _OK));
-              returnResult = returnResult[0];
-              returnValue.push(
-                `Add ${
-                  returnResult && returnResult["inserted"]
-                    ? +returnResult["inserted"]
-                    : -1
-                } observations from ${
-                  paramsFile.filename.split("/").reverse()[0]
-                }`
-              );
-              total =
-                returnResult && returnResult["total"]
-                  ? +returnResult["total"]
-                  : -1;
+              returnResult = returnResult[0]; returnValue.push( `Add ${ returnResult && returnResult["inserted"] ? +returnResult["inserted"] : -1 } observations from ${ paramsFile.filename.split("/").reverse()[0] }` );
+              total = returnResult && returnResult["total"] ? +returnResult["total"] : -1;
             });
         })
         .catch((error: Error) => {
           log.errorMsg(error);
         });
+       
+    } else if (dataInput["import"]) {
+      if (!dataInput["columns"]) this.ctx.throw(404, { code: 404, detail: errors.noColumn });
+      const myColumns: IcsvColumn[] = [];
+      const streamInfos: IstreamInfos[] = [];
+      await asyncForEach(
+        Object.keys(dataInput["columns"]),
+        async (key: string) => {
+          const tempStreamInfos = await models.getStreamInfos( this.ctx.config, dataInput["columns"][key] as JSON );
+          if (tempStreamInfos) {
+            streamInfos.push(tempStreamInfos);
+            myColumns.push({ column: key, stream: tempStreamInfos, });
+          } else this.ctx.throw( 404, msg( errors.noValidStream, util.inspect(dataInput["columns"][key], { showHidden: false, depth: null, colors: false, }) ) );
+        }
+      );
+
+      const paramsFile: IcsvFile = {
+        tempTable: `${this.ctx.config.name}${dataInput["import"]}`,
+        filename: "import",
+        columns: myColumns,
+        header: dataInput["header"] && dataInput["header"] == true ? ", HEADER" : "",
+        stream: streamInfos,
+      };
+      
+      await streamCsvFileInPostgreSql(this.ctx, paramsFile).then(async (res) => {
+          console.log(formatLog.debug("streamCsvFileInPostgreSql", _OK));
+            console.log(formatLog.result("query", res));
+            // Execute query
+            if (res) await executeSql(this.ctx.config, res).then(async (returnResult: object) => {
+              console.log(formatLog.debug("SQL Executing", _OK));
+              returnResult = returnResult[0]; returnValue.push( `Add ${ returnResult && returnResult["inserted"] ? +returnResult["inserted"] : -1 } observations from ${ paramsFile.filename.split("/").reverse()[0] }` );
+              total = returnResult && returnResult["total"] ? +returnResult["total"] : -1;
+            });
+        })
+        .catch((error: Error) => {
+          log.errorMsg(error);
+        });
+
     } else {
-      /// classic Create
+      /// classic Create      
       const dataStreamId = await models.getStreamInfos(this.ctx.config, dataInput);
       if (!dataStreamId)
         this.ctx.throw(404, { code: 404, detail: errors.noStream });
@@ -154,32 +163,17 @@ export class CreateObservations extends Common {
           const values = this.createListColumnsValues("VALUES", [ String(dataStreamId.id), ...elem, ]);
           await executeSqlValues(this.ctx.config, `INSERT INTO "observation" (${keys}) VALUES (${values}) RETURNING id`)
             .then((res: object) => {
-              returnValue.push(
-                this.linkBase.replace("Create", "") +
-                  "(" +
-                  res[0]+
-                  ")"
-              );
+              returnValue.push( this.linkBase.replace("Create", "") + "(" + res[0]+ ")" );
               total += 1;
             })
             .catch(async (error) => {
               if (error.code === "23505") {
                 returnValue.push(`Duplicate (${elem})`);
-                if (
-                  dataInput["duplicate"] &&
-                  dataInput["duplicate"].toUpperCase() === "DELETE"
-                ) {
-                  await executeSqlValues(this.ctx.config, `delete FROM "observation" WHERE 1=1 ` +
-                        keys
-                          .map((e, i) => `AND ${e} = ${values[i]}`)
-                          .join(" ") +
-                        ` RETURNING id`
-                    )
-                    .then((res: object) => {
+                if ( dataInput["duplicate"] && dataInput["duplicate"].toUpperCase() === "DELETE" ) {
+                  await executeSqlValues(this.ctx.config, `DELETE FROM "observation" WHERE 1=1 ` + keys .map((e, i) => `AND ${e} = ${values[i]}`) .join(" ") + ` RETURNING id` ) .then((res: object) => {
                       returnValue.push(`delete id ==> ${res[0]}`);
                       total += 1;
-                    })
-                    .catch((error) => {
+                    }).catch((error) => {
                       formatLog.writeErrorInFile(undefined, error);
                     });
                 }

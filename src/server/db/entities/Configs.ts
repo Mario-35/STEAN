@@ -13,15 +13,15 @@ import { IreturnResult } from "../../types";
 import { serverConfig } from "../../configuration";
 import { hideKeysInJson, hidePassword } from "../../helpers";
 import { ensureAuthenticated } from "../../authentication";
-import { createService } from "../helpers";
+import { addToService, createService } from "../helpers";
 import { _NOTOK, _OK } from "../../constants";
+import { createPays } from "../helpers/createService";
 
 
 export class Configs extends Common {
   constructor(ctx: koa.Context) {
     super(ctx);
   }
-
 
   async getAll(): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
@@ -52,7 +52,15 @@ export class Configs extends Common {
     console.log(formatLog.whereIam());
     if(dataInput && dataInput["create"] && dataInput["create"]["name"]) {
       return this.createReturnResult({
-        body: await createService(dataInput),
+        body: await createService(dataInput, this.ctx),
+      });
+    } else if(dataInput && dataInput["add"] && dataInput["add"]["name"]) {
+      return this.createReturnResult({
+        body: await addToService(this.ctx, dataInput),
+      });
+    }  else if(dataInput && dataInput["pays"] && dataInput["pays"]["name"]) {
+      return this.createReturnResult({
+        body: await createPays(dataInput, this.ctx),
       });
     }
     if (!ensureAuthenticated(this.ctx)) this.ctx.throw(401);    

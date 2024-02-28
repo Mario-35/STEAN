@@ -24,11 +24,7 @@ const doSomeWarkAfterCreateAst = async (input: PgVisitor, ctx: koa.Context) => {
 };
 
 const escapesOdata = (input: string) : string => {
-  const codes = {
-    "/" : "%252F",
-    "\\" : "%255C"
-  };
-
+  const codes = { "/" : "%252F", "\\" : "%255C" };
   const pop:string[] = [];
   input.split("%27").forEach((v: string,i: number) => {
     if (i > 0) Object.keys(codes).forEach((code: string) => v = v.split(code).join(codes[code]));
@@ -37,17 +33,16 @@ const escapesOdata = (input: string) : string => {
   return pop.join("%27");
 };
 
-
 export const createOdata = async (ctx: koa.Context): Promise<PgVisitor | undefined> => {
   // blank url if not defined
-  const blankUrl = `$top=${ctx.config.nb_page ? ctx.config.nb_page : 200}`;
   // init Ressource wich have to be tested first
+
   const options: SqlOptions = {
     onlyValue: false,
     onlyRef: false,
     valueskeys: false,
   };
-  
+
   // normalize href
   let urlSrc = `${ctx.decodedUrl.path}${ctx.decodedUrl.search}`;
     
@@ -93,7 +88,7 @@ export const createOdata = async (ctx: koa.Context): Promise<PgVisitor | undefin
     
   const urlSrcSplit = cleanUrl(urlSrc).split("?");
 
-  if (!urlSrcSplit[1]) urlSrcSplit.push(blankUrl);
+  if (!urlSrcSplit[1]) urlSrcSplit.push(`$top=${ctx.config.nb_page ? ctx.config.nb_page : 200}`);
 
   if (urlSrcSplit[0].split("(").length != urlSrcSplit[0].split(")").length) urlSrcSplit[0] += ")";
 

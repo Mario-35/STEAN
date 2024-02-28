@@ -12,6 +12,7 @@ export { Icomon } from "./comon";
 export { IconfigFile } from "./configFile";
 export { IcsvColumn } from "./csvColumn";
 export { IcsvFile } from "./csvFile";
+export { IcsvImport } from "./csvImport";
 export { IdbConnection } from "./dbConnection";
 export { Ientity } from "./entity";
 export { IentityColumn } from "./entityColumn";

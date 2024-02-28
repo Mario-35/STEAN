@@ -17,6 +17,8 @@ import { formatLog } from "../../logger";
       case "object" :        
         return value.hasOwnProperty("@iot.name") 
         ? `(SELECT "id" FROM "${columnName.split("_")[0]}" WHERE "name" = '${ESCAPE_SIMPLE_QUOTE(value["@iot.name"])}')`
+        : value.hasOwnProperty("@iot.id") 
+        ? value["@iot.id"]
         : type === 'text[]' 
           ? addSimpleQuotes(`{${value.map((e: string) => addDoubleQuotes(removeSimpleQuotes(e))).join(",")}}`) 
           : type === 'result'

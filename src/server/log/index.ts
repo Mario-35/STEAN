@@ -22,6 +22,7 @@ class Log {
     Log.logFile = fs.createWriteStream(_ERRORFILE, { flags: "a" });
     Log.logFile.write( util.format.apply(null, data).replace(/\u001b[^m]*?m/g, "") + "\n" );
     process.stdout.write(util.format.apply(null, data) + "\n");
+    return data;
   }
 
   public booting<T>(cle: string, value: T) { 
@@ -41,7 +42,7 @@ class Log {
   }
 
   public query(sql: unknown) {
-    if(_DEBUG) process.stdout.write(`${color(EColor.FgYellow)} [Query] ==> \n${color(EColor.FgCyan)} ${showAll(sql)}${color( EColor.Reset )}\n`);
+    if(_DEBUG) process.stdout.write(`${color(EColor.FgYellow)}${"=".repeat(20)}[ Query ]${"=".repeat(20)}${color(EColor.FgCyan)} ${showAll(sql)}${color( EColor.Reset )}\n`);
   }
 
   public queryError<T>(query: unknown, error: T) {  

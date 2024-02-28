@@ -11,7 +11,6 @@ import { ESCAPE_SIMPLE_QUOTE, _COLUMNSEPARATOR } from "../../../constants";
 import { isCsvOrArray, isGraph, isObservation, removeAllQuotes, removeDoubleQuotes } from "../../../helpers";
 import { formatLog } from "../../../logger";
 import { models } from "../../../models";
-import { IKeyBoolean } from "../../../types";
 import { PgVisitor } from "../PgVisitor";
 
 function extractColumnName(input: string): string{   
@@ -40,24 +39,24 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
     const returnValue: string[] = isGraph(main)
                                     ? [ main.interval
                                             ? `timestamp_ceil("resultTime", interval '${main.interval}') AS srcdate`
-                                            : `CONCAT('[new Date("', TO_CHAR("resultTime", 'YYYY/MM/DD HH24:MI'), '"), ', result->${main.ctx.model.MultiDatastreams && main.parentEntity === main.ctx.model.MultiDatastreams.name ? "'valueskeys'->src.name" : "'value'"} ,']')`
+                                            : `CONCAT('[new Date("', TO_CHAR("resultTime", 'YYYY/MM/DD HH24:MI'), '"), ', (result->>${main.ctx.model.MultiDatastreams && main.parentEntity === main.ctx.model.MultiDatastreams.name ? "'valueskeys')::jsonb->src.name" : "'value'"} ,']')`
                                         ] 
                                     : isCsvOrArray(main) ? ["id"] : [];                                    
                                     
     const selfLink = `CONCAT('${main.ctx.decodedUrl.root}/${tempEntity.name}(', "${tempEntity.table}"."id", ')') AS "@iot.selfLink"`; 
     if (element.onlyRef == true || element.showRelations == true ) returnValue.push(selfLink);
-    const all = (element.select === "*" || element.select === "");
-    const columns:string[] = all
-        ? Object.keys(tempEntity.columns).filter((word) => !word.includes("_")).filter(e => !(e === "result" && element.splitResult))
+    const columns:string[] = (element.select === "*" || element.select === "")
+        ? Object.keys(tempEntity.columns)
+            .filter((word) => !word.includes("_"))
+            .filter(e => !(e === "result" && element.splitResult))
+            .filter(e => !tempEntity.columns[e].extensions || tempEntity.columns[e].extensions && main.ctx.config.extensions.includes(tempEntity.columns[e].extensions))
         : element.select.split(_COLUMNSEPARATOR).filter((word: string) => word.trim() != "").map(e => removeDoubleQuotes(e));
-    if (all) element.addToArrayNames(columns.map(e => tempEntity.columns[e].create === "" ? "" : e)); 
-
+        
     columns.map((column: string) => {
         const force = ["id","result"].includes(column) ? true : false;
-        const options: IKeyBoolean = { valueskeys: element.valueskeys, quoted: true, table: true, alias: force, as: force };
-        const temp = formatedColumn(main.ctx.config, tempEntity, column, options );
-        return temp || "";
+        return formatedColumn(main.ctx.config, tempEntity, column, { valueskeys: element.valueskeys, quoted: true, table: true, alias: force, as: isGraph(main) ? false : true } ) || "";
     }) .filter(e => e != "" ).forEach((e: string) => {    
+        if (isCsvOrArray(main)) main.addToArrayNames(e);
         returnValue.push(e);
         if (main.interval) main.addToIntervalColumns(extractColumnName(e));
         if (e === "id" && (element.showRelations == true || isCsvOrArray(main))) {
@@ -74,7 +73,7 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
         if (element.splitResult) element.splitResult.forEach((elem: string) => {
             const one = element && element.splitResult && element.splitResult.length === 1;
             const alias: string = one ? "result" : elem;
-            returnValue.push( `result-> 'valueskeys'->'${ESCAPE_SIMPLE_QUOTE(element.splitResult && one ? removeAllQuotes(element.splitResult[0]) : alias)}' AS "${ one ? elem : alias}"` );
+            returnValue.push( `(result->>'valueskeys')::json->'${ESCAPE_SIMPLE_QUOTE(element.splitResult && one ? removeAllQuotes(element.splitResult[0]) : alias)}' AS "${ one ? elem : alias}"` );
             main.addToArrayNames(one ? elem : alias);
         });
     }

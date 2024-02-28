@@ -82,8 +82,6 @@ export class Loras extends Common {
     const stream = await executeSql(this.ctx.config, queryStreamFromDeveui(this.stean["deveui"])).then((res: object) => {
       if (res[0]["multidatastream"] != null) return res[0]["multidatastream"][0];
       if (res[0]["datastream"] != null) return res[0]["datastream"][0];
-      console.log(res);
-      
       this.ctx.throw(400, { code: 400, detail: errors.deveuiMessage });      
     });
     console.log(formatLog.debug("stream", stream));
@@ -157,7 +155,6 @@ export class Loras extends Common {
       });
       
       console.log(formatLog.debug("Values", listOfSortedValues));
-      console.log(listOfSortedValues);
 
       if ( Object.values(listOfSortedValues).filter((word) => word != null) .length < 1 ) {
         const errorMessage = `${errors.dataNotCorresponding} [${stream["keys"]}] with [${Object.keys(this.stean["formatedDatas"])}]`;

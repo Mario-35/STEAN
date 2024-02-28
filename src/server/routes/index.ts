@@ -49,6 +49,7 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
       ? ctx.originalUrl.replace(decodedUrl.version, versionString(ctx.config.apiVersion))
       : `${ctx.decodedUrl.linkbase}/v${ctx.config.apiVersion}/`);
   }
+  
   // try to clean query string
   ctx.querystring = decodeURIComponent(querystring.unescape(ctx.querystring));
   // prepare logs object

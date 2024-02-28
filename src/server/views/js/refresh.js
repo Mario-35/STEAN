@@ -5,7 +5,8 @@ function updateForm() {
 	buttonGo();
 	const tempOptions = getFormatOptions();
 	populateSelect(resultFormatOption, tempOptions, getDefaultValue(resultFormatOption, tempOptions));
-	getElement("actionForm").action = `${optHost.value}/${optVersion.value}/${entityOption.value}${entityOption.value === "CreateObservations" || isObservation() ? "" : `(${idOption.value})/CreateFile` }`;
+	getElement("actionForm").action = `${optHost.value}/${optVersion.value}/${entityOption.value}${entityOption.value === "CreateObservations" || isObservation() ? "" : `` }`;
+	// getElement("actionForm").action = `${optHost.value}/${optVersion.value}/${entityOption.value}${entityOption.value === "CreateObservations" || isObservation() ? "" : `(${idOption.value})/CreateFile` }`;
 	tabEnabledDisabled("propertyTab", isAdmin === false && (idOption.value != ""));
 	tabEnabledDisabled("importTab", isAdmin === false && _PARAMS.user.canPost);
 	tabEnabledDisabled("observationsTab", isAdmin === false && isObservation());

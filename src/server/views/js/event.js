@@ -14,7 +14,7 @@ submit.onclick = () => {
 };
 
 services.addEventListener("change", () => {
-	window.location.href = `${_PARAMS.services[services.value].root}Query`;
+	window.location.href = `${_PARAMS.services[services.value].root}/Query`;
 });
 
 preview.onclick = () => {
@@ -237,9 +237,6 @@ fileone.addEventListener("change", (e) => {
 		if (fileName) {
 			fileonelabel.querySelector("span").innerHTML = fileName;
 			methodOption.value = "POST";
-			// const key = "Datastreams";
-			// entityOption.value = key;
-			// if (Object.keys( _PARAMS._DATAS [key].relations)) populateSelect(subentityOption, Object.keys( _PARAMS._DATAS [key].relations)[entityOption.value], "Observations", true);
 			importFile = true;
 		} else {
 			fileonelabel.innerHTML = labelVal;

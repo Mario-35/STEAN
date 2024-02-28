@@ -56,9 +56,7 @@ addToApiDoc({
     apiName: "InfosImport",
     apiDescription: `<hr>
     <div class="text">
-      <p>
-      You can import a csv file in observations. with one or multiple columns
-      </p>
+      <p> You can import a csv file in observations. with one or multiple columns </p>
     </div>`,
     result: ""
 });

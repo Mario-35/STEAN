@@ -31,12 +31,6 @@ export const proxy = (moi: boolean) => moi !== true ? 'http://localhost:8029/tes
 import packageJson from "../../../package.json";
 export const VERSION = packageJson.version;
 
-
-
-console.log("===========================> ");
-console.log(proxy);
-
-
 const createJSON = (data: any) => JSON.stringify(data, null, 4).replace(/[\n]+/g, "|\t");
 
 export interface Iinfos {

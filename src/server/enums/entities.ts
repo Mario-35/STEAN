@@ -24,6 +24,7 @@ export enum Eentities {
     Loras = 'Loras' ,
     CreateObservations = 'CreateObservations' ,
     CreateFile = 'CreateFile' ,
+    CreateImport = 'CreateImport' ,
     Logs = 'Logs',
     Users = 'Users',
     Configs = 'Configs',

@@ -17,14 +17,7 @@ export const decodeloraDeveuiPayload = async ( ctx: koa.Context, loraDeveui: str
   console.log(formatLog.debug(`decodeLoraPayload deveui : [${loraDeveui}]`, payload));  
   return await executeSql(ctx.config, `SELECT "name", "code", "nomenclature", "synonym" FROM "${ctx.model.Decoders.table}" WHERE id = (SELECT "decoder_id" FROM "${ctx.model.Loras.table}" WHERE "deveui" = '${loraDeveui}') LIMIT 1`)
     .then((res: object) => {
-        return decodingPayload(
-          {
-            name: res[0]["name"],
-            code: String(res[0]["code"]),
-            nomenclature: res[0]["nomenclature"],
-          },
-          payload
-        );
+      return decodingPayload( { ...res[0] }, payload );
     }).catch(() => {
       return {
         decoder: "undefined",

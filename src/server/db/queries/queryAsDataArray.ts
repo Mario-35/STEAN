@@ -13,7 +13,11 @@ import { addDoubleQuotes, addSimpleQuotes, removeAllQuotes } from "../../helpers
 import { PgVisitor } from "../../odata";
 
 export const queryAsDataArray = (input: PgVisitor): string => {
+  console.log("==================================");
+  console.log(input.arrayNames);
+  
   const names:string[] = input.arrayNames.map(e => removeAllQuotes(e));
+  console.log(names);
   // create names
   input.includes.forEach((include) => { names.push(include.entity); });
   // Return SQL query

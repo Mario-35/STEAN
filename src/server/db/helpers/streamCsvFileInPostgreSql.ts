@@ -8,68 +8,17 @@
 
 import fs from "fs";
 import { formatLog } from "../../logger";
-import { IcsvColumn, IcsvFile } from "../../types";
+import { IcsvColumn, IcsvFile, IcsvImport } from "../../types";
 import readline from "readline";
 import koa from "koa";
 import { createReadStream } from 'fs';
 import { addAbortSignal } from 'stream';
 import { serverConfig } from "../../configuration";
-import { executeSql } from ".";
+import { createCsvColumnsNameImport, executeSql } from ".";
 import { log } from "../../log";
+import { ADMIN } from "../../constants";
 
-interface ICsvImport {
-  dateSql: string;
-  columns: string[];
-}
-
-const dateSqlRequest = async ( paramsFile: IcsvFile ): Promise<ICsvImport | undefined> => {
-  const returnValue: ICsvImport = { dateSql: "", columns: [] };
-  const fileStream = fs.createReadStream(paramsFile.filename);
-  const regexDate = /^[0-9]{2}[\/][0-9]{2}[\/][0-9]{4}$/g;
-  const regexHour = /^[0-9]{2}[:][0-9]{2}[:][0-9]{2}$/g;
-  const regexDateHour =
-    /^[0-9]{2}[\/][0-9]{2}[\/][0-9]{4} [0-9]{2}[:][0-9]{2}$/g;
-  const rl = readline.createInterface({
-    input: fileStream,
-    crlfDelay: Infinity,
-  });
-
-  // Note: we use the crlfDelay option to recognize all instances of CR LF
-  // ('\r\n') in filename as a single line break.
-
-  for await (const line of rl) {
-    const splitColumns = line.split(";");
-    if (regexDateHour.test(splitColumns[0]) == true) {
-      const nbCol = (line.match(/;/g) || []).length;
-      console.log(formatLog.result("dateSqlRequest", "Date Hour"));
-      returnValue.columns = ["datehour"];
-      for (let i = 0; i < nbCol; i++) returnValue.columns.push(`value${i + 1}`);
-
-      fileStream.destroy();
-      returnValue.dateSql = `TO_TIMESTAMP(REPLACE("${paramsFile.tempTable}".datehour, '24:00:00', '23:59:59'), 'DD/MM/YYYY HH24:MI:SS')`;
-      return returnValue;
-    } else if (
-      regexDate.test(splitColumns[0]) == true &&
-      regexHour.test(splitColumns[1]) == true
-    ) {
-      console.log(formatLog.result("dateSqlRequest", "date ; hour"));
-      const nbCol = (line.match(/;/g) || []).length;
-
-      returnValue.columns = ["date", "hour"];
-      for (let i = 0; i < nbCol - 1; i++)
-        returnValue.columns.push(`value${i + 1}`);
-
-      fileStream.destroy();
-      returnValue.dateSql = `TO_TIMESTAMP(concat("${paramsFile.tempTable}".date, REPLACE("${paramsFile.tempTable}".hour, '24:00:00', '23:59:59')), 'DD/MM/YYYYHH24:MI:SS:MS')`;
-      return returnValue;
-    }
-  }
-  return returnValue;
-};
-
-export const createColumnHeaderName = async (
-  filename: string
-): Promise<string[] | undefined> => {
+export const createColumnHeaderName = async ( filename: string ): Promise<string[] | undefined> => {
   const fileStream = fs.createReadStream(filename);
 
   const rl = readline.createInterface({
@@ -94,11 +43,19 @@ export const createColumnHeaderName = async (
   }
 };
 
+const createImportColumnsNameImport = async ( paramsFile: IcsvFile ): Promise<IcsvImport | undefined> => {
+  console.log(formatLog.whereIam());
+  const query = await serverConfig.getConnectionAdminForImport().unsafe(`SELECT description FROM pg_description JOIN pg_class ON pg_description.objoid = pg_class.oid WHERE relname = '${paramsFile.tempTable}' AND description LIKE '%dateSql%'`);
+  return (query[0] && query[0].description) ?  JSON.parse(query[0].description) : undefined;
+}
+
 export const streamCsvFileInPostgreSql = async ( ctx: koa.Context, paramsFile: IcsvFile ): Promise<string | undefined> => {
   console.log(formatLog.whereIam());
+  // const importMode: boolean = paramsFile.filename.toUpperCase() === "IMPORT";
   let returnValue = undefined;
-  const sqlRequest = await dateSqlRequest(paramsFile);
+  const sqlRequest =  (paramsFile.filename !== "import") ? await createCsvColumnsNameImport(paramsFile) : await createImportColumnsNameImport(paramsFile);
   if (sqlRequest) {
+  if (paramsFile.filename !== "import") {
     const controller = new AbortController();
     const readable = createReadStream(paramsFile.filename);
     const cols:string[] = [];
@@ -112,7 +69,7 @@ export const streamCsvFileInPostgreSql = async ( ctx: koa.Context, paramsFile: I
       .on('error', () => {
         log.errorMsg('ABORTED-STREAM'); // this executed
       });
-      
+    }
     const fileImport = paramsFile.filename.split("/").reverse()[0];
     const dateImport = new Date().toLocaleString();
 
@@ -121,12 +78,17 @@ export const streamCsvFileInPostgreSql = async ( ctx: koa.Context, paramsFile: I
     const scriptSql: string[] = [];
     const scriptSqlResult: string[] = [];
     // make import query
+    if (paramsFile.filename === "import") {
+      scriptSql.push(`SELECT dblink_connect('host=localhost user=${serverConfig.getConfig(ADMIN).pg.user} password=${serverConfig.getConfig(ADMIN).pg.password} dbname=admin');`);
+      scriptSql.push(`WITH ${paramsFile.tempTable} AS (SELECT * FROM dblink('SELECT "date", "hour", "value1" FROM "${paramsFile.tempTable}"') as i("date" TEXT, "hour" text, "value1" TEXT))`);
+    }
     Object.keys(paramsFile.columns).forEach(
       async (myColumn: string, index: number) => {
         const csvColumn: IcsvColumn = paramsFile.columns[myColumn];
         const valueSql = `json_build_object('value', CASE "${paramsFile.tempTable}".value${csvColumn.column} WHEN '---' THEN NULL ELSE cast(REPLACE(value${csvColumn.column},',','.') AS float) END)`;
+        // `, updated${
         scriptSql.push(
-          `${index == 0 ? "WITH" : ","} updated${
+          `${index == 0 && paramsFile.filename !== "import" ? "WITH" : ","} updated${
             index + 1
           } AS (INSERT into "${
             ctx.model.Observations.table
@@ -148,6 +110,8 @@ export const streamCsvFileInPostgreSql = async ( ctx: koa.Context, paramsFile: I
     scriptSqlResult.push(") AS inserted");
     scriptSql.push(scriptSqlResult.join(""));
     returnValue = scriptSql.join("");
+    console.log(returnValue);
+    
     return returnValue;
   }   
   return returnValue;

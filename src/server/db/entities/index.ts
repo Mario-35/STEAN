@@ -15,6 +15,7 @@ export { MultiDatastreams } from "./MultiDatastreams";
 export { MultiObservedProperties } from "./MultiObservedProperties";
 export { CreateObservations } from "./CreateObservations";
 export { CreateFile } from "./CreateFile";
+export { CreateImport } from "./CreateImport";
 export { Observations } from "./Observations";
 export { ObservedProperties } from "./ObservedProperties";
 export { Sensors } from "./Sensors";

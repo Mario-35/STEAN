@@ -61,16 +61,10 @@ function canShowQueryButton() {
 // |                                  GO Button                                  |
 // ===============================================================================
 
-function whatButton(obj) {
-	if (go === obj) show(getElement(go));
-	else hide(getElement(go));
-}
-
 function buttonGo() {
 	if (importFile === true) {
 		hide(go);
-		console.log(submit.value);
-		hide(submit);
+		show(submit);
 	} else {
 		show(go);
 		canShowQueryButton();

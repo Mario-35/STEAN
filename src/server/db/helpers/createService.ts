@@ -6,17 +6,20 @@
  *
  */
 
-import { executeAdmin, executeSqlValues } from ".";
+import { addToService, executeAdmin, executeSqlValues } from ".";
 import { serverConfig } from "../../configuration";
 import { _NOTOK, _OK } from "../../constants";
 import { addDoubleQuotes, addSimpleQuotes, asyncForEach } from "../../helpers";
+import { listaddJsonFiles } from "../../jsons";
 import { models } from "../../models";
 import { createInsertValues } from "../../models/helpers";
 import { sqlStopDbName } from "../../routes/helper";
 import { createSTDB } from "../createDb/createStDb";
 import { userAccess } from "../dataAccess";
+import fs from "fs";
+import koa from "koa";
 
-export const prepareDatas = (dataInput: object, entity: string): object => {
+const prepareDatas = (dataInput: object, entity: string): object => {
   if (entity === "Observations") {
     if (!dataInput["resultTime"] && dataInput["phenomenonTime"] ) dataInput["resultTime"]  = dataInput["phenomenonTime"] 
     if (!dataInput["phenomenonTime"] && dataInput["resultTime"] ) dataInput["phenomenonTime"]  = dataInput["resultTime"] 
@@ -24,7 +27,31 @@ export const prepareDatas = (dataInput: object, entity: string): object => {
   return dataInput;
 }
 
-export const createService = async (dataInput: object): Promise<object> => {
+const getConvertedData = async (url: string): Promise<object> => {
+  return fetch(url, {
+    method: 'GET',
+    headers: {},
+  })
+    .then((response) => response.json());
+}
+
+
+
+const addToServiceFromUrl = async (url: string | undefined, ctx: koa.Context): Promise<string> => {
+  while(url) {
+    console.log(url);    
+    try {      
+      const datas = await getConvertedData(url);
+      await addToService(ctx, datas);
+      return datas["@iot.nextLink"];
+    } catch (error) {  
+      console.log(error) ;
+      return "";
+    }
+  }
+  return "";
+}
+export const createService = async (dataInput: object, ctx?: koa.Context): Promise<object> => {
   const results = {};
   const serviceName = dataInput["create"]["name"];
   const config = serverConfig.getConfig(serviceName);
@@ -66,13 +93,11 @@ export const createService = async (dataInput: object): Promise<object> => {
     });
 
     const tmp = models.filteredModelFromConfig(config);
+
+
     
-    await asyncForEach( Object.keys(tmp)
-                          .filter((elem: string) => tmp[elem].createOrder > 0)
-                          .sort((a, b) => (tmp[a].createOrder > tmp[b].createOrder ? 1 : -1)), 
-      async (entityName: string) => {
+    await asyncForEach( Object.keys(tmp) .filter((elem: string) => tmp[elem].createOrder > 0) .sort((a, b) => (tmp[a].createOrder > tmp[b].createOrder ? 1 : -1)), async (entityName: string) => {
       if (dataInput[entityName]) {
-        
         const goodEntity = models.getEntity(config, entityName);
         if (goodEntity) {
           try {
@@ -90,5 +115,34 @@ export const createService = async (dataInput: object): Promise<object> => {
         }
       }
     });
+    if(ctx && dataInput["create"]["imports"]) {
+      await asyncForEach(dataInput["create"]["imports"], async (url: string | undefined) => {
+        console.log(url);
+        url = `${url}&$top=1000`;
+        console.log(url);    
+        while(url !+ "") {
+          url = await addToServiceFromUrl(url, ctx);
+        }
+          
+        });
+    }
+    return results;
+}
+
+
+export const createPays = async (dataInput: object, ctx?: koa.Context): Promise<object> => {
+  const results = {}; 
+
+    if(ctx) {
+      const lists = listaddJsonFiles();
+      console.log(lists);
+      await asyncForEach (lists, async (file: string) => {
+        console.log(`=================> ${file}`);
+        
+        const fileContent = fs.readFileSync(file, "utf8");
+        const mario = JSON.parse(`{"payloads": [${fileContent}{}]}`);
+        await addToService(ctx, mario);
+      });
+    }
     return results;
 }

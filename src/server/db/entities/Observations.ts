@@ -71,7 +71,9 @@ export class Observations extends Common {
   async post(dataInput: object): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     if (dataInput) dataInput = await this.prepareInputResult(dataInput);
-    return await super.post(dataInput);
+    if (dataInput["import"]) {
+      
+    } else return await super.post(dataInput);
   }
 
   async update( idInput: bigint, dataInput: object | undefined ): Promise<IreturnResult | undefined> {

@@ -57,4 +57,4 @@ export function showAll<T>(input: T, colors?: boolean) { return typeof input ===
 export let _DEBUG = false;
 export let _READY = false;
 
-
+export function creatNameFile(fileName: string):string { return `${fileName}${new Date().toLocaleDateString().replace(/\D/g, "")}${new Date().toLocaleTimeString().replace(/\D/g, "")}` };

@@ -1083,6 +1083,7 @@ class Models {
 
               payload: {
                 create: "",
+                extensions: EextensionsType.lora,
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 columnAlias(config: IconfigFile, test: IKeyBoolean | undefined) {
                   return config.extensions.includes(EextensionsType.lora)
@@ -1092,6 +1093,7 @@ class Models {
               },
               deveui: {
                 create: "",
+                extensions: EextensionsType.lora,
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 columnAlias(config: IconfigFile, test: IKeyBoolean | undefined) {
                   return config.extensions.includes(EextensionsType.lora)
@@ -1149,8 +1151,7 @@ class Models {
                 type: Erelations.belongsTo,
                 expand: `"featureofinterest"."id" = "observation"."featureofinterest_id"`,
                 // link: "err: 501 : Not Implemented.",
-                link: `"featureofinterest"."id" = (SELECT "observation"."featureofinterest_id" FROM "observation" WHERE "observation"."id" = $ID)`,
-        
+                link: `"featureofinterest"."id" = (SELECT "observation"."featureofinterest_id" FROM "observation" WHERE "observation"."id" = $ID)`,        
                 entityName: "FeaturesOfInterest",
                 tableName: "featureofinterest",
                 relationKey: "id",
@@ -1214,8 +1215,7 @@ class Models {
               Observations: {
                 type: Erelations.belongsTo,
                 expand: `"observation"."id" = "historical_observation"."observation_id"`,
-                link: "err: 501 : Not Implemented.",
-        
+                link: "err: 501 : Not Implemented.",        
                 entityName: "Observations",
                 tableName: "observation",
                 relationKey: "observation_id",
@@ -1675,6 +1675,23 @@ class Models {
           CreateFile: {
             name: "CreateFile",
             singular: "CreateFile",
+            table: "",
+            createOrder: 0,
+            order: 0,
+            extensions: [EextensionsType.base],
+            orderBy: "",
+            count: "",
+            visible: true,
+            columns: {},
+            canPost: true,
+            relations: {},
+            constraints: {},
+            indexes: {},
+          },
+
+          CreateImport: {
+            name: "CreateImport",
+            singular: "CreateImport",
             table: "",
             createOrder: 0,
             order: 0,

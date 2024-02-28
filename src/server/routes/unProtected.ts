@@ -29,8 +29,6 @@ import { models } from "../models";
 import { sqlStopDbName } from "./helper";
 import { createService } from "../db/helpers";
 
-
-
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 // ALl others
 unProtectedRoutes.get("/(.*)", async (ctx) => {
@@ -225,8 +223,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         if (ctx.odata.entity && Number(ctx.odata.id) === 0) {
           const returnValue = await objectAccess.getAll();
           if (returnValue) {
-            const datas =
-              ctx.odata.resultFormat === returnFormats.json
+            const datas =  ctx.odata.resultFormat === returnFormats.json
                 ? ({
                     "@iot.count": returnValue.id,
                     "@iot.nextLink": returnValue.nextLink,

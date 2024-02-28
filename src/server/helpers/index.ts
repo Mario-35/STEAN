@@ -25,13 +25,6 @@ export const getUserId = (ctx: koa.Context): number => ctx.state.user && ctx.sta
 export const removeAllQuotes = (input: string): string => input.replace(/['"]+/g, "");
 export const unikeList = (input: string[]) => [...new Set(input)];
 export const testStringsIn = (tests: string[], input: string): boolean => tests.map(e => input.includes(e) ? true : false).filter(e => e === true).length > 0;
-export const jsonForPosgresSql = (input: object) => {
-    console.log("===================== jsonForPosgresSql ==============================");
-    const tmp =  JSON.stringify(input);
-    console.log(tmp);
-    
-    return tmp[0] === "[" ? tmp : addSimpleQuotes(tmp);
-}
 
 export { asyncForEach } from "./asyncForEach";
 export { cleanStringComma } from "./cleanStringComma";

@@ -133,6 +133,10 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
     type: "application/json",
     format: defaultFunction,
     generateSql(input: PgVisitor) {
+      console.log("===========================dataArray");
+      console.log(input.entity);
+      console.log(input.arrayNames);
+      
       return queryAsDataArray(input);
     },
   },

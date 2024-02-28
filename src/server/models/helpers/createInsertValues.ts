@@ -13,7 +13,7 @@ import { addDoubleQuotes, addSimpleQuotes, removeDoubleQuotes } from "../../help
 import { formatLog } from "../../logger";
 import { IconfigFile } from "../../types";
 
-export function createInsertValues(config: IconfigFile, input : object, entityName?: string): string  {    
+export function createInsertValues(config: IconfigFile, input : object, entityName?: string): string  {
     console.log(formatLog.whereIam());
     if (config && input) {
         const keys:string[] = [];
@@ -27,9 +27,17 @@ export function createInsertValues(config: IconfigFile, input : object, entityNa
                   if (temp) {
                     keys.push(addDoubleQuotes(e));
                     values.push(temp);
-                    // values.push(e === "result" ? `'{"value": ${e}}'::jsonb`: temp);
                   }               
-                }                
+                } else if (input[e] && entity.relations[e]) {                
+                  const col = entity.relations[e].entityColumn;
+                  if(entity.columns[col]) {
+                    const temp = formatColumnValue(col, input[e], entity.columns[col].type);
+                    if (temp) {
+                      keys.push(addDoubleQuotes(col));
+                      values.push(temp);
+                    }  
+                  }                  
+                }
               });
             } else {
               Object.keys(input).forEach((e: string) => {

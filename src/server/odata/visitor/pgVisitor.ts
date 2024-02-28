@@ -65,7 +65,7 @@ export class PgVisitor {
     this.onlyRef = options.onlyRef;
     this.onlyValue = options.onlyValue;
     this.valueskeys = options.valueskeys;
-    if (this.onlyValue === true) this.resultFormat = returnFormats.txt;
+    this.resultFormat =  (options.onlyValue === true) ? returnFormats.txt : returnFormats.json;
   }
 
   // ***********************************************************************************************************************************************************************
@@ -77,9 +77,12 @@ export class PgVisitor {
   }
 
   addToArrayNames(key: string | string[]) {
+    console.log(`addToArrayNames           => ${key}`);
+    
     const addTo = (input: string[]) => {
       input.forEach(key =>  {
         key = key.includes(" AS ") ? key.split(" AS ")[1] : key;
+        key = key.includes(".") ? key.split(".")[1] : key;
         if(!this.arrayNames.includes(key) && key.trim() !== "") this.arrayNames.push(key);      
       });
     }

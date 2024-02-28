@@ -6,7 +6,7 @@
  *
  */
 
-import { createTable } from "../helpers";
+import { createTable, createUser } from "../helpers";
 import { serverConfig } from "../../configuration";
 import { addDoubleQuotes, addSimpleQuotes, asyncForEach } from "../../helpers";
 import { formatLog } from "../../logger";
@@ -50,30 +50,34 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
                 log.errorMsg(err);
               });
           }
+
         });
-    })
-    .catch((err: Error) => {
+    }).catch((err: Error) => {
       log.errorMsg(err);
     });
 
-    
     const dbConnection = serverConfig.getConnection(configName);
     if (!dbConnection) {
-    returnValue["DROP Error"] = `No DB connection ${_NOTOK}`;
-    return returnValue;
-  }
+      returnValue["DROP Error"] = `No DB connection ${_NOTOK}`;
+      return returnValue;
+    }
   
   // create postgis
   returnValue[`Create postgis`] = await dbConnection.unsafe('CREATE EXTENSION IF NOT EXISTS postgis')
     .then(() => _OK)
     .catch((err: Error) => err.message);
-
-  // create postgis
-  returnValue[`Create tablefunc`] = await dbConnection.unsafe('CREATE EXTENSION IF NOT EXISTS tablefunc')
+    
+    // create postgis
+    returnValue[`Create tablefunc`] = await dbConnection.unsafe('CREATE EXTENSION IF NOT EXISTS tablefunc')
     .then(() => _OK)
     .catch((err: Error) => err.message);
+
+    // create dblink
+    returnValue[`Create dblink`] = await dbConnection.unsafe('CREATE EXTENSION IF NOT EXISTS dblink')
+      .then(() => _OK)
+      .catch((err: Error) => err.message);
     
-    const DB = models.DBFull(configName);
+  const DB = models.DBFull(configName);
   
   // loop to create each table
   await asyncForEach(
@@ -110,9 +114,13 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
       });
   }
 
+  returnValue[`Create user`] = await createUser(serverConfig.getConfig(configName))
+  .then(() => _OK)
+  .catch((err: Error) => err.message);
+
   await dbConnection.unsafe(`SELECT COUNT(*) FROM pg_user WHERE usename = ${addSimpleQuotes(config.user)};`)
     .then(() => {
-      returnValue["Create DB"] = _OK;
+      returnValue["ALL finished ..."] = _OK;
     });
   return returnValue;
 };

@@ -89,16 +89,20 @@ export class Common {
     console.log(formatLog.whereIam());
     // create query
     const sql = this.ctx.odata.createGetSql();
+    
     // Return results
     if (sql) switch (this.ctx.odata.resultFormat ) {
       case returnFormats.sql:
         return this.createReturnResult({ body: sql });
 
       case returnFormats.graph:
-        const tmp = await executeSqlValues(this.ctx.config, sql);       
-        return this.createReturnResult({ body: tmp[0]});
+        return await executeSqlValues(this.ctx.config, sql).then(async (res: object) => { 
+          return (res[0] > 0)  ?  this.createReturnResult({ body: res[0]}) : this.createReturnResult({ body: "nothing"});
+        });  
+        // const tmp = await executeSqlValues(this.ctx.config, sql);       
+        // return this.createReturnResult({ body: tmp[0]});
 
-      default:
+      default:        
         return await executeSqlValues(this.ctx.config, sql).then(async (res: object) => { 
           return (res[0] > 0) ? 
             this.createReturnResult({
@@ -123,7 +127,7 @@ export class Common {
 
       default:
         return await executeSqlValues(this.ctx.config, sql).then((res: object) => {           
-          if (this.ctx.odata.select && this.ctx.odata.onlyValue) return this.createReturnResult({ body: String(res[ this.ctx.odata.select[0] == "id" ? "@iot.id" : 0 ]), });
+          if (this.ctx.odata.select && this.ctx.odata.onlyValue  === true) return this.createReturnResult({ body: String(res[ this.ctx.odata.select[0] == "id" ? "@iot.id" : 0 ]), });
           if (res[0] > 0) return this.createReturnResult({ id: +res[0], nextLink: this.nextLink(res[0]), prevLink: this.prevLink(res[0]), body: res[1][0], });
         }).catch((err: Error) => this.ctx.throw(400, { code: 400, detail: err }) );
     }

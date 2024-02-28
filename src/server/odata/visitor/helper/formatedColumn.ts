@@ -16,7 +16,6 @@ const tests = ["CONCAT", "CASE", "COALESCE"];
 // };
 
 export function formatedColumn(config: IconfigFile, entity : Ientity, column: string, options?: IKeyBoolean): string | undefined {   
-    // console.log(`column ============================> ${column}`);
     if (entity.columns[column]) {
         const alias =  entity.columns[column].columnAlias(config, options ? options : undefined);
         if (testStringsIn(tests, alias || column) === true) return alias || column;

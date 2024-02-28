@@ -16,7 +16,15 @@ export const decodingPayload = ( decoder: { name: string; code: string; nomencla
   if (decoder.name && decoder.nomenclature && decoder.code != 'undefined') {
     try {
       const F = new Function( "input", "nomenclature", `${String(decoder.code)}; return decode(input, nomenclature);` );
-      const result = F( payload, decoder.nomenclature === "{}" || decoder.nomenclature === "" ? null : JSON.parse(decoder.nomenclature) );
+      console.log("========================");
+      console.log(decoder.nomenclature);
+      let nomenclature = "";
+      if(decoder.nomenclature.trim() != "") try {
+        nomenclature = JSON.parse(JSON.parse(decoder.nomenclature));
+      } catch (error) {
+        nomenclature = JSON.parse(decoder.nomenclature);
+      }
+      const result = F( payload, decoder.nomenclature === "{}" || decoder.nomenclature === "" ? null : nomenclature);
       return { decoder: decoder.name, result: result };
     } catch (error) {
       log.errorMsg(error);
