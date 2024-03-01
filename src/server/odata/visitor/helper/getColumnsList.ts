@@ -49,7 +49,7 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
         ? Object.keys(tempEntity.columns)
             .filter((word) => !word.includes("_"))
             .filter(e => !(e === "result" && element.splitResult))
-            .filter(e => !tempEntity.columns[e].extensions || tempEntity.columns[e].extensions && main.ctx.config.extensions.includes(tempEntity.columns[e].extensions))
+            .filter(e => !tempEntity.columns[e].extensions || tempEntity.columns[e].extensions && main.ctx.config.extensions.includes(tempEntity.columns[e].extensions || ""))
         : element.select.split(_COLUMNSEPARATOR).filter((word: string) => word.trim() != "").map(e => removeDoubleQuotes(e));
         
     columns.map((column: string) => {

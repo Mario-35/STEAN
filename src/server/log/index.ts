@@ -42,7 +42,7 @@ class Log {
   }
 
   public query(sql: unknown) {
-    if(_DEBUG) process.stdout.write(`${color(EColor.FgYellow)}${"=".repeat(20)}[ Query ]${"=".repeat(20)}${color(EColor.FgCyan)} ${showAll(sql)}${color( EColor.Reset )}\n`);
+    if(_DEBUG) process.stdout.write(`${color(EColor.FgYellow)}${"=".repeat(20)}[ Query ]${"=".repeat(20)}\n${color(EColor.FgCyan)} ${showAll(sql)}${color( EColor.Reset )}\n`);
   }
 
   public queryError<T>(query: unknown, error: T) {  

@@ -18,7 +18,7 @@ export { PgVisitor } from "./visitor/PgVisitor";
 
 const doSomeWarkAfterCreateAst = async (input: PgVisitor, ctx: koa.Context) => {
   if ( input.splitResult && input.splitResult[0].toUpperCase() == "ALL" && input.parentId && <bigint>input.parentId > 0 ) {
-    const temp = await serverConfig.getConnection(ctx.config.name).unsafe(`${queryMultiDatastreamKeys(input.parentId)}`);
+    const temp = await serverConfig.connection(ctx.config.name).unsafe(`${queryMultiDatastreamKeys(input.parentId)}`);
     input.splitResult = temp[0]["keys"];
   }
 };

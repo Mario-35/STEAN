@@ -9,6 +9,7 @@
 import koa from "koa";
 import { _NOTOK, _OK } from "../../constants";
 import { addDoubleQuotes, asyncForEach } from "../../helpers";
+import { formatLog } from "../../logger";
 import { models } from "../../models";
 import { createInsertValues } from "../../models/helpers";
 import { pgVisitorBlankOdata } from "../../odata/visitor/helper";
@@ -26,6 +27,7 @@ export const prepareDatas = (dataInput: object, entity: string): object => {
 }
 
 export const addToService = async (ctx: koa.Context, dataInput: object): Promise<object> => {
+  console.log(formatLog.whereIam());
   const results = {};    
   const temp = pgVisitorBlankOdata(ctx, ctx.model.Loras);
   if (temp) {
@@ -45,7 +47,7 @@ export const addToService = async (ctx: koa.Context, dataInput: object): Promise
           method: "PAYLOADS",
           code: error["code"] ? +error["code"] : +ctx.response.status,
           url: "/Loras",
-          database: ctx.config.pg.base,
+          database: ctx.config.pg.database,
           datas: line,
           user_id: String(ctx.user.id),
           error: error

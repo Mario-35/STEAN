@@ -1,5 +1,5 @@
 /**
- * createCsvColumnsNameImport.
+ * columnsNameFromHydrasCsv.
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
@@ -11,9 +11,9 @@ import { formatLog } from "../../logger";
 import { IcsvFile, IcsvImport } from "../../types";
 import readline from "readline";
 
-export const createCsvColumnsNameImport = async ( paramsFile: IcsvFile ): Promise<IcsvImport | undefined> => {
+export const columnsNameFromHydrasCsv = async ( paramsFile: IcsvFile ): Promise<IcsvImport | undefined> => {
   console.log(formatLog.whereIam());
-  const returnValue: IcsvImport = { dateSql: "", columns: [] };
+  const returnValue: IcsvImport = { header: false, dateSql: "", columns: [] };
   const fileStream = fs.createReadStream(paramsFile.filename);
   const regexDate = /^[0-9]{2}[\/][0-9]{2}[\/][0-9]{4}$/g;
   const regexHour = /^[0-9]{2}[:][0-9]{2}[:][0-9]{2}$/g;
@@ -40,13 +40,13 @@ export const createCsvColumnsNameImport = async ( paramsFile: IcsvFile ): Promis
       console.log(formatLog.result("dateSqlRequest", "date ; hour"));
       const nbCol = (line.match(/;/g) || []).length;
       returnValue.columns = ["date", "hour"];
-      for (let i = 0; i < nbCol - 1; i++)
-        returnValue.columns.push(`value${i + 1}`);
+      for (let i = 0; i < nbCol - 1; i++) returnValue.columns.push(`value${i + 1}`);
 
       fileStream.destroy();
       returnValue.dateSql = `TO_TIMESTAMP(concat("${paramsFile.tempTable}".date, REPLACE("${paramsFile.tempTable}".hour, '24:00:00', '23:59:59')), 'DD/MM/YYYYHH24:MI:SS:MS')`;
       return returnValue;
     }
+    returnValue.header = true;
   }
   return returnValue;
 };

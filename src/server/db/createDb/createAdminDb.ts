@@ -23,22 +23,22 @@ export const createAdminDB = async (): Promise<IKeyString> => {
   // init result
   const returnValue = { "Start create Database": config.database };
   await serverConfig
-    .getConnectionAdminFor(ADMIN).unsafe(`CREATE DATABASE ${ADMIN}`)
+    .connectionAdminFor(ADMIN).unsafe(`CREATE DATABASE ${ADMIN}`)
     .then(async () => {
       returnValue["create Admin DB"] = _OK;
       returnValue["User"] = await serverConfig
-        .getConnection(ADMIN).unsafe(`SELECT COUNT(*) FROM pg_user WHERE usename = ${addSimpleQuotes(config.user)};`)
+        .connection(ADMIN).unsafe(`SELECT COUNT(*) FROM pg_user WHERE usename = ${addSimpleQuotes(config.user)};`)
         .then(async (res) => {
           if (res["rowCount"] < 1) {
             console.log(formatLog.result("Create User", config.user));
             return serverConfig
-              .getConnection(ADMIN).unsafe(`CREATE ROLE ${addDoubleQuotes(config.user)} WITH PASSWORD ${addSimpleQuotes(config.password)} ${_RIGHTS};`)
+              .connection(ADMIN).unsafe(`CREATE ROLE ${addDoubleQuotes(config.user)} WITH PASSWORD ${addSimpleQuotes(config.password)} ${_RIGHTS};`)
               .then(() => { return `Create User ${_OK}`; })
               .catch((err: Error) => err.message);
           } else {
             console.log(formatLog.result("Update User", config.user));
             return await serverConfig
-              .getConnection(ADMIN).unsafe(`ALTER ROLE ${addDoubleQuotes(config.user)} WITH PASSWORD ${addSimpleQuotes(config.password)} ${_RIGHTS};`)
+              .connection(ADMIN).unsafe(`ALTER ROLE ${addDoubleQuotes(config.user)} WITH PASSWORD ${addSimpleQuotes(config.password)} ${_RIGHTS};`)
               .then(() => { return `Update User ${_OK}`; })
               .catch((err: Error) => err.message);
             }
@@ -53,7 +53,7 @@ export const createAdminDB = async (): Promise<IKeyString> => {
   });
 
   returnValue["Configs"] = await serverConfig
-    .getConnection(ADMIN).unsafe(`CREATE TABLE public.configs ( "date" timestamptz NULL DEFAULT CURRENT_TIMESTAMP, "key" text NULL, "config" text NOT NULL );`)
+    .connection(ADMIN).unsafe(`CREATE TABLE public.configs ( "date" timestamptz NULL DEFAULT CURRENT_TIMESTAMP, "key" text NULL, "config" text NOT NULL );`)
     .then(() => { return `Create Config Table ${_OK}`; })
     .catch((err: Error) => err.message);
 

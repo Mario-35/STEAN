@@ -22,14 +22,14 @@ import { serverConfig } from "./configuration";
 import favicon from 'koa-favicon';
 import { models } from "./models";
 import { log } from "./log";
-import { IdecodedUrl, Ientities, Ilog, IuserToken } from "./types";
+import { IconfigFile, IdecodedUrl, Ientities, Ilog, IuserToken } from "./types";
 import { PgVisitor } from "./odata";
 
-// Extend koa context (no ts test on it)
+// Extend koa context 
 declare module "koa" {
-  // Underscore to identify own context
   interface DefaultContext {
     decodedUrl: IdecodedUrl;
+    config: IconfigFile;
     odata: PgVisitor;
     datas: object;
     user: IuserToken;

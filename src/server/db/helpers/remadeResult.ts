@@ -38,7 +38,7 @@ const getSortedKeys = async ( config: IconfigFile, inputID: string, synonym: obj
 export const remadeResult = async ( ctx: koa.Context, step: number ): Promise<string> => {
   let progression = 1;
   const getObservations = await serverConfig
-    .getConnection(ctx.config.name)`select * from observation WHERE result->'value' is null or result->'value' = '[null, null, null]' order by id ${
+    .connection(ctx.config.name)`select * from observation WHERE result->'value' is null or result->'value' = '[null, null, null]' order by id ${
         step > 0 ? `LIMIT ${step}` : ""
       }`;
   await asyncForEach(getObservations["rows"], async (elem: object) => {
@@ -126,13 +126,13 @@ export const remadeResult = async ( ctx: koa.Context, step: number ): Promise<st
       console.log(newResult);
 
       if (newResult && newResult["rln"]) {
-        await serverConfig .getConnection(ctx.config.name)`UPDATE "observation" SET "result" = '${JSON.stringify(newResult)}' WHERE id = ${ elem["id"] }`;
+        await serverConfig .connection(ctx.config.name)`UPDATE "observation" SET "result" = '${JSON.stringify(newResult)}' WHERE id = ${ elem["id"] }`;
       }
     } catch (error) {
       log.errorMsg(error);
     }
   });
-  const decodedPayload = await serverConfig.getConnection(ctx.config.name)`select 
+  const decodedPayload = await serverConfig.connection(ctx.config.name)`select 
     (SELECT count(*) from observation WHERE result->'value' is null) as "a traiter",
     (SELECT count(*) from observation WHERE result->'value' is null and result is not null) as "avec infos",
     (SELECT count(*) from observation WHERE result->'value' is null and result is null) as "sans infos",

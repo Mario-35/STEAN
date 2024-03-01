@@ -10,12 +10,12 @@ import koa from "koa";
 import { Common } from "./common";
 import { formatLog } from "../../logger";
 import { IcsvColumn, IcsvFile, IreturnResult, IstreamInfos } from "../../types";
-import { dateToDateWithTimeZone, executeSql, executeSqlValues, streamCsvFileInPostgreSql } from "../helpers";
+import { queryInsertFromCsv, dateToDateWithTimeZone, executeSql, executeSqlValues } from "../helpers";
 import { asyncForEach } from "../../helpers";
 import { errors, msg } from "../../messages/";
 import { EdatesType, EextensionsType } from "../../enums";
 import util from "util";
-import { _OK } from "../../constants";
+import { _NOTOK, _OK } from "../../constants";
 import { models } from "../../models";
 import { log } from "../../log";
 
@@ -45,9 +45,7 @@ export class CreateObservations extends Common {
             ? `'{"value": [${elem}]}'`
             : typeof elem === "string"
             ? elem.endsWith("Z")
-              ? `TO_TIMESTAMP('${dateToDateWithTimeZone(elem)}', '${
-                  EdatesType.dateWithOutTimeZone
-                }')::TIMESTAMP`
+              ? `TO_TIMESTAMP('${dateToDateWithTimeZone(elem)}', '${ EdatesType.dateWithOutTimeZone }')::TIMESTAMP`
               : `${separateur}${elem}${separateur}`
             : `${separateur}{${elem}}${separateur}`
           : index === this.indexResult && type === "VALUES"
@@ -71,13 +69,12 @@ export class CreateObservations extends Common {
     console.log(formatLog.whereIam(idInput));
     this.ctx.throw(400, { code: 400 });
   }
-
+  
   async post(dataInput: JSON): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     const returnValue: string[] = [];
     let total = 0;
-    // verify is there JSON data
-    
+    // verify is there FORM data    
     if (this.ctx.datas) {      
       const datasJson = JSON.parse(this.ctx.datas["datas"]);
       if (!datasJson["columns"]) this.ctx.throw(404, { code: 404, detail: errors.noColumn });
@@ -96,62 +93,31 @@ export class CreateObservations extends Common {
 
       const paramsFile: IcsvFile = {
         tempTable: `temp${Date.now().toString()}`,
-        filename: dataInput["import"] || this.ctx.datas["file"],
+        filename: this.ctx.datas["file"],
         columns: myColumns,
         header: datasJson["header"] && datasJson["header"] == true ? ", HEADER" : "",
         stream: streamInfos,
       };
-      await streamCsvFileInPostgreSql(this.ctx, paramsFile).then(async (res) => {
-          console.log(formatLog.debug("streamCsvFileInPostgreSql", _OK));
-            console.log(formatLog.result("query", res));
-            // Execute query
-            if (res) await executeSql(this.ctx.config, res).then(async (returnResult: object) => {
-              console.log(formatLog.debug("SQL Executing", _OK));
-              returnResult = returnResult[0]; returnValue.push( `Add ${ returnResult && returnResult["inserted"] ? +returnResult["inserted"] : -1 } observations from ${ paramsFile.filename.split("/").reverse()[0] }` );
-              total = returnResult && returnResult["total"] ? +returnResult["total"] : -1;
-            });
-        })
-        .catch((error: Error) => {
-          log.errorMsg(error);
-        });
-       
-    } else if (dataInput["import"]) {
-      if (!dataInput["columns"]) this.ctx.throw(404, { code: 404, detail: errors.noColumn });
-      const myColumns: IcsvColumn[] = [];
-      const streamInfos: IstreamInfos[] = [];
-      await asyncForEach(
-        Object.keys(dataInput["columns"]),
-        async (key: string) => {
-          const tempStreamInfos = await models.getStreamInfos( this.ctx.config, dataInput["columns"][key] as JSON );
-          if (tempStreamInfos) {
-            streamInfos.push(tempStreamInfos);
-            myColumns.push({ column: key, stream: tempStreamInfos, });
-          } else this.ctx.throw( 404, msg( errors.noValidStream, util.inspect(dataInput["columns"][key], { showHidden: false, depth: null, colors: false, }) ) );
-        }
-      );
-
-      const paramsFile: IcsvFile = {
-        tempTable: `${this.ctx.config.name}${dataInput["import"]}`,
-        filename: "import",
-        columns: myColumns,
-        header: dataInput["header"] && dataInput["header"] == true ? ", HEADER" : "",
-        stream: streamInfos,
-      };
+      // stream file in temp table and get query to insert
+      const sqlInsert = await queryInsertFromCsv(this.ctx, paramsFile);
       
-      await streamCsvFileInPostgreSql(this.ctx, paramsFile).then(async (res) => {
-          console.log(formatLog.debug("streamCsvFileInPostgreSql", _OK));
-            console.log(formatLog.result("query", res));
-            // Execute query
-            if (res) await executeSql(this.ctx.config, res).then(async (returnResult: object) => {
+      console.log(formatLog.debug(`stream csv file ${paramsFile.filename} in PostgreSql`, sqlInsert ? _OK : _NOTOK));
+      if (sqlInsert) {
+        const sqls = sqlInsert.query.map((e: string, index: number) => `${index === 0 ? 'WITH ' :', '}updated${index+1} as (${e})\n`)
+        await executeSql(this.ctx.config, ['ALTER TABLE "historical_observation" SET UNLOGGED', 'ALTER TABLE observation SET UNLOGGED', 'ALTER TABLE observation DISABLE TRIGGER ALL']);
+        const resultSql = await executeSql(this.ctx.config, `${sqls.join("")}\nSELECT (SELECT count(*) FROM ${paramsFile.tempTable}) AS total, (SELECT count(updated1) FROM updated1) AS inserted`).catch((error: Error) => { log.errorMsg(error) });
+        await executeSql(this.ctx.config, ['ALTER TABLE observation SET LOGGED','ALTER TABLE "historical_observation" SET LOGGED','ALTER TABLE observation ENABLE TRIGGER ALL']);
+          if (resultSql)  {
               console.log(formatLog.debug("SQL Executing", _OK));
-              returnResult = returnResult[0]; returnValue.push( `Add ${ returnResult && returnResult["inserted"] ? +returnResult["inserted"] : -1 } observations from ${ paramsFile.filename.split("/").reverse()[0] }` );
-              total = returnResult && returnResult["total"] ? +returnResult["total"] : -1;
-            });
-        })
-        .catch((error: Error) => {
-          log.errorMsg(error);
-        });
+              returnValue.push( `Add ${ resultSql[0] && resultSql[0]["inserted"] ? +resultSql[0]["inserted"] : 0 } observations from ${ paramsFile.filename.split("/").reverse()[0] }` );
 
+              return this.createReturnResult({
+                total: sqlInsert.count,
+                body: returnValue,
+              });
+            }      
+          }        
+        return undefined;
     } else {
       /// classic Create      
       const dataStreamId = await models.getStreamInfos(this.ctx.config, dataInput);
@@ -171,26 +137,23 @@ export class CreateObservations extends Common {
                 returnValue.push(`Duplicate (${elem})`);
                 if ( dataInput["duplicate"] && dataInput["duplicate"].toUpperCase() === "DELETE" ) {
                   await executeSqlValues(this.ctx.config, `DELETE FROM "observation" WHERE 1=1 ` + keys .map((e, i) => `AND ${e} = ${values[i]}`) .join(" ") + ` RETURNING id` ) .then((res: object) => {
-                      returnValue.push(`delete id ==> ${res[0]}`);
+                    returnValue.push(`delete id ==> ${res[0]}`);
                       total += 1;
                     }).catch((error) => {
+                      log.errorMsg(error);                     
                       formatLog.writeErrorInFile(undefined, error);
                     });
                 }
               } else this.ctx.throw(400, { code: 400, detail: error });
             });
         });
-        return this.createReturnResult({
-          total: total,
-          body: returnValue,
-        });
+        if (returnValue) {
+          return this.createReturnResult({
+            total: total,
+            body: returnValue,
+          });
+        };
       }
-    }
-    if (returnValue) {
-      return this.createReturnResult({
-        total: total,
-        body: returnValue,
-      });
     }
   }
 

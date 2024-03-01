@@ -14,7 +14,7 @@ import { formatLog } from "../../logger";
 
 export const getMetrics = async ( name: string ): Promise<string[] | { [key: string]: any } | undefined> => {
   console.log(formatLog.whereIam());
-  const sqlTemp = await serverConfig.getConnection(ADMIN)`SELECT split_part(split_part((SELECT version()), ',', 1), ' ', 2) AS version`;
+  const sqlTemp = await serverConfig.connection(ADMIN)`SELECT split_part(split_part((SELECT version()), ',', 1), ' ', 2) AS version`;
   if (isNull(sqlTemp)) { 
   const dbVersion = sqlTemp["version"];
   const username = "postgres";
@@ -214,7 +214,7 @@ export const getMetrics = async ( name: string ): Promise<string[] | { [key: str
     async (operation: string) => {
       if (metrics[operation])
         await serverConfig
-          .getConnection(ADMIN)`${metrics[operation]}`
+          .connection(ADMIN)`${metrics[operation]}`
           .then((result) => {
             res[operation] = result;
           })

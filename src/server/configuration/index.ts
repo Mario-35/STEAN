@@ -92,7 +92,8 @@ class Configuration {
           : `${linkBase}/${version}`,
         model : `https://app.diagrams.net/?lightbox=1&edit=_blank#U${linkBase}/${version}/draw`
       };
-   }
+  }
+
   public getAllInfos(ctx: koa.Context): { [key: string]: IserviceLink } {
     const result = {};    
     this.getConfigs().forEach((conf: string) => {
@@ -143,7 +144,7 @@ class Configuration {
 
   async executeMultipleQueries(configName: string, queries: string[], infos: string):Promise<boolean> {
     await asyncForEach( queries, async (query: string) => {
-      await serverConfig.getConnection(configName).unsafe(query)
+      await serverConfig.connection(configName).unsafe(query)
       .catch((error: Error) => {
         log.error(formatLog.error(error));
         return false;
@@ -175,23 +176,12 @@ class Configuration {
   }
   
   // return the connection
-  public getConnection(name: string): postgres.Sql<Record<string, unknown>> {    
+  public connection(name: string): postgres.Sql<Record<string, unknown>> {    
     if (!Configuration.configs[name].connection) this.createDbConnectionFromConfigName(name);
     return Configuration.configs[name].connection || this.createDbConnection(Configuration.configs[name].pg);
   }
-
-  public getConnectionAdminForImport(): postgres.Sql<Record<string, unknown>> {
-    const input = Configuration.configs[ADMIN].pg;
-    return postgres(`postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/admin`,
-    {
-      debug: _DEBUG,          
-      connection           : {
-        application_name   : `${APP_NAME} ${APP_VERSION}`,
-      }
-    }
-    );
-  }
-  public getConnectionAdminFor(name: string): postgres.Sql<Record<string, unknown>> {
+  
+  public connectionAdminFor(name: string): postgres.Sql<Record<string, unknown>> {
     const input = Configuration.configs[ADMIN].pg;
     return postgres(`postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${DEFAULT_DB}`,
     {
@@ -207,7 +197,7 @@ class Configuration {
   private createDbConnection(input: IdbConnection): postgres.Sql<Record<string, unknown>> {
     return postgres(`postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${input.database}`, {
       debug: _DEBUG,
-      max : 20,            
+      max : 2000,            
       connection : { application_name : `${APP_NAME} ${APP_VERSION}` },
     });
   }
@@ -231,7 +221,7 @@ class Configuration {
   async relogCreateTrigger(configName: string): Promise<boolean> {
     await asyncForEach( triggers(configName), async (query: string) => {
       const name = query.split(" */")[0].split("/*")[1].trim();
-      await serverConfig.getConnection(configName).unsafe(query).then(() => {
+      await serverConfig.connection(configName).unsafe(query).then(() => {
         log.create(`[${configName}] ${name}`, _OK);
       }).catch((error: Error) => {
         log.error(error);
@@ -280,6 +270,7 @@ class Configuration {
       // Start connectionsening ALL entries in config file
       Object.keys(Configuration.configs).filter(e => e.toUpperCase() !== TEST),
       async (key: string) => {
+        // await Configuration.configs[ADMIN].connection?.unsafe ( `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND datname = '${key}'`);
         try {
           await this.addToServer(key);
         } catch (error) {
@@ -408,7 +399,7 @@ class Configuration {
   }
 
   // process to add an entry in server
-  public async addToServer(key: string): Promise<boolean> {  
+  public async addToServer(key: string): Promise<boolean> {
     await this.isDbExist(key, true)
       .then(async (res: boolean) => {
           await userAccess.post(key, {
@@ -461,14 +452,14 @@ class Configuration {
 
   private async isDbExist(connectName: string, logCreate: boolean): Promise<boolean> {
     log.booting(infos.dbExist, Configuration.configs[connectName].pg.database);
-    return await this.getConnection(connectName)`select 1+1 AS result`
+    return await this.connection(connectName)`select 1+1 AS result`
       .then(async () => {
-        const listTempTables = await this.getConnection(connectName)`SELECT array_agg(table_name) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'temp%';`;
+        const listTempTables = await this.connection(connectName)`SELECT array_agg(table_name) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'temp%';`;
         const tables = listTempTables[0]["array_agg"];
         if (tables != null)        
           log.booting(
             `delete temp tables ==> \x1b[33m${connectName}\x1b[32m`,
-            await this.getConnection(connectName).begin(sql => {
+            await this.connection(connectName).begin(sql => {
               tables.forEach(async (table: string) => {await sql.unsafe(`DROP TABLE ${table}`);});
             }).then(() => _OK)
               .catch((err: Error) => err.message)

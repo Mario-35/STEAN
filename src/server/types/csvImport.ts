@@ -7,6 +7,7 @@
  */
 
 export interface IcsvImport {
+    header: boolean;
     dateSql: string;
     columns: string[];
   }

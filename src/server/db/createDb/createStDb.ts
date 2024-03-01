@@ -23,7 +23,7 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
   // init result
   const config = serverConfig.getConfig(configName).pg;
   const returnValue: IKeyString = { "Start create Database": config.database };
-  const adminConnection = serverConfig.getConnectionAdminFor(configName);
+  const adminConnection = serverConfig.connectionAdminFor(configName);
   // Test connection Admin
   if (!adminConnection) {
     returnValue["DROP Error"] = "No Admin connection";
@@ -56,7 +56,7 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
       log.errorMsg(err);
     });
 
-    const dbConnection = serverConfig.getConnection(configName);
+    const dbConnection = serverConfig.connection(configName);
     if (!dbConnection) {
       returnValue["DROP Error"] = `No DB connection ${_NOTOK}`;
       return returnValue;
@@ -71,11 +71,6 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
     returnValue[`Create tablefunc`] = await dbConnection.unsafe('CREATE EXTENSION IF NOT EXISTS tablefunc')
     .then(() => _OK)
     .catch((err: Error) => err.message);
-
-    // create dblink
-    returnValue[`Create dblink`] = await dbConnection.unsafe('CREATE EXTENSION IF NOT EXISTS dblink')
-      .then(() => _OK)
-      .catch((err: Error) => err.message);
     
   const DB = models.DBFull(configName);
   
@@ -91,7 +86,7 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
   // loop to create each table
   await asyncForEach( triggers(configName), async (query: string) => {
     const name = query.split(" */")[0].split("/*")[1].trim();
-    await serverConfig.getConnection(configName).unsafe(query)
+    await serverConfig.connection(configName).unsafe(query)
       .then(() => {
         log.create(name, _OK);
       }).catch((error: Error) => {

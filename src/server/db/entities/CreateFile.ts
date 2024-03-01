@@ -10,7 +10,7 @@ import koa from "koa";
 import { Common } from "./common";
 import { formatLog } from "../../logger";
 import { IcsvColumn, IcsvFile, IreturnResult } from "../../types";
-import { createColumnHeaderName, executeSqlValues } from "../helpers";
+import { columnsNameFromCsv, executeSqlValues } from "../helpers";
 import { errors } from "../../messages/";
 import * as entities from "../entities/index";
 import { returnFormats } from "../../helpers";
@@ -26,7 +26,7 @@ export class CreateFile extends Common {
 
   streamCsvFileInPostgreSqlFileInDatastream = async ( ctx: koa.Context, paramsFile: IcsvFile ): Promise<string | undefined> => {
     console.log(formatLog.head("streamCsvFileInPostgreSqlFileInDatastream"));
-    const headers = await createColumnHeaderName(paramsFile.filename);
+    const headers = await columnsNameFromCsv(paramsFile.filename);
 
     if (!headers) {
       ctx.throw(400, {
@@ -101,7 +101,7 @@ export class CreateFile extends Common {
         ${cols}, 
         CONSTRAINT ${paramsFile.tempTable}_pkey PRIMARY KEY (id));`;
         await executeSqlValues(ctx.config, createTable);
-      const writable = serverConfig.getConnection(ctx.config.name).unsafe(`COPY ${paramsFile.tempTable}  (${headers.join( "," )}) FROM STDIN WITH(FORMAT csv, DELIMITER ';'${ paramsFile.header })`).writable();
+      const writable = serverConfig.connection(ctx.config.name).unsafe(`COPY ${paramsFile.tempTable}  (${headers.join( "," )}) FROM STDIN WITH(FORMAT csv, DELIMITER ';'${ paramsFile.header })`).writable();
       return await new Promise<string | undefined>(async (resolve, reject) => {
       
       readable
@@ -115,7 +115,7 @@ export class CreateFile extends Common {
                     )}', '2021-09-17T14:56:36+02:00', '2021-09-17T14:56:36+02:00', json_build_object('value',ROW_TO_JSON(p)) FROM (SELECT * FROM ${
                       paramsFile.tempTable
                     }) AS p`;
-          await serverConfig.getConnection(this.ctx.config.name).unsafe(sql);          
+          await serverConfig.connection(this.ctx.config.name).unsafe(sql);          
           resolve(returnValue["body"]);
         })
         .on('error', (err) => {

@@ -58,12 +58,12 @@ const createColumnsList = async (ctx: koa.Context, entity: string) => {
       if (ctx.model[entity].columns[column].create !== "") {
         // IF JSON create column-key  note THAT is limit 200 firts items
         if (models.isColumnType(ctx.config, ctx.model[entity], column, "json")) {
-          const tempSqlResult = await serverConfig.getConnection(ctx.config.name).unsafe(createQuery(`jsonb_object_keys("${column}")`))
+          const tempSqlResult = await serverConfig.connection(ctx.config.name).unsafe(createQuery(`jsonb_object_keys("${column}")`))
             .catch(async (e) => {
               if (e.code === "22023") {
-                const tempSqlResult = await serverConfig.getConnection(ctx.config.name).unsafe(createQuery(`jsonb_object_keys("${column}"[0])`)).catch(async (e) => {
+                const tempSqlResult = await serverConfig.connection(ctx.config.name).unsafe(createQuery(`jsonb_object_keys("${column}"[0])`)).catch(async (e) => {
                   if (e.code === "42804") {
-                    const tempSqlResult = await serverConfig.getConnection(ctx.config.name).unsafe(createQuery(`jsonb_object_keys(jsonb_array_elements("${column}"))`));
+                    const tempSqlResult = await serverConfig.connection(ctx.config.name).unsafe(createQuery(`jsonb_object_keys(jsonb_array_elements("${column}"))`));
                     if (tempSqlResult && tempSqlResult.length > 0) 
                       tempSqlResult.forEach((e: Iterable<postgres.Row> ) => { columnList.push( `jsonb_array_elements("${column}")->>'${e[column]}' AS "${column}-${e[column]}"`); });
                   } else log.errorMsg(e);
@@ -101,7 +101,7 @@ const exportToXlsx = async (ctx: koa.Context) => {
     ),
     async (entity: string) => {
       const cols = await createColumnsList(ctx, entity);      
-      const temp = await serverConfig.getConnection(ctx.config.name).unsafe(`select ${cols} from "${ctx.model[entity].table}" LIMIT 200`);  
+      const temp = await serverConfig.connection(ctx.config.name).unsafe(`select ${cols} from "${ctx.model[entity].table}" LIMIT 200`);  
       await addToExcel(workbook, entity, temp);
   });
   // Save file
@@ -140,7 +140,7 @@ const exportToJson = async (ctx: koa.Context) => {
         // Bulid query
         const sql = `select ${columnListWithQuotes}${rels.length > 1 ? rels.join() : ""}\n from "${ctx.model[entity].table}" LIMIT ${getUrlKey(ctx.request.url, "limit") || ctx.config.nb_page}`;
         // Execute query
-        const temp = await serverConfig.getConnection(ctx.config.name).unsafe(sql);  
+        const temp = await serverConfig.connection(ctx.config.name).unsafe(sql);  
         // remove null and store datas result 
         result[entity] = removeEmpty(temp);        
       }  

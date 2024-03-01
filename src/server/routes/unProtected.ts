@@ -178,9 +178,9 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
     case "REMOVEDBTEST":
       console.log(formatLog.head("GET remove DB test"));
       const returnDel = await serverConfig
-        .getConnection(ADMIN)`${sqlStopDbName('test')}`
+        .connection(ADMIN)`${sqlStopDbName('test')}`
         .then(async () => {
-          await serverConfig.getConnection(ADMIN)`DROP DATABASE IF EXISTS test`;
+          await serverConfig.connection(ADMIN)`DROP DATABASE IF EXISTS test`;
           return true;
         });
       if (returnDel) {

@@ -11,10 +11,10 @@ import { log } from "../../log";
 import { isTest } from "../../helpers";
 import { IconfigFile } from "../../types";
 
-export const executeSqlValues = async (config: IconfigFile, query: string): Promise<object> => {
+export const executeSqlValues = async (config: IconfigFile | string, query: string): Promise<object> => {
     log.query(`\n${query}`);
     return new Promise(async function (resolve, reject) {
-        await serverConfig.getConnection(config.name).unsafe(query).values().then((res: object) => { 
+        await serverConfig.connection(typeof config === "string" ? config : config.name).unsafe(query).values().then((res: object) => { 
             resolve(res[0]);
         }).catch((err: Error) => {
             if (!isTest() && +err["code"] === 23505) log.queryError(query, err);
