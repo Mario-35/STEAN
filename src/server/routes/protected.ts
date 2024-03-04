@@ -148,7 +148,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
       if (ctx.odata) {
         console.log(formatLog.head("POST FORM"));
         const objectAccess = new apiAccess(ctx);
-        const returnValue: IreturnResult | undefined | void = await objectAccess.post();
+        const returnValue = await objectAccess.post();
         if (ctx.datas) fs.unlinkSync(ctx.datas["file"]);
         if (returnValue) {
           if (ctx.datas["source"] == "query") {
@@ -166,7 +166,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
           } else {
             returnFormats.json.type;
             ctx.status = 201;
-            ctx.body = returnValue.body ? returnValue.body : returnValue.body;
+            ctx.body = returnValue.body;
           }
         } else {
           ctx.throw(400);

@@ -15,7 +15,7 @@ import { hideKeysInJson, hidePassword } from "../../helpers";
 import { ensureAuthenticated } from "../../authentication";
 import { addToService, createService } from "../helpers";
 import { _NOTOK, _OK } from "../../constants";
-import { createPays } from "../helpers/createService";
+import { createPayloads } from "../helpers/createService";
 
 
 export class Configs extends Common {
@@ -60,7 +60,7 @@ export class Configs extends Common {
       });
     }  else if(dataInput && dataInput["pays"] && dataInput["pays"]["name"]) {
       return this.createReturnResult({
-        body: await createPays(dataInput, this.ctx),
+        body: await createPayloads(dataInput, this.ctx),
       });
     }
     if (!ensureAuthenticated(this.ctx)) this.ctx.throw(401);    

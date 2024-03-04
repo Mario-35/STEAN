@@ -70,16 +70,15 @@ export class CreateObservations extends Common {
     this.ctx.throw(400, { code: 400 });
   }
   
-  async post(dataInput: JSON): Promise<IreturnResult | undefined> {
+  async postForm(dataInput: JSON): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
-    const returnValue: string[] = [];
-    let total = 0;
     // verify is there FORM data    
-    if (this.ctx.datas) {      
+         
       const datasJson = JSON.parse(this.ctx.datas["datas"]);
       if (!datasJson["columns"]) this.ctx.throw(404, { code: 404, detail: errors.noColumn });
       const myColumns: IcsvColumn[] = [];
       const streamInfos: IstreamInfos[] = [];
+      // loop for mulitDatastreams inputs or one for datastream
       await asyncForEach(
         Object.keys(datasJson["columns"]),
         async (key: string) => {
@@ -90,7 +89,7 @@ export class CreateObservations extends Common {
           } else this.ctx.throw( 404, msg( errors.noValidStream, util.inspect(datasJson["columns"][key], { showHidden: false, depth: null, colors: false, }) ) );
         }
       );
-
+      // Create paramsFile
       const paramsFile: IcsvFile = {
         tempTable: `temp${Date.now().toString()}`,
         filename: this.ctx.datas["file"],
@@ -100,25 +99,32 @@ export class CreateObservations extends Common {
       };
       // stream file in temp table and get query to insert
       const sqlInsert = await queryInsertFromCsv(this.ctx, paramsFile);
-      
-      console.log(formatLog.debug(`stream csv file ${paramsFile.filename} in PostgreSql`, sqlInsert ? _OK : _NOTOK));
+      console.log(formatLog.debug(`Stream csv file ${paramsFile.filename} in PostgreSql`, sqlInsert ? _OK : _NOTOK));
       if (sqlInsert) {
-        const sqls = sqlInsert.query.map((e: string, index: number) => `${index === 0 ? 'WITH ' :', '}updated${index+1} as (${e})\n`)
-        await executeSql(this.ctx.config, ['ALTER TABLE "historical_observation" SET UNLOGGED', 'ALTER TABLE observation SET UNLOGGED', 'ALTER TABLE observation DISABLE TRIGGER ALL']);
-        const resultSql = await executeSql(this.ctx.config, `${sqls.join("")}\nSELECT (SELECT count(*) FROM ${paramsFile.tempTable}) AS total, (SELECT count(updated1) FROM updated1) AS inserted`).catch((error: Error) => { log.errorMsg(error) });
-        await executeSql(this.ctx.config, ['ALTER TABLE observation SET LOGGED','ALTER TABLE "historical_observation" SET LOGGED','ALTER TABLE observation ENABLE TRIGGER ALL']);
-          if (resultSql)  {
-              console.log(formatLog.debug("SQL Executing", _OK));
-              returnValue.push( `Add ${ resultSql[0] && resultSql[0]["inserted"] ? +resultSql[0]["inserted"] : 0 } observations from ${ paramsFile.filename.split("/").reverse()[0] }` );
+        const sqls = sqlInsert.query.map((e: string, index: number) => `${index === 0 ? 'WITH ' :', '}updated${index+1} as (${e})\n`);
+        // Remove logs and triggers for speed insert
+        await executeSql(this.ctx.config, [
+          'ALTER TABLE "historical_observation" SET UNLOGGED', 
+          'ALTER TABLE "observation" SET UNLOGGED', 
+          'ALTER TABLE "observation" DISABLE TRIGGER ALL']);
+        const resultSql = await executeSql(this.ctx.config, `${sqls.join("")}SELECT (SELECT count(*) FROM ${paramsFile.tempTable}) AS total, (SELECT count(*) FROM updated1) AS inserted`);
+        // Restore logs and triggers
+        await executeSql(this.ctx.config, [
+          'ALTER TABLE "observation" SET LOGGED',
+          'ALTER TABLE "historical_observation" SET LOGGED',
+          'ALTER TABLE "observation" ENABLE TRIGGER ALL']);
+        return this.createReturnResult({
+          total: sqlInsert.count,
+          body: [`Add ${ resultSql[0]["inserted"] } on ${resultSql[0]["total"]} lines from ${ paramsFile.filename.split("/").reverse()[0] }`],
+        }); 
+      }        
+      return undefined;
+  }
 
-              return this.createReturnResult({
-                total: sqlInsert.count,
-                body: returnValue,
-              });
-            }      
-          }        
-        return undefined;
-    } else {
+  async postJson(dataInput: JSON): Promise<IreturnResult | undefined> {
+    console.log(formatLog.whereIam());
+    const returnValue: string[] = [];
+    let total = 0;
       /// classic Create      
       const dataStreamId = await models.getStreamInfos(this.ctx.config, dataInput);
       if (!dataStreamId)
@@ -154,14 +160,20 @@ export class CreateObservations extends Common {
           });
         };
       }
-    }
   }
 
+  async post(dataInput: JSON): Promise<IreturnResult | undefined> {
+    console.log(formatLog.whereIam());
+    return (this.ctx.datas) ? await this.postForm(dataInput) : await this.postJson(dataInput);
+  }
+
+  // Bad request
   async update( idInput: bigint | string, dataInput: object | undefined ): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam(idInput || dataInput));
     this.ctx.throw(400, { code: 400 });
   }
 
+  // Bad request
   async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam(idInput));
     this.ctx.throw(400, { code: 400 });

@@ -12,7 +12,7 @@ import koa from "koa";
 import { columnsNameFromHydrasCsv, streamCsvFile } from ".";
 import { _NOTOK, _OK } from "../../constants";
 
-export const queryInsertFromCsv = async ( ctx: koa.Context, paramsFile: IcsvFile ): Promise<{count: number, query: string[]} | undefined> => {
+export async function queryInsertFromCsv( ctx: koa.Context, paramsFile: IcsvFile ): Promise<{count: number, query: string[]} | undefined> {
   console.log(formatLog.whereIam());
   const sqlRequest = await columnsNameFromHydrasCsv(paramsFile);
   if (sqlRequest) {
@@ -21,7 +21,6 @@ export const queryInsertFromCsv = async ( ctx: koa.Context, paramsFile: IcsvFile
     if (stream > 0) {
       const fileImport = paramsFile.filename.split("/").reverse()[0];
       const dateImport = new Date().toLocaleString();
-  
       // stream finshed so COPY
       const scriptSql: string[] = [];
       // make import query
@@ -35,7 +34,11 @@ export const queryInsertFromCsv = async ( ctx: koa.Context, paramsFile: IcsvFile
             ${csvColumn.stream.FoId},  
             ${sqlRequest.dateSql}, 
             ${sqlRequest.dateSql},
-            json_build_object('value', CASE "${paramsFile.tempTable}".value${csvColumn.column} WHEN '---' THEN NULL ELSE cast(REPLACE(value${csvColumn.column},',','.') AS float) END),
+            json_build_object('value', 
+            CASE "${paramsFile.tempTable}".value${csvColumn.column}
+              WHEN '---' THEN NULL 
+              ELSE CAST(REPLACE(value${csvColumn.column},',','.') AS float) 
+            END),
             '{"import": "${fileImport}","date": "${dateImport}"}'  
            FROM "${ paramsFile.tempTable }" ON CONFLICT DO NOTHING returning 1`);
         }

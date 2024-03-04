@@ -1688,23 +1688,6 @@ class Models {
             constraints: {},
             indexes: {},
           },
-
-          CreateImport: {
-            name: "CreateImport",
-            singular: "CreateImport",
-            table: "",
-            createOrder: 0,
-            order: 0,
-            extensions: [EextensionsType.base],
-            orderBy: "",
-            count: "",
-            visible: true,
-            columns: {},
-            canPost: true,
-            relations: {},
-            constraints: {},
-            indexes: {},
-          },
       };                
   }
 

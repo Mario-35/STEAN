@@ -130,7 +130,7 @@ export const createService = async (dataInput: object, ctx?: koa.Context): Promi
 }
 
 
-export const createPays = async (dataInput: object, ctx?: koa.Context): Promise<object> => {
+export const createPayloads = async (dataInput: object, ctx?: koa.Context): Promise<object> => {
   const results = {}; 
 
     if(ctx) {

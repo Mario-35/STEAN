@@ -97,11 +97,8 @@ export class Common {
 
       case returnFormats.graph:
         return await executeSqlValues(this.ctx.config, sql).then(async (res: object) => { 
-          return (res[0] > 0)  ?  this.createReturnResult({ body: res[0]}) : this.createReturnResult({ body: "nothing"});
-        });  
-        // const tmp = await executeSqlValues(this.ctx.config, sql);       
-        // return this.createReturnResult({ body: tmp[0]});
-
+          return (res[0].length > 0)  ?  this.createReturnResult({ body: res[0]}) : this.createReturnResult({ body: "nothing"});
+        });
       default:        
         return await executeSqlValues(this.ctx.config, sql).then(async (res: object) => { 
           return (res[0] > 0) ? 

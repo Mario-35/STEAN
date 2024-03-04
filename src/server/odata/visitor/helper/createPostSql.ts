@@ -340,6 +340,6 @@ export function createPostSql(datas: object, main: PgVisitor): string {
         singular: false, 
         count: false
     });
-    log.query(`\n${sqlResult}`);
+    log.query(`${sqlResult}`);
     return sqlResult;
 }

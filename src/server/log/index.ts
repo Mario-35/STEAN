@@ -6,11 +6,12 @@
  *
  */
 
-import { isTest } from "../helpers";
+// import { isTest } from "../helpers";
 import fs from "fs";
 import util from "util";
 import { EColor } from "../enums";
 import { color, showAll, _DEBUG, _ERRORFILE, _OK } from "../constants";
+import { isTest } from "../helpers";
 
 // class to logCreate configs environements
 class Log {

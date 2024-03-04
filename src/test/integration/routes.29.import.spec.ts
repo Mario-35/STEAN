@@ -20,7 +20,6 @@ const should = chai.should();
 
 const docs: IApiDoc[] = [];
 
-
 const addToApiDoc = (input: IApiInput) => {
     docs.push(prepareToApiDoc(input, "Import"));
 };
@@ -92,14 +91,10 @@ describe("CSV Import", function () {
             .field("nb", "1")
             .attach("file", "./src/test/integration/files/simple.csv")
             .set("Cookie", `${keyTokenName}=${token}`)
-            .end(function (err, res)
-             {
-                if (err) console.log(err);
-                else {
-                    res.should.have.status(201);
-                    res.body[0].should.eql("Add 12 observations from simple.csv");
-                }
+            .end((err: Error, res: any) => {
                 should.not.exist(err);
+                res.should.have.status(201);
+                res.body[0].should.eql("Add 12 on 12 lines from simple.csv");
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 addPostFile(infos);
                 done();
@@ -127,7 +122,7 @@ describe("CSV Import", function () {
                 if (err) console.log(err);
                 else {
                     res.should.have.status(201);
-                    res.body[0].should.eql("Add 0 observations from simple.csv");
+                    res.body[0].should.eql("Add 0 on 12 lines from simple.csv");
                 }
                 should.not.exist(err);
                 docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);
@@ -159,7 +154,7 @@ describe("CSV Import", function () {
                 else {
                     should.not.exist(err);
                     res.should.have.status(201);
-                    res.body[0].should.eql("Add 5 observations from multi.csv");
+                    res.body[0].should.eql("Add 5 on 5 lines from multi.csv");
                     addToApiDoc({ ...infos, result: limitResult(res) });
                     addPostFile(infos);
                 done();
@@ -188,7 +183,7 @@ describe("CSV Import", function () {
                 if (err) console.log(err);
                 else {
                     res.should.have.status(201);
-                    res.body[0].should.eql("Add 0 observations from multi.csv");
+                    res.body[0].should.eql("Add 0 on 5 lines from multi.csv");
                 }
                 should.not.exist(err);
                 docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);

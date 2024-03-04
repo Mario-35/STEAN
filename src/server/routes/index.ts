@@ -43,7 +43,7 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
     else return;
 
   // forcing post loras with different version IT'S POSSIBLE BECAUSE COLUMN ARE THE SAME FOR ALL VERSION
-  if (decodedUrl.version != versionString(ctx.config.apiVersion)) {
+  if (decodedUrl.version != versionString(ctx.config.apiVersion)) {    
     if (!(ctx.request.method === "POST" && ctx.originalUrl.includes(`${decodedUrl.version}/Loras`)))
     ctx.redirect(ctx.request.method === "GET" 
       ? ctx.originalUrl.replace(decodedUrl.version, versionString(ctx.config.apiVersion))
@@ -63,36 +63,30 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
         database: ctx.config.pg.database,
         user_id: getUserId(ctx).toString(),
       };
-  } catch (error) {
+  } catch (error: any) { 
     ctx.log = undefined;
   }
   // get model
   ctx.model = models.filteredModelFromConfig(ctx.config);
-    try {
-      // Init config context
-      if (!ctx.config) return;    
-      ctx.user = decodeToken(ctx);
-      // Write in logs
-      await next().then(async () => {      
-        if (ctx.config.extensions.includes(EextensionsType.logs)) await writeToLog(ctx);
-      });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {    
-      log.errorMsg(error);    
-      if (error.message && error.message.includes("|")) {
-        const temp = error.message.split("|");
-        error.statusCode = +temp[0];
-        error.message = temp[1];
-        if (temp[2]) error.detai = temp[2];
-      }
-      if (ctx.config && ctx.config.extensions.includes(EextensionsType.logs))
-        writeToLog(ctx, error);      
-       const tempError = {
-          code: error.statusCode,
-          message: error.message,
-          detail: error.detail,
-        };
-      ctx.status = error.statusCode || error.status || 500;
-      ctx.body = error.link ? { ...tempError, link: error.link, } : tempError ;
-    }
+  try {
+    // Init config context
+    if (!ctx.config) return;    
+    ctx.user = decodeToken(ctx);
+    // Write in logs
+    await next().then(async () => {  
+      if (ctx.config.extensions.includes(EextensionsType.logs)) await writeToLog(ctx);
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {         
+    log.errorMsg(error);
+    if (ctx.config && ctx.config.extensions.includes(EextensionsType.logs))
+      writeToLog(ctx, error);      
+      const tempError = {
+        code: error.statusCode,
+        message: error.message,
+        detail: error.detail,
+      };
+    ctx.status = error.statusCode || error.status || 500;
+    ctx.body = error.link ? { ...tempError, link: error.link, } : tempError ;
+  }
 };

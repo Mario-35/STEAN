@@ -1,4 +1,75 @@
 
+# version 3.2
+    Graph correction for using with space in json keys
+    Perform csv import for huge file
+    perform models return
+    add tests.md generator
+# version 3
+    Export done
+    Add limit key to export
+    import from create OK
+    perform multilines post
+    perform logs DB for body information
+    different speed optimisation
+    code review with add some help comments
+    in post observation "resultTime" = "phenomenonTime" or "resultTime" = "phenomenonTime" if is the same dateTime
+# version 2.9.3
+    liitle patch for api version
+# version 2.9.2
+    liitle patch for graph
+# version 2.9.1
+    Add draw.io models and models ropresontation via draw route
+    clean code
+# version 2.9
+    add payload and deveui alias in observations to be used to export payload 
+    /Observations?$select=phenomenonTime,payload,deveui&$resultFormat=csv
+    add urlForced version for vers/Loras to post loras with api different version
+    add new error if Wrong version
+    export in json & xlsx
+# version 2.8
+    add model class that can use different models in the api use with apiVersion in config file.
+    rewrite logs to be remove on build to have faster production version
+# version 2.8
+    create new service creation possibilities
+    add canDrop to config
+    replace accents instead of delete (bug)
+
+# version 2.7
+    more filter possibiliies
+    we can add an array of JSON usefull for script creation
+
+# version 2.6
+
+    Inner filter done
+    correction  intersects with geography precision
+    add filter of phenomenonTime in datastream (add periodType in odata)
+
+# version 2.5.2
+
+    Relations are shown ONLY if the extension is activate
+    encrypt configuration is back
+    export is done
+    import is work (add import observations WIP)
+
+# version 2.5.1
+    
+    Triggers : Add some triggers to optimize date start and end in Datastream and MultiDatastream
+
+# version 2.5
+
+    BIG change : remove pg, knex and pg-copy-streams to postgres.js FOR 50% speed
+
+# version 2.1
+    Add Root to query
+    Add new modular date search more flexible than standard ST
+    add export service : export as excel vi JSExcel
+    change graph representation by dygraph
+    Logs are now in the instance of each database and work with logs extension : extensions: ["logs"]
+    apidoc is now serve on the root of the api and updated with the install
+    new routine for lora payload decoder (to the same template)
+    add update : before and after to have service start before some update launch after.
+    add update : decoders to update decoders with hash test before
+
 # version 2
     valueskeys property to get keys form multidatstream values
     true result any (like the sensortings norm tue result is a true "any" value)
@@ -14,7 +85,7 @@
         "payload": "010610324200000107103E4900009808"
     }
     ```
-    new config extensions : the key estension [extensions: ["multiDatastream", "lora", "numeric"]
+    new config extensions : the key extensions extensions: ["multiDatastream", "lora", "numeric"]
     correction bug when multiple @iot.id in odata
     all start in one pass from scratch 
 

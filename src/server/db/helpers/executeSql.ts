@@ -36,4 +36,6 @@ const executeSqlMulti = async (config: IconfigFile, query: string[]): Promise<ob
     });
 };
 
-export const executeSql = async (config: IconfigFile, query: string | string[]): Promise<object> => typeof query === "string" ? executeSqlOne(config, query) : executeSqlMulti(config, query);
+export const executeSql = async (config: IconfigFile, query: string | string[]): Promise<object> => typeof query === "string" 
+    ? executeSqlOne(config, query) 
+    : executeSqlMulti(config, query);

@@ -100,8 +100,11 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
       const formatedDatas: string[] = [];
       const height = String(100 / Object.entries(input).length).split(".")[0];
       if (typeof input === "object") {
+       
         Object.entries(input).forEach((element: object, index: number) => {
-          graphNames.push( `<button type="button" id="btngraph${index}" onclick="graph${index}.remove(); btngraph${index}.remove()"">X</button> <div id="graph${index}" style="width:95%; height:${height}%;"></div>` );
+          graphNames.push( `<button type="button" id="btngraph${index}" onclick="graph${index}.remove(); btngraph${index}.remove();">X</button>
+           <div id="graph${index}" style="width:95%; height:${height}%;"></div>` );
+          
           const infos = element[1]["description"]
             ? `${[
                 element[1]["description"],
@@ -120,7 +123,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
         <script>
         ${addJsFile("graph.js")}
           const linkBase = "${ctx.decodedUrl.root}";
-          ${formatedDatas.join("")}                             
+          ${formatedDatas.join(";")}                             
         </script>`;
     },
     generateSql(input: PgVisitor) {

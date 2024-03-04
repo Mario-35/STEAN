@@ -77,8 +77,6 @@ export class PgVisitor {
   }
 
   addToArrayNames(key: string | string[]) {
-    console.log(`addToArrayNames           => ${key}`);
-    
     const addTo = (input: string[]) => {
       input.forEach(key =>  {
         key = key.includes(" AS ") ? key.split(" AS ")[1] : key;
