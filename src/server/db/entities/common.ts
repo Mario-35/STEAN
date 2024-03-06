@@ -13,7 +13,6 @@ import { formatLog } from "../../logger";
 import { IreturnResult } from "../../types";
 import { executeSqlValues, removeKeyFromUrl } from "../helpers";
 import { getErrorCode, infos } from "../../messages";
-import { versionString } from "../../constants";
 import { log } from "../../log";
  // Common class
 export class Common {
@@ -24,7 +23,7 @@ export class Common {
   constructor(ctx: koa.Context) {
     console.log(formatLog.whereIam());
     this.ctx = ctx;
-    this.nextLinkBase = removeKeyFromUrl( `${this.ctx.decodedUrl.root}/${ this.ctx.href.split(`${versionString(ctx.config.apiVersion)}/`)[1] }`, ["top", "skip"] );
+    this.nextLinkBase = removeKeyFromUrl( `${this.ctx.decodedUrl.root}/${ this.ctx.href.split(`${ctx.config.apiVersion}/`)[1] }`, ["top", "skip"] );
     this.linkBase = `${this.ctx.decodedUrl.root}/${this.constructor.name}`;     
   }
 

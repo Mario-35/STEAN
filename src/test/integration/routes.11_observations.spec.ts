@@ -518,7 +518,7 @@ describe("endpoint : Observations", () => {
                 "FeatureOfInterest": {
                     "name": "Au Comptoir Vénitien (Created new location)",
                     "description": "Au Comptoir Vénitien",
-                    "encodingType": "application/vnd.geo+json",
+                    "encodingType": "application/geo+json",
                     "feature": {
                         "type": "Point",
                         "coordinates": [48.11829243294942, -1.717928984533772]
@@ -598,7 +598,7 @@ describe("endpoint : Observations", () => {
                 "FeatureOfInterest": {
                     "name": "Au Comptoir Vénitien [7]",
                     "description": "Au Comptoir Vénitien",
-                    "encodingType": "application/vnd.geo+json",
+                    "encodingType": "application/geo+json",
                     "feature": {
                         "type": "Point",
                         "coordinates": [48.11829243294942, -1.717928984533772]
@@ -650,7 +650,7 @@ describe("endpoint : Observations", () => {
                 "FeatureOfInterest": {
                     "name": "Au Comptoir Vénitien",
                     "description": "Au Comptoir Vénitien",
-                    "encodingType": "application/vnd.geo+json",
+                    "encodingType": "application/geo+json",
                     "feature": {
                         "type": "Point",
                         "coordinates": [48.11829243294942, -1.717928984533772]
@@ -698,7 +698,7 @@ describe("endpoint : Observations", () => {
                 "FeatureOfInterest": {
                     "name": "Au Comptoir Vénitien[9]",
                     "description": "Au Comptoir Vénitien",
-                    "encodingType": "application/vnd.geo+json",
+                    "encodingType": "application/geo+json",
                     "feature": {
                         "type": "Point",
                         "coordinates": [48.11829243294942, -1.717928984533772]
@@ -736,7 +736,7 @@ describe("endpoint : Observations", () => {
                 "FeatureOfInterest": {
                     "name": "Au Comptoir Vénitien[9]",
                     "description": "Au Comptoir Vénitien",
-                    "encodingType": "application/vnd.geo+json",
+                    "encodingType": "application/geo+json",
                     "feature": {
                         "type": "Point",
                         "coordinates": [48.11829243294942, -1.717928984533772]

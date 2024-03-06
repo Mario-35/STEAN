@@ -13,6 +13,7 @@ import { formatLog } from "../../logger";
 
 export class MultiDatastreams extends Common {
   constructor(ctx: koa.Context) {
+    console.log(formatLog.whereIam());
     super(ctx);
   }
 

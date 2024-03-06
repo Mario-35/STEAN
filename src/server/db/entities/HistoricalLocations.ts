@@ -7,9 +7,11 @@
  */
 
 import koa from "koa";
+import { formatLog } from "../../logger";
 import { Common } from "./common";
 export class HistoricalLocations extends Common {
   constructor(ctx: koa.Context) {
+    console.log(formatLog.whereIam());
     super(ctx);
   }
 }

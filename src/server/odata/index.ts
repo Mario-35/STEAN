@@ -25,12 +25,15 @@ const doSomeWarkAfterCreateAst = async (input: PgVisitor, ctx: koa.Context) => {
 
 const escapesOdata = (input: string) : string => {
   const codes = { "/" : "%252F", "\\" : "%255C" };
-  const pop:string[] = [];
-  input.split("%27").forEach((v: string,i: number) => {
-    if (i > 0) Object.keys(codes).forEach((code: string) => v = v.split(code).join(codes[code]));
-    pop.push(v);
-  });
-  return pop.join("%27");
+  if (input.includes("%27")) {
+    const pop:string[] = [];
+    input.split("%27").forEach((v: string, i: number) => {
+      if (i === 1) Object.keys(codes).forEach((code: string) => v = v.split(code).join(codes[code]));      
+      pop.push(v);
+    });
+    return pop.join("%27");
+  }
+  return input;
 };
 
 export const createOdata = async (ctx: koa.Context): Promise<PgVisitor | undefined> => {
@@ -44,10 +47,10 @@ export const createOdata = async (ctx: koa.Context): Promise<PgVisitor | undefin
   };
 
   // normalize href
-  let urlSrc = `${ctx.decodedUrl.path}${ctx.decodedUrl.search}`;
-    
-
-  if (urlSrc && urlSrc.trim() != "") urlSrc = escapesOdata(urlSrc);  
+  let urlSrc = `${ctx.decodedUrl.path}${ctx.decodedUrl.search}`;  
+  
+  if (urlSrc && urlSrc.trim() != "") urlSrc = escapesOdata(urlSrc);
+  
   // replace element  
   const clean = (replaceThis: string, by?: string) => urlSrc = urlSrc.split(replaceThis).join(by ? by : "");
 
@@ -57,10 +60,7 @@ export const createOdata = async (ctx: koa.Context): Promise<PgVisitor | undefin
     clean(input);
   };
   
-  clean("geography%27", "%27"); 
-
-  // intercept deveui loras identification and save it befor delete it for comptibility with number id
-
+  clean("geography%27", "%27");
   
   // clean id in url
   urlSrc = cleanUrl(clean("@iot.id", "id"));
@@ -92,7 +92,7 @@ export const createOdata = async (ctx: koa.Context): Promise<PgVisitor | undefin
 
   if (urlSrcSplit[0].split("(").length != urlSrcSplit[0].split(")").length) urlSrcSplit[0] += ")";
 
-  const astRessources: Token = <Token>resourcePath(<string>urlSrcSplit[0]);  
+  const astRessources: Token = <Token>resourcePath(<string>urlSrcSplit[0]);
 
   const astQuery: Token = <Token>query(decodeURIComponent(urlSrcSplit[1]));
 

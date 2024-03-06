@@ -764,7 +764,7 @@ getColumnResult(context: IodataContext, ForceString?: boolean) {
       column = addDoubleQuotes(column);
     }
     if (test)
-      column = `CASE WHEN ${test} = 'application/vnd.geo+json' THEN ST_GeomFromEWKT(ST_GeomFromGeoJSON(${column})) ELSE ST_GeomFromEWKT(${column}::text) END`;
+      column = `CASE WHEN ${test} LIKE '%geo+json' THEN ST_GeomFromEWKT(ST_GeomFromGeoJSON(coalesce(${column}->'geometry',${column}))) ELSE ST_GeomFromEWKT(${column}::text) END`;
     return column;
   }
   protected VisitMethodCallExpression(node: Token, context: IodataContext) {

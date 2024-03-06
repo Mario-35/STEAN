@@ -336,7 +336,7 @@ describe("endpoint : Locations [8.2.2]", () => {
 			const datas = {
 				"name": "Inrae - Saint-Gilles",
 				"description": "New location test Inrae - Saint-Gilles",
-				"encodingType": "application/vnd.geo+json",
+				"encodingType": "application/geo+json",
 				"location": {
 					"type": "Point",
 					"coordinates": [48.14523718972358, -1.8305352019940178]
@@ -401,7 +401,7 @@ describe("endpoint : Locations [8.2.2]", () => {
 			const datas = {
 				"name": `Au Comptoir Vénitien ${getNB(entity.name)}`,
 				"description": "Au Comptoir Vénitien",
-				"encodingType": "application/vnd.geo+json",
+				"encodingType": "application/geo+json",
 				"location": {
 					"type": "Point",
 					"coordinates": [48.11829243294942, -1.717928984533772]
@@ -453,7 +453,7 @@ describe("endpoint : Locations [8.2.2]", () => {
 				const datas = {
 					name: "My Location has changed",
 					description: "Inrae - Site De Saint-Gilles",
-					encodingType: "application/vnd.geo+json",
+					encodingType: "application/geo+json",
 					location: {
 						type: "Point",
 						coordinates: [48.14523718972358, -1.8305352019940178]
@@ -499,7 +499,7 @@ describe("endpoint : Locations [8.2.2]", () => {
 			const datas = {
 				"name": "My Location has changed",
 				"description": "Inrae - Site De Saint-Gilles",
-				"encodingType": "application/vnd.geo+json",
+				"encodingType": "application/geo+json",
 				"location": {
 					"type": "Point",
 					"coordinates": [48.14523718972358, -1.8305352019940178]

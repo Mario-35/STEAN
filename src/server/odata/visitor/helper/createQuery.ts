@@ -60,7 +60,7 @@ export function createPgQuery(main: PgVisitor, element: PgVisitor): IpgQuery | u
                     }
                 });
                 return { 
-                    select: select.join(",\n\t"), 
+                    select: select.join(",\n\t\t"), 
                     from: main.ctx.model[realEntityName].table , 
                     where: element.where, 
                     groupBy: element.groupBy.join(",\n\t"),

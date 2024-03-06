@@ -294,7 +294,6 @@ namespace Expressions {
         if (!temp) return;
         index = temp;
         let parameters;
-
         if (min > 0) {
             parameters = [];
             while (parameters.length < max) {

@@ -12,6 +12,7 @@ import util from "util";
 import { EColor } from "../enums";
 import { color, showAll, _DEBUG, _ERRORFILE, _OK } from "../constants";
 import { isTest } from "../helpers";
+import { Lexer } from "../odata/parser";
 
 // class to logCreate configs environements
 class Log {
@@ -50,6 +51,16 @@ class Log {
     process.stdout.write(`${color(EColor.FgGreen)} ${"=".repeat(15)} ${color( EColor.FgCyan )} ERROR ${color(EColor.FgGreen)} ${"=".repeat(15)}${color( EColor.Reset )}
       ${color(EColor.FgRed)} ${error} ${color( EColor.FgBlue )}
       ${color(EColor.FgCyan)} ${showAll(query, false ) }${color(EColor.Reset)}`);
+  }
+
+      // Usefull for id not used ;)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  oData(infos: Lexer.Token | undefined) {  
+    if(infos && _DEBUG)  {
+      const tmp = `${color(EColor.FgFadeWhite)} ${infos} ${color(EColor.Reset)}`;
+      process.stdout.write(`${color(EColor.FgRed)} ${"=".repeat(8)} ${color(EColor.FgCyan)} ${ new Error().stack?.split("\n")[2].trim().split("(")[0].split("at ")[1].trim() } ${tmp}${color(EColor.FgRed)} ${"=".repeat(8)}${color(EColor.Reset)}`);
+    }
+    return infos;
   }
 
   public init() {

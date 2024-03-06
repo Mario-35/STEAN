@@ -12,6 +12,7 @@ export { EdatesType } from "./datesType";
 export { Eentities } from "./entities";
 export { EextensionsType } from "./extensionsType";
 export { Eformats } from "./formats";
+export { EmodelType } from "./model";
 export { EobservationType } from "./observationType";
 export { EoperationType } from "./operationType";
 export { Erelations } from "./relations";

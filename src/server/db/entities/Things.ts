@@ -7,10 +7,12 @@
  */
 
 import koa from "koa";
+import { formatLog } from "../../logger";
 import { Common } from "./common";
 // http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#25
 export class Things extends Common {
   constructor(ctx: koa.Context) {
+    console.log(formatLog.whereIam());
     super(ctx);
   }
 }

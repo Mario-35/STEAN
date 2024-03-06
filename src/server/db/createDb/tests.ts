@@ -1,3 +1,4 @@
+// Shortcuts for space
 const n = {
 	types: ["classic","apostrophe","accent","special","hack"],
 	"radon": "Radioactivité de l'air, issue de la désintégration naturelle du radon",
@@ -13,9 +14,16 @@ const n = {
 	"ozcar": "https://w3id.org/ozcar-theia/",
 	"opendata": "http://opendata.inrae.fr/thesaurusINRAE/",
 	"link": "https://joy-it.net/en/products/link.html",
+	"ui" : [
+		"2CF7F120252000DF",
+		"2CF7F1202520017E",
+		"2CF7F1203150012A",
+		"8CF9574000002D2D",
+		"70B3D5E75E014F06"
+	]
 }
-const nb = (hr: number) => hr < 10 ? `0${hr}` : `${hr}`;
 
+const nb = (hr: number) => hr < 10 ? `0${hr}` : `${hr}`;
 
 const createObservations = () => {
 		const datastream = (type: string, month: number) => {
@@ -57,8 +65,7 @@ const createObservations = () => {
 			result.push(...multiDatastream(name, index + 1));
 		});
 		  return result;
-	}
-
+}
 
 export const testDatas = {
 	"create": {
@@ -159,7 +166,7 @@ export const testDatas = {
 		{
 			"name": `${n["classic"]} Features Of Interest`,
 			"description": `Description of ${n["classic"]} Features Of Interest`,	
-			"encodingType": "application/vnd.geo+json",
+			"encodingType": "application/geo+json",
 			"feature": {
 				"type": "Point",
 				"coordinates": [-4.1208244, 47.9441891]
@@ -168,7 +175,7 @@ export const testDatas = {
 		{
 			"name": `${n["apostrophe"]} Features Of Interest`,
 			"description": `Description of ${n["apostrophe"]} Features Of Interest`,	
-			"encodingType": "application/vnd.geo+json",
+			"encodingType": "application/geo+json",
 			"feature": {
 				"type": "Point",
 				"coordinates": [-4.1208244, 47.9441891]
@@ -177,7 +184,7 @@ export const testDatas = {
 		{
 			"name": `${n["accent"]} Features Of Interest`,
 			"description": `Description of ${n["accent"]} Features Of Interest`,	
-			"encodingType": "application/vnd.geo+json",
+			"encodingType": "application/geo+json",
 			"feature": {
 				"type": "Point",
 				"coordinates": [-4.1208244, 47.9441891]
@@ -186,7 +193,7 @@ export const testDatas = {
 		{
 			"name": `${n["special"]} Features Of Interest`,
 			"description": `Description of ${n["special"]} Features Of Interest`,	
-			"encodingType": "application/vnd.geo+json",
+			"encodingType": "application/geo+json",
 			"feature": {
 				"type": "Point",
 				"coordinates": [-4.1208244, 47.9441891]
@@ -195,7 +202,7 @@ export const testDatas = {
 		{
 			"name": `${n["hack"]} Features Of Interest`,
 			"description": `Description of ${n["hack"]} Features Of Interest`,	
-			"encodingType": "application/vnd.geo+json",
+			"encodingType": "application/geo+json",
 			"feature": {
 				"type": "Point",
 				"coordinates": [-4.1208244, 47.9441891]
@@ -204,7 +211,7 @@ export const testDatas = {
 		{
 			"name": "Somewhere on earth",
 			"description": "Well watershed",
-			"encodingType": "application/vnd.geo+json",
+			"encodingType": "application/geo+json",
 			"feature": {
 				"type": "Point",
 				"coordinates": [-4.1208244, 47.9441891]
@@ -213,7 +220,7 @@ export const testDatas = {
 		{
 			"name": "Next to you",
 			"description": "Watershed polygon",
-			"encodingType": "application/vnd.geo+json",
+			"encodingType": "application/geo+json",
 			"feature": {
 				"type": "Polygon",
 				"coordinates": [
@@ -731,7 +738,7 @@ export const testDatas = {
 		{
 			"name": "Near of me",
 			"description": "Watershed point",
-			"encodingType": "application/vnd.geo+json",
+			"encodingType": "application/geo+json",
 			"feature": {
 				"type": "Point",
 				"coordinates": [-2.831291, 48.0057694]
@@ -740,7 +747,7 @@ export const testDatas = {
 		{
 			"name": "bv kerrien",
 			"description": "Bassin versant de Kerrien",
-			"encodingType": "application/vnd.geo+json",
+			"encodingType": "application/geo+json",
 			"feature": {
 				"type": "Point",
 				"coordinates": [-4.1227251, 47.941086]
@@ -749,7 +756,7 @@ export const testDatas = {
 		{
 			"name": "Temperature, Humidity & conductivity",
 			"description": "Temperature, Humidity and Electrical conductivity",
-			"encodingType": "application/vnd.geo+json",
+			"encodingType": "application/geo+json",
 			"feature": {
 				"type": "Point",
 				"coordinates": [
@@ -768,7 +775,7 @@ export const testDatas = {
 				"type": "Feature",
 				"geometry": {
 					"type": "Point",
-					"coordinates": [48.13765198324515, -1.6956051932646596]
+					"coordinates": [-4.1208244, 47.9441891]
 				}
 			}
 		},
@@ -780,7 +787,7 @@ export const testDatas = {
 				"type": "Feature",
 				"geometry": {
 					"type": "Point",
-					"coordinates": [48.12552590922048, -1.5889906727727678]
+					"coordinates": [-2.831291, 48.0057694]
 				}
 			}
 		},
@@ -792,7 +799,7 @@ export const testDatas = {
 				"type": "Feature",
 				"geometry": {
 					"type": "Point",
-					"coordinates": [48.07908248444603, -1.6664475955447595]
+					"coordinates": [-4.1235308, 47.9402973]
 				}
 			}
 		},
@@ -816,7 +823,7 @@ export const testDatas = {
 				"type": "Feature",
 				"geometry": {
 					"type": "Point",
-					"coordinates": [48.123242161802274, -1.7127016234011674]
+					"coordinates": [-4.1227251, 47.941086]
 				}
 			}
 		},
@@ -898,7 +905,7 @@ export const testDatas = {
 		{
 			"name": "Site of BeautifulEyes",
 			"description": "BeautifulEyes",
-			"encodingType": "application/vnd.geo+json",
+			"encodingType": "application/geo+json",
 			"location": {
 				"type": "Point",
 				"coordinates": [
@@ -1591,7 +1598,7 @@ export const testDatas = {
 			}
 		},
 		{
-			"name": "Lora ST1_50 [2CF7F120252000DF]",
+			"name": `Lora ST1_50 [${n.ui[0]}]`,
 			"description": "Streams Lora ST1_50",
 			"unitOfMeasurements": [{
 					"name": "soil moisture",
@@ -1617,7 +1624,7 @@ export const testDatas = {
 			}
 		},
 		{
-			"name": "Lora ST3_75 [2CF7F1202520017E]",
+			"name": `Lora ST3_75 [${n.ui[1]}]`,
 			"description": "Streams Lora ST3_75",
 			"unitOfMeasurements": [{
 					"name": "soil moisture",
@@ -1643,7 +1650,7 @@ export const testDatas = {
 			}
 		},
 		{
-			"name": "Lora ST4_25 [2CF7F1203150012A]",
+			"name": `Lora ST4_25 [${n.ui[2]}]`,
 			"description": "Streams Lora ST4_25",
 			"unitOfMeasurements": [{
 					"name": "soil moisture",
@@ -1669,7 +1676,7 @@ export const testDatas = {
 			}
 		},
 		{
-			"name": "THR Quince [8CF9574000002D2D]",
+			"name": `THR Quince [${n.ui[3]}]`,
 			"description": "Streams THR Quince",
 			"unitOfMeasurements": [{
 					"name": "Humidite de l'air",
@@ -1778,7 +1785,7 @@ export const testDatas = {
 		},
 		{
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			},
 			"observedproperty_id": {
 				"@iot.name": "Temperature"
@@ -1786,7 +1793,7 @@ export const testDatas = {
 		},
 		{
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			},
 			"observedproperty_id": {
 				"@iot.name": "Relative humidity"
@@ -1794,7 +1801,7 @@ export const testDatas = {
 		},
 		{
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			},
 			"observedproperty_id": {
 				"@iot.name": "Temperature"
@@ -1802,7 +1809,7 @@ export const testDatas = {
 		},
 		{
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			},
 			"observedproperty_id": {
 				"@iot.name": "Relative humidity"
@@ -1810,7 +1817,7 @@ export const testDatas = {
 		},
 		{
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			},
 			"observedproperty_id": {
 				"@iot.name": "Temperature"
@@ -1818,7 +1825,7 @@ export const testDatas = {
 		},
 		{
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			},
 			"observedproperty_id": {
 				"@iot.name": "Relative humidity"
@@ -1826,7 +1833,7 @@ export const testDatas = {
 		},
 		{
 			"multidatastream_id": {
-				"@iot.name": "THR Quince [8CF9574000002D2D]"
+				"@iot.name": `THR Quince [${n.ui[3]}]`
 			},
 			"observedproperty_id": {
 				"@iot.name": "Temperature"
@@ -1834,7 +1841,7 @@ export const testDatas = {
 		},
 		{
 			"multidatastream_id": {
-				"@iot.name": "THR Quince [8CF9574000002D2D]"
+				"@iot.name": `THR Quince [${n.ui[3]}]`
 			},
 			"observedproperty_id": {
 				"@iot.name": "Relative humidity"
@@ -1963,56 +1970,56 @@ export const testDatas = {
 	"Loras": [{
 			"name": "ST1_50",
 			"description": "Lora ST1_50",
-			"deveui": "2CF7F120252000DF",
+			"deveui": n.ui[0],
 			"decoder_id": {
 				"@iot.name": "Sensecap"
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
 			"name": "ST3_75",
 			"description": "Lora ST3_75",
-			"deveui": "2CF7F1202520017E",
+			"deveui": n.ui[1],
 			"decoder_id": {
 				"@iot.name": "Sensecap"
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
 			"name": "ST4_25",
 			"description": "Lora ST4_25",
-			"deveui": "2CF7F1203150012A",
+			"deveui": n.ui[2],
 			"decoder_id": {
 				"@iot.name": "Sensecap"
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
 			"name": "THR Quince",
 			"description": "THR Quince",
-			"deveui": "8CF9574000002D2D",
+			"deveui": n.ui[3],
 			"decoder_id": {
 				"@iot.name": "RHF1S001"
 			},
 			"multidatastream_id": {
-				"@iot.name": "THR Quince [8CF9574000002D2D]"
+				"@iot.name": `THR Quince [${n.ui[3]}]`
 			}
 		},
 		{
 			"name": "Pressure Watteco",
 			"description": "Pressure Watteco",
-			"deveui": "70B3D5E75E014F06",
+			"deveui": n.ui[4],
 			"decoder_id": {
 				"@iot.name": "Watteco"
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		}
 	],
@@ -3824,7 +3831,7 @@ export const testDatas = {
 				"value": 4.713720321655273
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -3843,7 +3850,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -3862,7 +3869,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -3881,7 +3888,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -3900,7 +3907,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -3909,7 +3916,7 @@ export const testDatas = {
 				"value": 4.634254455566406
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -3928,7 +3935,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -3947,7 +3954,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -3966,7 +3973,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -3975,7 +3982,7 @@ export const testDatas = {
 				"value": 4.638038635253906
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -3994,7 +4001,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -4013,7 +4020,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -4032,7 +4039,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -4041,7 +4048,7 @@ export const testDatas = {
 				"value": 4.6077656745910645
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -4060,7 +4067,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -4079,7 +4086,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -4088,7 +4095,7 @@ export const testDatas = {
 				"value": 4.621641159057617
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -4107,7 +4114,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -4126,7 +4133,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -4145,7 +4152,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -4164,7 +4171,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -4183,7 +4190,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -4192,7 +4199,7 @@ export const testDatas = {
 				"value": 4.629209518432617
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -4211,7 +4218,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -4230,7 +4237,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -4239,7 +4246,7 @@ export const testDatas = {
 				"value": 4.620379447937012
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -4258,7 +4265,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -4277,7 +4284,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -4286,7 +4293,7 @@ export const testDatas = {
 				"value": 4.6468682289123535
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -4305,7 +4312,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -4324,7 +4331,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -4343,7 +4350,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -4362,7 +4369,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -4371,7 +4378,7 @@ export const testDatas = {
 				"value": 4.59389066696167
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -4390,7 +4397,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -4409,7 +4416,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -4428,7 +4435,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -4437,7 +4444,7 @@ export const testDatas = {
 				"value": 4.6039814949035645
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -4456,7 +4463,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -4475,7 +4482,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -4494,7 +4501,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -4503,7 +4510,7 @@ export const testDatas = {
 				"value": 4.602720737457275
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -4512,7 +4519,7 @@ export const testDatas = {
 				"value": 4.602720737457275
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -4531,7 +4538,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -4550,7 +4557,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -4569,7 +4576,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -4588,7 +4595,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -4607,7 +4614,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -4626,7 +4633,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -4645,7 +4652,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -4664,7 +4671,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -4673,7 +4680,7 @@ export const testDatas = {
 				"value": 4.660743236541748
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -4682,7 +4689,7 @@ export const testDatas = {
 				"value": 4.598936557769775
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -4701,7 +4708,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -4720,7 +4727,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -4739,7 +4746,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -4758,7 +4765,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -4777,7 +4784,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -4796,7 +4803,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -4815,7 +4822,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -4834,7 +4841,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -4843,7 +4850,7 @@ export const testDatas = {
 				"value": 4.61281156539917
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -4852,7 +4859,7 @@ export const testDatas = {
 				"value": 4.630470275878906
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -4871,7 +4878,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -4890,7 +4897,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -4909,7 +4916,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -4918,7 +4925,7 @@ export const testDatas = {
 				"value": 4.606504917144775
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -4937,7 +4944,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -4956,7 +4963,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -4965,7 +4972,7 @@ export const testDatas = {
 				"value": 4.614072799682617
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -4974,7 +4981,7 @@ export const testDatas = {
 				"value": 4.655697822570801
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -4993,7 +5000,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -5012,7 +5019,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -5031,7 +5038,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -5050,7 +5057,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -5069,7 +5076,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -5088,7 +5095,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -5107,7 +5114,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -5126,7 +5133,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -5135,7 +5142,7 @@ export const testDatas = {
 				"value": 4.598936557769775
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -5144,7 +5151,7 @@ export const testDatas = {
 				"value": 4.606504917144775
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -5163,7 +5170,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -5182,7 +5189,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -5201,7 +5208,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -5220,7 +5227,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -5229,7 +5236,7 @@ export const testDatas = {
 				"value": 4.660743236541748
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -5248,7 +5255,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -5267,7 +5274,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -5286,7 +5293,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -5295,7 +5302,7 @@ export const testDatas = {
 				"value": 4.60902738571167
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -5314,7 +5321,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -5333,7 +5340,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -5352,7 +5359,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -5371,7 +5378,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -5380,7 +5387,7 @@ export const testDatas = {
 				"value": 4.703629970550537
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -5399,7 +5406,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -5418,7 +5425,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -5437,7 +5444,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -5446,7 +5453,7 @@ export const testDatas = {
 				"value": 4.631731986999512
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -5455,7 +5462,7 @@ export const testDatas = {
 				"value": 4.606504917144775
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -5474,7 +5481,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -5493,7 +5500,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -5512,7 +5519,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -5531,7 +5538,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -5540,7 +5547,7 @@ export const testDatas = {
 				"value": 4.688493251800537
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -5559,7 +5566,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -5578,7 +5585,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -5597,7 +5604,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -5606,7 +5613,7 @@ export const testDatas = {
 				"value": 4.6191182136535645
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -5615,7 +5622,7 @@ export const testDatas = {
 				"value": 4.614072799682617
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -5634,7 +5641,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -5653,7 +5660,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -5672,7 +5679,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -5681,7 +5688,7 @@ export const testDatas = {
 				"value": 4.632993221282959
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -5690,7 +5697,7 @@ export const testDatas = {
 				"value": 4.620379447937012
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -5709,7 +5716,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -5728,7 +5735,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -5747,7 +5754,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -5766,7 +5773,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -5775,7 +5782,7 @@ export const testDatas = {
 				"value": 4.602720737457275
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -5794,7 +5801,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -5813,7 +5820,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -5832,7 +5839,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -5841,7 +5848,7 @@ export const testDatas = {
 				"value": 4.606504917144775
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -5860,7 +5867,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -5879,7 +5886,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -5898,7 +5905,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -5917,7 +5924,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -5926,7 +5933,7 @@ export const testDatas = {
 				"value": 4.6077656745910645
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -5945,7 +5952,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -5964,7 +5971,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -5983,7 +5990,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -5992,7 +5999,7 @@ export const testDatas = {
 				"value": 4.6001973152160645
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -6001,7 +6008,7 @@ export const testDatas = {
 				"value": 4.667050361633301
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -6020,7 +6027,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -6039,7 +6046,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -6058,7 +6065,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -6077,7 +6084,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -6086,7 +6093,7 @@ export const testDatas = {
 				"value": 4.66831111907959
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -6105,7 +6112,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -6124,7 +6131,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -6143,7 +6150,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -6152,7 +6159,7 @@ export const testDatas = {
 				"value": 4.6392998695373535
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -6161,7 +6168,7 @@ export const testDatas = {
 				"value": 4.684709072113037
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -6180,7 +6187,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -6199,7 +6206,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -6218,7 +6225,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -6237,7 +6244,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -6256,7 +6263,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -6275,7 +6282,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -6284,7 +6291,7 @@ export const testDatas = {
 				"value": 4.624163627624512
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -6293,7 +6300,7 @@ export const testDatas = {
 				"value": 4.59767484664917
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -6312,7 +6319,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -6331,7 +6338,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -6350,7 +6357,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -6359,7 +6366,7 @@ export const testDatas = {
 				"value": 4.614072799682617
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -6378,7 +6385,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -6397,7 +6404,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -6416,7 +6423,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -6425,7 +6432,7 @@ export const testDatas = {
 				"value": 4.6392998695373535
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -6434,7 +6441,7 @@ export const testDatas = {
 				"value": 4.573709487915039
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -6453,7 +6460,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -6472,7 +6479,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -6491,7 +6498,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -6510,7 +6517,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -6529,7 +6536,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -6548,7 +6555,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -6557,7 +6564,7 @@ export const testDatas = {
 				"value": 4.60902738571167
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -6576,7 +6583,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -6595,7 +6602,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -6614,7 +6621,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -6623,7 +6630,7 @@ export const testDatas = {
 				"value": 4.703629970550537
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -6642,7 +6649,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -6661,7 +6668,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -6680,7 +6687,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -6689,7 +6696,7 @@ export const testDatas = {
 				"value": 4.6077656745910645
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -6708,7 +6715,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -6727,7 +6734,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -6746,7 +6753,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -6755,7 +6762,7 @@ export const testDatas = {
 				"value": 4.6506524085998535
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -6764,7 +6771,7 @@ export const testDatas = {
 				"value": 4.67966365814209
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -6783,7 +6790,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -6802,7 +6809,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -6821,7 +6828,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -6830,7 +6837,7 @@ export const testDatas = {
 				"value": 4.606504917144775
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -6849,7 +6856,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -6868,7 +6875,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -6887,7 +6894,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -6896,7 +6903,7 @@ export const testDatas = {
 				"value": 4.60524320602417
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -6915,7 +6922,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -6934,7 +6941,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -6953,7 +6960,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST4_25 [2CF7F1203150012A]"
+				"@iot.name": `Lora ST4_25 [${n.ui[2]}]`
 			}
 		},
 		{
@@ -6972,7 +6979,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -6981,7 +6988,7 @@ export const testDatas = {
 				"value": 4.59389066696167
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -7000,7 +7007,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -7019,7 +7026,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST1_50 [2CF7F120252000DF]"
+				"@iot.name": `Lora ST1_50 [${n.ui[0]}]`
 			}
 		},
 		{
@@ -7038,7 +7045,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		},
 		{
@@ -7047,7 +7054,7 @@ export const testDatas = {
 				"value": 4.617856979370117
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -7056,7 +7063,7 @@ export const testDatas = {
 				"value": 4.602720737457275
 			},
 			"datastream_id": {
-				"@iot.name": "Pressure sensor [70B3D5E75E014F06]"
+				"@iot.name": `Pressure sensor [${n.ui[4]}]`
 			}
 		},
 		{
@@ -7075,7 +7082,7 @@ export const testDatas = {
 				}
 			},
 			"multidatastream_id": {
-				"@iot.name": "Lora ST3_75 [2CF7F1202520017E]"
+				"@iot.name": `Lora ST3_75 [${n.ui[1]}]`
 			}
 		}
 	]

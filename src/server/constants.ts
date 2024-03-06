@@ -28,7 +28,6 @@ export const APP_KEY = fs.readFileSync(__dirname + "/configuration/.key", "utf8"
 export const APP_NAME = process.env.npm_package_name || "_STEAN";
 export const APP_VERSION = process.env.version || process.env.npm_package_version || "0";
 export const color = (col: number) => `\x1b[${col}m`;
-export const DEFAULT_API_VERSION = "1.0";
 export const DEFAULT_DB = "postgres";
 export const DOUBLEQUOTEDCOMA = '",\n"';
 export const _NEWLINE = '\r\n';
@@ -49,7 +48,6 @@ export const NODE_ENV = process.env.NODE_ENV ? process.env.NODE_ENV : "productio
 export const SIMPLEQUOTEDCOMA = "',\n'";
 export const TEST = "test";
 export const TIMESTAMP = (): string => { const d = new Date(); return d.toLocaleTimeString(); };
-export const versionString = (input: number | string):string => `v${input}`;
 export const VOIDTABLE = "spatial_ref_sys";
 export function setDebug(input: boolean) { _DEBUG = input; }
 export function setReady(input: boolean) { _READY = input; }

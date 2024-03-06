@@ -8,7 +8,7 @@
 
 import Router from "koa-router";
 import { decodeToken, ensureAuthenticated, getAuthenticatedUser, } from "../authentication";
-import { ADMIN, versionString, _READY } from "../constants";
+import { ADMIN, _READY } from "../constants";
 import { addSimpleQuotes, getUrlId, getUrlKey, isAdmin, returnFormats } from "../helpers";
 import { apiAccess, userAccess } from "../db/dataAccess";
 import { formatLog } from "../logger";
@@ -205,8 +205,8 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
   } // END Switch
 
   // API GET REQUEST  
-  if (ctx.decodedUrl.path.includes(`/${versionString(ctx.config.apiVersion)}`) || ctx.decodedUrl.version) {
-    console.log(formatLog.head(`unProtected GET ${versionString(ctx.config.apiVersion)}`));
+  if (ctx.decodedUrl.path.includes(`/${ctx.config.apiVersion}`) || ctx.decodedUrl.version) {
+    console.log(formatLog.head(`unProtected GET ${ctx.config.apiVersion}`));
     // decode odata url infos
     const odataVisitor = await createOdata(ctx);    
     if (odataVisitor) {
@@ -215,7 +215,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         ctx.body = { values: [] }; 
         return;
       }
-      console.log(formatLog.head(`GET ${versionString(ctx.config.apiVersion)}`));
+      console.log(formatLog.head(`GET ${ctx.config.apiVersion}`));
       // Create api object
       const objectAccess = new apiAccess(ctx);
       if (objectAccess) {

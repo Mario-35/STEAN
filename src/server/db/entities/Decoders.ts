@@ -15,6 +15,7 @@ import { decodingPayload } from "../../lora";
 import { executeSql, executeSqlValues } from "../helpers";
 export class Decoders extends Common {
   constructor(ctx: koa.Context) {
+    console.log(formatLog.whereIam());
     super(ctx);
   }
 

@@ -18,6 +18,7 @@ import { EextensionsType } from "../../enums";
 
 export class Observations extends Common {
   constructor(ctx: koa.Context) {
+    console.log(formatLog.whereIam());
     super(ctx);
   }
   // Prepare odservations 

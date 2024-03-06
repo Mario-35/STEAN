@@ -235,7 +235,7 @@ addToApiDoc({
             const datas = {
                 "name": "Weather Station YYC.",
                 "description": "This is a weather station located at Au Comptoir Vénitien.",
-                "encodingType": "application/vnd.geo+json",
+                "encodingType": "application/geo+json",
                 "feature": {
                     "type": "Point",
                     "coordinates": [48.11829243294942, -1.717928984533772]

@@ -22,6 +22,7 @@ export class Loras extends Common {
   synonym: object = {};
   stean: object = {};
   constructor(ctx: koa.Context) {
+    console.log(formatLog.whereIam());
     super(ctx);
   }
   // prepare datas to lora input

@@ -936,7 +936,7 @@ describe("endpoint : Thing [8.2.1]", () => {
 				"Locations": {
 					"name": "Au Comptoir Vénitie",
 					"description": "Restaurant next to office",
-					"encodingType": "application/vnd.geo+json",
+					"encodingType": "application/geo+json",
 					"location": {
 						"type": "Point",
 						"coordinates": [48.11829243294942, -1.717928984533772]
@@ -1102,7 +1102,7 @@ describe("endpoint : Thing [8.2.1]", () => {
 				"Locations": [{
 					"name": "Glaz Arena",
 					"description": "Glaz Arena sport complex",
-					"encodingType": "application/vnd.geo+json",
+					"encodingType": "application/geo+json",
 					"location": {
 						"type": "Point",
 						"coordinates": [48.11472599868096, -1.594679622929148]
@@ -1196,7 +1196,7 @@ describe("endpoint : Thing [8.2.1]", () => {
 							51.05
 						]
 					},
-					"encodingType": "application/vnd.geo+json"
+					"encodingType": "application/geo+json"
 				}],
 				"Datastreams": [{
 						"unitOfMeasurement": {

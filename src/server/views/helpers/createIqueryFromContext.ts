@@ -12,6 +12,7 @@ import koa from "koa";
 import { getAuthenticatedUser } from "../../authentication";
 import { serverConfig } from "../../configuration";
 import { getMetrics } from "../../db/monitoring";
+import { models } from "../../models";
 import { decodeUrl } from "../../routes/helper/decodeUrl";
 import { IqueryOptions } from "../../types";
 
@@ -46,6 +47,6 @@ export const createIqueryFromContext = async (ctx: koa.Context): Promise<IqueryO
         admin: ctx.config.name === 'admin',
         metrics: ["all"].concat(metrics as Array<string>),
         services: serverConfig.getAllInfos(ctx),
-        _DATAS: ctx.model
+        _DATAS: models.filteredModelForQuery(ctx.config)
     };
 };

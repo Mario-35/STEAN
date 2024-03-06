@@ -8,7 +8,7 @@
 
 import Koa from "koa";
 import { decodeToken } from "../authentication";
-import { versionString, _DEBUG } from "../constants";
+import { _DEBUG } from "../constants";
 import { log } from "../log";
 import { formatLog, writeToLog } from "../logger";
 import { EextensionsType } from "../enums";
@@ -43,10 +43,10 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
     else return;
 
   // forcing post loras with different version IT'S POSSIBLE BECAUSE COLUMN ARE THE SAME FOR ALL VERSION
-  if (decodedUrl.version != versionString(ctx.config.apiVersion)) {    
+  if (decodedUrl.version != ctx.config.apiVersion) {    
     if (!(ctx.request.method === "POST" && ctx.originalUrl.includes(`${decodedUrl.version}/Loras`)))
     ctx.redirect(ctx.request.method === "GET" 
-      ? ctx.originalUrl.replace(decodedUrl.version, versionString(ctx.config.apiVersion))
+      ? ctx.originalUrl.replace(decodedUrl.version, ctx.config.apiVersion)
       : `${ctx.decodedUrl.linkbase}/v${ctx.config.apiVersion}/`);
   }
   

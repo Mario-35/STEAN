@@ -10,7 +10,8 @@
 import koa from "koa";
 import { getConfigFromPort } from ".";
 import { serverConfig } from "../../configuration";
-import { DEFAULT_API_VERSION, setDebug, versionString } from "../../constants";
+import { setDebug } from "../../constants";
+import { EmodelType } from "../../enums";
 import { cleanUrl } from "../../helpers";
 import { formatLog } from "../../logger";
 import { errors } from "../../messages";
@@ -71,7 +72,7 @@ export const decodeUrl =  (ctx: koa.Context, input?: string): IdecodedUrl | unde
       search: url.search,
       hash: url.hash,
       service: paths[0],
-      version: paths[0] === "admin" ? versionString(DEFAULT_API_VERSION) : paths[1],
+      version: paths[0] === "admin" ? EmodelType.v1_0 : paths[1],
       path: idStr ? path.replace(idStr, '0') : path,
       id: (isNaN(+id)) ? BigInt(0) : BigInt(id),
       idStr: idStr,

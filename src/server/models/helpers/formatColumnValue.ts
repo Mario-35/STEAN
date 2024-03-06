@@ -47,8 +47,6 @@ import { formatLog } from "../../logger";
                 if (temp) return addSimpleQuotes(temp);
                 return "ARRAY ERROR";
               case 'result':
-                console.log("============================================> YCY");
-                
                 return addSimpleQuotes(ESCAPE_SIMPLE_QUOTE(JSON.stringify(value)));
               default:
                 break;

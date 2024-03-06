@@ -1,10 +1,10 @@
 import { serverConfig } from "../configuration";
-import { DEFAULT_API_VERSION, TEST, versionString } from "../constants";
+import { TEST } from "../constants";
 import { log } from "../log";
 import { _STREAM } from "../db/constants";
 import { executeSqlValues } from "../db/helpers";
 import { queryAsJson } from "../db/queries";
-import { EcolType, EdatesType, EextensionsType, EobservationType, Erelations } from "../enums";
+import { EcolType, EdatesType, EextensionsType, EmodelType, EobservationType, Erelations } from "../enums";
 import { addDoubleQuotes, deepClone, isTest } from "../helpers";
 import { errors, msg } from "../messages";
 import { IconfigFile, Ientities, Ientity, IKeyBoolean, Isecurity, IstreamInfos } from "../types";
@@ -19,9 +19,9 @@ function makeIDAlias(alias: boolean | undefined) { return `"id"${alias && alias 
 
 class Models {
   static models : { [key: string]: Ientities; } = {};
-  // Create Object FOR DEFAULT_API_VERSION
+  // Create Object FOR v1.0
   constructor() { 
-      Models.models[DEFAULT_API_VERSION] = {
+      Models.models[EmodelType.v1_0] = {
           Things: {
             name: "Things",
             singular: "Thing",
@@ -180,7 +180,7 @@ class Models {
               featureofinterest_unik_name: 'UNIQUE ("name")',
             },
             after:
-              "INSERT INTO featureofinterest (name, description, \"encodingType\", feature) VALUES ('Default Feature of Interest', 'Default Feature of Interest', 'application/vnd.geo+json', '{}');",
+              "INSERT INTO featureofinterest (name, description, \"encodingType\", feature) VALUES ('Default Feature of Interest', 'Default Feature of Interest', 'application/geo+json', '{}');",
           },
         
           Locations: {
@@ -221,7 +221,7 @@ class Models {
                   return undefined;
                 },
                 dataList: {
-                  GeoJSON: "application/vnd.geo+json",
+                  GeoJSON: "application/geo+json",
                 },
                 type: "list",
               },
@@ -273,7 +273,7 @@ class Models {
             extensions: [EextensionsType.base],
             orderBy: `"id"`,
             count: this.makeCount("historical_location"),
-            visible: true,
+            visible: false,
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",
@@ -959,7 +959,7 @@ class Models {
             extensions: [EextensionsType.multiDatastream],
             orderBy: `"multidatastream_id"`,
             count: this.makeCount("multi_datastream_observedproperty"),
-            visible: true,
+            visible: false,
             columns: {
               multidatastream_id: {
                 create: "BIGINT NOT NULL",
@@ -2090,7 +2090,7 @@ class Models {
     };
     const entities = Models.models[ctx.config.apiVersion];
     let fileContent = fs.readFileSync(__dirname + `/model.drawio`, "utf8");
-    fileContent = fileContent.replace('&gt;Version&lt;', `&gt;version : ${versionString(ctx.config.apiVersion)}&lt;`);
+    fileContent = fileContent.replace('&gt;Version&lt;', `&gt;version : ${ctx.config.apiVersion}&lt;`);
     if(!ctx.config.extensions.includes(EextensionsType.logs)) deleteId("124");
     if(!ctx.config.extensions.includes(EextensionsType.multiDatastream)) {
       ["114" ,"115" ,"117" ,"118" ,"119" ,"116" ,"120" ,"121"].forEach(e => deleteId(e));
@@ -2113,7 +2113,7 @@ class Models {
     };
     const extensions = {};
     switch (ctx.config.apiVersion) {
-      case "1.1":
+      case EmodelType.v1_1:
         result["Ogc link"] = "https://docs.ogc.org/is/18-088/18-088.html";
         break;
         
@@ -2122,7 +2122,7 @@ class Models {
         break;
     }
     if (ctx.config.extensions.includes(EextensionsType.tasking)) extensions["tasking"] = "https://docs.ogc.org/is/17-079r1/17-079r1.html";
-    if (ctx.config.extensions.includes(EextensionsType.logs)) extensions["logs"] = `${ctx.decodedUrl.linkbase}/${versionString(ctx.config.apiVersion)}/Logs`;
+    if (ctx.config.extensions.includes(EextensionsType.logs)) extensions["logs"] = `${ctx.decodedUrl.linkbase}/${ctx.config.apiVersion}/Logs`;
       
     result["extensions"] = extensions;
     return result;
@@ -2192,13 +2192,18 @@ class Models {
   public createVersion(nb: string): boolean{
     switch (nb) {
       case "1.1":          
-        Models.models["1.1"] = this.version1_1(deepClone(Models.models[DEFAULT_API_VERSION]));
+      case "v1.1":          
+      case EmodelType.v1_1:          
+        Models.models[EmodelType.v1_1] = this.version1_1(deepClone(Models.models[EmodelType.v1_0]));
     } 
     return testVersion(nb);
   }
 
-  private filtering(config: IconfigFile) {    
-    const entities = Object.keys(Models.models[config.apiVersion]).filter((e) => [ EextensionsType.base,  EextensionsType.logs, ... config.extensions, ].some((r) => Models.models[config.apiVersion][e].extensions.includes(r)));
+  private filtering(config: IconfigFile, filterVisible?: boolean) { 
+    const entities = 
+    filterVisible
+      ? Object.keys(Models.models[config.apiVersion]).filter((e) => [ EextensionsType.base,  EextensionsType.logs, ... config.extensions, ].some((r) => Models.models[config.apiVersion][e].extensions.includes(r) && Models.models[config.apiVersion][e].visible === true))
+      : Object.keys(Models.models[config.apiVersion]).filter((e) => [ EextensionsType.base,  EextensionsType.logs, ... config.extensions, ].some((r) => Models.models[config.apiVersion][e].extensions.includes(r)));
     return Object.fromEntries(Object.entries(Models.models[config.apiVersion]).filter( ([k]) => entities.includes(k))) as Ientities;
   }
 
@@ -2207,7 +2212,12 @@ class Models {
     throw new Error(msg(errors.wrongVersion, config.apiVersion));
   }
 
-  public filteredModelFromConfig(config: IconfigFile): Ientities {
+  public filteredModelForQuery(config: IconfigFile, ): Ientities {
+    if (testVersion(config.apiVersion) === false) this.createVersion(config.apiVersion);
+    return config.name === "admin" ? this.DBAdmin(config) : this.filtering(config, true);
+  }
+
+  public filteredModelFromConfig(config: IconfigFile, ): Ientities {
     if (testVersion(config.apiVersion) === false) this.createVersion(config.apiVersion);
     return config.name === "admin" ? this.DBAdmin(config) : this.filtering(config);
   }
@@ -2223,7 +2233,7 @@ class Models {
   }
   
   public DBAdmin(config: IconfigFile):Ientities {
-    const entities = Models.models[DEFAULT_API_VERSION];
+    const entities = Models.models[EmodelType.v1_0];
     return Object.fromEntries(Object.entries(entities).filter(([, v]) => v.extensions.includes(EextensionsType.admin))) as Ientities;
   } 
 
@@ -2303,16 +2313,16 @@ class Models {
     .forEach((value: string) => {
         expectedResponse.push({
           name: ctx.model[value].name,
-          url: `${ctx.decodedUrl.linkbase}/${versionString(ctx.config.apiVersion)}/${value}`,
+          url: `${ctx.decodedUrl.linkbase}/${ctx.config.apiVersion}/${value}`,
         });
       });
     
     switch (ctx.config.apiVersion) {
-      case "1.0":
+      case EmodelType.v1_0:
         return {
           value : expectedResponse.filter((elem) => Object.keys(elem).length)
         };    
-      case "1.1":
+      case EmodelType.v1_1:
         expectedResponse = expectedResponse.filter((elem) => Object.keys(elem).length);    
         const list:string[] = [];
         list.push(conformance["1.1"].root);

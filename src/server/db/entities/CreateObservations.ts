@@ -24,6 +24,7 @@ import { log } from "../../log";
 export class CreateObservations extends Common {
   public indexResult = -1;
   constructor(ctx: koa.Context) {
+    console.log(formatLog.whereIam());
     super(ctx);
   }
 

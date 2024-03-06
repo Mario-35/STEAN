@@ -5,13 +5,13 @@
  * @author mario.adam@inrae.fr
  *
  */
-import { ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_API_VERSION, DEFAULT_DB, NODE_ENV, setReady, TEST, TIMESTAMP, versionString, _DEBUG, _ERRORFILE, _NOTOK, _OK, _WEB, } from "../constants";
+import { ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_DB, NODE_ENV, setReady, TEST, TIMESTAMP, _DEBUG, _ERRORFILE, _NOTOK, _OK, _WEB, } from "../constants";
 import { addSimpleQuotes, asyncForEach, decrypt, encrypt, hidePassword, isProduction, isTest, unikeList, } from "../helpers";
 import { IconfigFile, IdbConnection, IserviceLink } from "../types";
 import { errors, infos, msg } from "../messages";
 import { createDatabase, createService, executeSql} from "../db/helpers";
 import { app } from "..";
-import { EColor, EextensionsType } from "../enums";
+import { EColor, EextensionsType, EmodelType } from "../enums";
 import fs from "fs";
 import util from "util";
 import update from "./update.json";
@@ -82,7 +82,7 @@ class Configuration {
         : "";
       // make  rootName
       if (!linkBase.includes(name)) linkBase +=  "/" + name;
-      const version = versionString(Configuration.configs[name].apiVersion)
+      const version = Configuration.configs[name].apiVersion
       return {
         protocol: protocol,
         linkBase: linkBase,
@@ -324,6 +324,16 @@ class Configuration {
     }
   };
 
+  public getModelVersion = (name: string): EmodelType => {
+    switch (name) {
+      case "v1.1":
+      case "1.1":
+        return EmodelType.v1_1
+      default:
+        return EmodelType.v1_0
+    }
+  }
+
   // return IconfigFile Formated for IconfigFile object or name found in json file
   private formatConfig(input: object | string, name?: string): IconfigFile {
     if (typeof input === "string") {
@@ -337,7 +347,7 @@ class Configuration {
       ? ["base", ... String(input["extensions"]).split(",")]
       : ["base"];
     extensions = unikeList(extensions);
-    const version = goodDbName === "admin" ? DEFAULT_API_VERSION : String(input["apiVersion"]).trim();
+    const version = goodDbName === "admin" ? EmodelType.v1_1  : String(input["apiVersion"]).trim();
     const returnValue: IconfigFile = {
       name: goodDbName,
       port:
@@ -352,7 +362,7 @@ class Configuration {
         database: name && name === "test" ? "test" : input[`pg`] && input[`pg`]["database"] ? input[`pg`]["database"] : `ERROR`,
         retry: input["retry"] ? +input["retry"] : 2,
       },
-      apiVersion: version,
+      apiVersion: this.getModelVersion(version),
       date_format: input["date_format"] || "DD/MM/YYYY hh:mi:ss",
       webSite: input["webSite"] || "no web site",
       nb_page: input["nb_page"] ? +input["nb_page"] : 200,

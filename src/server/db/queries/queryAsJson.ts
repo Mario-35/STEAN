@@ -11,7 +11,7 @@ export const queryAsJson = (input: { query: string; singular: boolean; count: bo
   input.query.trim() === ""
     ? ""
     : `SELECT ${ input.count == true 
-                  ? `\t${input.fullCount 
+                  ? `${input.fullCount 
                       ? `(${input.fullCount})` 
                       : "count(t)"},\n\t` 
                   : "" }${input.fields 

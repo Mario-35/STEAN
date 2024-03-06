@@ -13,6 +13,7 @@ import { Common } from "./common";
 
 export class Datastreams extends Common {
   constructor(ctx: koa.Context) {
+    console.log(formatLog.whereIam());
     super(ctx);
   }
 

@@ -70,10 +70,10 @@ class FormatLog {
 
   // Usefull for id not used ;)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  whereIam(infos?: unknown) {
-    const tmp = infos ? `${color(EColor.FgFadeWhite)} ${infos} ${color(EColor.Reset)} ` : '';
+  whereIam(infos?: unknown) {    
+    const tmp = infos ? `${color(EColor.FgFadeWhite)} ${infos} ${color(EColor.Reset)}` : '';
     if (_DEBUG) 
-      return `${color(EColor.FgRed)} ${this.line(4)} ${color(EColor.FgCyan)} ${ new Error().stack?.split("\n")[2].trim().split(" ")[1] } ${tmp}${color(EColor.FgRed)} ${this.line(4)}${color(EColor.Reset)}`;
+      return `${color(EColor.FgRed)} ${this.line(4)} ${color(EColor.FgCyan)} ${ new Error().stack?.split("\n")[2].trim().split("(")[0].split("at ")[1].trim() } ${tmp}${color(EColor.FgRed)} ${this.line(4)}${color(EColor.Reset)}`;
   }
 
   test() {
@@ -89,6 +89,7 @@ class FormatLog {
     } else errFile.write(`# ${this.line(10)} ${TIMESTAMP()} ${this.line(10)}\n`);
     errFile.write(util.format.apply(null, data) + "\n");
   }
+
 }
 export const formatLog = new FormatLog();
 
