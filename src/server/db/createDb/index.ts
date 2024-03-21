@@ -6,15 +6,5 @@
  *
  */
 
-import { ADMIN } from "../../constants";
-import { IKeyString } from "../../types";
-import { createAdminDB } from "./createAdminDB";
-import { createSTDB } from "./createStDb";
+export { createDatabase } from "./createDatabase";
 export { testDatas } from "./tests";
-
-
-export const createDatabase = async ( configName: string ): Promise<IKeyString> => {
-  return configName.toUpperCase() === ADMIN.toUpperCase()
-    ? await createAdminDB()
-    : await createSTDB(configName);
-};

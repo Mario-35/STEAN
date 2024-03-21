@@ -6,18 +6,18 @@
  *
  */
 
-import { addToService, executeAdmin, executeSqlValues } from ".";
+import { addToService, createDatabase, executeAdmin, executeSqlValues } from ".";
 import { serverConfig } from "../../configuration";
 import { _NOTOK, _OK } from "../../constants";
 import { addDoubleQuotes, addSimpleQuotes, asyncForEach } from "../../helpers";
-import { listaddJsonFiles } from "../../jsons";
 import { models } from "../../models";
 import { createInsertValues } from "../../models/helpers";
 import { sqlStopDbName } from "../../routes/helper";
-import { createSTDB } from "../createDb/createStDb";
 import { userAccess } from "../dataAccess";
 import fs from "fs";
+import path from "path";
 import koa from "koa";
+import { formatLog } from "../../logger";
 
 const prepareDatas = (dataInput: object, entity: string): object => {
   if (entity === "Observations") {
@@ -28,11 +28,7 @@ const prepareDatas = (dataInput: object, entity: string): object => {
 }
 
 const getConvertedData = async (url: string): Promise<object> => {
-  return fetch(url, {
-    method: 'GET',
-    headers: {},
-  })
-    .then((response) => response.json());
+  return fetch(url, { method: 'GET', headers: {}, }) .then((response) => response.json());
 }
 
 
@@ -51,46 +47,47 @@ const addToServiceFromUrl = async (url: string | undefined, ctx: koa.Context): P
   }
   return "";
 }
+
 export const createService = async (dataInput: object, ctx?: koa.Context): Promise<object> => {
   const results = {};
   const serviceName = dataInput["create"]["name"];
   const config = serverConfig.getConfig(serviceName);
   const mess = `Database [${serviceName}]`; 
-    const createDB = async () => {
-      try {  
-        await createSTDB(serviceName);
-        results[`Create ${mess}`  ] = _OK;
-        await userAccess.post(serviceName, {
-          username: config.pg.user,
-          email: "default@email.com",
-          password: config.pg.password,
-          database: config.pg.database,
-          canPost: true,
-          canDelete: true,
-          canCreateUser: true,
-          canCreateDb: true,
-          superAdmin: false,
-          admin: false
-      });
-      } catch (error) {
-        results[`Create ${mess}`] = _NOTOK;
-        console.log(error);        
-      }      
-    }
-    await executeAdmin(sqlStopDbName(addSimpleQuotes(serviceName))).then(async () => {
-      await executeAdmin(`DROP DATABASE IF EXISTS ${serviceName}`).then(async () => {
-        results[`Drop ${mess}`] = _OK;
-        await createDB();
-      }).catch((error: any) => {
-        results[`Drop ${mess}`] = _NOTOK;
-        console.log(error);        
-      });
-      //  else await createDB();
-    }).catch(async (err: any) => {
-      if (err["code"] === "3D000") {
-        await createDB();
-      }
+  const createDB = async () => {
+    try {  
+      await createDatabase(serviceName);
+      results[`Create ${mess}`  ] = _OK;
+      await userAccess.post(serviceName, {
+        username: config.pg.user,
+        email: "default@email.com",
+        password: config.pg.password,
+        database: config.pg.database,
+        canPost: true,
+        canDelete: true,
+        canCreateUser: true,
+        canCreateDb: true,
+        superAdmin: false,
+        admin: false
     });
+    } catch (error) {
+      results[`Create ${mess}`] = _NOTOK;
+      console.log(error);        
+    }      
+  }
+  await executeAdmin(sqlStopDbName(addSimpleQuotes(serviceName))).then(async () => {
+    await executeAdmin(`DROP DATABASE IF EXISTS ${serviceName}`).then(async () => {
+      results[`Drop ${mess}`] = _OK;
+      await createDB();
+    }).catch((error: any) => {
+      results[`Drop ${mess}`] = _NOTOK;
+      console.log(error);        
+    });
+    //  else await createDB();
+  }).catch(async (err: any) => {
+    if (err["code"] === "3D000") {
+      await createDB();
+    }
+  });
 
     const tmp = models.filteredModelFromConfig(config);
 
@@ -115,7 +112,7 @@ export const createService = async (dataInput: object, ctx?: koa.Context): Promi
         }
       }
     });
-    if(ctx && dataInput["create"]["imports"]) {
+    if (ctx && dataInput["create"]["imports"]) {
       await asyncForEach(dataInput["create"]["imports"], async (url: string | undefined) => {
         console.log(url);
         url = `${url}&$top=1000`;
@@ -123,26 +120,36 @@ export const createService = async (dataInput: object, ctx?: koa.Context): Promi
         while(url !+ "") {
           url = await addToServiceFromUrl(url, ctx);
         }
-          
-        });
+      });
     }
     return results;
 }
 
-
-export const createPayloads = async (dataInput: object, ctx?: koa.Context): Promise<object> => {
-  const results = {}; 
-
-    if(ctx) {
-      const lists = listaddJsonFiles();
-      console.log(lists);
-      await asyncForEach (lists, async (file: string) => {
-        console.log(`=================> ${file}`);
-        
-        const fileContent = fs.readFileSync(file, "utf8");
-        const mario = JSON.parse(`{"payloads": [${fileContent}{}]}`);
-        await addToService(ctx, mario);
+export const createPayloadsFile = async (dataInput: object, ctx?: koa.Context): Promise<object> => {
+  const createPayloadsFile = async (url: string, nb: number): Promise<string> => {
+    async function getFetchDatas(url: string) {
+      const response = await fetch(encodeURI(url), {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
+    
+      return await response.text();
     }
-    return results;
+    console.log(url);
+    const datas = await getFetchDatas(url);
+    fs.writeFileSync(path.resolve(__dirname, `import${nb}.json`), datas.toString(), { encoding: "utf-8" });
+    return JSON.parse(datas)["@iot.nextLink"] || "";
+    
+  };
+  console.log(formatLog.whereIam());
+  let nb = 1; 
+  let url = "https://sensorthings.geosas.fr/rennesmetro/v1.1/Observations?$select=phenomenonTime,payload,deveui&$orderby=phenomenonTime&$top=10000";
+  while (url.trim() != "") {
+    url = await createPayloadsFile(url, nb);
+    nb++;
+}
+return {"ok": _OK};
+
 }

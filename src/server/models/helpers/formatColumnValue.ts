@@ -21,9 +21,7 @@ import { formatLog } from "../../logger";
         ? value["@iot.id"]
         : type === 'text[]' 
           ? addSimpleQuotes(`{${value.map((e: string) => addDoubleQuotes(removeSimpleQuotes(e))).join(",")}}`) 
-          : type === 'result'
-            ? `'${ESCAPE_SIMPLE_QUOTE(JSON.stringify(value))}'`
-            : `'${ESCAPE_SIMPLE_QUOTE(JSON.stringify(value))}'`;
+          : `'${ESCAPE_SIMPLE_QUOTE(JSON.stringify(value))}'`;
       default:        
         if (value) switch (value) {
           case void 0:

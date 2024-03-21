@@ -28,7 +28,7 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
   const decodedUrl = decodeUrl(ctx);
  
   if (!decodedUrl) {
-    // Gett all infos services
+    // Get all infos services
     if (ctx.path.toLocaleUpperCase() === "/INFOS") ctx.body = serverConfig.getAllInfos(ctx);
     return;
   };

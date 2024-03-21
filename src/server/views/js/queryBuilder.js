@@ -17,6 +17,11 @@ class QueryBuilder {
 				"lt": "Lesser than",
 				"between": "Between",
 			},
+			"result": {
+				"gt": "Greater than",
+				"lt": "Lesser than",
+				"between": "Between",
+			},
 			"date": {
 				"gt": "Greater than",
 				"lt": "Lesser than",

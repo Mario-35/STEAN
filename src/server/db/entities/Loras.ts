@@ -50,8 +50,8 @@ export class Loras extends Common {
     if (dataInput) this.stean = await this.prepareInputResult(dataInput);
     function gedataInputtDate(): string | undefined {
       if (dataInput["datetime"]) return String(dataInput["datetime"]);
-      const tempDate = new Date(dataInput["timestamp"] * 1000);
-      if (dataInput["timestamp"]) return String(tempDate);
+      if (dataInput["phenomenonTime"]) return String(dataInput["phenomenonTime"]);
+      if (dataInput["timestamp"]) return String(new Date(dataInput["timestamp"] * 1000));
     }
 
     // search for MultiDatastream
@@ -83,8 +83,9 @@ export class Loras extends Common {
     const stream = await executeSql(this.ctx.config, queryStreamFromDeveui(this.stean["deveui"])).then((res: object) => {
       if (res[0]["multidatastream"] != null) return res[0]["multidatastream"][0];
       if (res[0]["datastream"] != null) return res[0]["datastream"][0];
-      this.ctx.throw(400, { code: 400, detail: errors.deveuiMessage });      
+      this.ctx.throw(400, { code: 400, detail: msg( errors.deveuiNotFound, this.stean["deveui"] )}); 
     });
+    
     console.log(formatLog.debug("stream", stream));
 
     // search for frame and decode payload if found
@@ -120,9 +121,10 @@ export class Loras extends Common {
         else this.ctx.throw(400, { code: 400, detail: errors.dataMessage });
       }
     } else {
+      
       if (this.stean["decodedPayload"] && this.stean["decodedPayload"]["datas"]) {
         this.stean["formatedDatas"] = this.stean["decodedPayload"]["datas"];
-      } else {
+      } else if (!this.stean["value"]) {
           if (silent) return this.createReturnResult({ body: errors.dataMessage });
           else this.ctx.throw(400, { code: 400, detail: errors.dataMessage });
         }
@@ -270,11 +272,13 @@ export class Loras extends Common {
         else this.ctx.throw(400, { code: 400, detail: errors.noFoi });
       }
 
-      const value = this.stean["decodedPayload"]["datas"]
-        ? this.stean["decodedPayload"]["datas"]
-        : this.stean["data"]["Data"]
-        ? this.stean["data"]["Data"]
-        : undefined;
+      const value = this.stean["value"] 
+                    ? this.stean["value"]
+                    : this.stean["decodedPayload"]["datas"]
+                      ? this.stean["decodedPayload"]["datas"]
+                      : this.stean["data"]["Data"]
+                      ? this.stean["data"]["Data"]
+                      : undefined;
 
       if (!value) {
         if (silent) return this.createReturnResult({ body: errors.noValue });

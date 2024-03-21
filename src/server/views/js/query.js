@@ -134,7 +134,7 @@ function clear() {
 function init() {
 	header("==== Init ====");
 	hide(datas);
-
+	
 	isAdmin = _PARAMS.decodedUrl.service === "admin";
 	if (isDebug) console.log(_PARAMS);
 	new SplitterBar(container, first, two);
@@ -142,6 +142,7 @@ function init() {
 	const tempEntity = _PARAMS.entity || isAdmin === true ? "Configs" : "Things";
 	populateSelect(entityOption, getEntityList(), tempEntity);
 	const subs = getRelationsList(tempEntity);
+	header("==== ICI ====");
 	populateSelect(subentityOption, subs, subs.includes(_PARAMS.subentityOption) ? _PARAMS.subentityOption : _NONE, true);
 
 	populateSelect(entityOption, Object.keys(_PARAMS._DATAS), tempEntity);
@@ -152,15 +153,12 @@ function init() {
 	idOption.value = _PARAMS.decodedUrl.idStr | _PARAMS.decodedUrl.id;
 
 	refresh();
-	populateMultiSelect("queryMetric", _PARAMS.metrics);
 	optVersion.value =  _PARAMS.decodedUrl.version;
 	optHost.value = _PARAMS.decodedUrl.linkbase;
 	if (_PARAMS.datas) datas.json_value = _PARAMS.datas;
 	queryOptions.value = _PARAMS.options;
-
-	// decodeUrl(window.location.href);
+	console.log(window.location.href);
+	if (window.location.href.includes('Query?')) decodeUrl(window.location.href);
 	jsonViewer = new JSONViewer();
 }
-
-
 init();

@@ -22,6 +22,7 @@ export const queryAsDataArray = (input: PgVisitor): string => {
       .map((e: string) => addSimpleQuotes(e))
       .join( `,${_NEWLINE}\t`)}]) AS "component", count(*) AS "dataArray@iot.count", jsonb_agg(allkeys) AS "dataArray" FROM (SELECT json_build_array(${_NEWLINE}\t${names.map((e: string) => addDoubleQuotes(e)).join(`,${_NEWLINE}\t`)}) AS allkeys FROM (${input.sql}) AS p) AS l`,
     singular: false,
+    strip: false,
     count: false,
   });
 }

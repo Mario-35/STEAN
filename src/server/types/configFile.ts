@@ -20,6 +20,7 @@ export interface IconfigFile {
     webSite: string;
     nb_page: number;
     forceHttps: boolean;
+    stripNull: boolean;
     extensions: string[];
     alias: string[];
     highPrecision: boolean;

@@ -19,8 +19,6 @@ export interface Ientity {
      order: number;
      orderBy: string;
      columns: IentityColumn;
-     visible: boolean;
-     canPost: boolean;
      relations: { [key: string]: IentityRelation };
      constraints?: IKeyString;
      indexes?: IKeyString;

@@ -19,8 +19,6 @@ import { _NOTOK, _OK } from "../../constants";
 import { models } from "../../models";
 import { log } from "../../log";
 
-// TODOCLEAN
-
 export class CreateObservations extends Common {
   public indexResult = -1;
   constructor(ctx: koa.Context) {

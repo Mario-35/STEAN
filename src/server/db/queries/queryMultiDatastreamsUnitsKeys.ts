@@ -6,4 +6,14 @@
 *
 */
 
-export const queryMultiDatastreamsUnitsKeys = (searchId: bigint | string): string => `SELECT jsonb_agg(tmp.units -> 'name') AS keys FROM  ( SELECT jsonb_array_elements("unitOfMeasurements") AS units FROM "multidatastream" WHERE id = ${searchId} ) AS tmp`;
+export const queryMultiDatastreamsUnitsKeys = (searchId: bigint | string): string => 
+`SELECT 
+    jsonb_agg(tmp.units -> 'name') AS keys 
+FROM (
+  SELECT 
+    jsonb_array_elements("unitOfMeasurements") AS units 
+  FROM 
+    "multidatastream" 
+  WHERE 
+    id = ${searchId}
+) AS tmp`;

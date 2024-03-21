@@ -367,6 +367,7 @@ class Configuration {
       webSite: input["webSite"] || "no web site",
       nb_page: input["nb_page"] ? +input["nb_page"] : 200,
       forceHttps: input["forceHttps"] ? input["forceHttps"] : false,
+      stripNull: input["stripNull"] ? input["stripNull"] : false,
       alias: input["alias"] ? unikeList(String(input["alias"]).split(",")) : [],
       extensions: extensions,
       highPrecision: input["highPrecision"] ? input["highPrecision"] : false,

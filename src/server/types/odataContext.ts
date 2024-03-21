@@ -20,4 +20,5 @@ export interface IodataContext {
     sign: string | undefined;
     sql: string | undefined;    
     in: boolean | undefined;
+    result: boolean | undefined;
 }

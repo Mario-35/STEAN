@@ -13,6 +13,6 @@ import { PgVisitor } from "../odata";
     name: string; 
     type: string; 
     format(input: string | object, ctx?: koa.Context): string | object;
-    generateSql(input: PgVisitor): string ;
+    generateSql(input: PgVisitor): string;
 }
 

@@ -7,7 +7,7 @@
  *
  */
 
-export const queryAsJson = (input: { query: string; singular: boolean; count: boolean; fullCount?: string; fields?: string[]; }): string =>
+export const queryAsJson = (input: { query: string; singular: boolean; count: boolean; strip: boolean ;fullCount?: string; fields?: string[]; }): string =>
   input.query.trim() === ""
     ? ""
     : `SELECT ${ input.count == true 
@@ -18,6 +18,6 @@ export const queryAsJson = (input: { query: string; singular: boolean; count: bo
                     ? input.fields.join(",\n\t") 
                     : ""}coalesce(${ input.singular === true 
                       ? "ROW_TO_JSON" 
-                      : "json_agg" }(t), '${ input.singular === true 
+                      : `${input.strip === true ? "json_strip_nulls(" : "" } json_agg` }(t)${input.strip === true ? ")" : "" }, '${ input.singular === true 
                         ? "{}" 
                         : "[]" }') AS results\n\tFROM (\n\t${input.query}) as t`;

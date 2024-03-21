@@ -30,7 +30,7 @@ export const writeToLog = async ( ctx: koa.Context, ...error: any[] ): Promise<v
     const code = Math.floor(ctx.log.code / 100);
     if (code == 2 || code == 3 )return;
     
-    if (ctx.odata && ctx.odata.idLog && BigInt(ctx.odata.idLog) > 0 && code !== 2 ) return;
+    // if (ctx.odata && ctx.odata.idLog && BigInt(ctx.odata.idLog) > 0 && code !== 2 ) return;
     await executeSqlValues(ctx.config, `INSERT INTO ${addDoubleQuotes(models.DBFull(ctx.config).Logs.table)} ${createInsertValues(ctx.config, ctx.log, models.DBFull(ctx.config).Logs.name)} returning id`).then((res: object) =>{
       if (!isTest()) console.log(formatLog.url(`${ctx.decodedUrl.root}/Logs(${res[0]})`));      
     }).catch((error) => {

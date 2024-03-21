@@ -39,6 +39,7 @@
         "webSite": "no web site",
         "nb_page": 1000,
         "forceHttps": false,
+        "stripNulls": false,
         "alias": [],
         "extensions": [
             "base",

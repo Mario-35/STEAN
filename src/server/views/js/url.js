@@ -29,6 +29,7 @@
       myPath.split('/')
             .filter((word) => word !== '')
             .forEach((element, index) => {
+              console.log(`element : ${element}`);
               if (index === 0) {
                 if (element.includes('(')) {
                   const temp = element.split('(');
@@ -96,13 +97,7 @@
     let directLink = root;
     let queryLink = `${root}/Query?&method=${methodOption.value}`; 
 
-    // Metrics
-    let tempDatas = multiSelects["queryMetric"].getData();
-    if (tempDatas && tempDatas.length > 0) {
-      directLink = directLink + "/metrics";
-      queryLink = queryLink + `&id=${index}`;
-      addInOption("query", tempDatas);
-    } else {    
+    
       if (index > 0) {
         directLink = directLink + "/" + entityOption.value + "(" + index + ")";
         queryLink = queryLink + `&entity=${entityOption.value}&id=${index}`;
@@ -192,7 +187,7 @@
       // Filter for logs
       if (isLog() && Logfilter) where += Logfilter;
       addInOption("filter", where);  
-    }
+    
     const addMark = queryOptions.length > 0 ? "?$":"";
     directLink = `${directLink}${addMark}${queryOptions.join("&$")}`;
     queryLink = `${queryLink}&${encodeURI(queryOptions.join("&"))}`;

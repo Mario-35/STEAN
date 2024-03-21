@@ -14,7 +14,8 @@ import { IreturnResult } from "../../types";
 import { executeSqlValues, removeKeyFromUrl } from "../helpers";
 import { getErrorCode, infos } from "../../messages";
 import { log } from "../../log";
- // Common class
+
+// Common class
 export class Common {
   readonly ctx: koa.Context;
   public nextLinkBase: string;
@@ -23,7 +24,7 @@ export class Common {
   constructor(ctx: koa.Context) {
     console.log(formatLog.whereIam());
     this.ctx = ctx;
-    this.nextLinkBase = removeKeyFromUrl( `${this.ctx.decodedUrl.root}/${ this.ctx.href.split(`${ctx.config.apiVersion}/`)[1] }`, ["top", "skip"] );
+    this.nextLinkBase = removeKeyFromUrl(`${this.ctx.decodedUrl.root}/${ this.ctx.href.split(`${ctx.config.apiVersion}/`)[1] }`, ["top", "skip"] );
     this.linkBase = `${this.ctx.decodedUrl.root}/${this.constructor.name}`;     
   }
 
@@ -36,6 +37,7 @@ export class Common {
     }
     return result;
   }
+  
   // Get a list of key values
   public getKeysValue(input: object, keys: string[]): string | undefined {
     keys.forEach((key) => {
@@ -128,6 +130,7 @@ export class Common {
         }).catch((err: Error) => this.ctx.throw(400, { code: 400, detail: err }) );
     }
   }
+
   // Execute multilines SQL in one query
   async addWultipleLines(dataInput: object | undefined): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());

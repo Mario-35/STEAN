@@ -94,7 +94,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(322);
+                res.body.value.length.should.eql(530);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 addGetTest(infos);
@@ -120,7 +120,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(195);
+                res.body.value.length.should.eql(335);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 addGetTest(infos);
@@ -142,7 +142,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(3);
+                res.body.value.length.should.eql(142);
                 res.body.should.include.keys("@iot.count", "value");
                 addGetTest(infos);
                 done();
@@ -167,7 +167,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(195);
+                res.body.value.length.should.eql(335);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 addGetTest(infos);
@@ -193,7 +193,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(127);
+                res.body.value.length.should.eql(207);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 addGetTest(infos);
@@ -219,7 +219,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(127);
+                res.body.value.length.should.eql(207);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 addGetTest(infos);

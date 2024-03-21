@@ -19,11 +19,8 @@ import { CreateHtmlView, createIqueryFromContext } from "../views/helpers/";
 import { DefaultState, Context } from "koa";
 import { createOdata } from "../odata";
 import { infos } from "../messages";
-import { getMetrics } from "../db/monitoring";
 import { serverConfig } from "../configuration";
 import { createDatabase, testDatas } from "../db/createDb";
-import { remadeResult } from "../db/helpers/remadeResult";
-import { replayPayload } from "../db/queries";
 import { executeAdmin, executeSql, exportService } from "../db/helpers";
 import { models } from "../models";
 import { sqlStopDbName } from "./helper";
@@ -115,35 +112,11 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
     // Infos and link of a services    
     case "READY":
       ctx.type = returnFormats.json.type;
-      ctx.body = models.getInfos(ctx);
+      ctx.body = await models.getInfos(ctx);
       return;
     case "INFOS":
       ctx.type = returnFormats.json.type;
-      ctx.body = models.getInfos(ctx);
-      return;
-    // TODO REMOVE
-    case "REDORESULT":
-      const step = getUrlId(ctx.url.toUpperCase());
-      if (step) {
-        const tempResult = await remadeResult(ctx, +step);
-        if (tempResult) {
-          ctx.type = returnFormats.json.type;
-          ctx.body = tempResult;
-        }
-      }
-      return;
-    // TODO REMOVE
-    case "TOOL":
-        ctx.type = returnFormats.json.type;
-        ctx.body = replayPayload();
-      return;
-
-    case "METRICS":
-      const tempUrlKey = getUrlKey(ctx.href, "query");
-      if (tempUrlKey) {
-        ctx.type = returnFormats.json.type;
-        ctx.body = await getMetrics(tempUrlKey);
-      }
+      ctx.body = await models.getInfos(ctx);
       return;
     case "REDOAGRHYS": // TODO REMOVE
     case "DROP":

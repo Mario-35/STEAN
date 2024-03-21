@@ -11,42 +11,49 @@
 import koa from "koa";
 import { getAuthenticatedUser } from "../../authentication";
 import { serverConfig } from "../../configuration";
-import { getMetrics } from "../../db/monitoring";
 import { models } from "../../models";
 import { decodeUrl } from "../../routes/helper/decodeUrl";
-import { IqueryOptions } from "../../types";
+import { Ientities, IqueryOptions } from "../../types";
 
 
 export const createIqueryFromContext = async (ctx: koa.Context): Promise<IqueryOptions| undefined> => {
-    const user = await getAuthenticatedUser(ctx); 
-    const metrics = await getMetrics("keys"); 
-    const decodedUrl = decodeUrl(ctx);    
-    if (decodedUrl)
-    return {
+    const model = models.filteredModelFromConfig(ctx.config);
+    let user = await getAuthenticatedUser(ctx); 
+    user = user
+            ? user
+            : {
+                id: 0,
+                username: "query",
+                password: "",
+                email: "",
+                database: "",
+                canPost: false,
+                canDelete: false,
+                canCreateUser: false,
+                canCreateDb: false,
+                admin: false,
+                superAdmin: false
+            }
+    const listEntities = user.superAdmin === true
+        ? Object.keys(model)
+        : user.admin === true
+            ? Object.keys(model).filter((elem: string) => ctx.model[elem].order > 0 || ctx.model[elem].createOrder === 99 || ctx.model[elem].createOrder === -1)
+            : user.canPost === true
+                ? Object.keys(model).filter((elem: string) => ctx.model[elem].order > 0 || ctx.model[elem].createOrder === 99 || ctx.model[elem].createOrder === -1)
+                : Object.keys(model).filter((elem: string) => ctx.model[elem].order > 0 && ctx.model[elem].createOrder !== -1);
+
+    const decodedUrl = decodeUrl(ctx);
+
+    if (decodedUrl) return {
         methods: ["GET"],
         decodedUrl: decodedUrl,
         entity:  "",
         options: ctx.querystring ? ctx.querystring : "",
-        user: user
-            ? user
-            : {
-                  id: 0,
-                  username: "query",
-                  password: "",
-                  email: "",
-                  database: "",
-                  canPost: false,
-                  canDelete: false,
-                  canCreateUser: false,
-                  canCreateDb: false,
-                  admin: false,
-                  superAdmin: false
-              },
-              // TODO universal return
+        user: user,
         graph: ctx.url.includes("$resultFormat=graph"),
         admin: ctx.config.name === 'admin',
-        metrics: ["all"].concat(metrics as Array<string>),
         services: serverConfig.getAllInfos(ctx),
-        _DATAS: models.filteredModelForQuery(ctx.config)
+        _DATAS:  Object.fromEntries(Object.entries(model).filter( ([k]) => listEntities.includes(k))) as Ientities,
+
     };
 };

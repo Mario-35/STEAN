@@ -18,9 +18,9 @@ import { log } from "../../log";
 
 export async function streamCsvFile( ctx: koa.Context, paramsFile: IcsvFile, sqlRequest: IcsvImport ): Promise<number> {
   console.log(formatLog.whereIam());
+  const cols:string[] = [];
   const controller = new AbortController();
   const readable = createReadStream(paramsFile.filename);
-  const cols:string[] = [];
   sqlRequest.columns.forEach((value) => cols.push(`"${value}" varchar(255) NULL`));
   await executeSql(ctx.config, `CREATE TABLE "${paramsFile.tempTable}" ( id serial4 NOT NULL, ${cols}, CONSTRAINT ${paramsFile.tempTable}_pkey PRIMARY KEY (id));`).catch((error: any) => {console.log(error)});
   const writable = serverConfig.connection(ctx.config.name).unsafe(`COPY "${paramsFile.tempTable}" (${sqlRequest.columns.join( "," )}) FROM STDIN WITH(FORMAT csv, DELIMITER ';'${ paramsFile.header })`).writable();

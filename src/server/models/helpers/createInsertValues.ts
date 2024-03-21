@@ -13,6 +13,7 @@ import { addDoubleQuotes, addSimpleQuotes, removeDoubleQuotes } from "../../help
 import { formatLog } from "../../logger";
 import { IconfigFile } from "../../types";
 
+// create postgresSql 
 export function createInsertValues(config: IconfigFile, input : object, entityName?: string): string  {
     console.log(formatLog.whereIam());
     if (config && input) {
@@ -48,8 +49,8 @@ export function createInsertValues(config: IconfigFile, input : object, entityNa
                   values.push(typeof input[e] === "string" 
                                               ? input[e].startsWith("(SELECT") 
                                                 ? input[e]
-                                                : addSimpleQuotes(ESCAPE_SIMPLE_QUOTE(input[e])) 
-                                              : e === "result" ? `'{"value": ${input[e]}}'::jsonb`: ESCAPE_SIMPLE_QUOTE(input[e]));
+                                                : addSimpleQuotes(ESCAPE_SIMPLE_QUOTE(input[e].trim())) 
+                                              : e === "result" ? `'{"value": ${input[e]}}'::jsonb`: ESCAPE_SIMPLE_QUOTE(input[e].trim()));
               }
           });
         }          

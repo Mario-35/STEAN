@@ -12,7 +12,6 @@ import { IdecodedUrl, Ientities, IserviceLink, Iuser } from ".";
 export interface IqueryOptions {
     user: Iuser;
     methods: string[];
-    metrics: string[] | {[key: string] : any};
     entity: string;
     subentity?: string;
     method?: string;

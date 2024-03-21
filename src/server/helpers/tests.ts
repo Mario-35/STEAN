@@ -20,5 +20,4 @@ export const isGraph = (input: PgVisitor) => [returnFormats.graph, returnFormats
 export const isObservation = (input: Ientity | string) => typeof input === "string" ? input === "Observations": input.name === "Observations";
 export const isAdmin = (ctx: Koa.Context): boolean => ctx.config && ctx.config.name === ADMIN;
 export const isAllowedTo = (ctx: Koa.Context, what: EuserRights): boolean => ctx.user && ctx.user.PDCUAS[what];
-export const isObjectArray = (what: object) => Object.prototype.toString.call(what) === '[object Array]'; 
-export const isObject = (value: unknown) => typeof value === 'object' && value !== null;
+export const isObjectArray = (what: object) => Object.prototype.toString.call(what) === '[object Array]';

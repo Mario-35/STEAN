@@ -73,7 +73,7 @@ export const decodeUrl =  (ctx: koa.Context, input?: string): IdecodedUrl | unde
       hash: url.hash,
       service: paths[0],
       version: paths[0] === "admin" ? EmodelType.v1_0 : paths[1],
-      path: idStr ? path.replace(idStr, '0') : path,
+      path: idStr ? path.replace(String(id), '0') : path,
       id: (isNaN(+id)) ? BigInt(0) : BigInt(id),
       idStr: idStr,
       config: configName,

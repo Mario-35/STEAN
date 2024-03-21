@@ -18,8 +18,8 @@ import { triggers } from "./triggers";
 import { models } from "../../models";
 import { log } from "../../log";
 
-export const createSTDB = async (configName: string): Promise<IKeyString> => {
-  console.log(formatLog.head("createDatabase", "createDatabase"));
+export const createDatabase = async (configName: string): Promise<IKeyString> => {
+  console.log(formatLog.head("createDatabase", configName));
   // init result
   const config = serverConfig.getConfig(configName).pg;
   const returnValue: IKeyString = { "Start create Database": config.database };
@@ -67,11 +67,12 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
     .then(() => _OK)
     .catch((err: Error) => err.message);
     
-    // create postgis
-    returnValue[`Create tablefunc`] = await dbConnection.unsafe('CREATE EXTENSION IF NOT EXISTS tablefunc')
+  // create tablefunc
+  returnValue[`Create tablefunc`] = await dbConnection.unsafe('CREATE EXTENSION IF NOT EXISTS tablefunc')
     .then(() => _OK)
     .catch((err: Error) => err.message);
     
+  // Get complete model
   const DB = models.DBFull(configName);
   
   // loop to create each table
@@ -110,12 +111,11 @@ export const createSTDB = async (configName: string): Promise<IKeyString> => {
   }
 
   returnValue[`Create user`] = await createUser(serverConfig.getConfig(configName))
-  .then(() => _OK)
-  .catch((err: Error) => err.message);
+    .then(() => _OK)
+    .catch((err: Error) => err.message);
 
   await dbConnection.unsafe(`SELECT COUNT(*) FROM pg_user WHERE usename = ${addSimpleQuotes(config.user)};`)
-    .then(() => {
-      returnValue["ALL finished ..."] = _OK;
-    });
+    .then(() => { returnValue["ALL finished ..."] = _OK; });
+    
   return returnValue;
 };

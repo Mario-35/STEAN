@@ -23,13 +23,11 @@ import { _COLUMNSEPARATOR } from "../../constants";
 
 export class PgVisitor {
   public ctx: koa.Context;
-
   public options: SqlOptions;
   // main entity
   public entity = "";
   // parent entity
-  parentEntity: string | undefined = undefined;
-  idLog: bigint | string = BigInt(0);
+  parentEntity: string | undefined = undefined;  
   id: bigint | string = BigInt(0);
   parentId: bigint | string = BigInt(0);
   arrayNames: string[] = [];
@@ -93,24 +91,30 @@ export class PgVisitor {
       else if (input === '"@iot.id"') input = `coalesce("@iot.id", 0) AS "@iot.id"`;
         else if (input.startsWith("CONCAT")) input = `${input}`;
           else if (input[0] !== "'") input = `${input}`;
-    if (this.intervalColumns) this.intervalColumns.push(input); else this.intervalColumns = [input];
+    if (this.intervalColumns) this.intervalColumns.push(input); 
+      else this.intervalColumns = [input];
   }
 
-  protected getColumn(input: string, context: IodataContext ) {   
+  protected getColumn(input: string, operation: string ,context: IodataContext ) {   
     const tempEntity = 
       this.isWhere(context) && context.identifier
         ? models.getEntity(this.ctx.config, context.identifier.split(".")[0])
         : this.isSelect(context) 
           ? models.getEntity(this.ctx.config, this.entity || this.parentEntity || this.navigationProperty) 
           : undefined;    
-    const columnName = input === "result" ? this.getColumnResult(context) : tempEntity ? this.getColumnNameOrAlias(tempEntity, input, this.createOptions()) : undefined;
+    const columnName = input === "result" 
+                        ? this.getColumnResult(context, operation) 
+                        : tempEntity 
+                          ? this.getColumnNameOrAlias(tempEntity, input, this.createDefaultOptions()) 
+                          : undefined;
     if (columnName) return columnName;
     if (this.isSelect(context) && tempEntity && tempEntity.relations[input]) {
       const entityName = models.getEntityName(this.ctx.config ,input);       
-      return tempEntity && entityName ? `CONCAT('${this.ctx.decodedUrl.root}/${tempEntity.name}(', "${tempEntity.table}"."id", ')/${entityName}') AS "${entityName}@iot.navigationLink"` : undefined;    
+      return tempEntity && entityName 
+        ? `CONCAT('${this.ctx.decodedUrl.root}/${tempEntity.name}(', "${tempEntity.table}"."id", ')/${entityName}') AS "${entityName}@iot.navigationLink"` 
+        : undefined;    
     }   
   }
-
 
   init(node: Token) {
     console.log(formatLog.head("INIT PgVisitor"));
@@ -265,15 +269,19 @@ export class PgVisitor {
   // ***                                                              QUERY                                                                                              ***
   // ***********************************************************************************************************************************************************************
 
-
-getColumnResult(context: IodataContext, ForceString?: boolean) {
-  switch (context.target) {
-    case "where":
-      return `CASE WHEN jsonb_typeof("result"->'value') = 'number' THEN ("result"->>'value')::${ForceString ? 'text' : 'numeric'} END`;
+  getColumnResult(context: IodataContext, operation: string, ForceString?: boolean) {
+    switch (context.target) {
+      case "where":
+        const nbs = Array.from({length: 5}, (v, k) => k+1);
+        const translate = `TRANSLATE (SUBSTRING ("result"->>'value' FROM '(([0-9]+.*)*[0-9]+)'), '[]','')`;
+        const isOperation = operation.trim() != "";
+        return ForceString 
+          ? `@EXPRESSIONSTRING@ ANY (ARRAY_REMOVE( ARRAY[\n${nbs.map(e => `${isOperation ? `${operation} (` : ''} SPLIT_PART ( ${translate}, ',', ${e}))`).join(",\n")}], null))`
+          : `@EXPRESSION@ ANY (ARRAY_REMOVE( ARRAY[\n${nbs.map(e => `${isOperation ? `${operation} (` : ''}NULLIF (SPLIT_PART ( ${translate}, ',', ${e}),'')::numeric${isOperation ? `)` : ''}`).join(",\n")}], null))`;
     default:
       return `CASE 
-          WHEN jsonb_typeof("result"->'value') = 'number' THEN ("result"->${this.numeric == true? '>': ''}'value')::jsonb
-          WHEN jsonb_typeof("result"->'value') = 'array' THEN ("result"->'${this.valueskeys == true ? 'valueskeys' : 'value'}')::jsonb
+          WHEN JSONB_TYPEOF( "result"->'value') = 'number' THEN ("result"->${this.numeric == true? '>': ''}'value')::jsonb
+          WHEN JSONB_TYPEOF( "result"->'value') = 'array'  THEN ("result"->'${this.valueskeys == true ? 'valueskeys' : 'value'}')::jsonb
       END${this.isSelect(context) === true ? ' AS "result"' : ''}`;
   }
 }
@@ -288,9 +296,9 @@ getColumnResult(context: IodataContext, ForceString?: boolean) {
   }; 
 
   clear(input: string) {    
-    if (input.includes('[START]')) {
-      input = input.split('[START]').join("(");
-      input = input.split('[END]').join('') +')';      
+    if (input.includes('@START@')) {
+      input = input.split('@START@').join("(");
+      input = input.split('@END@').join('') +')';      
     }
     return input;    
   }
@@ -411,20 +419,7 @@ getColumnResult(context: IodataContext, ForceString?: boolean) {
     this.payload = node.value;
   }
 
-  protected VisitresultFormat(node: Token, context: IodataContext) {
-    this.Visit(node.value.path, context);
-    if (node.value.options)
-      node.value.options.forEach((item: Token) => this.Visit(item, context));
-  }
-
   protected VisitDebug(node: Token, context: IodataContext) {
-    this.Visit(node.value.path, context);
-    if (node.value.options)
-      node.value.options.forEach((item: Token) => this.Visit(item, context));
-    // do Nothing
-  }
-
-  protected VisitRedo(node: Token, context: IodataContext) {
     this.Visit(node.value.path, context);
     if (node.value.options)
       node.value.options.forEach((item: Token) => this.Visit(item, context));
@@ -434,7 +429,7 @@ getColumnResult(context: IodataContext, ForceString?: boolean) {
   protected VisitResultFormat(node: Token, context: IodataContext) {
     if (node.value.format) 
       this.resultFormat = returnFormats[node.value.format];
-    if ( [ returnFormats.dataArray, returnFormats.graph, returnFormats.graphDatas, returnFormats.csv, ].includes(this.resultFormat) ) 
+    if ( [ returnFormats.dataArray, returnFormats.graph, returnFormats.graphDatas, returnFormats.csv ].includes(this.resultFormat) ) 
       this.noLimit();
     if (isGraph(this)) { 
       this.showRelations = false; 
@@ -488,10 +483,6 @@ getColumnResult(context: IodataContext, ForceString?: boolean) {
   protected VisitTop(node: Token, context: IodataContext) {
     this.limit = +node.value.raw;
   }
- 
-  protected VisitLog(node: Token, context: IodataContext) {
-    this.idLog = node.value.raw;
-  }
 
   protected VisitSelect(node: Token, context: IodataContext) {
     context.target = "select";
@@ -500,9 +491,8 @@ getColumnResult(context: IodataContext, ForceString?: boolean) {
     });
   }
 
-
   protected VisitSelectItem(node: Token, context: IodataContext) {
-    const tempColumn = this.getColumn(node.raw, context); 
+    const tempColumn = this.getColumn(node.raw, "", context); 
     context.identifier = tempColumn ? tempColumn : node.raw;
     if (context.target)
       this[context.target] += tempColumn ? `${tempColumn}${_COLUMNSEPARATOR}` : `${addDoubleQuotes(node.raw)}${_COLUMNSEPARATOR}`; 
@@ -572,58 +562,64 @@ getColumnResult(context: IodataContext, ForceString?: boolean) {
   }
 
   protected VisitLesserThanExpression(node: Token, context: IodataContext) {
-    const addDate = this.addDateTypeToWhere(node, "<", context);
-    if (addDate) this.where += addDate;
-    else {
+    context.sign = "<";
+    if (!this.VisitDateType(node, context)) {
       this.Visit(node.value.left, context);
-      this.where += " < ";
+      this.addExpressionToWhere(node, context);
       this.Visit(node.value.right, context);
     }
   }
 
   protected VisitLesserOrEqualsExpression(node: Token, context: IodataContext) {
-    const addDate = this.addDateTypeToWhere(node, "<=", context);
-    if (addDate) this.where += addDate;
-    else {
+    context.sign = "<=";
+    if (!this.VisitDateType(node, context)) {
       this.Visit(node.value.left, context);
-      this.where += " <= ";
+      this.addExpressionToWhere(node, context);
       this.Visit(node.value.right, context);
     }
   }
 
-  protected addDateTypeToWhere(node: Token, sign: string, context: IodataContext):string | undefined {  
-    if (models.getRelationColumnTable(this.ctx.config, this.ctx.model[this.entity], node.value.left.raw) === EcolType.Column && models.isColumnType(this.ctx.config, this.ctx.model[this.entity], node.value.left.raw, "date")) {
-      const testIsDate = oDatatoDate(node, sign);
-      const columnName = this.getColumnNameOrAlias(this.ctx.model[context.identifier || this.entity], node.value.left.raw, {table: true, as: true, cast: false, ...this.createOptions()});
-      // const columnName = getColumnNameOrAlias(this.ctx.model[this.entity], node.value.left.raw, {table: true, as: true, cast: false, numeric: this.numeric, test: this.createOptions()});
-      if (testIsDate) return `${columnName ? columnName : `${addDoubleQuotes(node.value.left.raw)}`}${testIsDate}`;
+  protected VisitDateType(node: Token, context: IodataContext):boolean {  
+    if (context.sign && models.getRelationColumnTable(this.ctx.config, this.ctx.model[this.entity], node.value.left.raw) === EcolType.Column && models.isColumnType(this.ctx.config, this.ctx.model[this.entity], node.value.left.raw, "date")) {
+      const testIsDate = oDatatoDate(node, context.sign);
+      const columnName = this.getColumnNameOrAlias(this.ctx.model[context.identifier || this.entity], node.value.left.raw, {table: true, as: true, cast: false, ...this.createDefaultOptions()});
+      if (testIsDate) {
+        this.where += `${columnName 
+                          ? columnName 
+                          : `${addDoubleQuotes(node.value.left.raw)}`}${testIsDate}`;
+        return true;
+      }
     }
+    return false;
   }
+
+  protected addExpressionToWhere(node: Token, context: IodataContext) {    
+    this.where = this.where.includes("@EXPRESSION@") 
+      ? this.where.replace("@EXPRESSION@",`@EXPRESSION@ ${context.sign}`) 
+      : this.where = this.where.includes("@EXPRESSIONSTRING@") 
+        ? this.where.replace("@EXPRESSIONSTRING@",`@EXPRESSIONSTRING@`) 
+        : `${this.where} ${context.sign} `;
+  }
+
   protected VisitGreaterThanExpression(node: Token, context: IodataContext) {
-    const addDate = this.addDateTypeToWhere(node, ">", context);
-    if (addDate) this.where += addDate;
-    else {
+    context.sign = ">";
+    if (!this.VisitDateType(node, context)) {
       this.Visit(node.value.left, context);
-      this.where += " > ";
+      this.addExpressionToWhere(node, context);
       this.Visit(node.value.right, context);
     }
   }
 
   protected VisitGreaterOrEqualsExpression(node: Token, context: IodataContext) {
-    const addDate = this.addDateTypeToWhere(node, ">=", context);
-    if (addDate) this.where += addDate;
-    else {
+    context.sign = ">=";
+    if (!this.VisitDateType(node, context)) {
       this.Visit(node.value.left, context);
-      this.where += " >= ";
+      this.addExpressionToWhere(node, context);
       this.Visit(node.value.right, context);
     }
   }
 
-  public parameterObject(): { [key: number]: unknown } {
-    return Object.assign({}, this.parameters);
-  }
-
-  createOptions(): IKeyBoolean {
+  public createDefaultOptions(): IKeyBoolean {
     return {
       valueskeys: this.valueskeys,
       numeric: this.numeric
@@ -662,7 +658,7 @@ getColumnResult(context: IodataContext, ForceString?: boolean) {
   }
 
   protected VisitODataIdentifier(node: Token, context: IodataContext) {
-    const alias = this.getColumn(node.value.name, context);
+    const alias = this.getColumn(node.value.name, "", context);
     node.value.name = alias ? alias : node.value.name;
     if (context.relation && context.identifier && models.isColumnType(this.ctx.config, this.ctx.model[context.relation], removeAllQuotes(context.identifier).split(".")[0], "json")) {
       context.identifier = `${addDoubleQuotes(context.identifier.split(".")[0])}->>${addSimpleQuotes(node.raw)}`;     
@@ -673,7 +669,7 @@ getColumnResult(context: IodataContext, ForceString?: boolean) {
       } else {        
         context.identifier = node.value.name;
         if (context.target && !context.key) {
-          const alias = this.getColumnNameOrAlias(this.ctx.model[this.entity], node.value.name, this.createOptions());
+          const alias = this.getColumnNameOrAlias(this.ctx.model[this.entity], node.value.name, this.createDefaultOptions());
           this[context.target] += node.value.name.includes("->>") ||node.value.name.includes("->") || node.value.name.includes("::")
             ? node.value.name
             : this.entity && this.ctx.model[this.entity] 
@@ -687,21 +683,23 @@ getColumnResult(context: IodataContext, ForceString?: boolean) {
   }
   
   protected VisitEqualsExpression(node: Token, context: IodataContext): void {
-    const addDate = this.addDateTypeToWhere(node, "=", context);
-    if (addDate) this.where += addDate;
-    else {     
+    context.sign = "=";
+    if (!this.VisitDateType(node, context)) {   
       this.Visit(node.value.left, context);
-      this.where += " = ";
+      this.addExpressionToWhere(node, context);
       this.Visit(node.value.right, context);
       this.where = this.where.replace(/= null/, "IS NULL");
     }
   }
 
   protected VisitNotEqualsExpression(node: Token, context: IodataContext): void {
-    this.Visit(node.value.left, context);
-    this.where += " <> ";
-    this.Visit(node.value.right, context);
-    this.where = this.where.replace(/<> null$/, "IS NOT NULL");
+    context.sign = "<>";
+    if (!this.VisitDateType(node, context)) {
+      this.Visit(node.value.left, context);
+      this.addExpressionToWhere(node, context);
+      this.Visit(node.value.right, context);
+      this.where = this.where.replace(/<> null$/, "IS NOT NULL");
+    }
   }
 
   protected VisitLiteral(node: Token, context: IodataContext): void {    
@@ -709,23 +707,35 @@ getColumnResult(context: IodataContext, ForceString?: boolean) {
       const temp = this.where.split(" ").filter(e => e != ""); 
       context.sign = temp.pop(); 
       this.where = temp.join(" ");
-      this.where += ` ${context.in && context.in === true ? '' : ' IN [START]'}(SELECT ${this.ctx.model[this.entity].relations[context.relation] ? addDoubleQuotes(this.ctx.model[this.entity].relations[context.relation]["relationKey"]) : `${addDoubleQuotes(this.ctx.model[context.relation].table)}."id"`} FROM ${addDoubleQuotes(this.ctx.model[context.relation].table)} WHERE `;
+      this.where += ` ${context.in && context.in === true ? '' : ' IN @START@'}(SELECT ${this.ctx.model[this.entity].relations[context.relation] ? addDoubleQuotes(this.ctx.model[this.entity].relations[context.relation]["relationKey"]) : `${addDoubleQuotes(this.ctx.model[context.relation].table)}."id"`} FROM ${addDoubleQuotes(this.ctx.model[context.relation].table)} WHERE `;
       context.in = true;
       if (context.identifier) {
         if (context.identifier.startsWith("CASE") || context.identifier.startsWith("("))
           this.where += `${context.identifier} ${context.sign} ${SQLLiteral.convert(node.value, node.raw)})`;
-        else {
+        else if (context.identifier.includes("@EXPRESSION@")) {
+            const tempEntity = models.getEntity(this.ctx.config, context.relation);    
+            const alias = tempEntity ? this.getColumnNameOrAlias(tempEntity, context.identifier , this.createDefaultOptions()) : undefined;
+            this.where += (context.sql)
+              ? `${context.sql} ${context.target} ${addDoubleQuotes(context.identifier)}))@END@`
+              : `${alias ? alias : `${ context.identifier.replace("@EXPRESSION@", ` ${SQLLiteral.convert(node.value, node.raw)} ${context.sign}`) }`})`;
+        } else {
           const tempEntity = models.getEntity(this.ctx.config, context.relation);    
 
           const quotes = context.identifier[0] === '"' ? '' : '"';
-          const alias = tempEntity ? this.getColumnNameOrAlias(tempEntity, context.identifier , this.createOptions()) : undefined;
+          const alias = tempEntity ? this.getColumnNameOrAlias(tempEntity, context.identifier , this.createDefaultOptions()) : undefined;
 
           this.where += (context.sql)
-            ? `${context.sql} ${context.target} ${addDoubleQuotes(context.identifier)} ${context.sign} ${SQLLiteral.convert(node.value, node.raw)}))[END]`
+            ? `${context.sql} ${context.target} ${addDoubleQuotes(context.identifier)} ${context.sign} ${SQLLiteral.convert(node.value, node.raw)}))@END@`
             : `${alias ? '' : `${this.ctx.model[context.relation].table}.`}${alias ? alias : `${quotes}${ context.identifier }${quotes}`} ${context.sign} ${SQLLiteral.convert(node.value, node.raw)})`;
         }
       }
-    } else this.where += context.literal = node.value == "Edm.Boolean" ? node.raw : SQLLiteral.convert(node.value, node.raw);
+    } else {
+      const temp = context.literal = node.value == "Edm.Boolean" ? node.raw : SQLLiteral.convert(node.value, node.raw);
+      if (this.where.includes("@EXPRESSION@")) this.where = this.where.replace("@EXPRESSION@", temp); 
+      else if (this.where.includes("@EXPRESSIONSTRING@")) this.where = this.where.replace("@EXPRESSIONSTRING@", `${temp} ${context.sign}`);       
+      else this.where += temp;
+      
+    }
   }
 
   protected VisitInExpression(node: Token, context: IodataContext): void {
@@ -739,7 +749,7 @@ getColumnResult(context: IodataContext, ForceString?: boolean) {
     this.where += context.literal = SQLLiteral.convert(node.value, node.raw);
   }
 
-  protected createColumn(entity: string, column: string): string {
+  protected createGeoColumn(entity: string | Ientity, column: string): string {    
     column = removeAllQuotes(column);
     let test: string | undefined = undefined;
     const tempEntity: Ientity = (typeof entity === "string") ? this.ctx.model[entity] : entity ;
@@ -749,8 +759,7 @@ getColumnResult(context: IodataContext, ForceString?: boolean) {
         const rel = tempEntity.relations[temp[0]];
         column = `(SELECT ${addDoubleQuotes(temp[1])} FROM ${addDoubleQuotes(rel.tableName)} WHERE ${rel.expand} AND length(${addDoubleQuotes(temp[1])}::text) > 2)`;
         test = this.ctx.model[rel.entityName].columns[temp[1]].test;
-        if (test)
-          test = `(SELECT ${addDoubleQuotes(test)} FROM ${addDoubleQuotes(rel.tableName)} WHERE ${rel.expand})`;
+        if (test)  test = `(SELECT ${addDoubleQuotes(test)} FROM ${addDoubleQuotes(rel.tableName)} WHERE ${rel.expand})`;
       }
     } else if (!tempEntity.columns.hasOwnProperty(column)) {
       if (tempEntity.relations.hasOwnProperty(column)) {
@@ -758,7 +767,7 @@ getColumnResult(context: IodataContext, ForceString?: boolean) {
         column = `(SELECT ${addDoubleQuotes(rel.entityColumn)} FROM ${addDoubleQuotes(rel.tableName)} WHERE ${rel.expand} AND length(${addDoubleQuotes(rel.entityColumn)}::text) > 2)`;
         test = this.ctx.model[rel.entityName].columns[rel.entityColumn].test;
       } else throw new Error(`Invalid column ${column}`);
-    } else {
+    } else {      
       // TODO ADD addDoubleQuotes
       test = `"${tempEntity.columns[column].test}"`;
       column = addDoubleQuotes(column);
@@ -767,15 +776,33 @@ getColumnResult(context: IodataContext, ForceString?: boolean) {
       column = `CASE WHEN ${test} LIKE '%geo+json' THEN ST_GeomFromEWKT(ST_GeomFromGeoJSON(coalesce(${column}->'geometry',${column}))) ELSE ST_GeomFromEWKT(${column}::text) END`;
     return column;
   }
+  
   protected VisitMethodCallExpression(node: Token, context: IodataContext) {
     const method = node.value.method;
     const params = node.value.parameters || [];
 
-    const columnOrData = (index: number, ForceString: boolean): string => {
-      const temp = decodeURIComponent( Literal.convert(params[index].value, params[index].raw) );
-      if (temp === "result") return this.getColumnResult(context, ForceString);
-      // if (temp === "result") return this.getColumnResult(context, ForceString === true ? 'text' : undefined);
-      return this.ctx.model[this.entity].columns[temp] ? addDoubleQuotes(temp): addSimpleQuotes(temp);
+    const isColumn = (input: number | string): string | undefined => {
+      const entity: Ientity = this.ctx.model[this.entity];
+      const column = typeof input === "string" ? input : decodeURIComponent( Literal.convert(params[input].value, params[input].raw) );
+
+      if (column.includes("/")) {
+        const temp = column.split("/");
+        if (entity.relations.hasOwnProperty(temp[0])) 
+          return this.ctx.model[entity.relations[temp[0]].entityName].columns[temp[1]].test;
+      } 
+      else if (entity.columns.hasOwnProperty(column)) 
+        return column;
+      else if (entity.relations.hasOwnProperty(column)) 
+        return this.ctx.model[entity.relations[column].entityName].columns[entity.relations[column].entityColumn].test;
+    }
+
+    const columnOrData = (index: number, operation: string, ForceString: boolean): string => {
+      const test = decodeURIComponent( Literal.convert(params[index].value, params[index].raw) );
+      if (test === "result") return this.getColumnResult(context, operation, ForceString);
+      const column =  isColumn(test);       
+      // return `${operation.trim() != "" ? `${operation}(` : '' } ${column ? addDoubleQuotes(column) : addSimpleQuotes(geoColumnOrData(index, false))}${operation.trim() != "" ? ")" : "" }`;
+      return column ? addDoubleQuotes(column) : addSimpleQuotes(geoColumnOrData(index, false));
+
     };
 
     const geoColumnOrData = (index: number, srid: boolean): string => {
@@ -792,55 +819,48 @@ getColumnResult(context: IodataContext, ForceString?: boolean) {
         ? removeAllQuotes(Literal.convert(params[index].value, params[index].raw))
         : Literal.convert(params[index].value, params[index].raw);
 
+    const order = params.length === 2 ? isColumn(0) ? [0,1] : [1,0] : [0];
     switch (method) {
       case "contains":
         this.Visit(params[0], context);
-        this.where += ` ~* '${SQLLiteral.convert(
-          params[1].value,
-          params[1].raw
-        ).slice(1, -1)}'`;
+        this.where += ` ~* '${SQLLiteral.convert( params[1].value, params[1].raw ).slice(1, -1)}'`;
         break;
       case "containsAny":
         this.where += "array_to_string(";
         this.Visit(params[0], context);
-        this.where += ", ' ')";
-        this.where += ` ~* '${SQLLiteral.convert(
-          params[1].value,
-          params[1].raw
-        ).slice(1, -1)}'`;
+        this.where += `, ' ') ~* '${SQLLiteral.convert( params[1].value, params[1].raw ).slice(1, -1)}'`;
         break;
       case "endswith":
-        this.where += `${columnOrData(0, true)}  ILIKE '%${cleanData(1)}'`;
+        this.where += `${columnOrData(0, "", true)}  ILIKE '%${cleanData(1)}'`;
         break;
       case "startswith":
-        this.where += `${columnOrData(0, true)} ILIKE '${cleanData(1)}%'`;
+        this.where += `${columnOrData(0, "", true)} ILIKE '${cleanData(1)}%'`;
         break;
       case "substring":
-        // if (params[0].value == "Edm.String" || params[0].type == "FirstMemberExpression") {
-        if (params.length == 3)
-          this.where += ` SUBSTR(${columnOrData(0, true)}, ${cleanData(
-            1
-          )} + 1, ${cleanData(2)})`;
-        else this.where += ` SUBSTR(${columnOrData(0, true)}, ${cleanData(1)} + 1)`;
+        this.where += (params.length == 3) 
+            ? ` SUBSTR(${columnOrData(0, "", true)}, ${cleanData( 1 )} + 1, ${cleanData(2)})`
+            : this.where += ` SUBSTR(${columnOrData(0, "", true)}, ${cleanData(1)} + 1)`;
         break;
       case "substringof":
-        this.where += `${columnOrData(0, true)} ILIKE '%${cleanData(1)}%'`;
+        this.where += `${columnOrData(0, "", true)} ILIKE '%${cleanData(1)}%'`;
         break;
       case "indexof":
-        // if (params[0].value == "Edm.String" || params[0].type == "FirstMemberExpression") {
-        this.where += ` POSITION('${cleanData(1)}' IN ${columnOrData(0, true)})`;
+        this.where += ` POSITION('${cleanData(1)}' IN ${columnOrData(0, "", true)})`;
         break;
       case "concat":
-        this.where += `(${columnOrData(0, true)} || '${cleanData(1)}')`;
+        this.where += `(${columnOrData(0, "concat", true)} || '${cleanData(1)}')`;
         break;
       case "length":
-        this.where += `CHAR_LENGTH(${columnOrData(0, true)})`;
+        // possibilty calc length string of each result or result 
+        this.where += (decodeURIComponent( Literal.convert(params[0].value, params[0].raw) ) === "result") 
+        ? `${columnOrData(0, "CHAR_LENGTH", true)}`
+        :  `CHAR_LENGTH(${columnOrData(0, "CHAR_LENGTH", true)})`;
         break;
       case "tolower":
-        this.where += `LOWER(${columnOrData(0, true)})`;
+        this.where += `LOWER(${columnOrData(0, "", true)})`;
         break;
       case "toupper":
-        this.where += `UPPER(${columnOrData(0, true)})`;
+        this.where += `UPPER(${columnOrData(0, "", true)})`;
         break;
       case "year":
       case "month":
@@ -848,14 +868,12 @@ getColumnResult(context: IodataContext, ForceString?: boolean) {
       case "hour":
       case "minute":
       case "second":
-        this.where += `EXTRACT(${method.toUpperCase()} FROM ${columnOrData(
-          0, false
-        )})`;
+        this.where += `EXTRACT(${method.toUpperCase()} FROM ${columnOrData( 0, "", false )})`;
         break;
       case "round":
       case "floor":
       case "ceiling":
-        this.where += `${method.toUpperCase()} (${columnOrData(0, false)})`;
+        this.where += columnOrData(0, method.toUpperCase(),false);
         break;
       case "now":
         this.where += "NOW()";
@@ -866,42 +884,31 @@ getColumnResult(context: IodataContext, ForceString?: boolean) {
         this.where += ")";
         break;
       case "time":
-        this.where += `(${columnOrData(0, true)})::time`;
+        this.where += `(${columnOrData(0, "", true)})::time`;
         break;
-      case "geo.distance":
-      case "geo.contains":
-      case "geo.crosses":
-      case "geo.disjoint":
-      case "geo.equals":
-      case "geo.overlaps":
-      case "geo.relate":
-      case "geo.touches":
-      case "geo.within":
-        this.where += `${method
-          .toUpperCase()
-          .replace("GEO.", "ST_")}(${this.createColumn(this.ctx.model[this.entity],
-          columnOrData(0, true)
-        )}, '${geoColumnOrData(1, true)}')`;
-        // this.where += `ST_Distance(${this.createColumn(columnOrData(0))}, '${geoColumnOrData(1, true)}')`;
-        break;
-      case "geo.length":
-        this.where += `ST_Length(ST_MakeLine(ST_AsText(${this.createColumn(this.ctx.model[this.entity],
-          columnOrData(0, true)
-        )}), '${geoColumnOrData(1, false)}'))`;
-        break;
-      case "geo.intersects":
-        this.where += `st_intersects(ST_AsText(${this.createColumn(this.ctx.model[this.entity],
-          columnOrData(0, true)
-        )}), '${geoColumnOrData(1, false)}')`;
-        break;
-      case "trim":
-        this.where += `TRIM(BOTH '${
-          params.length == 2 ? cleanData(1) : " "
-        }' FROM ${columnOrData(0, true)})`;
-        break;
-      case "mindatetime":
-        this.where += `MIN(${this.where.split('" ')[0]}")`;
-        break;
+        case "geo.distance":
+          case "geo.contains":
+          case "geo.crosses":
+          case "geo.disjoint":
+          case "geo.equals":
+          case "geo.overlaps":
+          case "geo.relate":
+          case "geo.touches":
+          case "geo.within":
+            this.where += `${method .toUpperCase() .replace("GEO.", "ST_")}(${this.createGeoColumn(this.entity, columnOrData(order[0], "", true) )}), ${columnOrData(order[1], "", true)}')`;
+            break;
+          case "geo.length":
+            this.where += `ST_Length(ST_MakeLine(ST_AsText(${this.createGeoColumn(this.entity, columnOrData(order[0], "", true) )}), ${columnOrData(order[1], "", true)}'))`;
+            break;
+          case "geo.intersects":        
+            this.where += `st_intersects(ST_AsText(${this.createGeoColumn(this.entity, columnOrData(order[0], "", true) )}), ${columnOrData(order[1], "", true)})`;
+            break;
+          case "trim":
+            this.where += `TRIM(BOTH '${ params.length == 2 ? cleanData(1) : " " }' FROM ${columnOrData(0, "", true)})`;
+            break;
+          case "mindatetime":
+            this.where += `MIN(${this.where.split('" ')[0]}")`;
+            break;
     }
   }
 }

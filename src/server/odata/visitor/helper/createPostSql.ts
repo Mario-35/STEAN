@@ -338,6 +338,7 @@ export function createPostSql(datas: object, main: PgVisitor): string {
     sqlResult += queryAsJson({
         query: `SELECT ${temp && temp.select ? temp.select : "*"} FROM ${names[postEntity.table]} ${temp && temp.groupBy ? `GROUP BY ${temp.groupBy}` : ''}`, 
         singular: false, 
+        strip: main.ctx.config.stripNull,
         count: false
     });
     log.query(`${sqlResult}`);

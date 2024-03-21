@@ -6,6 +6,7 @@
  *
  */
 
+export { createIdList } from "./createIdList";
 export { queryAsDataArray } from "./queryAsDataArray";
 export { queryAsJson } from "./queryAsJson";
 export { queryGraphDatastream } from "./queryGraphDatastream";
@@ -16,5 +17,5 @@ export { queryMultiDatastreamKeys } from "./queryMultiDatastreamKeys";
 export { queryMultiDatastreamsUnitsKeys } from "./queryMultiDatastreamsUnitsKeys";
 export { queryStreamFromDeveui } from "./queryStreamFromDeveui";
 export { queryTestId } from "./queryTestId";
-export { replayPayload } from "./replayPayload";
+
 

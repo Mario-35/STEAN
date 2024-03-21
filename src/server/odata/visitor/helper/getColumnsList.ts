@@ -38,7 +38,10 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
     } 
     if(isGraph(main)) return [ main.interval
                                 ? `timestamp_ceil("resultTime", interval '${main.interval}') AS srcdate`
-                                : `CONCAT('[new Date("', TO_CHAR("resultTime", 'YYYY/MM/DD HH24:MI'), '"), ', result->${main.ctx.model.MultiDatastreams && main.parentEntity === main.ctx.model.MultiDatastreams.name ? "'value'->(select array_position(array(select jsonb_array_elements(\"unitOfMeasurements\")->> 'name' FROM stream), src.name)-1)" : "'value'"} ,']')`];
+                                : `@GRAPH@`];
+                                // : `CONCAT('[new Date("', TO_CHAR("resultTime", 'YYYY/MM/DD HH24:MI'), '"), ', result->${main.ctx.model.MultiDatastreams && main.parentEntity === main.ctx.model.MultiDatastreams.name ? "'value'->(select array_position(array(select jsonb_array_elements(\"unitOfMeasurements\")->> 'name' FROM stream), src.name)-1)" : "'value'"} ,']')`];
+                                // : `CONCAT('[new Date("', round_minutes("resultTime", 5), '"), ', result->${main.ctx.model.MultiDatastreams && main.parentEntity === main.ctx.model.MultiDatastreams.name ? "'value'->(select array_position(array(select jsonb_array_elements(\"unitOfMeasurements\")->> 'name' FROM stream), src.name)-1)" : "'value'"} ,']')`];
+
     const returnValue: string[] = isCsvOrArray(main) ? ["id"] : [];                                    
     const selfLink = `CONCAT('${main.ctx.decodedUrl.root}/${tempEntity.name}(', "${tempEntity.table}"."id", ')') AS "@iot.selfLink"`; 
     if (element.onlyRef == true || element.showRelations == true ) returnValue.push(selfLink);

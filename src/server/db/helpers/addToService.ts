@@ -8,6 +8,7 @@
 
 import koa from "koa";
 import { _NOTOK, _OK } from "../../constants";
+import { Eentities } from "../../enums";
 import { addDoubleQuotes, asyncForEach } from "../../helpers";
 import { formatLog } from "../../logger";
 import { models } from "../../models";
@@ -19,7 +20,7 @@ import { executeSqlValues } from "./executeSqlValues";
 
 
 export const prepareDatas = (dataInput: object, entity: string): object => {
-  if (entity === "Observations") {
+  if (entity === Eentities.Observations) {
     if (!dataInput["resultTime"] && dataInput["phenomenonTime"] ) dataInput["resultTime"]  = dataInput["phenomenonTime"] 
     if (!dataInput["phenomenonTime"] && dataInput["resultTime"] ) dataInput["phenomenonTime"]  = dataInput["resultTime"] 
   }
@@ -28,15 +29,24 @@ export const prepareDatas = (dataInput: object, entity: string): object => {
 
 export const addToService = async (ctx: koa.Context, dataInput: object): Promise<object> => {
   console.log(formatLog.whereIam());
+  // setDebug(true);
   const results = {};    
   const temp = pgVisitorBlankOdata(ctx, ctx.model.Loras);
   if (temp) {
     ctx.odata = temp;
     const objectAccess = new apiAccess(ctx);
-    await asyncForEach(dataInput["value"],  async (line: object) => {      
-      if (line.hasOwnProperty("payload"))
+    await asyncForEach(dataInput["value"],  async (line: object) => {    
+      // console.log(line);
+      if(line["payload"] != "000000000000000000")  
       try {
-        const datas = {
+
+
+        const datas = line["value"] 
+        ? {
+          "timestamp": line["phenomenonTime"], 
+          "value": line["value"], 
+          "deveui": line["deveui"].toUpperCase()
+        } : {
           "timestamp": line["phenomenonTime"], 
           "frame": line["payload"].toUpperCase(), 
           "deveui": line["deveui"].toUpperCase()
@@ -52,7 +62,7 @@ export const addToService = async (ctx: koa.Context, dataInput: object): Promise
           user_id: String(ctx.user.id),
           error: error
         } ;
-    await executeSqlValues(ctx.config, `INSERT INTO ${addDoubleQuotes(models.DBFull(ctx.config).Logs.table)} ${createInsertValues(ctx.config, datas, models.DBFull(ctx.config).Logs.name)} returning id`);
+        await executeSqlValues(ctx.config, `INSERT INTO ${addDoubleQuotes(models.DBFull(ctx.config).Logs.table)} ${createInsertValues(ctx.config, datas, models.DBFull(ctx.config).Logs.name)} returning id`);
 
       }
     });

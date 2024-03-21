@@ -6,7 +6,6 @@
  *
  */
 
-
 export const deepClone = (obj: any) => {
     if (obj === null) return null;
     const clone = { ...obj };

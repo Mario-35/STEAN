@@ -42,6 +42,7 @@ const generateFields = (input: PgVisitor): string[] => {
  * @param input PgVisitor
  * @returns sSQL Query for graph
  */
+
 const generateGrahSql = (input: PgVisitor): string => {
   input.intervalColumns = ["id", "step as date", "result"];
   if (isGraph(input)) input.intervalColumns.push("concat"); 
@@ -53,6 +54,7 @@ const generateGrahSql = (input: PgVisitor): string => {
         ? queryGraphDatastream(table, id, queryInterval(input))
         : queryGraphMultiDatastream( table, id, input.splitResult, queryInterval(input) ),
     singular: false,
+    strip: false,
     count: false,
   });
 };
@@ -66,18 +68,19 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
     generateSql: defaultForwat,
   }, 
 
-  // IMPORTANT TO HAVE THIS BEFORE GRAPH
+  // IMPORTANT TO HAVE THIS BEFORE GRAPHDATAS
   json: {
     name: "json",
     type: "application/json",
     format: defaultFunction,
     generateSql(input: PgVisitor) {
       return input.interval
-        ? queryAsJson({ query: queryInterval(input), singular: false, count: true })
+        ? queryAsJson({ query: queryInterval(input), singular: false, strip: false, count: true })
         : queryAsJson({
             query: input.sql,
             singular: false,
             count: true,
+            strip: input.ctx.config.stripNull,
             fullCount: input.count === true ? input.ctx.model[input.entity].count : undefined,
             fields: generateFields(input),
           });
@@ -135,11 +138,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
     name: "dataArray",
     type: "application/json",
     format: defaultFunction,
-    generateSql(input: PgVisitor) {
-      console.log("===========================dataArray");
-      console.log(input.entity);
-      console.log(input.arrayNames);
-      
+    generateSql(input: PgVisitor) {      
       return queryAsDataArray(input);
     },
   },
@@ -180,7 +179,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
         ? util.inspect(input, { showHidden: true, depth: 4 })
         : JSON.stringify(input),
     generateSql(input: PgVisitor) {
-      return queryAsJson({ query: input.sql, singular: false, count: false });
+      return queryAsJson({ query: input.sql, singular: false, strip: false, count: false });
     },
   },
 

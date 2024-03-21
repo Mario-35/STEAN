@@ -23,9 +23,10 @@ const tests = {
     "/test/v1.1/Observations?$filter=phenomenonTime gt 2023-10-13T06:37:13+02:00": 6,
     "/test/v1.1/Things?$filter=Datastreams/unitOfMeasurement/name eq 'Pression'": 1,
     "/test/v1.1/Things?$filter=Datastreams/unitOfMeasurement/name eq 'PM 2.5 Particulates (ug/m3)'": 1,
-    "/test/v1.1/Observations?$filter=result gt 290 or result eq 250": 28,
-    "/test/v1.1/Observations?$filter=length(result) le 2": 25,
+    "/test/v1.1/Observations?$filter=result gt 290 or result eq 250": 524,
+    "/test/v1.1/Observations?$filter=length(result) le 2": 551,
     "/test/v1.1/Locations?$filter=geo.intersects(location, geography'POLYGON ((-4.21284 47.87193, -4.22584 48.04148, -3.99840 48.05802,-4.01317 47.90265,-4.21284 47.87193))') and location/type eq 'Point'": 3,
+    "/test/v1.1/Locations?$filter=geo.intersects(geography'POLYGON ((-4.21284 47.87193, -4.22584 48.04148, -3.99840 48.05802,-4.01317 47.90265,-4.21284 47.87193))', location) and location/type eq 'Point'": 3,
     
     // "/test/v1.1/Things?$filter=Datastreams/Observations/resultTime ge 2020-06-01T00:00:00Z and Datastreams/Observations/resultTime le 2022-07-01T00:00:00Z
     // "/test/v1.1/Things?$filter=name eq 'it''s a quote'",
