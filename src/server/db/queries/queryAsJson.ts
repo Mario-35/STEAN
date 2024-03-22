@@ -7,7 +7,15 @@
  *
  */
 
-export const queryAsJson = (input: { query: string; singular: boolean; count: boolean; strip: boolean ;fullCount?: string; fields?: string[]; }): string =>
+export const queryAsJson = (input: { 
+                                    query: string; 
+                                    singular: boolean; 
+                                    count: boolean; 
+                                    strip: boolean ;
+                                    fullCount?: 
+                                    string; fields?: 
+                                    string[]; 
+                                  }): string =>
   input.query.trim() === ""
     ? ""
     : `SELECT ${ input.count == true 

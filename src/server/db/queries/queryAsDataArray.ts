@@ -8,7 +8,7 @@
  */
 
 import { queryAsJson } from ".";
-import { _COLUMNSEPARATOR, _NEWLINE } from "../../constants";
+import { ESCAPE_SIMPLE_QUOTE, _COLUMNSEPARATOR, _NEWLINE } from "../../constants";
 import { addDoubleQuotes, addSimpleQuotes, removeAllQuotes } from "../../helpers";
 import { PgVisitor } from "../../odata";
 
@@ -19,7 +19,7 @@ export const queryAsDataArray = (input: PgVisitor): string => {
   // Return SQL query
   return queryAsJson({
     query: `SELECT (ARRAY[${_NEWLINE}\t${names
-      .map((e: string) => addSimpleQuotes(e))
+      .map((e: string) => addSimpleQuotes(ESCAPE_SIMPLE_QUOTE(e)))
       .join( `,${_NEWLINE}\t`)}]) AS "component", count(*) AS "dataArray@iot.count", jsonb_agg(allkeys) AS "dataArray" FROM (SELECT json_build_array(${_NEWLINE}\t${names.map((e: string) => addDoubleQuotes(e)).join(`,${_NEWLINE}\t`)}) AS allkeys FROM (${input.sql}) AS p) AS l`,
     singular: false,
     strip: false,

@@ -18,8 +18,8 @@ import { models } from "../../../models";
 export function createQueryString(main: PgVisitor, element: PgVisitor): string { 
     console.log(formatLog.whereIam()); 
     try {        
-        const tempPgQuery = createPgQuery(main, element);
-        return tempPgQuery ? createSql(tempPgQuery) : "ERROR";        
+        main.pgQuery = createPgQuery(main, element);
+        return main.pgQuery ? createSql(main.pgQuery) : "ERROR";        
     } catch (error) {
         console.log(error);
         return "error";
@@ -71,7 +71,8 @@ export function createPgQuery(main: PgVisitor, element: PgVisitor): IpgQuery | u
                     groupBy: element.groupBy.join(",\n\t"),
                     orderby: isNull(element.orderby) ? main.ctx.model[realEntityName].orderBy : element.orderby,
                     skip: element.skip,
-                    limit: element.limit
+                    limit: element.limit,
+                    count: `SELECT count (DISTINCT ${Object.keys(main.ctx.model[realEntityName].columns)[0]}) from (SELECT ${Object.keys(main.ctx.model[realEntityName].columns)[0]} FROM "${main.ctx.model[realEntityName].table}"${element.where.trim() !== "" ? ` WHERE ${element.where}` : ''}) AS c`
                 };
             }    
         }

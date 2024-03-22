@@ -16,4 +16,4 @@ export { getColumnsList } from "./getColumnsList";
 export { formatedColumn } from "./formatedColumn";
 export { oDatatoDate } from "./oDatatoDate";
 export { pgVisitorBlankOdata } from "./pgVisitorBlankOdata";
-export const createSql = (input: IpgQuery): string => `SELECT ${input.select}\n FROM "${input.from}"\n ${input.where ? `WHERE ${input.where}\n` : ''}${input.groupBy ? `GROUP BY ${cleanStringComma(input.groupBy)}\n` : ''}${input.orderby ? `ORDER BY ${cleanStringComma(input.orderby,["ASC","DESC"])}\n` : ''}${input.skip && input.skip > 0 ? `OFFSET ${input.skip}\n` : ''} ${input.limit && input.limit > 0 ? `LIMIT ${input.limit}\n` : ''}`;
+export const createSql = (input: IpgQuery | undefined): string => input ? `SELECT ${input.select}\n FROM "${input.from}"\n ${input.where ? `WHERE ${input.where}\n` : ''}${input.groupBy ? `GROUP BY ${cleanStringComma(input.groupBy)}\n` : ''}${input.orderby ? `ORDER BY ${cleanStringComma(input.orderby,["ASC","DESC"])}\n` : ''}${input.skip && input.skip > 0 ? `OFFSET ${input.skip}\n` : ''} ${input.limit && input.limit > 0 ? `LIMIT ${input.limit}\n` : ''}` : 'Error';

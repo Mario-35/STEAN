@@ -1,4 +1,5 @@
 function showGraph(element, infos, value) {
+  console.log(infos);
     new Dygraph(
         document.getElementById(element),
         value,
@@ -7,7 +8,7 @@ function showGraph(element, infos, value) {
           ylabel: infos[2],
           xlabel: infos[0],
           legend: 'always',
-          rollPeriod: 14,
+          rollPeriod: 30,
           showRangeSelector: true,
           resizable: "both",
           connectSeparatedPoints: false

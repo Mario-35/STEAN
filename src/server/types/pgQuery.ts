@@ -7,8 +7,9 @@
  */
 
 export interface IpgQuery {
-    from: string;
     select: string;
+    from: string;
+    count?: string;
     where?: string;
     orderby?: string;
     groupBy?: string;

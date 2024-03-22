@@ -7,7 +7,7 @@
  */
 
 import { addDoubleQuotes, addSimpleQuotes, isGraph, isNull, isObservation, isTest, removeAllQuotes, returnFormats } from "../../helpers";
-import { IodataContext, IKeyString, IreturnFormat, Ientity, IKeyBoolean } from "../../types";
+import { IodataContext, IKeyString, IreturnFormat, Ientity, IKeyBoolean, IpgQuery } from "../../types";
 import { Token } from "../parser/lexer";
 import { Literal } from "../parser/literal";
 import { SQLLiteral } from "../parser/sqlLiteral";
@@ -24,6 +24,7 @@ import { _COLUMNSEPARATOR } from "../../constants";
 export class PgVisitor {
   public ctx: koa.Context;
   public options: SqlOptions;
+  // public query: IpgQuery | undefined = undefined; 
   // main entity
   public entity = "";
   // parent entity
@@ -56,6 +57,7 @@ export class PgVisitor {
   showRelations = true;
   results: IKeyString = {};
   sql = "";
+  pgQuery: IpgQuery | undefined = undefined;
   debugOdata = isTest() ? false : true;
   constructor(ctx: koa.Context, options = <SqlOptions>{}) {
     this.ctx = ctx;
@@ -65,7 +67,7 @@ export class PgVisitor {
     this.valueskeys = options.valueskeys;
     this.resultFormat =  (options.onlyValue === true) ? returnFormats.txt : returnFormats.json;
   }
-
+  
   // ***********************************************************************************************************************************************************************
   // ***                                                           ROSSOURCES                                                                                            ***
   // ***********************************************************************************************************************************************************************
@@ -219,7 +221,7 @@ export class PgVisitor {
             }
           }
         }
-        // const inOrEqual = BigInt(this.id) > 0 ? "=" : "in";
+        
         const tmpLink = this.ctx.model[this.entity].relations[node.value.path.raw].link
           .split("$ID")
           .join(<string>this.parentId);
@@ -431,6 +433,7 @@ export class PgVisitor {
       this.resultFormat = returnFormats[node.value.format];
     if ( [ returnFormats.dataArray, returnFormats.graph, returnFormats.graphDatas, returnFormats.csv ].includes(this.resultFormat) ) 
       this.noLimit();
+      this.showRelations = false;
     if (isGraph(this)) { 
       this.showRelations = false; 
       this.orderby += '"resultTime" ASC'; 

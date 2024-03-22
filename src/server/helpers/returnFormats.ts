@@ -81,7 +81,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
             singular: false,
             count: true,
             strip: input.ctx.config.stripNull,
-            fullCount: input.count === true ? input.ctx.model[input.entity].count : undefined,
+            fullCount: input.count === true ? input.pgQuery?.count : undefined,
             fields: generateFields(input),
           });
     },
