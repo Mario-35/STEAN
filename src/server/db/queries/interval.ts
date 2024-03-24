@@ -1,5 +1,5 @@
 /**
- * queryInterval.
+ * interval.
 *
 * @copyright 2020-present Inrae
 * @author mario.adam@inrae.fr
@@ -8,7 +8,7 @@
 
 import { PgVisitor } from "../../odata";
 
-export const queryInterval = (input: PgVisitor): string => 
+export const interval = (input: PgVisitor): string => 
     input.interval 
         ? 
 `WITH src as (${input.sql}), 

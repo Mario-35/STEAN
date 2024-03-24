@@ -13,7 +13,7 @@ import { formatLog } from "../../logger";
 import { IreturnResult } from "../../types";
 import { getBigIntFromString } from "../../helpers";
 import { errors, msg } from "../../messages";
-import { queryMultiDatastreamsUnitsKeys } from "../queries";
+import { multiDatastreamsUnitsKeys } from "../queries";
 import { EextensionsType } from "../../enums";
 
 export class Observations extends Common {
@@ -34,7 +34,7 @@ export class Observations extends Common {
 
       if (!searchID) this.ctx.throw(404, { code: 404, detail: msg(errors.noFound, "MultiDatastreams"), });
       // Search uint keys
-      const tempSql = await executeSqlValues(this.ctx.config, queryMultiDatastreamsUnitsKeys(searchID) );      
+      const tempSql = await executeSqlValues(this.ctx.config, multiDatastreamsUnitsKeys(searchID) );      
       const multiDatastream = tempSql[0];
       if (dataInput["result"] && typeof dataInput["result"] == "object") {
         console.log(formatLog.debug( "result : keys", `${Object.keys(dataInput["result"]).length} : ${ multiDatastream.length }` ));

@@ -17,7 +17,6 @@ import { Ientity } from "../../types";
     order: 20,
     extensions: [EextensionsType.logs, EextensionsType.admin],
     orderBy: `"name"`,
-    count: "",
     columns: {},
     relations: {},
     constraints: {},

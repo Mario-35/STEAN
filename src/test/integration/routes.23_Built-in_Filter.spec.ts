@@ -230,7 +230,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     it("Odata Built-in operator and", (done) => {
         const infos:Iinfos  = {
             api: "{get} Thing and",
-            url: `/${testVersion}/Things?$filter=name eq 'A classic Thing' and description eq 'Description of A classic Thing'`,
+            url: `/${testVersion}/Things?$filter=name eq 'classic Thing' and description eq 'Description of classic Thing'`,
             apiName: "BuiltInOperatorsAnd",
             apiDescription: "Use filter with and",
             apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
@@ -257,7 +257,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     it("Odata Built-in operator or", (done) => {
         const infos:Iinfos  = {
             api: "{get} Thing or",
-            url: `/${testVersion}/Things?$filter=name eq 'A classic Thing' or description eq 'Description of Hack $debug=true Thing'`,
+            url: `/${testVersion}/Things?$filter=name eq 'classic Thing' or description eq 'Description of Hack $debug=true Thing'`,
             apiName: "BuiltInOperatorsOr",
             apiDescription: "Use filter with or",
             apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",

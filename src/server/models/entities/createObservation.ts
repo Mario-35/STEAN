@@ -17,7 +17,6 @@ export const CreateObservation:Ientity = {
     order: 0,
     extensions: [EextensionsType.base],
     orderBy: "",
-    count: "",
     columns: {},
     relations: {},
     constraints: {},

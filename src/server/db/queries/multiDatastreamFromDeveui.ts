@@ -1,12 +1,12 @@
 /**
- * queryMultiDatastreamFromDeveui.
+ * multiDatastreamFromDeveui.
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
 
-export const queryMultiDatastreamFromDeveui = ( input: string ): string => 
+export const multiDatastreamFromDeveui = ( input: string ): string => 
 `(SELECT 
       jsonb_agg(tmp.units -> 'name') AS keys 
     FROM 

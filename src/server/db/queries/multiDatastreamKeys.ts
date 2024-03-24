@@ -1,13 +1,13 @@
 
 /**
- * queryMultiDatastreamKeys.
+ * multiDatastreamKeys.
 *
 * @copyright 2020-present Inrae
 * @author mario.adam@inrae.fr
 *
 */
 
-export const queryMultiDatastreamKeys = (inputID: bigint | string) => 
+export const multiDatastreamKeys = (inputID: bigint | string) => 
 `SELECT 
     jsonb_agg(tmp.units -> 'name') AS keys 
 FROM 

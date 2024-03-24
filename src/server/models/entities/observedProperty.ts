@@ -17,7 +17,6 @@ createOrder: 5,
 order: 8,
 extensions: [EextensionsType.base],
 orderBy: `"id"`,
-count: `SELECT count(DISTINCT id) from "observedproperty" AS count` ,
 columns: {
     id: {
     create: "BIGINT GENERATED ALWAYS AS IDENTITY",

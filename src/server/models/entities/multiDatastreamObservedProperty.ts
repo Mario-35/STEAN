@@ -18,7 +18,6 @@ import { Ientity } from "../../types";
     order: -1,
     extensions: [EextensionsType.multiDatastream],
     orderBy: `"multidatastream_id"`,
-    count: `SELECT count(DISTINCT id) from "multi_datastream_observedproperty" AS count` ,
     columns: {
       multidatastream_id: {
         create: "BIGINT NOT NULL",

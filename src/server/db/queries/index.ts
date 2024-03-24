@@ -7,15 +7,15 @@
  */
 
 export { createIdList } from "./createIdList";
-export { queryAsDataArray } from "./queryAsDataArray";
-export { queryAsJson } from "./queryAsJson";
-export { queryGraphDatastream } from "./queryGraphDatastream";
-export { queryGraphMultiDatastream } from "./queryGraphMultiDatastream";
-export { queryInterval } from "./queryInterval";
-export { queryMultiDatastreamFromDeveui } from "./queryMultiDatastreamFromDeveui";
-export { queryMultiDatastreamKeys } from "./queryMultiDatastreamKeys";
-export { queryMultiDatastreamsUnitsKeys } from "./queryMultiDatastreamsUnitsKeys";
-export { queryStreamFromDeveui } from "./queryStreamFromDeveui";
-export { queryTestId } from "./queryTestId";
+export { asDataArray } from "./asDataArray";
+export { asJson } from "./asJson";
+export { graphDatastream } from "./graphDatastream";
+export { graphMultiDatastream } from "./graphMultiDatastream";
+export { interval } from "./interval";
+export { multiDatastreamFromDeveui } from "./multiDatastreamFromDeveui";
+export { multiDatastreamKeys } from "./multiDatastreamKeys";
+export { multiDatastreamsUnitsKeys } from "./multiDatastreamsUnitsKeys";
+export { streamFromDeveui } from "./streamFromDeveui";
+export { testId } from "./testId";
 
 

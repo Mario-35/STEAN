@@ -14,7 +14,7 @@ import { SQLLiteral } from "../parser/sqlLiteral";
 import { SqlOptions } from "../parser/sqlOptions";
 import koa from "koa";
 import { formatLog } from "../../logger";
-import { createGetSql, createPostSql, oDatatoDate } from "./helper";
+import { getSqlFromPgVisitor, postSqlFromPgVisitor, oDataDateFormat } from "./helper";
 import { errors, msg } from "../../messages/";
 import { EcolType, EextensionsType } from "../../enums";
 import { models } from "../../models";
@@ -243,9 +243,9 @@ export class PgVisitor {
     this.VisitRessources(node.value.query, context);
   }
 
-  createGetSql(): string | undefined {
+  getSqlFromPgVisitor(): string | undefined {
     try {
-      return createGetSql(this);
+      return getSqlFromPgVisitor(this);
     } catch (error) {
       return undefined;
     }
@@ -253,15 +253,15 @@ export class PgVisitor {
 
   createPatchSql(datas: object): string | undefined {
     try {
-      return createPostSql(datas, this);
+      return postSqlFromPgVisitor(datas, this);
     } catch (error) {
       return undefined;
     }
   }
 
-  createPostSql(datas: object): string | undefined {
+  postSqlFromPgVisitor(datas: object): string | undefined {
     try {
-      return createPostSql(datas, this);
+      return postSqlFromPgVisitor(datas, this);
     } catch (error) {
       return undefined;
     }
@@ -584,7 +584,7 @@ export class PgVisitor {
 
   protected VisitDateType(node: Token, context: IodataContext):boolean {  
     if (context.sign && models.getRelationColumnTable(this.ctx.config, this.ctx.model[this.entity], node.value.left.raw) === EcolType.Column && models.isColumnType(this.ctx.config, this.ctx.model[this.entity], node.value.left.raw, "date")) {
-      const testIsDate = oDatatoDate(node, context.sign);
+      const testIsDate = oDataDateFormat(node, context.sign);
       const columnName = this.getColumnNameOrAlias(this.ctx.model[context.identifier || this.entity], node.value.left.raw, {table: true, as: true, cast: false, ...this.createDefaultOptions()});
       if (testIsDate) {
         this.where += `${columnName 

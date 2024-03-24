@@ -17,7 +17,6 @@ import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
     order: 7,
     extensions: [EextensionsType.base],
     orderBy: `"phenomenonTime"`,
-    count: `SELECT count(DISTINCT id) from "observation" AS count` ,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",

@@ -14,7 +14,7 @@ import { formatLog } from "../../logger";
 import { IreturnResult } from "../../types";
 import { errors, msg } from "../../messages/";
 import { EdatesType } from "../../enums";
-import { queryMultiDatastreamFromDeveui, queryStreamFromDeveui } from "../queries";
+import { multiDatastreamFromDeveui, streamFromDeveui } from "../queries";
 import { decodeloraDeveuiPayload } from "../../lora";
 import { executeSql, executeSqlValues } from "../helpers";
 
@@ -80,7 +80,7 @@ export class Loras extends Common {
       else this.ctx.throw(400, { code: 400, detail: errors.deveuiMessage });
     }
 
-    const stream = await executeSql(this.ctx.config, queryStreamFromDeveui(this.stean["deveui"])).then((res: object) => {
+    const stream = await executeSql(this.ctx.config, streamFromDeveui(this.stean["deveui"])).then((res: object) => {
       if (res[0]["multidatastream"] != null) return res[0]["multidatastream"][0];
       if (res[0]["datastream"] != null) return res[0]["datastream"][0];
       this.ctx.throw(400, { code: 400, detail: msg( errors.deveuiNotFound, this.stean["deveui"] )}); 
@@ -100,7 +100,7 @@ export class Loras extends Common {
       if (this.stean["decodedPayload"].valid === false) this.ctx.throw(400, { code: 400, detail: errors.InvalidPayload });
     }
 
-    const searchMulti = queryMultiDatastreamFromDeveui(this.stean["deveui"]);
+    const searchMulti = multiDatastreamFromDeveui(this.stean["deveui"]);
     this.stean["formatedDatas"] = {};
     
     if (stream["multidatastream"]) {

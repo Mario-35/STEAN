@@ -17,7 +17,6 @@ import { Ientity } from "../../types";
     order: -1,
     extensions: [EextensionsType.base],
     orderBy: `"location_id"`,
-    count: `SELECT count(DISTINCT id) from "location_historical_location" AS count` ,
     columns: {
       location_id: {
         create: "BIGINT NOT NULL",

@@ -17,7 +17,6 @@ export const FeatureOfInterest:Ientity = {
             order: 4,
             extensions: [EextensionsType.base],
             orderBy: `"id"`,
-            count: `SELECT count(DISTINCT id) from "featureofinterest" AS count` ,
             columns: {
               id: {
                 create: "BIGINT GENERATED ALWAYS AS IDENTITY",

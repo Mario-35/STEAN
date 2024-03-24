@@ -1,5 +1,5 @@
 /**
- * createGetSql.
+ * getSqlFromPgVisitor.
  *
  * @copyright 2022-present Inrae
  * @author mario.adam@inrae.fr
@@ -9,12 +9,12 @@
 import { createQueryString } from ".";
 import { PgVisitor } from "../PgVisitor";
 
- export function createGetSql(main: PgVisitor): string {   
-    main.includes.forEach((include) => {
+ export function getSqlFromPgVisitor(src: PgVisitor): string {   
+    src.includes.forEach((include) => {
         if (include.navigationProperty.includes("/")) {              
             const names = include.navigationProperty.split("/");
             include.navigationProperty = names[0];
-            const visitor = new PgVisitor(main.ctx, {...main.options});
+            const visitor = new PgVisitor(src.ctx, {...src.options});
             if (visitor) {
                 visitor.entity =names[0];
                 visitor.select = "*";
@@ -25,8 +25,8 @@ import { PgVisitor } from "../PgVisitor";
             }            
         }
     });  
-    main.includes.forEach((item) => item.createGetSql());
+    src.includes.forEach((item) => item.getSqlFromPgVisitor());
     
-    main.sql = createQueryString(main, main);
-    return main.onlyValue ? main.sql : main.resultFormat.generateSql(main);
+    src.sql = createQueryString(src, src);
+    return src.onlyValue ? src.sql : src.resultFormat.generateSql(src);
 }

@@ -17,7 +17,6 @@ import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
     order: -1,
     extensions: [EextensionsType.base],
     orderBy: `"id"`,
-    count: `SELECT count(DISTINCT id) from "historical_observation" AS count` ,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",

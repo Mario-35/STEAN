@@ -17,7 +17,6 @@ export const Thing:Ientity = {
     order: 10,
     extensions: [EextensionsType.base],
     orderBy: `"id"`,
-    count: `SELECT count(DISTINCT id) from "thing" AS count` ,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",

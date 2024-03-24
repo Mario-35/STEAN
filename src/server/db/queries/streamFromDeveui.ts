@@ -1,12 +1,12 @@
 /**
- * queryMultiDatastreamFromDeveui.
+ * streamFromDeveui.
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
 
-export const queryStreamFromDeveui = ( input: string ): string => 
+export const streamFromDeveui = ( input: string ): string => 
 `WITH multidatastream as (
   SELECT 
     json_agg(t) AS multidatastream 

@@ -1,5 +1,5 @@
 /**
- * queryGraphMultiDatastream.
+ * graphMultiDatastream.
 *
 * @copyright 2020-present Inrae
 * @author results.adam@inrae.fr
@@ -11,7 +11,7 @@ import { SIMPLEQUOTEDCOMA } from "../../constants";
 
 
 
-export const queryGraphMultiDatastream = (table: string, id: string | bigint, splitResult: string[] | undefined, query: string): string => {
+export const graphMultiDatastream = (table: string, id: string | bigint, splitResult: string[] | undefined, query: string): string => {
   const ids = (typeof id === "string" ) ? createIdList(id) : [String(id)];  
   return ids.length === 1 ?
   `WITH 

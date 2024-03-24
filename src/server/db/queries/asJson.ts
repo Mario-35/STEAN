@@ -1,5 +1,5 @@
 /**
- * queryAsJson.
+ * asJson.
  *
  * @copyright 2020-present Inrae
  * @review 29-10-2024
@@ -7,7 +7,7 @@
  *
  */
 
-export const queryAsJson = (input: { 
+export const asJson = (input: { 
                                     query: string; 
                                     singular: boolean; 
                                     count: boolean; 

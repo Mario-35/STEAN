@@ -9,18 +9,18 @@
 import { query, resourcePath } from "./parser/parser";
 import { Token } from "./parser/lexer";
 import koa from "koa";
-import { cleanUrl } from "../helpers";
+import { cleanUrl, returnFormats } from "../helpers";
 import { serverConfig } from "../configuration";
 import { PgVisitor } from "./visitor/PgVisitor";
 import { SqlOptions } from "./parser/sqlOptions";
-import { queryMultiDatastreamKeys } from "../db/queries";
+import { multiDatastreamKeys } from "../db/queries";
 export { PgVisitor } from "./visitor/PgVisitor";
 
 const doSomeWarkAfterCreateAst = async (input: PgVisitor, ctx: koa.Context) => {
   if (
-    //  (input.entity === "Observations" &&  input.parentEntity === 'MultiDatastreams' && input.parentId && <bigint>input.parentId > 0) ||
+    (input.resultFormat === returnFormats.csv && input.entity === "Observations" &&  input.parentEntity?.endsWith('atastreams') && input.parentId && <bigint>input.parentId > 0) ||
     (input.splitResult && input.splitResult[0].toUpperCase() == "ALL" && input.parentId && <bigint>input.parentId > 0) ) {
-    const temp = await serverConfig.connection(ctx.config.name).unsafe(`${queryMultiDatastreamKeys(input.parentId)}`);
+    const temp = await serverConfig.connection(ctx.config.name).unsafe(`${multiDatastreamKeys(input.parentId)}`);
     input.splitResult = temp[0]["keys"];
   }
 };

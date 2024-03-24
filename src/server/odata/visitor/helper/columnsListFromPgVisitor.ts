@@ -1,16 +1,16 @@
 /**
- * getColumnsList.
+ * columnsListFromPgVisitor.
  *
  * @copyright 2022-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
 
-import { formatedColumn } from ".";
-import { ESCAPE_SIMPLE_QUOTE, _COLUMNSEPARATOR } from "../../../constants";
-import { isCsvOrArray, isGraph, isObservation, removeAllQuotes, removeDoubleQuotes } from "../../../helpers";
+import {  _COLUMNSEPARATOR } from "../../../constants";
+import { addDoubleQuotes, isCsvOrArray, isGraph, isObservation, removeAllQuotes, removeDoubleQuotes, testStringsIn } from "../../../helpers";
 import { formatLog } from "../../../logger";
 import { models } from "../../../models";
+import { IconfigFile, Ientity, IKeyBoolean } from "../../../types";
 import { PgVisitor } from "../PgVisitor";
 
 function extractColumnName(input: string): string{   
@@ -27,7 +27,28 @@ function extractColumnName(input: string): string{
  * @returns array of formated postgresSQL columns
  */
 
-export function getColumnsList(tableName: string, main: PgVisitor, element: PgVisitor): string[] | undefined {   
+export function columnsListFromPgVisitor(tableName: string, main: PgVisitor, element: PgVisitor): string[] | undefined {   
+    const tests = ["CONCAT", "CASE", "COALESCE"];
+    // export function formatedColumn(config: IconfigFile, entity : Ientity, column: string, options?: object): string {
+    //     const temp = entity.columns[column] && entity.columns[column].columnAlias(config, { ...options, as: true});
+    //     return temp ? temp :  testStringsIn(["CONCAT", "CASE"], column) ? column : `${addDoubleQuotes(entity.table)}.${addDoubleQuotes(column)}`;
+    // };
+
+    const formatedColumn= (config: IconfigFile, entity : Ientity, column: string, options?: IKeyBoolean): string | undefined => {   
+        if (entity.columns[column]) {
+            const alias =  entity.columns[column].columnAlias(config, options ? options : undefined);
+            if (testStringsIn(tests, alias || column) === true) return alias || column;
+            if (options) {
+                if (alias && options["alias"] === true) return alias;
+                let result: string = "";
+                if (options["table"] === true && (testStringsIn(tests, alias || column) === false)) result += `${addDoubleQuotes(entity.table)}.`;
+                result += alias || options["quoted"] === true ? addDoubleQuotes(column) : column;
+                if (options["as"] === true || (alias && alias.includes("->")) ) result += ` AS ${addDoubleQuotes(column)}`;
+                return result;
+            } else return column;
+        } else if (testStringsIn(tests, column) === true) return column;
+    };
+
     console.log(formatLog.whereIam(tableName));
     
     // get good entity name
@@ -35,7 +56,7 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
     if (!tempEntity) {
         console.log(formatLog.error("no entity For", tableName));
         return;
-    } 
+    }
     if(isGraph(main)) return [ main.interval
                                 ? `timestamp_ceil("resultTime", interval '${main.interval}') AS srcdate`
                                 : `@GRAPH@`];
@@ -64,7 +85,6 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
             else returnValue.push(selfLink);    
         }     
         if (isCsvOrArray(main) && ["payload", "deveui", "phenomenonTime"].includes(removeAllQuotes(e))) main.addToArrayNames(e);
-
     });
     
     if (main.interval) main.addToIntervalColumns(`CONCAT('${main.ctx.decodedUrl.root}/${tempEntity.name}(', coalesce("@iot.id", '0')::text, ')') AS "@iot.selfLink"`);
@@ -73,7 +93,7 @@ export function getColumnsList(tableName: string, main: PgVisitor, element: PgVi
         if (element.splitResult) element.splitResult.forEach((elem: string) => {
             const one = element && element.splitResult && element.splitResult.length === 1;
             const alias: string = one ? "result" : elem;
-            returnValue.push( `(result->>'valueskeys')::json->'${ESCAPE_SIMPLE_QUOTE(element.splitResult && one ? removeAllQuotes(element.splitResult[0]) : alias)}' AS "${ one ? elem : alias}"` );
+            returnValue.push( `(result->>'valueskeys')::json->'${element.splitResult && one ? removeAllQuotes(element.splitResult[0]) : alias}' AS "${ one ? elem : alias}"` );
             main.addToArrayNames(one ? elem : alias);
         });
     }

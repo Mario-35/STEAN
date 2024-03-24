@@ -89,7 +89,7 @@ export class Common {
   async getAll(): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     // create query
-    const sql = this.ctx.odata.createGetSql();
+    const sql = this.ctx.odata.getSqlFromPgVisitor();
     
     // Return results
     if (sql) switch (this.ctx.odata.resultFormat ) {
@@ -117,7 +117,7 @@ export class Common {
   async getSingle(_idInput: bigint | string): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     // create query
-    const sql = this.ctx.odata.createGetSql();
+    const sql = this.ctx.odata.getSqlFromPgVisitor();
     // Return results
     if (sql) switch (this.ctx.odata.resultFormat ) {
       case returnFormats.sql:
@@ -139,8 +139,8 @@ export class Common {
     // create queries
     const sqls:string[] = Object(dataInput).map((datas: object) => {
       const modifiedDatas = this.formatDataInput(datas);
-      if (modifiedDatas && this.ctx.odata.createPostSql) {
-        const sql = this.ctx.odata.createPostSql(modifiedDatas);
+      if (modifiedDatas && this.ctx.odata.postSqlFromPgVisitor) {
+        const sql = this.ctx.odata.postSqlFromPgVisitor(modifiedDatas);
         if (sql) return sql;
       }
     });
@@ -165,7 +165,7 @@ export class Common {
     dataInput = this.formatDataInput(dataInput);
     if (!dataInput) return;
     // create query
-    const sql = this.ctx.odata.createPostSql(dataInput);
+    const sql = this.ctx.odata.postSqlFromPgVisitor(dataInput);
     // Return results
     if (sql) switch (this.ctx.odata.resultFormat ) {
       case returnFormats.sql:

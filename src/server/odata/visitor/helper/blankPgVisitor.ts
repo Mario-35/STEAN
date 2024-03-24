@@ -1,5 +1,5 @@
 /**
- * pgVisitorBlankOdata.
+ * blankPgVisitor.
  *
  * @copyright 2022-present Inrae
  * @author mario.adam@inrae.fr
@@ -14,7 +14,7 @@ import { Token } from "../../parser";
 import { query, resourcePath } from "../../parser/parser";
 
 
-export const pgVisitorBlankOdata = (ctx: koa.Context, entity: Ientity): PgVisitor | undefined => {  
+export const blankPgVisitor = (ctx: koa.Context, entity: Ientity): PgVisitor | undefined => {  
     const astRessources: Token = <Token>resourcePath(entity.name);  
     const astQuery: Token = <Token>query(decodeURIComponent(`$top=${ctx.config.nb_page ? ctx.config.nb_page : 200}`));
     try {

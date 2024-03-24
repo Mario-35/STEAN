@@ -17,7 +17,6 @@ export const Lora:Ientity = {
   order: 11,
   extensions: [EextensionsType.lora],
   orderBy: `"id"`,
-  count: `SELECT count(DISTINCT id) from "lora" AS count` ,
   columns: {
     id: {
       create: "BIGINT GENERATED ALWAYS AS IDENTITY",

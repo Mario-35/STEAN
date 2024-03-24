@@ -17,7 +17,6 @@ export const MultiDatastream:Ientity = {
     order: 2,
     extensions: [EextensionsType.multiDatastream],
     orderBy: `"id"`,
-    count: `SELECT count(DISTINCT id) from "multidatastream" AS count` ,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",

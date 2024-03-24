@@ -6,7 +6,7 @@
  *
  */
 
-import { queryAsDataArray, queryAsJson, queryGraphDatastream, queryGraphMultiDatastream, queryInterval, } from "../db/queries";
+import { asDataArray, asJson, graphDatastream, graphMultiDatastream, interval, } from "../db/queries";
 import { Parser } from "json2csv";
 import koa from "koa";
 import { IreturnFormat } from "../types";
@@ -48,11 +48,11 @@ const generateGrahSql = (input: PgVisitor): string => {
   if (isGraph(input)) input.intervalColumns.push("concat"); 
   const table = input.ctx.model[input.parentEntity ? input.parentEntity : input.entity].table;
   const id = input.parentId ? input.parentId : input.id;
-  return queryAsJson({
+  return asJson({
     query:
       table === input.ctx.model.Datastreams.table
-        ? queryGraphDatastream(table, id, queryInterval(input))
-        : queryGraphMultiDatastream( table, id, input.splitResult, queryInterval(input) ),
+        ? graphDatastream(table, id, interval(input))
+        : graphMultiDatastream( table, id, input.splitResult, interval(input) ),
     singular: false,
     strip: false,
     count: false,
@@ -75,8 +75,8 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
     format: defaultFunction,
     generateSql(input: PgVisitor) {
       return input.interval
-        ? queryAsJson({ query: queryInterval(input), singular: false, strip: false, count: true })
-        : queryAsJson({
+        ? asJson({ query: interval(input), singular: false, strip: false, count: true })
+        : asJson({
             query: input.sql,
             singular: false,
             count: true,
@@ -139,7 +139,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
     type: "application/json",
     format: defaultFunction,
     generateSql(input: PgVisitor) {      
-      return queryAsDataArray(input);
+      return asDataArray(input);
     },
   },
 
@@ -167,7 +167,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
       return "No datas";
     },
     generateSql(input: PgVisitor) {
-      return queryAsDataArray(input);
+      return asDataArray(input);
     },
   },
 
@@ -179,7 +179,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
         ? util.inspect(input, { showHidden: true, depth: 4 })
         : JSON.stringify(input),
     generateSql(input: PgVisitor) {
-      return queryAsJson({ query: input.sql, singular: false, strip: false, count: false });
+      return asJson({ query: input.sql, singular: false, strip: false, count: false });
     },
   },
 

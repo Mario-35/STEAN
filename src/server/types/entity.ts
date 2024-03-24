@@ -11,7 +11,6 @@ import { EextensionsType } from "../enums";
 
 export interface Ientity {
      name: string; // Entity Name
-     count: string; // Entity Name
      clone?: string;
      singular: string;
      table: string;

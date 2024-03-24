@@ -17,7 +17,6 @@ export const Log:Ientity = {
     order: -1,
     extensions: [EextensionsType.logs],
     orderBy: `"date DESC"`,
-    count: `SELECT count(DISTINCT id) from "logs" AS count` ,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",

@@ -1,12 +1,12 @@
 /**
- * queryTestId.
+ * testId.
 *
 * @copyright 2020-present Inrae
 * @author mario.adam@inrae.fr
 *
 */
 
-export const queryTestId = (table: string, id: bigint | string): string => 
+export const testId = (table: string, id: bigint | string): string => 
 `SELECT 
 CASE WHEN EXISTS(
   SELECT 

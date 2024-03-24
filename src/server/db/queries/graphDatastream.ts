@@ -1,5 +1,5 @@
 /**
- * queryGraphDatastream.
+ * graphDatastream.
 *
 * @copyright 2020-present Inrae
 * @author results.adam@inrae.fr
@@ -8,7 +8,7 @@
 
 import { createIdList } from ".";
 
-export const queryGraphDatastream = (table: string, id: string | bigint, query: string): string => {
+export const graphDatastream = (table: string, id: string | bigint, query: string): string => {
   const ids = (typeof id === "string" ) ? createIdList(id) : [String(id)];
   return  `SELECT ( 
             SELECT 

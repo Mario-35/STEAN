@@ -17,7 +17,6 @@ import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
     order: 12,
     extensions: [EextensionsType.lora],
     orderBy: `"id"`,
-    count: `SELECT count(DISTINCT id) from "decoder" AS count` ,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",

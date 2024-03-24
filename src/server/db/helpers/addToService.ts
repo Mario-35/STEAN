@@ -13,7 +13,7 @@ import { addDoubleQuotes, asyncForEach } from "../../helpers";
 import { formatLog } from "../../logger";
 import { models } from "../../models";
 import { createInsertValues } from "../../models/helpers";
-import { pgVisitorBlankOdata } from "../../odata/visitor/helper";
+import { blankPgVisitor } from "../../odata/visitor/helper";
 import { Ilog } from "../../types";
 import { apiAccess } from "../dataAccess";
 import { executeSqlValues } from "./executeSqlValues";
@@ -31,7 +31,7 @@ export const addToService = async (ctx: koa.Context, dataInput: object): Promise
   console.log(formatLog.whereIam());
   // setDebug(true);
   const results = {};    
-  const temp = pgVisitorBlankOdata(ctx, ctx.model.Loras);
+  const temp = blankPgVisitor(ctx, ctx.model.Loras);
   if (temp) {
     ctx.odata = temp;
     const objectAccess = new apiAccess(ctx);

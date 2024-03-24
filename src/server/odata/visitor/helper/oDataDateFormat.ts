@@ -1,5 +1,5 @@
 /**
- * oDatatoDate.
+ * oDataDateFormat.
  *
  * @copyright 2022-present Inrae
  * @author mario.adam@inrae.fr
@@ -8,7 +8,7 @@
 
 import { Token } from "../../parser";
 
-export function oDatatoDate(node: Token, test: string): string | undefined {
+export function oDataDateFormat(node: Token, test: string): string | undefined {
     const input = node.value.right.raw.replace(/\//g, "-").replace(/'/g, "").replace(/%27/g, "");
     const regexDateStartDay = /^[0-9]{2}[-][0-9]{2}[-][0-9]{4}$/g;
     const regexDateStartYear = /^[0-9]{4}[-][0-9]{2}[-][0-9]{2}$/g;

@@ -17,7 +17,6 @@ import { Ientity } from "../../types";
     order: 21,
     extensions: [EextensionsType.admin],
     orderBy: `"name"`,
-    count: `SELECT count(DISTINCT id) from "user" AS count` ,
     columns: {
       id: {
         create: "BIGINT GENERATED ALWAYS AS IDENTITY",

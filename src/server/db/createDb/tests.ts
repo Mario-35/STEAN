@@ -4,7 +4,7 @@ const n = {
 	"radon": "Radioactivité de l'air, issue de la désintégration naturelle du radon",
 	"HChambre": "Humidité de la chambre climatique",
 	"TChambre": "Température de la chambre climatique",
-	"classic": "A classic",
+	"classic": "classic",
 	"apostrophe": "This is the stean's",
 	"accent": "This is éléanor's",
 	"special": "This is a speci@l ch@ract&r$",

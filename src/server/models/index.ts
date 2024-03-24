@@ -3,7 +3,7 @@ import { TEST } from "../constants";
 import { log } from "../log";
 import { _STREAM } from "../db/constants";
 import { executeSqlValues } from "../db/helpers";
-import { queryAsJson } from "../db/queries";
+import { asJson } from "../db/queries";
 import { EcolType, EextensionsType, EmodelType } from "../enums";
 import { addDoubleQuotes, deepClone, isTest } from "../helpers";
 import { errors, msg } from "../messages";
@@ -135,7 +135,7 @@ class Models {
     const streamId: string | undefined = isNaN(searchKey) ? searchKey["@iot.id"] : searchKey;
     if (streamId) {
       const query = `SELECT "id", "observationType", "_default_foi" FROM ${addDoubleQuotes(models.DBFull(config)[streamEntity].table)} WHERE id = ${BigInt(streamId)} LIMIT 1`;
-      return executeSqlValues(config, queryAsJson({ query: query, singular: true, strip: false, count: false }))
+      return executeSqlValues(config, asJson({ query: query, singular: true, strip: false, count: false }))
         .then((res: object) => {        
           return res ? {
             type: stream,
@@ -291,7 +291,7 @@ class Models {
   public getRoot(ctx: koa.Context) {
     console.log(formatLog.whereIam());
     let expectedResponse: object[] = [];
-    Object.keys(ctx.model)
+    Object. keys(ctx.model)
     .filter((elem: string) => ctx.model[elem].order > 0)
     .sort((a, b) => (ctx.model[a].order > ctx.model[b].order ? 1 : -1))
     .forEach((value: string) => {

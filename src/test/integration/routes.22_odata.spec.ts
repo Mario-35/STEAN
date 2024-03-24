@@ -362,6 +362,7 @@ describe("Odata", () => {
                     res.type.should.equal("application/json");
                     res.body.value.length.should.eql(2);
                     res.body.should.include.keys("@iot.count", "value");
+                    res.body["@iot.count"].should.eql(530);
                     addToApiDoc({ ...infos, result: limitResult(res) });
                     addGetTest(infos);                    
                     done();
@@ -414,7 +415,7 @@ describe("Odata", () => {
     it("filter name AND description of thing", (done) => {
         const infos: Iinfos = {
             api: "{Get} filter name AND description of thing",
-            url: `/${testVersion}/Things?$filter=name eq 'A classic Thing' and description eq 'Description of A classic Thing'`,
+            url: `/${testVersion}/Things?$filter=name eq 'classic Thing' and description eq 'Description of classic Thing'`,
             apiName: "",
             apiDescription: "",
             apiReference: ""
