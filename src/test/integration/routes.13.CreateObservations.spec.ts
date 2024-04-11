@@ -10,11 +10,11 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, IApiInput, prepareToApiDoc, generateApiDoc, identification, keyTokenName, defaultPost, limitResult, blank, testVersion, _RAWDB, Iinfos } from "./constant";
+import { IApiDoc, IApiInput, prepareToApiDoc, generateApiDoc, identification, keyTokenName, defaultPost, limitResult, blank, testVersion, _RAWDB } from "./constant";
 
 import { server } from "../../server/index";
 import { Ientity } from "../../server/types";
-import { addPostTest, addStartNewTest } from "./tests";
+import { addStartNewTest, addTest, writeLog } from "./tests";
 
 chai.use(chaiHttp);
 
@@ -102,10 +102,11 @@ const muliDatasObs = (multiDatastream: number) => {
 };
 
 describe(`endpoint : ${entity.name} [13.2]`, () => {
+    afterEach(() => { writeLog(true); });
     let token = "";
 
     before((done) => {
-        
+        addStartNewTest(entity.name);
         chai.request(server)
             .post(`/test/${testVersion}/login`)
             .send(identification)
@@ -116,7 +117,8 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
     });
 
     it("should return 4 observations links added that was added", (done) => {
-        const infos:Iinfos  = {
+
+        const infos = addTest({
             api: `{post} CreateObservations Add datastream`,
             url: `/${testVersion}/CreateObservations`,
             apiName: "PostCreateObservationsDatastream",
@@ -128,14 +130,13 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
                 python: defaultPost("python", "KEYHTTP", datasObs(1))
             },
             apiParamExample: datasObs(1)
-        };
+        });
 
         chai.request(server)
             .post(`/test${infos.url}`)
             .send(infos.apiParamExample)
             .set("Cookie", `${keyTokenName}=${token}`)
             .end((err: Error, res: any) => {
-				addStartNewTest(entity.name);
                 should.not.exist(err);
                 res.status.should.equal(201);
                 res.type.should.equal("application/json");
@@ -143,7 +144,6 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
                 res.body[1].should.include(`/${testVersion}/Observations(`);
                 res.body[2].should.include(`/${testVersion}/Observations(`);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-					addPostTest(infos, infos.apiParamExample);
                     done();
             });
     });
@@ -159,13 +159,13 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
                 ["2017-01-13T10:22:00.000Z", 92, "2017-01-13T10:22:00.000Z", 1]
             ]
         };
-        const infos:Iinfos  = {
+        const infos = addTest({
             api : `{post} return Error if datastream does not exist`,
             url : `/${testVersion}/${entity.name}`,
             apiName: "",
             apiDescription: "",
             apiReference: ""
-        };
+        });
         chai.request(server)
         .post(`/test${infos.url}`)
             .send(datas)
@@ -175,19 +175,18 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
                 res.status.should.equal(404);
                 res.type.should.equal("application/json");
                 docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);
-                addPostTest(infos, datas);
                 done();
             });
     });
 
     it("should return 4 observations in datastream 2", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api : `{post} return Error if datastream does not exist`,
             url : `/${testVersion}/${entity.name}`,
             apiName: "",
             apiDescription: "",
             apiReference: ""
-        };
+        });
         chai.request(server)
         .post(`/test${infos.url}`)
             .send(datasObs(2))
@@ -199,13 +198,12 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
                 res.body[0].should.include(`/${testVersion}/Observations(`);
                 res.body[1].should.include(`/${testVersion}/Observations(`);
                 res.body[2].should.include(`/${testVersion}/Observations(`);
-                addPostTest(infos, datasObs(2));
                 done();
             });
     });
 
     it("should return 4 observations duplicate", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: `{post} CreateObservations Add datastream duplicate.`,
             url : `/${testVersion}/${entity.name}`,
             apiName: "PostCreateObservationsDatastreamDuplicate",
@@ -217,8 +215,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
                 python: defaultPost("python", "KEYHTTP", datasObs(2))
             },
             apiParamExample: datasObs(2)
-        };
-        
+        });
         chai.request(server)
         .post(`/test${infos.url}`)
         .send(datasObs(2))
@@ -229,7 +226,6 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
                 res.type.should.equal("application/json");
                 res.body.length.should.eql(4);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addPostTest(infos, datasObs(2));
                 done();
             });
     });
@@ -239,7 +235,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
             "duplicate": "delete",
             ... datasObs(2)
         };
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: `{post} CreateObservations Add datastream duplicate = delete.`,
             url : `/${testVersion}/${entity.name}`,
             apiName: "PostCreateObservationsDatastreamDuplicateDelete",
@@ -251,8 +247,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
                 python: defaultPost("python", "KEYHTTP", datas)
             },
             apiParamExample: datas
-        };
-        
+        });
         chai.request(server)
         .post(`/test${infos.url}`)
         .send(datas)
@@ -265,14 +260,13 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
             res.body[0].should.eql("Duplicate (2017-01-13T10:20:00.000Z,90,2017-01-13T10:20:00.000Z,1)");
             res.body[1].should.include("delete id ==>");
             addToApiDoc({ ...infos, result: limitResult(res) });
-            addPostTest(infos, datas);
             done();
         });
     });
 
     it("should return 4 observations with multiDatastream", (done) => {
         const datas = muliDatasObs(2);
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: `{post} CreateObservations Add multiDatastream`,
             url : `/${testVersion}/${entity.name}`,
             apiName: "PostCreateObservationsMultiDatastream",
@@ -284,8 +278,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
                 python: defaultPost("python", "KEYHTTP", datas)
             },
             apiParamExample: datas
-        };
-        
+        });
         chai.request(server)
         .post(`/test${infos.url}`)
         .send(datas)
@@ -303,7 +296,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
 
     it("should return 4 observations in MultiDatastream", (done) => {
         const datas = muliDatasObs(2);
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: `{post} CreateObservations Add multiDatastream duplicate.`,
             url : `/${testVersion}/${entity.name}`,
             apiName: "PostCreateObservationsMultiDatastreamDuplicate",
@@ -315,8 +308,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
                 python: defaultPost("python", "KEYHTTP", datas)
             },
             apiParamExample: datas
-        };
-        
+        });
         chai.request(server)
         .post(`/test${infos.url}`)
         .send(datas)
@@ -328,7 +320,6 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
             res.body.length.should.eql(4);
             res.body[0].should.eql("Duplicate (2017-01-13T10:20:00.000Z,591,592,593,2017-01-13T10:20:00.000Z,1)");
             addToApiDoc({ ...infos, result: limitResult(res) });
-            addPostTest(infos, datas);
             done();
         });
     });
@@ -338,7 +329,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
             "duplicate": "delete",
             ... muliDatasObs(2)
         };
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: `{post} CreateObservations Add multiDatastream duplicate = delete.`,
             url : `/${testVersion}/${entity.name}`,
             apiName: "PostCreateObservationsMultiDatastreamDuplicateDelete",
@@ -350,8 +341,7 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
                 python: defaultPost("python", "KEYHTTP", datas)
             },
             apiParamExample: datas
-        };
-        
+        });
         chai.request(server)
         .post(`/test${infos.url}`)
         .send(datas)
@@ -364,7 +354,6 @@ describe(`endpoint : ${entity.name} [13.2]`, () => {
             res.body[0].should.eql("Duplicate (2017-01-13T10:20:00.000Z,591,592,593,2017-01-13T10:20:00.000Z,1)");
             res.body[1].should.include("delete id ==>");
             addToApiDoc({ ...infos, result: limitResult(res) });
-            addPostTest(infos, datas);
             generateApiDoc(docs, `apiDoc${entity.name}.js`);
             done();
         });

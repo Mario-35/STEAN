@@ -7,7 +7,7 @@
  */
 
 import koa from "koa";
-import { PgVisitor } from "../odata";
+import { PgVisitor } from "../odata/visitor";
 
  export interface IreturnFormat {
     name: string; 

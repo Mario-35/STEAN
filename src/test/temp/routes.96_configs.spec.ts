@@ -48,12 +48,12 @@ describe("Configs", () => {
 
     describe("{get} Config", () => {
         it("Return Configs", (done) => {
-            const infos:Iinfos  = {
+            const infos = addTest({
                 api: `{get} ResultFormat as csv`,
                 apiName: "ConfigsAll",
                 apiDescription: 'Use $resultFormat=csv to get datas as csv format.<br><img class="tabLogo" src="./assets/csv.jpg" alt="csv result">',
                 apiExample: { http: `/${testVersion}/Datastreams(1)/Observations?$top=20&$resultFormat=csv` }
-            };
+            });
             chai.request(server)
                 .get(`/test${infos.url}`)
                 .end((err: Error, res: any) => {
@@ -95,7 +95,7 @@ describe("Configs", () => {
                 "canDrop": true,
                 "logFile": ""
               };
-            const infos:Iinfos  = {
+            const infos = addTest({
                 api: `{post} ${entity.name} Post basic`,
                 apiName: `Post${entity.name}`,
                 apiDescription: `Post a new ${entity.name}`,

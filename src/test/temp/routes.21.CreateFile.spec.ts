@@ -9,11 +9,12 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, IApiInput, prepareToApiDoc, identification, keyTokenName, limitResult, generateApiDoc, testVersion, _RAWDB } from "./constant";
+import { IApiDoc, IApiInput, prepareToApiDoc, identification, keyTokenName, limitResult, generateApiDoc, testVersion, _RAWDB } from "../integration/constant";
 
 import { server } from "../../server/index";
 import { Ientity } from "../../server/types";
-import { executeQuery } from "./executeQuery";
+import { executeQuery } from "../integration/executeQuery";
+import { addStartNewTest, addTest } from "../integration/tests";
 
 chai.use(chaiHttp);
 
@@ -44,6 +45,8 @@ describe(`CSV ${entity.name}`, function () {
     this.timeout(5000);
     let token = "";
     before((done) => {        
+        addStartNewTest(entity.name);
+
         chai.request(server)
             .post(`/test/${testVersion}/login`)
             .send(identification)
@@ -54,13 +57,13 @@ describe(`CSV ${entity.name}`, function () {
     });
 
     it("Should return The Datastreams create to ingest csv file", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: `{post} CreateFile with csv attached file`,
+            url: `/${testVersion}/${entity.name}`,
             apiName: "CreateFilePost",
             apiDescription: "Import csv file",
             apiExample: { http: `/${testVersion}/Things(22)/CreateFile` }
-        };
-
+        });
         chai.request(server)
             .post(`/test/${infos.url}`)
             .field("Content-Type", "multipart/form-data")
@@ -86,13 +89,13 @@ describe(`CSV ${entity.name}`, function () {
     });
 
     it("Should return The Datastreams updated for file", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: `{post} CreateFile with same csv attached file [duplicate]`,
+            url: `/${testVersion}/${entity.name}`,
             apiName: "CreateFilePostDuplicate",
             apiDescription: "Import csv file [duplicate]",
             apiExample: { http: `/${testVersion}/Things(22)/CreateFile` },
-        };
-
+        });
         chai.request(server)
             .post(`/test${infos.apiExample.http}`)
             .field("Content-Type", "multipart/form-data")

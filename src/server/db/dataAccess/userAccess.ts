@@ -30,7 +30,8 @@ export const userAccess = {
   post: async (configName: string, data: Iuser) => {
     // if (configName === "ADMIN") return;    
     return await serverConfig
-      .connection(configName).unsafe(`INSERT INTO "user" ("username", "email", "password", "database", "canPost", "canDelete", "canCreateUser", "canCreateDb", "superAdmin", "admin") 
+      .connection(configName).unsafe(`INSERT INTO "user" 
+      ("username", "email", "password", "database", "canPost", "canDelete", "canCreateUser", "canCreateDb", "superAdmin", "admin") 
        VALUES ('${data.username}', '${data.email}', '${encrypt(data.password)}', '${data.database || "all"}', ${data.canPost || false}, ${data.canDelete || false}, ${data.canCreateUser || false}, ${data.canCreateDb || false}, ${data.superAdmin || false}, ${data.admin || false}) 
       RETURNING *`).catch(async (err) => {
         if (err.code === "23505") {          

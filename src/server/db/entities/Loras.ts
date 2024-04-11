@@ -43,7 +43,7 @@ export class Loras extends Common {
     const tempList = columnListString.split("COLUMN");
     return tempList[0].concat( '"', input.join(`"${tempList[1]}${tempList[0]}"`), '"', tempList[1] );
   }
-
+  // Override post
   async post( dataInput: object, silent?: boolean ): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     const addToStean = (key: string) => (this.stean[key] = dataInput[key]);

@@ -10,12 +10,12 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, identification, keyTokenName, defaultGet, defaultPost, defaultPatch, defaultDelete, getNB, listOfColumns, limitResult, infos, showHide, apiInfos, nbColorTitle, nbColor, testVersion, _RAWDB, Iinfos } from "./constant";
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, identification, keyTokenName, defaultGet, defaultPost, defaultPatch, defaultDelete, getNB, listOfColumns, limitResult, infos, showHide, apiInfos, nbColorTitle, nbColor, testVersion, _RAWDB } from "./constant";
 import { server } from "../../server/index";
 import { Ientity } from "../../server/types"; 
 import { testsKeys as datastreams_testsKeys } from "./routes.07_datastreams.spec"; 
 import { executeQuery, last } from "./executeQuery"; 
-import { addDeleteTest, addGetTest, addPatchTest, addPostTest, addStartNewTest } from "./tests";
+import { addStartNewTest, addTest, writeLog } from "./tests";
 
 export const testsKeys = ["@iot.id", "@iot.selfLink", "Datastreams@iot.navigationLink", "name", "description", "definition"];
 
@@ -45,8 +45,9 @@ describe("endpoint : ObservedProperties", () => {
 	const success = temp.success;
 	const params = temp.params;
 	let token = "";
-
+	
 	before((done) => {
+		addStartNewTest(entity.name);
 		chai.request(server)
 			.post(`/test/${testVersion}/login`)
 			.send(identification)
@@ -57,8 +58,10 @@ describe("endpoint : ObservedProperties", () => {
 	});
 
 	describe(`{get} ${entity.name} ${nbColorTitle}[9.2]`, () => {
+		afterEach(() => { writeLog(true); });
+
 		it(`Return all ${entity.name} ${nbColor}[9.2.2]`, (done) => {
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{get} ${entity.name} Get all`,
 				url: `/${testVersion}/${entity.name}`,
 				apiName: `GetAll${entity.name}`,
@@ -71,12 +74,10 @@ describe("endpoint : ObservedProperties", () => {
 					python: defaultGet("python", "KEYHTTP")
 				},
 				apiSuccess: ["{number} id @iot.id", "{relation} selfLink @iot.selfLink", ...success]
-			};
-
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err, res) => {
-					addStartNewTest(entity.name);
 					should.not.exist(err);
 					res.status.should.equal(200);
 					res.type.should.equal("application/json");
@@ -88,13 +89,13 @@ describe("endpoint : ObservedProperties", () => {
 						"code": 404,
 						"message": "Not Found"
 					}, null, 4);
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
 		it(`Return observedProperty id: 2 ${nbColor}[9.2.3]`, (done) => {
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{get} ${entity.name}(:id) Get one`,
 				url: `/${testVersion}/${entity.name}(2)`,
 				apiName: `GetOne${entity.name}`,
@@ -106,7 +107,7 @@ describe("endpoint : ObservedProperties", () => {
 					javascript: defaultGet("javascript", "KEYHTTP"),
 					python: defaultGet("python", "KEYHTTP")
 				}
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err: Error, res: any) => {
@@ -121,19 +122,19 @@ describe("endpoint : ObservedProperties", () => {
 						...infos,
 						result: limitResult(res)
 					});
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
 		it(`Return error if ${entity.name} not exist ${nbColor}[9.2.4]`, (done) => {
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `Return error if ${entity.name} not exist`,
 				url: `/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err, res) => {
@@ -141,13 +142,13 @@ describe("endpoint : ObservedProperties", () => {
 					res.status.should.equal(404);
 					res.type.should.equal("application/json");
 					docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4).replace(Number.MAX_SAFE_INTEGER.toString(), "1");
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
 		it("Return observedProperty of a specific Datastream", (done) => {
-			const infos:Iinfos  = {
+			const infos = addTest({
 				api : `{get} Datastream(10/${entity.name} Get from a specific Datastream`,
 				url : `/${testVersion}/Datastreams(9)/ObservedProperty`,
 				apiName: `GetDatastream${entity.name}`,
@@ -158,7 +159,7 @@ describe("endpoint : ObservedProperties", () => {
 					javascript: defaultGet("javascript", "KEYHTTP"),
 					python: defaultGet("python", "KEYHTTP")
 				}
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err: Error, res: any) => {
@@ -177,13 +178,13 @@ describe("endpoint : ObservedProperties", () => {
 						...infos,
 						result: limitResult(res)
 					});
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
 		it("Return observedProperty with inline related entities using $expand query option", (done) => {
-			const infos:Iinfos  = {
+			const infos = addTest({
 				api : `{get} ${entity.name}(:id) Get Expand Datastreams`,
 				url : `/${testVersion}/${entity.name}(1)?$expand=Datastreams`,				
 				apiName: `GetExpandDatastreams${entity.name}`,
@@ -194,7 +195,7 @@ describe("endpoint : ObservedProperties", () => {
 					javascript: defaultGet("javascript", "KEYHTTP"),
 					python: defaultGet("python", "KEYHTTP")
 				}
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err: Error, res: any) => {
@@ -208,13 +209,13 @@ describe("endpoint : ObservedProperties", () => {
 						...infos,
 						result: limitResult(res, "Datastreams")
 					});
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
 		it(`Retrieve specified properties for a specific ${entity.name}`, (done) => {
-			const infos:Iinfos  = {
+			const infos = addTest({
 				api : `{get} ${entity.name}(:id) Get from a Select`,
 				url : `/${testVersion}/${entity.name}(1)?$select=description`,				
 				apiName: `GetSelectDescription${entity.name}`,
@@ -225,7 +226,7 @@ describe("endpoint : ObservedProperties", () => {
 					javascript: defaultGet("javascript", "KEYHTTP"),
 					python: defaultGet("python", "KEYHTTP")
 				}
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err: Error, res: any) => {
@@ -237,20 +238,19 @@ describe("endpoint : ObservedProperties", () => {
 					addToApiDoc({
 						...infos,
 						result: limitResult(res)
-					});
-					addGetTest(infos);
+					});					
 					done();
 				});
 
 			it("Return Sensor Subentity Datastreams", (done) => {
 				const name = "Datastreams";
-				const infos: Iinfos = {
+				const infos = addTest({
 					api: `{get} ${entity.name}(:id) Get Subentity ${name}`,
 					url: `/${testVersion}/${entity.name}(11)/${name}`,
 					apiName: "",
 					apiDescription: "",
 					apiReference: ""
-				};
+				});
 				chai.request(server)
 					.get(`/test${infos.url}`)
 					.end((err: Error, res: any) => {
@@ -264,20 +264,20 @@ describe("endpoint : ObservedProperties", () => {
 						res.body.value[0]["Sensor@iot.navigationLink"].should.contain(`/${name}(${id})/Sensor`);
 						res.body.value[0]["ObservedProperty@iot.navigationLink"].should.contain(`/${name}(${id})/ObservedProperty`);
 						res.body.value[0]["Observations@iot.navigationLink"].should.contain(`/${name}(${id})/Observations`);
-						addGetTest(infos);
+						
 						done();
 					});
 			});
 
 			it("Return Sensor Subentity MultiDatastreams", (done) => {
 				const name = "MultiDatastreams";
-				const infos: Iinfos = {
+				const infos = addTest({
 					api: `{get} ${entity.name}(:id) Get Subentity ${name}`,
 					url: `/${testVersion}/${entity.name}(11)/${name}`,
 					apiName: "",
 					apiDescription: "",
 					apiReference: ""
-				};
+				});
 				chai.request(server)
 					.get(`/test${infos.url}`)
 					.end((err: Error, res: any) => {
@@ -290,20 +290,20 @@ describe("endpoint : ObservedProperties", () => {
 						res.body.value[0]["Sensor@iot.navigationLink"].should.contain(`/${name}(${id})/Sensor`);
 						res.body.value[0]["ObservedProperties@iot.navigationLink"].should.contain(`/${name}(${id})/ObservedProperties`);
 						res.body.value[0]["Observations@iot.navigationLink"].should.contain(`/${name}(${id})/Observations`);
-						addGetTest(infos);
+						
 						done();
 					});
 			});
 
 			it("Return Sensor Expand Datastreams", (done) => {
 				const name = "Datastreams";
-				const infos: Iinfos = {
+				const infos = addTest({
 					api: `{get} return ${entity.name} Expand ${name}`,
 					url: `/${testVersion}/${entity.name}(6)?$expand=${name}`,
 					apiName: "",
 					apiDescription: "",
 					apiReference: ""
-				};
+				});
 				chai.request(server)
 					.get(`/test${infos.url}`)
 					.end((err: Error, res: any) => {
@@ -316,20 +316,20 @@ describe("endpoint : ObservedProperties", () => {
 						res.body[name][0]["Sensor@iot.navigationLink"].should.contain(`/${name}(${id})/Sensor`);
 						res.body[name][0]["ObservedProperty@iot.navigationLink"].should.contain(`/${name}(${id})/ObservedProperty`);
 						res.body[name][0]["Observations@iot.navigationLink"].should.contain(`/${name}(${id})/Observations`);
-						addGetTest(infos);
+						
 						done();
 					});
 			});
 
 			it("Return Sensor Expand MultiDatastreams", (done) => {
 				const name = "MultiDatastreams";
-				const infos: Iinfos = {
+				const infos = addTest({
 					api: `{get} return ${entity.name} Expand ${name}`,
 					url: `/${testVersion}/${entity.name}(6)?$expand=${name}`,
 					apiName: "",
 					apiDescription: "",
 					apiReference: ""
-				};
+				});
 				chai.request(server)
 					.get(`/test${infos.url}`)
 					.end((err: Error, res: any) => {
@@ -342,7 +342,7 @@ describe("endpoint : ObservedProperties", () => {
 						res.body[name][0]["Sensor@iot.navigationLink"].should.contain(`/${name}(${id})/Sensor`);
 						res.body[name][0]["ObservedProperties@iot.navigationLink"].should.contain(`/${name}(${id})/ObservedProperties`);
 						res.body[name][0]["Observations@iot.navigationLink"].should.contain(`/${name}(${id})/Observations`);
-						addGetTest(infos);
+						
 						done();
 					});
 			});
@@ -350,13 +350,15 @@ describe("endpoint : ObservedProperties", () => {
 	});
 
 	describe(`{post} ${entity.name} ${nbColorTitle}[10.2]`, () => {
+		afterEach(() => { writeLog(true); });
+
 		it(`Return added ${entity.name} ${nbColor}[10.2.1]`, (done) => {
 			const datas = {
 				name: `Area ${getNB(entity.name)}`,
 				description: "The degree or intensity of heat present in the area",
 				definition: "http://www.qudt.org/qudt/owl/1.0.0/quantity/Instances.html#AreaTemperature"
 			};
-			const infos:Iinfos  = {
+			const infos = addTest({
 				api : `{post} ${entity.name} Post basic`,
 				url : `/${testVersion}/${entity.name}`,				
 				apiName: `Post${entity.name}`,
@@ -370,7 +372,7 @@ describe("endpoint : ObservedProperties", () => {
 				},
 				apiParam: params,
 				apiParamExample: datas
-			};
+			});
 			chai.request(server)
 				.post(`/test${infos.url}`)
 				.send(infos.apiParamExample)
@@ -384,19 +386,18 @@ describe("endpoint : ObservedProperties", () => {
 						...infos,
 						result: limitResult(res)
 					});
-					addPostTest(infos, datas);
 					done();
 				});
 		});
 
         it(`Return Error if the payload is malformed ${nbColor}[10.2.2]`, (done) => {
-            const infos:Iinfos  = {
+            const infos = addTest({
                 api : `{post} return Error if the payload is malformed`,
                 url : `/${testVersion}/${entity.name}`,
                 apiName: "",
                 apiDescription: "",
                 apiReference: ""
-            };
+            });
             chai.request(server)
                 .post(`/test${infos.url}`)
                 .send({})
@@ -406,19 +407,20 @@ describe("endpoint : ObservedProperties", () => {
                     res.status.should.equal(400);
                     res.type.should.equal("application/json");
                     docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);
-                    addPostTest(infos, {});
                     done();
                 });
         });
 	});
 
 	describe(`{patch} ${entity.name} ${nbColorTitle}[10.3]`, () => {
+		afterEach(() => { writeLog(true); });
+
 		it(`Return updated ${entity.name} ${nbColor}[10.3.1]`, (done) => {
 			executeQuery(last(entity.table, true)).then((result) => {
 				const datas = {
 					name: `New PM 2.5 ${getNB(entity.name)}`,
 				};
-				const infos:Iinfos  = {
+				const infos = addTest({
 					api : `{patch} ${entity.name} Patch one`,
 				url : `/${testVersion}/${entity.name}(${result["id"]})`,					
 					apiName: `Patch${entity.name}`,
@@ -431,7 +433,7 @@ describe("endpoint : ObservedProperties", () => {
 						python: defaultPatch("python", "KEYHTTP", datas)
 					},
 					apiParamExample: datas
-				};
+				});
 				chai.request(server)
 					.patch(`/test${infos.url}`)
 					.send(infos.apiParamExample)
@@ -446,7 +448,6 @@ describe("endpoint : ObservedProperties", () => {
 							...infos,
 							result: limitResult(res)
 						});
-						addPatchTest(infos, datas);
 						done();
 					});
 			});
@@ -460,13 +461,13 @@ describe("endpoint : ObservedProperties", () => {
 					"owner": "Mozilla"
 				}
 			};
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{patch} return Error if the ${entity.name} not exist`,
 				url: `/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
 				.patch(`/test${infos.url}`)
 				.set("Cookie", `${keyTokenName}=${token}`)
@@ -476,16 +477,17 @@ describe("endpoint : ObservedProperties", () => {
 					res.status.should.equal(404);
 					res.type.should.equal("application/json");
 					docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4).replace(Number.MAX_SAFE_INTEGER.toString(), String(myId));
-					addPatchTest(infos, datas);
 					done();
 				});
 		});
 	});
 
 	describe(`{delete} ${entity.name} ${nbColorTitle}[10.4]`, () => {
+		afterEach(() => { writeLog(true); });
+
 		it(`Delete ${entity.name} return no content with code 204 ${nbColor}[10.4.1]`, (done) => {
 			executeQuery(`SELECT (SELECT count(id) FROM "${entity.table}")::int as count, (${last(entity.table)})::int as id `).then((beforeDelete) => {
-				const infos:Iinfos  = {
+				const infos = addTest({
 					api : `{delete} ${entity.name} Delete one`,
 				url : `/${testVersion}/${entity.name}(${beforeDelete["id"]})`,					
 					apiName: `Delete${entity.name}`,
@@ -497,7 +499,7 @@ describe("endpoint : ObservedProperties", () => {
 						javascript: defaultDelete("javascript", "KEYHTTP"),
 						python: defaultDelete("python", "KEYHTTP")
 					}
-				};
+				});
 				chai.request(server)
 					.delete(`/test${infos.url}`)
 					.set("Cookie", `${keyTokenName}=${token}`)
@@ -510,20 +512,21 @@ describe("endpoint : ObservedProperties", () => {
 								...infos,
 								result: limitResult(res)
 							});
-							addDeleteTest(infos);
+							
 							done();
 						});
 					});
 			});
 		});
+
 		it(`Return Error if the ${entity.name} not exist`, (done) => {
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{delete} return Error if the ${entity.name} not exist`,
 				url: `/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
 				.delete(`/test${infos.url}`)
 				.set("Cookie", `${keyTokenName}=${token}`)
@@ -533,7 +536,7 @@ describe("endpoint : ObservedProperties", () => {
 					res.type.should.equal("application/json");
 					docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4).replace(Number.MAX_SAFE_INTEGER.toString(), String(myId));
 					generateApiDoc(docs, `apiDoc${entity.name}.js`);
-					addDeleteTest(infos);
+					
 					done();
 				});
 		})

@@ -57,22 +57,22 @@ export class CreateObservations extends Common {
     return res;
   }
 
-  // Bad request
+  // Override get all to return error Bad request
   async getAll(): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     this.ctx.throw(400, { code: 400 });
   }
   
-  // Bad request
+  // Override get one to return error Bad request
   async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam(idInput));
     this.ctx.throw(400, { code: 400 });
   }
-  
+  // Override post to posted file as createObservations
   async postForm(dataInput: JSON): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     // verify is there FORM data    
-         
+    
       const datasJson = JSON.parse(this.ctx.datas["datas"]);
       if (!datasJson["columns"]) this.ctx.throw(404, { code: 404, detail: errors.noColumn });
       const myColumns: IcsvColumn[] = [];
@@ -119,7 +119,7 @@ export class CreateObservations extends Common {
       }        
       return undefined;
   }
-
+    // Override post xson file as createObservations
   async postJson(dataInput: JSON): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     const returnValue: string[] = [];
@@ -160,19 +160,19 @@ export class CreateObservations extends Common {
         };
       }
   }
-
+  // Override post caller
   async post(dataInput: JSON): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     return (this.ctx.datas) ? await this.postForm(dataInput) : await this.postJson(dataInput);
   }
 
-  // Bad request
+  // Override update to return error Bad request
   async update( idInput: bigint | string, dataInput: object | undefined ): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam(idInput || dataInput));
     this.ctx.throw(400, { code: 400 });
   }
 
-  // Bad request
+  // Override delete to return error Bad request
   async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam(idInput));
     this.ctx.throw(400, { code: 400 });

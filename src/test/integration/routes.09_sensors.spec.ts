@@ -30,8 +30,7 @@ import {
 	nbColor,
 	nbColorTitle,
 	testVersion,
-	_RAWDB,
-	Iinfos
+	_RAWDB
 } from "./constant";
 import {
 	server
@@ -47,11 +46,7 @@ import {
 	last
 } from "./executeQuery";
 import {
-	addDeleteTest,
-	addGetTest,
-	addPatchTest,
-	addPostTest,
-	addStartNewTest} from "./tests";
+	addStartNewTest, addTest, writeLog} from "./tests";
 export const testsKeys = ["@iot.id", "@iot.selfLink", "Datastreams@iot.navigationLink", "MultiDatastreams@iot.navigationLink", "name", "description"];
 
 chai.use(chaiHttp);
@@ -86,20 +81,23 @@ describe("endpoint : Sensors", () => {
 	const success = temp.success;
 	// const params = temp.params;
 	let token = "";
-
+	
 	before((done) => {
+		addStartNewTest(entity.name);
 		chai.request(server)
-			.post(`/test/${testVersion}/login`)
-			.send(identification)
-			.end((err: Error, res: any) => {
-				token = String(res.body["token"]);
-				done();
-			});
+		.post(`/test/${testVersion}/login`)
+		.send(identification)
+		.end((err: Error, res: any) => {
+			token = String(res.body["token"]);
+			done();
+		});
 	});
 
 	describe(`{get} ${entity.name} ${nbColorTitle}[9.2]`, () => {
+		afterEach(() => { writeLog(true); });
+		
 		it(`Return all ${entity.name} ${nbColor}[9.2.2]`, (done) => {
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{get} ${entity.name} Get all`,
 				url: `/${testVersion}/${entity.name}`,
 				apiName: `GetAll${entity.name}`,
@@ -112,12 +110,10 @@ describe("endpoint : Sensors", () => {
 					python: defaultGet("python", "KEYHTTP")
 				},
 				apiSuccess: ["{number} id @iot.id", "{relation} selfLink @iot.selfLink", ...success]
-			};
-
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err, res) => {
-					addStartNewTest(entity.name);
 					should.not.exist(err);
 					res.status.should.equal(200);
 					res.type.should.equal("application/json");
@@ -129,13 +125,13 @@ describe("endpoint : Sensors", () => {
 						"code": 404,
 						"message": "Not Found"
 					}, null, 4);
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
 		it(`Return Sensor id: 1 ${nbColor}[9.2.3]`, (done) => {
-			const infos:Iinfos  = {
+			const infos = addTest({
 				api :`{get} ${entity.name}(:id) Get one`,
 				url : `/${testVersion}/${entity.name}(1)`,
 				apiName: `GetOne${entity.name}`,
@@ -147,7 +143,7 @@ describe("endpoint : Sensors", () => {
 					javascript: defaultGet("javascript", "KEYHTTP"),
 					python: defaultGet("python", "KEYHTTP")
 				}
-			};
+			});
 			chai.request(server)
 			.get(`/test${infos.url}`)
 				.end((err, res) => {
@@ -162,19 +158,19 @@ describe("endpoint : Sensors", () => {
 						...infos,
 						result: limitResult(res)
 					});
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
 		it(`Return error if ${entity.name} not exist ${nbColor}[9.2.4]`, (done) => {
-			const infos:Iinfos  = {
+			const infos = addTest({
 				api : `{get} return error if ${entity.name} not exist`,
 				url : `/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err, res) => {
@@ -182,14 +178,14 @@ describe("endpoint : Sensors", () => {
 					res.status.should.equal(404);
 					res.type.should.equal("application/json");
 					docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4).replace(Number.MAX_SAFE_INTEGER.toString(), "1");
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
 		it(`Return Sensor using $expand query option ${nbColor}[9.3.2.1]`, (done) => {
             const name = "Datastreams";
-			const infos:Iinfos  = {
+			const infos = addTest({
 				api : `{get} ${entity.name}(:id) Get Expands`,
 				url : `/${testVersion}/${entity.name}(1)?$expand=${name}`,				
 				apiName: `GetExpandDatastreams${entity.name}`,
@@ -200,7 +196,7 @@ describe("endpoint : Sensors", () => {
 					javascript: defaultGet("javascript", "KEYHTTP"),
 					python: defaultGet("python", "KEYHTTP")
 				}
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err: Error, res: any) => {
@@ -215,13 +211,13 @@ describe("endpoint : Sensors", () => {
 						...infos,
 						result: limitResult(res, "Datastreams")
 					});
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
 		it("Return Sensor with select=description", (done) => {
-			const infos:Iinfos  = {
+			const infos = addTest({
 				api : `{get} ${entity.name}(:id) Get Select`,
 				url : `/${testVersion}/${entity.name}(1)?$select=description`,
 				
@@ -233,7 +229,7 @@ describe("endpoint : Sensors", () => {
 					javascript: defaultGet("javascript", "KEYHTTP"),
 					python: defaultGet("python", "KEYHTTP")
 				}
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err: Error, res: any) => {
@@ -246,20 +242,20 @@ describe("endpoint : Sensors", () => {
 						...infos,
 						result: limitResult(res)
 					});
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
 		it(`Return Sensor Subentity Datastreams ${nbColor}[9.2.6]`, (done) => {
 			const name = "Datastreams";
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{get} ${entity.name}(:id) Get Subentity ${name}`,
 				url: `/${testVersion}/${entity.name}(6)/${name}`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err: Error, res: any) => {
@@ -272,20 +268,20 @@ describe("endpoint : Sensors", () => {
 					res.body.value[0]["Sensor@iot.navigationLink"].should.contain(`/${name}(${id})/Sensor`);
 					res.body.value[0]["ObservedProperty@iot.navigationLink"].should.contain(`/${name}(${id})/ObservedProperty`);
 					res.body.value[0]["Observations@iot.navigationLink"].should.contain(`/${name}(${id})/Observations`);
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
 		it(`Return Sensor Subentity MultiDatastreams ${nbColor}[9.2.6]`, (done) => {
 			const name = "MultiDatastreams";
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{get} ${entity.name}(:id) Get Subentity ${name}`,
 				url: `/${testVersion}/${entity.name}(18)/${name}`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err: Error, res: any) => {
@@ -298,20 +294,20 @@ describe("endpoint : Sensors", () => {
 					res.body.value[0]["Sensor@iot.navigationLink"].should.contain(`/${name}(${id})/Sensor`);
 					res.body.value[0]["ObservedProperties@iot.navigationLink"].should.contain(`/${name}(${id})/ObservedProperties`);
 					res.body.value[0]["Observations@iot.navigationLink"].should.contain(`/${name}(${id})/Observations`);
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
 		it(`Return Sensor Expand Datastreams ${nbColor}[9.3.2.1]`, (done) => {
 			const name = "Datastreams";
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{get} return ${entity.name} Expand ${name}`,
 				url: `/${testVersion}/${entity.name}(1)?$expand=${name}`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err: Error, res: any) => {
@@ -324,20 +320,20 @@ describe("endpoint : Sensors", () => {
 					res.body[name][0]["Sensor@iot.navigationLink"].should.contain(`/${name}(${id})/Sensor`);
 					res.body[name][0]["ObservedProperty@iot.navigationLink"].should.contain(`/${name}(${id})/ObservedProperty`);
 					res.body[name][0]["Observations@iot.navigationLink"].should.contain(`/${name}(${id})/Observations`);
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
 		it(`Return Sensor Expand MultiDatastreams ${nbColor}[9.3.2.1]`, (done) => {
 			const name = "MultiDatastreams";
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{get} return ${entity.name} Expand ${name}`,
 				url: `/${testVersion}/${entity.name}(1)?$expand=${name}`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err: Error, res: any) => {
@@ -350,13 +346,14 @@ describe("endpoint : Sensors", () => {
 					res.body[name][0]["Sensor@iot.navigationLink"].should.contain(`/${name}(${id})/Sensor`);
 					res.body[name][0]["ObservedProperties@iot.navigationLink"].should.contain(`/${name}(${id})/ObservedProperties`);
 					res.body[name][0]["Observations@iot.navigationLink"].should.contain(`/${name}(${id})/Observations`);
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 	});
 
 	describe(`{post} ${entity.name} ${nbColorTitle}[10.2]`, () => {
+		afterEach(() => { writeLog(true); });
 		
 		it(`Return added ${entity.name} ${nbColor}[10.2.1]`, (done) => {
 			const datas = {
@@ -365,7 +362,7 @@ describe("endpoint : Sensors", () => {
 				"encodingType": "application/pdf",
 				"metadata": "http://particle-sensor.com/"
 			};
-			const infos:Iinfos  = {
+			const infos = addTest({
 				api : `{post} ${entity.name} Post basic`,
 				url : `/${testVersion}/${entity.name}`,				
 				apiName: `Post${entity.name}`,
@@ -379,7 +376,7 @@ describe("endpoint : Sensors", () => {
 				},
 				apiParam: _PARAMS.slice(0, 4),
 				apiParamExample: datas
-			};
+			});
 			chai.request(server)
 				.post(`/test${infos.url}`)
 				.send(infos.apiParamExample)
@@ -393,19 +390,18 @@ describe("endpoint : Sensors", () => {
 						...infos,
 						result: limitResult(res)
 					});
-					addPostTest(infos, datas);
 					done();
 				});
 		});
 
 		it(`Return Error if the payload is malformed ${nbColor}[10.2.2]`, (done) => {
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{post} ${entity.name} return Error if the payload is malformed`,
 				url: `/${testVersion}/${entity.name}`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
 				.post(`/test/${infos.url}`)
 				.send({})
@@ -415,19 +411,20 @@ describe("endpoint : Sensors", () => {
 					res.status.should.equal(400);
 					res.type.should.equal("application/json");
 					docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);
-					addPostTest(infos, {});
 					done();
 				});
 		});
 	});
 
 	describe(`{patch} ${entity.name} ${nbColorTitle}[10.3]`, () => {
+		afterEach(() => { writeLog(true); });
+
 		it(`Return updated ${entity.name} ${nbColor}[10.3.1]`, (done) => {
 			executeQuery(last(entity.table, true)).then((result) => {
 				const datas = {
 					description: "This is a new PM 2.5 sensor"
 				};
-				const infos:Iinfos  = {
+				const infos = addTest({
 					api : `{patch} ${entity.name} Patch one`,
 					url : `/${testVersion}/${entity.name}(${result["id"]})`,
 					
@@ -441,7 +438,7 @@ describe("endpoint : Sensors", () => {
 						python: defaultPatch("python", "KEYHTTP", datas)
 					},
 					apiParamExample: datas
-				};
+				});
 				chai.request(server)
 					.patch(`/test${infos.url}`)
 					.send(infos.apiParamExample)
@@ -460,7 +457,6 @@ describe("endpoint : Sensors", () => {
 							apiParam: _PARAMS.slice(0, 4),
 							result: res
 						});
-						addPatchTest(infos, datas);
 						done();
 					});
 			});
@@ -470,13 +466,13 @@ describe("endpoint : Sensors", () => {
 			const datas = {
                 description: "This is a new PM 2.5 sensor"
             };
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{patch} return Error if the ${entity.name} not exist`,
 				url: `/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
 				.patch(`/test${infos.url}`)
 				.send(datas)
@@ -486,16 +482,17 @@ describe("endpoint : Sensors", () => {
 					res.status.should.equal(404);
 					res.type.should.equal("application/json");
 					docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);
-					addPatchTest(infos, datas);
 					done();
 				});
 		});
 	});
 
 	describe(`{delete} ${entity.name} ${nbColorTitle}[10.4]`, () => {
+		afterEach(() => { writeLog(true); });
+
 		it(`Delete ${entity.name} return no content with code 204 ${nbColor}[10.4.1]`, (done) => {
 			executeQuery(`SELECT (SELECT count(id) FROM "${entity.table}")::int as count, (${last(entity.table)})::int as id `).then((beforeDelete) => {
-				const infos:Iinfos  = {
+				const infos = addTest({
 					api : `{delete} ${entity.name} Delete one`,
 					url : `/${testVersion}/${entity.name}(${beforeDelete["id"]})`,					
 					apiName: `Delete${entity.name}`,
@@ -507,7 +504,7 @@ describe("endpoint : Sensors", () => {
 						javascript: defaultDelete("javascript", "KEYHTTP"),
 						python: defaultDelete("python", "KEYHTTP")
 					}
-				};
+				});
 				chai.request(server)
 					.delete(`/test${infos.url}`)
 					.set("Cookie", `${keyTokenName}=${token}`)
@@ -520,7 +517,7 @@ describe("endpoint : Sensors", () => {
 								...infos,
 								result: res
 							});
-							addDeleteTest(infos);
+							
 							done();
 						});
 					});
@@ -528,23 +525,22 @@ describe("endpoint : Sensors", () => {
 		});
 
 		it(`Return Error if the ${entity.name} not exist`, (done) => {
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{delete} return Error if the ${entity.name} not exist`,
 				url: `/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
-				.delete(`/test/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
+				.delete(`/test/${infos.url}`)
 				.set("Cookie", `${keyTokenName}=${token}`)
 				.end((err: Error, res: any) => {
 					should.not.exist(err);
 					res.status.should.equal(404);
 					res.type.should.equal("application/json");
 					docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);
-					generateApiDoc(docs, `apiDoc${entity.name}.js`);
-					addDeleteTest(infos);
+					generateApiDoc(docs, `apiDoc${entity.name}.js`);					
 					done();
 				});
 		});

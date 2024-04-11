@@ -10,9 +10,9 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult, testVersion, Iinfos } from "./constant";
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult, testVersion } from "./constant";
 import { server } from "../../server/index";
-import { addGetTest, addStartNewTest } from "./tests";
+import { addStartNewTest, addTest, writeLog } from "./tests";
 
 
 chai.use(chaiHttp);
@@ -34,8 +34,13 @@ addToApiDoc({
 });
    
 describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
+    before((done) => {
+        addStartNewTest("Built in Functions");
+		done();
+	});
+	afterEach(() => { writeLog(true); });
     it("substringof('name', 'chamber') eq true ", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Things(:id) substringof",
             url: `/${testVersion}/Things?$filter=substringof('description', 'chamber') eq true`,
             apiName: "BuiltInFunctionsSubstringof",
@@ -46,30 +51,29 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
-                addStartNewTest("Built in Functions");
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body["value"][0]["@iot.id"].should.eql(6);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it("substringof('name', 'with')", (done) => {
-        const infos: Iinfos = {
+        const infos = addTest({
             api: `{get} substringof('name', 'with')`,
             url: `/${testVersion}/Things?$filter=substringof('name', 'with')`,
             apiName: "",
             apiDescription: "",
             apiReference: ""
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -78,13 +82,13 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(3);
                 res.body["value"][0]["@iot.id"].should.eql(13);
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it("endwith('name', 'Thing') eq true", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Things(:id) endwith",
             url: `/${testVersion}/Things?$filter=endswith('name', 'Thing') eq true`,
             apiName: "BuiltInFunctionsEndwith",
@@ -95,7 +99,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -105,19 +109,19 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(5);
                 res.body["value"][0]["@iot.id"].should.eql(1);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it("endwith('description', 'one')", (done) => {
-        const infos: Iinfos = {
+        const infos = addTest({
             api: `{get} endwith('description', 'one')`,
             url: `/${testVersion}/Things?$filter=endswith('description', 'Thing')`,
             apiName: "",
             apiDescription: "",
             apiReference: ""
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -126,13 +130,13 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(6);
                 res.body["value"][0]["@iot.id"].should.eql(1);
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it("startswith('name', 'Temperature') eq true", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Things(:id) startswith",
             url: `/${testVersion}/Sensors?$filter=startswith('name', 'Hack') eq true`,
             apiName: "BuiltInFunctionsStartswith",
@@ -143,7 +147,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -153,19 +157,19 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(1);
                 res.body["value"][0]["@iot.id"].should.eql(5);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it("startswith('name', 'Temperature')", (done) => {
-        const infos: Iinfos = {
+        const infos = addTest({
             api: `{get} endwith(description, 'one')`,
             url: `/${testVersion}/Datastreams?$filter=startswith('name', 'Outlet')`,
             apiName: "",
             apiDescription: "",
             apiReference: ""
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -174,13 +178,13 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(9);
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it("length(description) le 22", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Things(:id) Length",
             url: `/${testVersion}/Things?$filter=length(description) le 25`,
             apiName: "BuiltInFunctionsLength",
@@ -191,7 +195,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -201,13 +205,13 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(3);
                 res.body["value"][0]["@iot.id"].should.eql(7);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it("indexof('name', 'Temperature') eq 1", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} indexof",
             url: `/${testVersion}/Things?$filter=indexof('name', 'Piezo') eq 1`,
             apiName: "BuiltInFunctionsIndexOf",
@@ -218,7 +222,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -228,13 +232,13 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(9);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it("substring('name', 1) eq 'ame of new Things 1'", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Things substring(str, nb)",
             url: `/${testVersion}/Things?$filter=substring('name', 1) eq 'hing with new Location test'`,
             apiName: "BuiltInFunctionsSubstringOne",
@@ -245,7 +249,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -255,13 +259,13 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(1);
                 res.body["value"][0]["@iot.id"].should.eql(13);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
     
     it("substring('description', 10, 6) eq 'outlet'", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Things substring(str, index, nb)",
             url: `/${testVersion}/Things?$filter=substring('description', 10, 6) eq 'outlet'`,
             apiName: "BuiltInFunctionsSubstringTwo",
@@ -272,7 +276,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -282,13 +286,13 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(7);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it("tolower('name') eq 'sensorwebthing 2'", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Things toLower",
             url: `/${testVersion}/Things?$filter=tolower('name') eq 'piezo f5b'`,
             apiName: "BuiltInFunctionsTolower",
@@ -299,7 +303,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -309,13 +313,13 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(1);
                 res.body["value"][0]["@iot.id"].should.eql(9);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
     
     it("toupper('name') eq 'PIEZOMETER F4'", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Things toUpper",
             url: `/${testVersion}/Things?$filter=toupper('name') eq 'PIEZOMETER F4'`,
             apiName: "BuiltInFunctionsToUpper",
@@ -326,7 +330,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -336,13 +340,13 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(1);
                 res.body["value"][0]["@iot.id"].should.eql(10);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it("trim('name') eq 'Piezo F5b'", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Things trim",
             url: `/${testVersion}/Things?$filter=trim('name') eq 'Piezo F5b'`,
             apiName: "BuiltInFunctionsTrim",
@@ -353,7 +357,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -363,13 +367,13 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(1);
                 res.body["value"][0]["@iot.id"].should.eql(9);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     // it("trim('name', 'Piezo ') eq '2'", (done) => {
-    //     const infos:Iinfos  = {
+    //     const infos = addTest({
     //         api: "{get} Things trimParams",
     //         url: `/${testVersion}/Things?$filter=trim('name', 'Piezo ') eq '2'`,
     //         apiName: "BuiltInFunctionsTrimWithParams",
@@ -390,13 +394,13 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
     //             res.body.value.length.should.eql(1);
     //             res.body["value"][0]["@iot.id"].should.eql(2);
     //             addToApiDoc({ ...infos, result: limitResult(res) });
-    //             addGetTest(infos);
+    //             
     //             done();
     //         });
     // });
 
     it("concat('name', 'test') eq 'MultiDatastreams SensorWebThing 10test'", (done) => {
-        const infos = {
+        const infos = addTest({
             api: "{get} Things concat",
             url: `/${testVersion}/Things?$filter=concat('name', 'test') eq 'Piezometer F4test'`,
             apiName: "BuiltInFunctionsConcat",
@@ -407,7 +411,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -417,7 +421,7 @@ describe("Odata BuiltInFunctions [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(1);
                 res.body["value"][0]["@iot.id"].should.eql(10);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });

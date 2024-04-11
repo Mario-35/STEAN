@@ -4,14 +4,14 @@ import chai from "chai";
 import chaiHttp from "chai-http";
 import fs from "fs";
 import path from "path";
-import { IApiDoc, prepareToApiDoc, IApiInput, identification, generateApiDoc, testVersion, _RAWDB, Iinfos } from "./constant";
+import { IApiDoc, prepareToApiDoc, IApiInput, identification, generateApiDoc, testVersion, _RAWDB } from "./constant";
 
 chai.use(chaiHttp);
 
 const should = chai.should();
 
 import { server } from "../../server/index";
-import { addGetTest, addStartNewTest } from "./tests";
+import { addStartNewTest, addTest, writeLog } from "./tests";
 
 const docs: IApiDoc[] = [];
 
@@ -35,8 +35,11 @@ addToApiDoc({
     
     describe("Identification : Token", () => {
         describe("GET a token", () => {
-            it("should return JWT Identification", (done) => {            
-            const infos:Iinfos  = {
+            afterEach(() => { writeLog(true); });
+            it("should return JWT Identification", (done) => {     
+                addStartNewTest("Token");
+
+            const infos = addTest({
                 api: `{post} login get a new token`,
                 url: `/${testVersion}/login`,
                 apiName: `TokenLogin`,
@@ -46,25 +49,23 @@ addToApiDoc({
                     curl: `curl -X POST KEYHTTP/login -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' -d 'username=sensorapi&password=mario29'`
                 },
                 apiParamExample: { "username": "myUserName", "password": "*************" }
-            };
+            });
             chai.request(server)
                 .post(`/test/${infos.url}`)
                 .type("form")
                 .send(identification)
                 .end((err: Error, res: any) => {
-					addStartNewTest("Token");
                     should.not.exist(err);
                     res.body.should.include.keys("token");
                     res.body.should.include.keys("message");
                     res.body.message.should.eql("Login succeeded");
                     res.status.should.equal(200);
                     addToApiDoc({ ...infos, result: res });
-					addGetTest(infos);
                     done();
                 });
         });
         it("Return Error if the identification wrong", (done) => {
-            const infos:Iinfos  = {
+            const infos = addTest({
                 url: `/${testVersion}/login`,
                 api: `{post} login Post basic`,
                 apiName: `TokenError`,
@@ -74,7 +75,7 @@ addToApiDoc({
                     curl: `curl -X POST KEYHTTP/login -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' -d 'username=sensorapi&password=mario9'`
                 },
                 apiParamExample: { "username": identification.username, "password": "nowhere" }
-            };
+            });
             chai.request(server)
                 .post(`/test/${infos.url}`)
                 .type("form")
@@ -85,13 +86,12 @@ addToApiDoc({
                     res.body.should.include.keys("message");
                     res.body.message.should.eql("Unauthorized");
                     const myError = JSON.stringify(res.body, null, 4);
-                    docs[docs.length - 1].apiErrorExample = myError;
-					addGetTest(infos);
+                    docs[docs.length - 1].apiErrorExample = myError;					
                     done();
                 });
         });
         it("should logout", (done) => {
-            const infos:Iinfos  = {
+            const infos = addTest({
                 api: `{get} logout logout actual connection.`,
                 url: `/${testVersion}/logout`,
                 apiName: `TokenLogout`,
@@ -100,7 +100,7 @@ addToApiDoc({
                     http: `/test`,
                     curl: `curl -X GET KEYHTTP/logout`
                 }
-            };
+            });
             chai.request(server)
                 .get(`/test${infos.url}`)
                 .end((err: Error, res: any) => {
@@ -110,7 +110,6 @@ addToApiDoc({
                     res.status.should.equal(200);
                     addToApiDoc({ ...infos, result: res });
                     generateApiDoc(docs, `apiDocToken.js`);
-					addGetTest(infos);
                     done();
                 });
         });

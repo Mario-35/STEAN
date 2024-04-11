@@ -10,13 +10,13 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult, apiInfos, testVersion, Iinfos } from "./constant";
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult, apiInfos, testVersion } from "./constant";
 import { server } from "../../server/index";
 import { testsKeys as things_testsKeys } from "./routes.04_things.spec";
 import { testsKeys as datastreams_testsKeys } from "./routes.07_datastreams.spec";
 import { testsKeys as sensors_testsKeys } from "./routes.09_sensors.spec";
 import { count, executeQuery } from "./executeQuery";
-import { addGetTest, addStartNewTest } from "./tests";
+import { addStartNewTest, addTest, writeLog } from "./tests";
 
 chai.use(chaiHttp);
 
@@ -41,9 +41,14 @@ addToApiDoc({
    
 // http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#25
 describe("Odata", () => {
+	before((done) => {
+        addStartNewTest("Odatas");
+		done();
+	});
+    afterEach(() => { writeLog(true); });
 
     it("Retrieve a specific thing and $expand Datastreams. [9.3.2.1]", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Things(:id) Expand",
             url: `/${testVersion}/Things(6)?$expand=Datastreams`,
             apiName: "OdataExpand",
@@ -55,11 +60,10 @@ describe("Odata", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
-                addStartNewTest("Odatas");
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
@@ -70,13 +74,13 @@ describe("Odata", () => {
                 res.body["@iot.id"].should.eql(6);
                 res.body.Datastreams[0] = [res.body.Datastreams[0][0], res.body.Datastreams[0][1], "..."];
                 addToApiDoc({ ...infos, result: res });
-                addGetTest(infos);                    
+                                    
                     done();
             });
     });
 
     it("Retrieve a specific thing and $expand Datastreams and Sensor inside. [9.3.2.1]", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Things(:id) Expand sub Entity",
             url: `/${testVersion}/Things(6)?$expand=Datastreams/Sensor`,
             apiName: "OdataExpandSub",
@@ -87,7 +91,7 @@ describe("Odata", () => {
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") 
         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -104,13 +108,13 @@ describe("Odata", () => {
                 res.body.Datastreams[1].Sensor.should.include.keys(sensors_testsKeys);
                 res.body.Datastreams[0] = [res.body.Datastreams[0][0], res.body.Datastreams[0][1], "..."];
                 addToApiDoc({ ...infos, result: res });
-                addGetTest(infos);                    
+                                    
                     done();
             });
     });
 
     it("Return void MultiDatastreams list in expand with no datas [9.3.2.1]", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: `{get} things(:id) expand with empty result`,
             url: `/${testVersion}/Things(6)?$expand=MultiDatastreams`,
             apiName: `OdataExpandSubEmpty`,
@@ -122,7 +126,7 @@ describe("Odata", () => {
                 javascript: defaultGet("javascript", "KEYHTTP"),
                 python: defaultGet("python", "KEYHTTP") 
             }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -135,13 +139,13 @@ describe("Odata", () => {
                 res.body.should.include.keys("MultiDatastreams");
                 res.body.MultiDatastreams.length.should.eql(0);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);                    
+                                    
                     done();
             });
     });
 
     it("Return Datastreams with obvervation expand with filter result = 17.5 [9.3.2.1] & [9.3.2.2]", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: `{get} things(:id) expand with inner filter`,
             url: `/${testVersion}/Datastreams(2)?$expand=Observations($filter=result eq 240)`,
             apiName: `OdataExpandWithFilter`,
@@ -153,7 +157,7 @@ describe("Odata", () => {
                 javascript: defaultGet("javascript", "KEYHTTP"),
                 python: defaultGet("python", "KEYHTTP") 
             }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -167,13 +171,13 @@ describe("Odata", () => {
                 res.body.Observations.length.should.eql(1);
                 res.body.Observations[0]["@iot.id"].should.eql(29);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);                    
+                                    
                     done();
             });
     });
 
     it("Return Datastreams with obvervation expand complex SELECT [9.3.2.1] & [9.3.2.2]", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: `{get} things(:id) expand with inner select`,
             url: `/${testVersion}/Datastreams?$expand=Observations($select=phenomenonTime,result;$orderby=phenomenonTime desc;$top=10)`,
             apiName: `OdataExpandSelect`,
@@ -185,7 +189,7 @@ describe("Odata", () => {
                 javascript: defaultGet("javascript", "KEYHTTP"),
                 python: defaultGet("python", "KEYHTTP") 
             }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -199,13 +203,13 @@ describe("Odata", () => {
                 res.body.value[0].Observations.length.should.eql(10);
                 Object.keys(res.body.value[0].Observations[0]).length.should.eql(2);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);                    
+                                    
                     done();
             });
     });
 
     it("Retrieve description property for a specific Thing. [9.3.2.2]", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Things(:id) Select",
             url: `/${testVersion}/Things(1)?$select=description`,
             apiName: "OdataSelect",
@@ -215,7 +219,7 @@ describe("Odata", () => {
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -224,13 +228,13 @@ describe("Odata", () => {
                 res.type.should.equal("application/json");
                 res.body.should.include.keys("description");
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);                    
+                                    
                     done();
             });
     });
 
     it("Retrieve name and description properties from all Things. [9.3.2.2]", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Things(:id) Select multi",
             url: `/${testVersion}/Things?$select=name,description` ,
             apiName: "OdataSelectMulti",
@@ -240,7 +244,7 @@ describe("Odata", () => {
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") }
-        };
+        });
         executeQuery(count("thing")).then((result) => {
                 chai.request(server)
                     .get(`/test${infos.url}`)
@@ -252,14 +256,14 @@ describe("Odata", () => {
                         res.body.should.include.keys("@iot.count", "value");
                         res.body.value[0].should.include.keys("description", "name");
                         addToApiDoc({ ...infos, result: limitResult(res) });
-                        addGetTest(infos);                    
+                                            
                     done();
                     });
             });
     });
 
     it("Oata orderBy [9.3.3.1]", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Things OrderBy",
             url: `/${testVersion}/Things?$orderby=name desc` ,
             apiName: "OdataOrderBy",
@@ -269,7 +273,7 @@ describe("Odata", () => {
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") }
-        };
+        });
         executeQuery(count("thing")).then((result) => {
                 chai.request(server)
                     .get(`/test${infos.url}`)
@@ -281,14 +285,14 @@ describe("Odata", () => {
                         res.body.should.include.keys("@iot.count", "value");
                         res.body.value[0].should.include.keys("description", "name");
                         addToApiDoc({ ...infos, result: limitResult(res) });
-                        addGetTest(infos);                    
+                                            
                     done();
                     });
             });
     });
 
     it("Oata top [9.3.3.2]", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Observations Top",
             url: `/${testVersion}/Observations?$top=5` ,
             apiName: "OdataTop",
@@ -298,7 +302,7 @@ describe("Odata", () => {
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err, res) => {
@@ -308,13 +312,13 @@ describe("Odata", () => {
                 res.body.value.length.should.eql(5);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);                    
+                                    
                     done();
             });
     });
 
     it("Oata skip [9.3.3.3]", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Observations Skip",
             url: `/${testVersion}/Observations?$skip=500`,
             apiName: "OdataSkip",
@@ -324,7 +328,7 @@ describe("Odata", () => {
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") }
-        };
+        });
         executeQuery(count("observation")).then((result) => {
                 chai.request(server)
                     .get(`/test${infos.url}`)
@@ -335,14 +339,14 @@ describe("Odata", () => {
                         res.body.value.length.should.eql(result["count"] - 500);
                         res.body.should.include.keys("@iot.count", "value");
                         addToApiDoc({ ...infos, result: limitResult(res) });
-                        addGetTest(infos);                    
+                                            
                     done();
                     });
             });
     });
 
     it("Oata count [9.3.3.4]", (done) => {
-            const infos:Iinfos  = {
+            const infos = addTest({
                 api: "{get} Observations count",
                 url: `/${testVersion}/Observations?$skip=3&$top=2&$count=true`,
                 apiName: "OdataCountWithSkiTop",
@@ -352,8 +356,7 @@ describe("Odata", () => {
                 curl: defaultGet("curl", "KEYHTTP"),
                 javascript: defaultGet("javascript", "KEYHTTP"),
                 python: defaultGet("python", "KEYHTTP") }
-            };
-    
+            });    
             chai.request(server)
                 .get(`/test${infos.url}`)
                 .end((err, res) => {
@@ -364,41 +367,41 @@ describe("Odata", () => {
                     res.body.should.include.keys("@iot.count", "value");
                     res.body["@iot.count"].should.eql(530);
                     addToApiDoc({ ...infos, result: limitResult(res) });
-                    addGetTest(infos);                    
+                                        
                     done();
                 });
     });
 
     it("filter Datastreams whose unitOfMeasurement property name = 'Degrees Fahrenheit'.", (done) => {
-        const infos: Iinfos = {
+        const infos = addTest({
             api: "{Get} filter Datastreams whose unitOfMeasurement property name = 'Degrees Fahrenheit'",
             url: `/${testVersion}/Datastreams?$filter=unitOfMeasurement/name eq 'Degrees Fahrenheit'`,
             apiName: "",
             apiDescription: "",
             apiReference: ""
-        };
-                chai.request(server)
-                .get(`/test${infos.url}`)
-                .end((err, res) => {
-                should.not.exist(err);
-                res.status.should.equal(200);
-                res.type.should.equal("application/json");
-                res.body.value.length.should.eql(1);
-                res.body.should.include.keys("@iot.count", "value");
-                res.body.value[0]["@iot.id"].should.eql(12);
-                addGetTest(infos);                    
-                    done();
-            });
+        });
+        chai.request(server)
+        .get(`/test${infos.url}`)
+        .end((err, res) => {
+        should.not.exist(err);
+        res.status.should.equal(200);
+        res.type.should.equal("application/json");
+        res.body.value.length.should.eql(1);
+        res.body.should.include.keys("@iot.count", "value");
+        res.body.value[0]["@iot.id"].should.eql(12);
+                            
+            done();
+    });
     });
 
     it("filter name OR description of thing", (done) => {
-        const infos: Iinfos = {
+        const infos = addTest({
             api: "{Get} filter name OR description of thing",
             url: `/${testVersion}/Things?$filter=name eq 'Climatic chamber' or description eq 'A New SensorWeb thing'`,
             apiName: "",
             apiDescription: "",
             apiReference: ""
-        };
+        });
         chai.request(server)
         .get(`/test${infos.url}`)
         .end((err, res) => {
@@ -407,19 +410,19 @@ describe("Odata", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(2);
                 res.body.should.include.keys("@iot.count", "value");
-                addGetTest(infos);                    
+                                    
                     done();
             });
     });
 
     it("filter name AND description of thing", (done) => {
-        const infos: Iinfos = {
+        const infos = addTest({
             api: "{Get} filter name AND description of thing",
             url: `/${testVersion}/Things?$filter=name eq 'classic Thing' and description eq 'Description of classic Thing'`,
             apiName: "",
             apiDescription: "",
             apiReference: ""
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err, res) => {
@@ -428,19 +431,19 @@ describe("Odata", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body.should.include.keys("@iot.count", "value");
-                addGetTest(infos);                    
+                                    
                 done();
             });
     });
 
     it("filter name STARTWITH", (done) => {
-        const infos: Iinfos = {
+        const infos = addTest({
             api: "{Get} filter name STARTWITH",
             url: `/${testVersion}/Things?$filter=startswith(description,'A New')`,
             apiName: "",
             apiDescription: "",
             apiReference: ""
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err, res) => {
@@ -449,19 +452,19 @@ describe("Odata", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body.should.include.keys("@iot.count", "value");
-                addGetTest(infos);                    
+                                    
                     done();
             });
     });
 
     it("filter name CONTAINS", (done) => {
-        const infos: Iinfos = {
+        const infos = addTest({
             api: "{Get} filter name CONTAINS",
             url: `/${testVersion}/Things?$filter=contains(description,'chamber')`,
             apiName: "",
             apiDescription: "",
             apiReference: ""
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err, res) => {
@@ -470,19 +473,19 @@ describe("Odata", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body.should.include.keys("@iot.count", "value");
-                addGetTest(infos);                    
+                                    
                     done();
             });
     });
 
     it("filter date greater Than", (done) => {
-        const infos: Iinfos = {
+        const infos = addTest({
             api: "{Get} filter date greater Than",
             url: `/${testVersion}/Observations?$filter=phenomenonTime gt '2023-10-13'`,
             apiName: "",
             apiDescription: "",
             apiReference: ""
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err, res) => {
@@ -491,19 +494,19 @@ describe("Odata", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(5);
                 res.body.should.include.keys("@iot.count", "value");
-                addGetTest(infos);                    
+                                    
                     done();
             });
     });
 
     it("filter date eq", (done) => {
-        const infos: Iinfos = {
+        const infos = addTest({
             api: "{Get} filter date eq",
             url: `/${testVersion}/Observations?$filter=result eq '92' and resultTime eq '2017-02-13'`,
             apiName: "",
             apiDescription: "",
             apiReference: ""
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err, res) => {
@@ -514,13 +517,13 @@ describe("Odata", () => {
                 res.body.value[0]["@iot.id"].should.eql(532);
                 res.body.value[0]["result"].should.eql(92);
                 res.body.should.include.keys("@iot.count", "value");
-                addGetTest(infos);                    
+                                    
                     done();
             });
     });
 
     it("filter date interval", (done) => {        
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Thing filter date greater than and less than",
             url: `/${testVersion}/Observations?$filter=phenomenonTime gt '2021-01-01' and phenomenonTime lt '2021-10-16'`,
             apiName: "OdataFilterDateGtAndLt",
@@ -530,8 +533,7 @@ describe("Odata", () => {
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") }
-        };
-
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err, res) => {
@@ -541,7 +543,7 @@ describe("Odata", () => {
                 res.body.value.length.should.eql(1);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);                    
+                                    
                     done();
             });
     });

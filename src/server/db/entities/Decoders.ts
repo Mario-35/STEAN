@@ -18,7 +18,7 @@ export class Decoders extends Common {
     console.log(formatLog.whereIam());
     super(ctx);
   }
-
+  // Override get all decoders to be able to search by deveui instead of id only
   async getAll(): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     if (this.ctx.odata.payload) {
@@ -39,7 +39,7 @@ export class Decoders extends Common {
       return this.createReturnResult({ body: result });
     } else return await super.getAll();
   }
-
+  // Override get one decoders to be able to search by deveui instead of id only
   async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     if (this.ctx.odata.payload) {

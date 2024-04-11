@@ -10,9 +10,9 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult, apiInfos, testVersion, Iinfos } from "./constant";
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult, apiInfos, testVersion } from "./constant";
 import { server } from "../../server/index";
-import { addGetTest, addStartNewTest } from "./tests";
+import { addStartNewTest, addTest, writeLog } from "./tests";
 chai.use(chaiHttp);
 
 const should = chai.should();
@@ -33,8 +33,14 @@ addToApiDoc({
    
 // http://docs.opengeospatial.org/is/15-078r6/15-078r6.html#25
 describe("Odata Built In Operators [9.3.3.5.1]", () => {
+    before((done) => {
+        addStartNewTest("Built in filter");
+		done();
+	});
+	afterEach(() => { writeLog(true); });
+
     it("Odata Built-in operator eq", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Observations eq",
             url: `/${testVersion}/Observations?$filter=result eq 310`,
             apiName: "BuiltInOperatorsEq",
@@ -44,18 +50,17 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP")}
-        };
+        });
         chai.request(server)
         .get(`/test${infos.url}`)
         .end((err, res) => {
-                addStartNewTest("Built in filter");
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(5);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
@@ -70,14 +75,14 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     //             res.type.should.equal("application/json");
     //             res.body.value.length.should.eql(3);
     //             res.body.should.include.keys("@iot.count", "value");
-    //             addGetTest(infos);
+    //             
     //            done();
     //         });
     // });
 
 
     it("Odata Built-in operator ne", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Observations ne",
             url: `/${testVersion}/Observations?$filter=result ne 45` ,
             apiName: "BuiltInOperatorsNe",
@@ -87,7 +92,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err, res) => {
@@ -97,13 +102,13 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
                 res.body.value.length.should.eql(530);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it("Odata Built-in operator gt", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Observations gt",
             url: `/${testVersion}/Observations?$filter=result gt 45`,
             apiName: "BuiltInOperatorsGt",
@@ -113,7 +118,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err, res) => {
@@ -123,19 +128,19 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
                 res.body.value.length.should.eql(335);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it("Odata Built-in operator gt AND lt", (done) => {
-        const infos: Iinfos = {
+        const infos = addTest({
             api: `{get} Odata Built-in operator gt AND lt`,
             url: `/${testVersion}/Observations?$filter=result gt 20 and result lt 22`,
             apiName: "",
             apiDescription: "",
             apiReference: ""
-        };
+        });
         chai.request(server)
         .get(`/test${infos.url}`)
             .end((err, res) => {
@@ -144,13 +149,13 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(142);
                 res.body.should.include.keys("@iot.count", "value");
-                addGetTest(infos);
+                
                 done();
             });
     });  
    
     it("Odata Built-in operator ge", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Observations ge",
             url: `/${testVersion}/Observations?$filter=result ge 45`,
             apiName: "BuiltInOperatorsGe",
@@ -160,7 +165,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err, res) => {
@@ -170,13 +175,13 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
                 res.body.value.length.should.eql(335);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     }); 
 
     it("Odata Built-in operator lt", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Observations lt",
             url: `/${testVersion}/Observations?$filter=result lt 45`,
             apiName: "BuiltInOperatorsLt",
@@ -186,7 +191,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err, res) => {
@@ -196,13 +201,13 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
                 res.body.value.length.should.eql(207);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it("Odata Built-in operator le", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Observations le",
             url: `/${testVersion}/Observations?$filter=result le 45`,
             apiName: "BuiltInOperatorsLe",
@@ -212,7 +217,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err, res) => {
@@ -222,13 +227,13 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
                 res.body.value.length.should.eql(207);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it("Odata Built-in operator and", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Thing and",
             url: `/${testVersion}/Things?$filter=name eq 'classic Thing' and description eq 'Description of classic Thing'`,
             apiName: "BuiltInOperatorsAnd",
@@ -238,7 +243,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") }
-        };
+        });
 
         chai.request(server)
             .get(`/test${infos.url}`)
@@ -249,13 +254,13 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
                 res.body.value.length.should.eql(1);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it("Odata Built-in operator or", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Thing or",
             url: `/${testVersion}/Things?$filter=name eq 'classic Thing' or description eq 'Description of Hack $debug=true Thing'`,
             apiName: "BuiltInOperatorsOr",
@@ -265,7 +270,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             curl: defaultGet("curl", "KEYHTTP"),
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") }
-        };
+        });
 
         chai.request(server)
             .get(`/test${infos.url}`)
@@ -276,13 +281,13 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
                 res.body.value.length.should.eql(1);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     // it("filter name of thing", (done) => {
-    //     const infos:Iinfos  = {
+    //     const infos = addTest({
     //         api: "{get} Thing filter",
     //         apiName: "BuiltInOperatorsFilter",
     //         apiDescription: "Use simple filter",
@@ -303,13 +308,13 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     //             res.body.value.length.should.eql(1);
     //             res.body.should.include.keys("@iot.count", "value");
     //             addToApiDoc({ ...infos, result: limitResult(res) });
-    //             addGetTest(infos);
+    //             
     //            done();
     //         });
     // });
 
     // it("filter Observations whose Datastream’s id is 1.", (done) => {
-    //     const infos:Iinfos  = {
+    //     const infos = addTest({
     //         api: "{get} Observations filter Datastream id 1",
     //         apiName: "BuiltInOperatorsFilterRelation",
     //         apiDescription: "Use filter with relation",
@@ -330,13 +335,13 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     //             res.body.value.length.should.eql(2);
     //             res.body.should.include.keys("@iot.count", "value");
     //             addToApiDoc({ ...infos, result: limitResult(res) });
-    //             addGetTest(infos);
+    //             
      //           done();
     //         });
     // });
 
     // it("filter Datastreams whose unitOfMeasurement property name = 'Degrees Fahrenheit'.", (done) => {
-    //     const infos:Iinfos  = {
+    //     const infos = addTest({
     //         api: "{get} Thing filter",
     //         apiName: "BuiltInOperatorsFilterPropertyJson",
     //         apiDescription: "Use filter on json property",
@@ -358,13 +363,13 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     //             res.body.should.include.keys("@iot.count", "value");
     //             res.body.value[0]["@iot.id"].should.eql(10);
     //             addToApiDoc({ ...infos, result: limitResult(res) });
-    //             addGetTest(infos);
+    //             
     //            done();
     //         });
     // });
 
     // it("filter name STARTWITH", (done) => {
-    //     const infos:Iinfos  = {
+    //     const infos = addTest({
     //         api: "{get} Thing filter startWith",
     //         apiName: "BuiltInOperatorsFilterStartWith",
     //         apiDescription: "Use filter startswith",
@@ -385,13 +390,13 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     //             res.body.value.length.should.eql(1);
     //             res.body.should.include.keys("@iot.count", "value");
     //             addToApiDoc({ ...infos, result: limitResult(res) });
-    //             addGetTest(infos);
+    //             
     //            done();
     //         });
     // });
 
     // it("filter name CONTAINS", (done) => {
-    //     const infos:Iinfos  = {
+    //     const infos = addTest({
     //         api: "{get} Thing filter contains",
     //         apiName: "BuiltInOperatorsFilterContains",
     //         apiDescription: "Use filter contains",
@@ -412,13 +417,13 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     //             res.body.value.length.should.eql(2);
     //             res.body.should.include.keys("@iot.count", "value");
     //             addToApiDoc({ ...infos, result: limitResult(res) });
-    //             addGetTest(infos);
+    //             
     //            done();
     //         });
     // });
 
     // it("filter date greater Than", (done) => {
-    //     const infos:Iinfos  = {
+    //     const infos = addTest({
     //         api: "{get} Thing filter date greater than",
     //         apiName: "BuiltInOperatorsFilterDateGt",
     //         apiDescription: "Use filter gt with date",
@@ -439,13 +444,13 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     //             res.body.value.length.should.eql(2);
     //             res.body.should.include.keys("@iot.count", "value");
     //             addToApiDoc({ ...infos, result: limitResult(res) });
-    //             addGetTest(infos);
+    //             
     //            done();
     //         });
     // });
 
     // it("filter date eq", (done) => {
-    //     const infos:Iinfos  = {
+    //     const infos = addTest({
     //         api: "{get} Thing filter date equal (1 day)",
     //         apiName: "BuiltInOperatorsFilterDateEq",
     //         apiDescription: "Use filter eq with date",
@@ -469,13 +474,13 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     //             res.body.value[0]["resultTime"].should.contains("2017-02-13");
     //             res.body.should.include.keys("@iot.count", "value");
     //             addToApiDoc({ ...infos, result: limitResult(res) });
-    //             addGetTest(infos);
+    //             
      //           done();
     //         });
     // });
 
     // it("filter date interval", (done) => {
-    //     const infos:Iinfos  = {
+    //     const infos = addTest({
     //         api: "{get} Thing filter date greater than and less than",
     //         apiName: "BuiltInOperatorsFilterDateGtAndLt",
     //         apiDescription: "Use filter gt with date",
@@ -496,7 +501,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     //             res.body.value.length.should.eql(1);
     //             res.body.should.include.keys("@iot.count", "value");
     //             addToApiDoc({ ...infos, result: limitResult(res) });
-    //             addGetTest(infos);
+    //             
     //            done();
     //         });
     // });

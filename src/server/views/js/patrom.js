@@ -627,7 +627,7 @@ var multiSelects = {};
 	};
 
 	SimulateClickEventListener(event) {
-		console.log(event);
+		
 	}
 
 	/**

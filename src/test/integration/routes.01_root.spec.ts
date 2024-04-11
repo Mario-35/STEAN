@@ -4,14 +4,14 @@ import chai from "chai";
 import chaiHttp from "chai-http";
 import fs from "fs";
 import path from "path";
-import { IApiDoc, prepareToApiDoc, generateApiDoc, IApiInput, apiInfos, blank, testVersion, Iinfos } from "./constant";
+import { IApiDoc, prepareToApiDoc, generateApiDoc, IApiInput, apiInfos, blank, testVersion } from "./constant";
 
 chai.use(chaiHttp);
 
 const should = chai.should();
 
 import { server } from "../../server/index";
-import { addGetTest, addStartNewTest } from "./tests";
+import { addStartNewTest, addTest, writeLog } from "./tests";
 
 const docs: IApiDoc[] = [];
 
@@ -53,9 +53,10 @@ addToApiDoc({
 
 describe("endpoint : index", () => {
     describe(`GET /${testVersion}/ [9.2.1]`, () => {
-
+        afterEach(() => { writeLog(true); });
         it("should inform on result", (done) => {
-            const infos:Iinfos  = {
+            addStartNewTest("Root");
+            const infos = addTest({
                 api: "{get} resource result",
                 url: `/${testVersion}/`,
                 apiName: "resultSensorThings",
@@ -75,12 +76,10 @@ describe("endpoint : index", () => {
                     "{relation} Loras Get all loras.",
                     "{relation} Decoders Get all decoders."
                 ]
-            };
-
+            });
             chai.request(server)
                 .get(`/test${infos.url}`)
                 .end((err, res) => {
-                    addStartNewTest("Root");
                     should.not.exist(err);
                     res.status.should.eql(200);
                     res.type.should.eql("application/json");
@@ -97,7 +96,6 @@ describe("endpoint : index", () => {
                     res.body.value[10].url.should.contain("/Decoders");
                     docs.push(prepareToApiDoc({ ...infos, result: res }, "SensorThings"));
                     generateApiDoc(docs, "apiSensorThings.js");
-                    addGetTest(infos);
                     done();
                 });
         });

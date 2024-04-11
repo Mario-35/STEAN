@@ -10,10 +10,10 @@
 
  import chai from "chai";
  import chaiHttp from "chai-http";
- import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, identification, keyTokenName, defaultPost, limitResult, apiInfos, showHide, nbColor, nbColorTitle, testVersion, _RAWDB, Iinfos, defaultGet } from "./constant";
+ import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, identification, keyTokenName, defaultPost, limitResult, apiInfos, showHide, nbColor, nbColorTitle, testVersion, _RAWDB, defaultGet } from "./constant";
  import { server } from "../../server/index";
  import { Ientity } from "../../server/types";
-import { addGetTest, addPostTest, addStartNewTest } from "./tests";
+import { addStartNewTest, addTest, writeLog } from "./tests";
  
  const testsKeys = [
      "@iot.id",
@@ -50,8 +50,9 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
  describe("endpoint : Lora", () => {
      const success: string[] = [];
      let token = "";
- 
+     
      before((done) => {         
+         addStartNewTest(entity.name);
          chai.request(server)
              .post(`/test/${testVersion}/login`)
              .send(identification)
@@ -62,8 +63,10 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
      });
  
      describe(`{get} ${entity.name} ${nbColorTitle}[9.2]`, () => {
+		afterEach(() => { writeLog(true); });
+
 		it(`Return all ${entity.name} ${nbColor}[9.2.2]`, (done) => {
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{get} ${entity.name} Get all`,
 				url: `/${testVersion}/${entity.name}`,
 				apiName: `GetAll${entity.name}`,
@@ -76,12 +79,10 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
 					python: defaultGet("python", "KEYHTTP")
 				},
 				apiSuccess: ["{number} id @iot.id", "{relation} selfLink @iot.selfLink", ...success]
-			};
-
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err, res) => {
-					addStartNewTest(entity.name);
 					should.not.exist(err);
 					res.status.should.equal(200);
 					res.type.should.equal("application/json");
@@ -93,13 +94,13 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
 						"code": 404,
 						"message": "Not Found"
 					}, null, 4);
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
 		it(`Return ${entity.name} id: 1 ${nbColor}[9.2.3]`, (done) => {
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{get} ${entity.name}(:id) Get one`,
 				url: `/${testVersion}/${entity.name}(1)`,
 				apiName: `GetOne${entity.name}`,
@@ -111,7 +112,7 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
 					javascript: defaultGet("javascript", "KEYHTTP"),
 					python: defaultGet("python", "KEYHTTP")
 				}
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err: Error, res: any) => {
@@ -128,13 +129,13 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
 						...infos,
 						result: res
 					});
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
 		it(`Return ${entity.name} deveui: 2CF7F1202520017E`, (done) => {
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{get} ${entity.name}(:deveui) Get one`,
 				url: `/${testVersion}/${entity.name}(2CF7F1202520017E)`,
 				apiName: `GetOne${entity.name}`,
@@ -146,7 +147,7 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
 					javascript: defaultGet("javascript", "KEYHTTP"),
 					python: defaultGet("python", "KEYHTTP")
 				}
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err: Error, res: any) => {
@@ -163,19 +164,19 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
 						...infos,
 						result: res
 					});
-					addGetTest(infos);
+					
 					done();
 				});
 		});
  
          it(`Return error if ${entity.name} not exist ${nbColor}[9.2.4]`, (done) => {
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `Return error if ${entity.name} not exist`,
 				url: `/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err, res) => {
@@ -183,20 +184,20 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
 					res.status.should.equal(404);
 					res.type.should.equal("application/json");
 					docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4).replace(Number.MAX_SAFE_INTEGER.toString(), "1");
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
         it(`Return ${entity.name} Subentity Datastream ${nbColor}[9.2.6]`, (done) => {
             const name = "Datastream";
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{get} ${entity.name}(:id) Get Subentity ${name}`,
 				url: `/${testVersion}/${entity.name}(5)/${name}`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err: Error, res: any) => {
@@ -210,20 +211,20 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
 					res.body.value[0]["ObservedProperty@iot.navigationLink"].should.contain(`/${name}s(${id})/ObservedProperty`);
 					res.body.value[0]["Observations@iot.navigationLink"].should.contain(`/${name}s(${id})/Observations`);
 					res.body.value[0]["Lora@iot.navigationLink"].should.contain(`/${name}s(${id})/Lora`);
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
         it(`Return ${entity.name} Subentity MultiDatastream ${nbColor}[9.2.6]`, (done) => {
             const name = "MultiDatastream";
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{get} ${entity.name}(:id) Get Subentity ${name}`,
 				url: `/${testVersion}/${entity.name}(4)/${name}`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err: Error, res: any) => {
@@ -237,20 +238,20 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
 					res.body.value[0]["ObservedProperties@iot.navigationLink"].should.contain(`/${name}s(${id})/ObservedProperties`);
 					res.body.value[0]["Observations@iot.navigationLink"].should.contain(`/${name}s(${id})/Observations`);
 					res.body.value[0]["Lora@iot.navigationLink"].should.contain(`/${name}s(${id})/Lora`);
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
         it(`Return ${entity.name} Subentity Decoder ${nbColor}[9.2.6]`, (done) => {
             const name = "Decoder";
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{get} ${entity.name}(:id) Get Subentity ${name}`,
 				url: `/${testVersion}/${entity.name}(4)/${name}`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err: Error, res: any) => {
@@ -260,20 +261,20 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
 					const id = Number(res.body.value[0]["@iot.id"]);
 					res.body.value[0]["@iot.selfLink"].should.contain(`${name}s(${id})`);
 					res.body.value[0]["Loras@iot.navigationLink"].should.contain(`${name}s(${id})/Loras`);
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
 		it(`Return ${entity.name} Expand Datastream ${nbColor}[9.3.2.1]`, (done) => {
 			const name = "Datastream";
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{get} return ${entity.name} Expand ${name}`,
 				url: `/${testVersion}/${entity.name}(5)?$expand=${name}`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err: Error, res: any) => {
@@ -286,20 +287,20 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
 					res.body[name]["ObservedProperty@iot.navigationLink"].should.contain(`/${name}s(${id})/ObservedProperty`);
 					res.body[name]["Observations@iot.navigationLink"].should.contain(`/${name}s(${id})/Observations`);
 					res.body[name]["Lora@iot.navigationLink"].should.contain(`/${name}s(${id})/Lora`);
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
         it(`Return ${entity.name} Expand MultiDatastream ${nbColor}[9.3.2.1]`, (done) => {
 			const name = "MultiDatastream";
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{get} return ${entity.name} Expand ${name}`,
 				url: `/${testVersion}/${entity.name}(4)?$expand=${name}`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err: Error, res: any) => {
@@ -314,20 +315,20 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
 					res.body[name]["Observations@iot.navigationLink"].should.contain(`/${name}s(${id})/Observations`);
 
                     
-					addGetTest(infos);
+					
 					done();
 				});
 		});
         
         it(`Return ${entity.name} Expand Decoder ${nbColor}[9.3.2.1]`, (done) => {
 			const name = "Decoder";
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{get} return ${entity.name} Expand ${name}`,
 				url: `/${testVersion}/${entity.name}(4)?$expand=${name}`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err: Error, res: any) => {
@@ -337,7 +338,7 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
 					const id = res.body[name]["@iot.id"];
 					res.body[name]["@iot.selfLink"].should.contain(`${name}s(${id})`);
 					res.body[name]["Loras@iot.navigationLink"].should.contain(`/${name}s(${id})/Loras`);
-					addGetTest(infos);
+					
 					done();
 				});
 		});      
@@ -345,6 +346,8 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
      });
  
      describe(`{post} ${entity.name} ${nbColorTitle}[10.2]`, () => {
+        afterEach(() => { writeLog(true); });
+
          it("should return the Lora Affected multi that was added", (done) => {
              const datas = {
                  "MultiDatastream": {
@@ -357,7 +360,7 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                  "description": "My new Lora Description",
                  "deveui": "8cf9574000009L8C"
              };
-             const infos:Iinfos  = {
+             const infos = addTest({
                  api: `{post} ${entity.name} Post MultiDatastream basic`,
                  url: `/${testVersion}/${entity.name}`,
                  apiName: `Post${entity.name}MultiDatastream`,
@@ -368,8 +371,8 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                      python: defaultPost("python", "KEYHTTP", datas)
                  },
                  apiParamExample: datas
-             };
-             chai.request(server)
+             });
+        chai.request(server)
                  .post(`/test/${infos.url}`)
                  .send(infos.apiParamExample)
                  .set("Cookie", `${keyTokenName}=${token}`)
@@ -379,7 +382,6 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                      res.type.should.equal("application/json");
                      res.body.should.include.keys(testsKeys);
                      addToApiDoc({ ...infos, result: limitResult(res) });
-					addPostTest(infos, datas);
                     done();
                  });
          });
@@ -396,7 +398,7 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                  "description": "My new Lora Description",
                  "deveui": "70b3d5e75e014f026"
              };
-             const infos:Iinfos  = {
+             const infos = addTest({
                  api: `{post} ${entity.name} Post Datastream basic`,
                  url: `/${testVersion}/${entity.name}`,
                  apiName: `Post${entity.name}Datastream`,
@@ -407,8 +409,8 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                      python: defaultPost("python", "KEYHTTP", datas)
                  },
                  apiParamExample: datas
-             };
-             chai.request(server)
+             });
+        chai.request(server)
                  .post(`/test/${infos.url}`)
                  .send(infos.apiParamExample)
                  .set("Cookie", `${keyTokenName}=${token}`)
@@ -418,7 +420,6 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                      res.type.should.equal("application/json");
                      res.body.should.include.keys(testsKeys);
                      addToApiDoc({ ...infos, result: limitResult(res) });
-					addPostTest(infos, datas);
                     done();
                  });
          });
@@ -435,14 +436,14 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                 "description": "My new Lora Description",
                 "deveui": "70b3d5e75e014f06"
             };
-            const infos:Iinfos  = {
+            const infos = addTest({
                 api : `{post} return Error if the payload is malformed`,
                 url : `/${testVersion}/${entity.name}`,
                 apiName: "",
                 apiDescription: "",
                 apiReference: ""
-            };
-             chai.request(server)
+            });
+        chai.request(server)
              .post(`/test${infos.url}`)
                  .send(datas)
                  .set("Cookie", `${keyTokenName}=${token}`)
@@ -450,7 +451,6 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                      should.not.exist(err);
                      res.status.should.equal(404);
                      res.body["detail"].should.contain('exist no datastream ID --> 155');
-					addPostTest(infos, datas);
                     done();
                  });
          });
@@ -462,7 +462,7 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                  "payload_ciphered": null,
                  "frame": "010610324200000107103E4900009808"
              };
-             const infos:Iinfos  = {
+             const infos = addTest({
                  api: `{post} ${entity.name} Post observation basic`,
                  url: `/${testVersion}/${entity.name}`,
                  apiName: `Post${entity.name}Observation`,
@@ -474,8 +474,8 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                      python: defaultPost("python", "KEYHTTP", datas)
                  },
                  apiParamExample: datas
-             };
-             chai.request(server)
+             });
+        chai.request(server)
                  .post(`/test/${infos.url}`)
                  .send(infos.apiParamExample)
                  .set("Cookie", `${keyTokenName}=${token}`)
@@ -487,7 +487,6 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                      res.body["result"][0].should.eql(18.75);
                      res.body["result"][1].should.eql(16.946);
                      addToApiDoc({ ...infos, result: limitResult(res) });
-					addPostTest(infos, datas);
                     done();
                  });
          });
@@ -499,7 +498,7 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                 "payload_ciphered": null,
                 "frame": "AA010610324200000107103E4900009808"
             };
-            const infos:Iinfos  = {
+            const infos = addTest({
                 api: `{post} ${entity.name} Post observation payload basic`,
                 url: `/${testVersion}/${entity.name}`,
                 apiName: `Post${entity.name}ObservationError`,
@@ -511,7 +510,7 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                     python: defaultPost("python", "KEYHTTP", datas)
                 },
                 apiParamExample: datas
-            };
+            });
             chai.request(server)
                 .post(`/test/${infos.url}`)
                 .send(infos.apiParamExample)
@@ -520,7 +519,6 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                     should.not.exist(err);
                     res.status.should.equal(400);
                     res.type.should.equal("application/json");
-                    addPostTest(infos, datas);
                     done();
                 });
         });
@@ -532,7 +530,7 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                 "payload_ciphered": null,
                 "frame": "AA010610324200000107103E4900009808"
             };
-            const infos:Iinfos  = {
+            const infos = addTest({
                 api: `{post} ${entity.name} Post basic`,
                 url: `/${testVersion}/${entity.name}`,
                 apiName: `Post${entity.name}InvalidPayload`,
@@ -544,7 +542,7 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                     python: defaultPost("python", "KEYHTTP", datas)
                 },
                 apiParamExample: datas
-            };
+            });
             chai.request(server)
                 .post(`/test/${infos.url}`)
                 .send(infos.apiParamExample)
@@ -554,19 +552,18 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                     res.status.should.equal(400);
                     res.type.should.equal("application/json");
                     res.body["detail"].should.eql('Invalid Payload');
-					addPostTest(infos, datas);
                     done();
                 });
         });
 
         it(`Return Error if the payload is malformed ${nbColor}[10.2.2]`, (done) => {
-            const infos:Iinfos  = {
+            const infos = addTest({
                 api : `{post} return Error if the payload is malformed`,
                 url : `/${testVersion}/${entity.name}`,
                 apiName: "",
                 apiDescription: "",
                 apiReference: ""
-            };
+            });
             chai.request(server)
                 .post(`/test${infos.url}`)
                 .send({})
@@ -576,7 +573,6 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                     res.status.should.equal(400);
                     res.type.should.equal("application/json");
                     docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);
-                    addPostTest(infos, {});
                     done();
                 });
         });
@@ -589,7 +585,7 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                 "payload_ciphered": null,
                 "frame": "010610324200000107103E4900009808"
             };
-             const infos:Iinfos  = {
+             const infos = addTest({
                  api: `{post} ${entity.name} Post Duplicate`,
                  url: `/${testVersion}/${entity.name}`,
                  apiName: `Post${entity.name}Duplicate`,
@@ -601,8 +597,8 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                      python: defaultPost("python", "KEYHTTP", datas)
                  },
                  apiParamExample: datas
-             };
-             chai.request(server)
+             });
+        chai.request(server)
                  .post(`/test/${infos.url}`)
                  .send(infos.apiParamExample)
                  .set("Cookie", `${keyTokenName}=${token}`)
@@ -611,7 +607,6 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                      res.status.should.equal(409);
                      res.type.should.equal("application/json");
                      res.body["detail"].should.eql("Observation already exist");
-					addPostTest(infos, datas);
                     done();
                  });
          });
@@ -627,7 +622,7 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                 "timestamp": "2021-10-15T14:53:44+02:00",
                 "payload_ciphered": null
               };
-             const infos:Iinfos  = {
+             const infos = addTest({
                  api: `{post} ${entity.name} Post Sort`,
                  url: `/${testVersion}/${entity.name}`,
                  apiName: `Post${entity.name}Sort`,
@@ -640,8 +635,8 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                  },
                  // apiParam: params,
                  apiParamExample: datas
-             };
-             chai.request(server)
+             });
+        chai.request(server)
                  .post(`/test/${infos.url}`)
                  .send(infos.apiParamExample)
                  .set("Cookie", `${keyTokenName}=${token}`)
@@ -653,7 +648,6 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                      res.body["result"][0].should.eql(100);
                      res.body["result"][1].should.eql(25);
                      addToApiDoc({ ...infos, result: limitResult(res) });
-					addPostTest(infos, datas);
                     done();
                  });
          });
@@ -667,7 +661,7 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                  "payload_ciphered": null,
                  "payload_deciphered": ""
              };
-             const infos:Iinfos  = {
+             const infos = addTest({
                  api: `{post} ${entity.name} Post Data Null`,
                  url: `/${testVersion}/${entity.name}`,
                  apiName: `Post${entity.name}Null`,
@@ -680,8 +674,8 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                  },
                  // apiParam: params,
                  apiParamExample: datas
-             };
-             chai.request(server)
+             });
+        chai.request(server)
                  .post(`/test/${infos.url}`)
                  .send(infos.apiParamExample)
                  .set("Cookie", `${keyTokenName}=${token}`)
@@ -690,7 +684,6 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                      res.status.should.equal(400);
                      res.type.should.equal("application/json");
                      res.body["detail"].should.eql("Data is missing or Null");
-					addPostTest(infos, datas);
                     done();
                  });
          });
@@ -708,7 +701,7 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                  "payload_ciphered": null,
                  "payload_deciphered": ""
              };
-             const infos:Iinfos  = {
+             const infos = addTest({
                  api: `{post} ${entity.name} Post Data Nots`,
                  url: `/${testVersion}/${entity.name}`,
                  apiName: `Post${entity.name}DataNotCorrespond`,
@@ -720,8 +713,8 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                      python: defaultPost("python", "KEYHTTP", datas)
                  },
                  apiParamExample: datas
-             };
-             chai.request(server)
+             });
+        chai.request(server)
                  .post(`/test/${infos.url}`)
                  .send(infos.apiParamExample)
                  .set("Cookie", `${keyTokenName}=${token}`)
@@ -731,7 +724,6 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
                      res.type.should.equal("application/json");
                      res.body["detail"].should.include("Data not corresponding");
                      generateApiDoc(docs, `apiDoc${entity.name}.js`);
-                     addPostTest(infos, datas);
                      done();
                  });
          });
@@ -746,7 +738,7 @@ import { addGetTest, addPostTest, addStartNewTest } from "./tests";
      //                 const myId = thingObject.deveui;
  
      //                 const lengthBeforeDelete = items.length;
-     //                 const infos:Iinfos  = {
+     //                 const infos = addTest({
      //                     api: `{delete} ${entity.name} Delete one`,
      //                     apiName: `Delete${entity.name}`,
      //                     apiDescription: "Delete an Lora Observation.",

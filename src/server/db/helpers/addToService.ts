@@ -8,39 +8,26 @@
 
 import koa from "koa";
 import { _NOTOK, _OK } from "../../constants";
-import { Eentities } from "../../enums";
 import { addDoubleQuotes, asyncForEach } from "../../helpers";
 import { formatLog } from "../../logger";
 import { models } from "../../models";
 import { createInsertValues } from "../../models/helpers";
-import { blankPgVisitor } from "../../odata/visitor/helper";
+import { blankRootPgVisitor } from "../../odata/visitor/helper";
 import { Ilog } from "../../types";
 import { apiAccess } from "../dataAccess";
 import { executeSqlValues } from "./executeSqlValues";
-
-
-export const prepareDatas = (dataInput: object, entity: string): object => {
-  if (entity === Eentities.Observations) {
-    if (!dataInput["resultTime"] && dataInput["phenomenonTime"] ) dataInput["resultTime"]  = dataInput["phenomenonTime"] 
-    if (!dataInput["phenomenonTime"] && dataInput["resultTime"] ) dataInput["phenomenonTime"]  = dataInput["resultTime"] 
-  }
-  return dataInput;
-}
 
 export const addToService = async (ctx: koa.Context, dataInput: object): Promise<object> => {
   console.log(formatLog.whereIam());
   // setDebug(true);
   const results = {};    
-  const temp = blankPgVisitor(ctx, ctx.model.Loras);
+  const temp = blankRootPgVisitor(ctx, ctx.model.Loras);
   if (temp) {
     ctx.odata = temp;
     const objectAccess = new apiAccess(ctx);
-    await asyncForEach(dataInput["value"],  async (line: object) => {    
-      // console.log(line);
-      if(line["payload"] != "000000000000000000")  
+    await asyncForEach(dataInput["value"],  async (line: object) => {
+      if (line["payload"] != "000000000000000000")  
       try {
-
-
         const datas = line["value"] 
         ? {
           "timestamp": line["phenomenonTime"], 

@@ -6,10 +6,7 @@
  *
  */
 
-import postgres from "postgres";
-import { serverConfig } from "../configuration";
 import { Eentities, Esecurity } from "../enums";
-import { IconfigFile } from "./configFile";
 import { Ientity } from "./entity";
 export { Icomon } from "./comon";
 export { IconfigFile } from "./configFile";
@@ -20,6 +17,7 @@ export { IdbConnection } from "./dbConnection";
 export { Ientity } from "./entity";
 export { IentityColumn } from "./entityColumn";
 export { IentityRelation } from "./entityRelation";
+export { Ifield } from "./field";
 export { Ilog } from "./log";
 export { ILoraDecoder } from "./loraDecoder";
 export { IodataContext } from "./odataContext";
@@ -37,4 +35,3 @@ export interface IKeyBoolean { [key: string]: boolean; }
 export interface IKeyString { [key: string]: string; }
 export type Ientities = { [key in Eentities]: Ientity }
 export type Isecurity = { [key in Esecurity]: Ientity }
-export const Sql = (input: string | IconfigFile):postgres.Sql<Record<string, unknown>> =>  serverConfig.connection(typeof input === "string" ? input : input.name);

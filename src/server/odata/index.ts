@@ -11,12 +11,12 @@ import { Token } from "./parser/lexer";
 import koa from "koa";
 import { cleanUrl, returnFormats } from "../helpers";
 import { serverConfig } from "../configuration";
-import { PgVisitor } from "./visitor/PgVisitor";
 import { SqlOptions } from "./parser/sqlOptions";
 import { multiDatastreamKeys } from "../db/queries";
-export { PgVisitor } from "./visitor/PgVisitor";
+import { setDebug } from "../constants";
+import { RootPgVisitor } from "./visitor";
 
-const doSomeWarkAfterCreateAst = async (input: PgVisitor, ctx: koa.Context) => {
+const doSomeWarkAfterCreateAst = async (input: RootPgVisitor, ctx: koa.Context) => {
   if (
     (input.resultFormat === returnFormats.csv && input.entity === "Observations" &&  input.parentEntity?.endsWith('atastreams') && input.parentId && <bigint>input.parentId > 0) ||
     (input.splitResult && input.splitResult[0].toUpperCase() == "ALL" && input.parentId && <bigint>input.parentId > 0) ) {
@@ -38,10 +38,10 @@ const escapesOdata = (input: string) : string => {
   return input;
 };
 
-export const createOdata = async (ctx: koa.Context): Promise<PgVisitor | undefined> => {
+export const createOdata = async (ctx: koa.Context): Promise<RootPgVisitor | undefined> => {
   // blank url if not defined
   // init Ressource wich have to be tested first
-
+setDebug(false);
   const options: SqlOptions = {
     onlyValue: false,
     onlyRef: false,
@@ -98,7 +98,7 @@ export const createOdata = async (ctx: koa.Context): Promise<PgVisitor | undefin
 
   const astQuery: Token = <Token>query(decodeURIComponent(urlSrcSplit[1]));
 
-  const temp = new PgVisitor(ctx, options)
+  const temp = new RootPgVisitor(ctx, options)
     .init(astRessources)
     .start(astQuery);
 

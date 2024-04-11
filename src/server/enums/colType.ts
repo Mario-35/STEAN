@@ -7,6 +7,7 @@
  */
 
 export enum EcolType { 
+    Null,
     Column,
     Relation,
     Table

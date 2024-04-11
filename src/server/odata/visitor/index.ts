@@ -6,37 +6,30 @@
  *
  */
 
-import { addDoubleQuotes, addSimpleQuotes, isGraph, isNull, isObservation, isTest, removeAllQuotes, returnFormats } from "../../helpers";
-import { IodataContext, IKeyString, IreturnFormat, Ientity, IKeyBoolean, IpgQuery } from "../../types";
+import { addDoubleQuotes, addSimpleQuotes, isGraph, isObservation, isTest, removeAllQuotes, returnFormats } from "../../helpers";
+import { IodataContext, IKeyString, Ientity, IKeyBoolean, IpgQuery } from "../../types";
 import { Token } from "../parser/lexer";
 import { Literal } from "../parser/literal";
 import { SQLLiteral } from "../parser/sqlLiteral";
 import { SqlOptions } from "../parser/sqlOptions";
 import koa from "koa";
 import { formatLog } from "../../logger";
-import { getSqlFromPgVisitor, postSqlFromPgVisitor, oDataDateFormat } from "./helper";
-import { errors, msg } from "../../messages/";
-import { EcolType, EextensionsType } from "../../enums";
+import { postSqlFromPgVisitor, oDataDateFormat } from "./helper";
+import { errors, msg } from "../../messages";
+import { EcolType, EextensionsType, Etarget } from "../../enums";
 import { models } from "../../models";
 import { log } from "../../log";
 import { _COLUMNSEPARATOR } from "../../constants";
+import { Visitor } from "./builder/visitor";
 
-export class PgVisitor {
-  public ctx: koa.Context;
-  public options: SqlOptions;
-  // public query: IpgQuery | undefined = undefined; 
-  // main entity
+export class PgVisitor extends Visitor {
   public entity = "";
   // parent entity
   parentEntity: string | undefined = undefined;  
   id: bigint | string = BigInt(0);
   parentId: bigint | string = BigInt(0);
   arrayNames: string[] = [];
-  select = "";
-  where = "";
-  orderby = "";
   intervalColumns: string[] | undefined = undefined;
-  groupBy: string[] = [];
   expand: string[] = [];
   splitResult: string[] | undefined;
   interval: string | undefined;
@@ -44,28 +37,19 @@ export class PgVisitor {
   skip = 0;
   limit = 0;
   count = false;
-  valueskeys = false;
-  onlyRef = false;
-  onlyValue = false;
   numeric = false;
   returnNull = false;
   navigationProperty: string;
-  resultFormat: IreturnFormat = returnFormats.json;
-  includes: PgVisitor[] = [];
   parameters: unknown[] = [];
   ast: Token;
   showRelations = true;
   results: IKeyString = {};
-  sql = "";
+  // sql = "";
   pgQuery: IpgQuery | undefined = undefined;
   debugOdata = isTest() ? false : true;
   constructor(ctx: koa.Context, options = <SqlOptions>{}) {
-    this.ctx = ctx;
-    this.options = options;
-    this.onlyRef = options.onlyRef;
-    this.onlyValue = options.onlyValue;
-    this.valueskeys = options.valueskeys;
-    this.resultFormat =  (options.onlyValue === true) ? returnFormats.txt : returnFormats.json;
+    console.log(formatLog.whereIam());
+    super(ctx, options);
   }
   
   // ***********************************************************************************************************************************************************************
@@ -105,7 +89,7 @@ export class PgVisitor {
           ? models.getEntity(this.ctx.config, this.entity || this.parentEntity || this.navigationProperty) 
           : undefined;    
     const columnName = input === "result" 
-                        ? this.getColumnResult(context, operation) 
+                        ? this.formatColumnResult(context, operation) 
                         : tempEntity 
                           ? this.getColumnNameOrAlias(tempEntity, input, this.createDefaultOptions()) 
                           : undefined;
@@ -190,10 +174,8 @@ export class PgVisitor {
                 ? this.ctx.decodedUrl.idStr
                   : node.value == "Edm.SByte"
                       ? BigInt(node.raw)
-                      : node.raw;
-
-      
-    this.where = this.ctx.decodedUrl.idStr ? `"lora"."deveui" = '${this.ctx.decodedUrl.idStr}'` : `id = ${this.id}`;
+                      : node.raw;      
+    this.query.where.init(this.ctx.decodedUrl.idStr ? `"lora"."deveui" = '${this.ctx.decodedUrl.idStr}'` : `id = ${this.id}`);
   }
 
   protected VisitRessourcesSingleNavigation(node: Token, context: IodataContext) {
@@ -207,10 +189,7 @@ export class PgVisitor {
       if (models.getRelationColumnTable(this.ctx.config, this.entity, node.value.path.raw) === EcolType.Relation) {
         this.parentId = this.id;
         this.id = BigInt(0);
-        if (
-          node.value.navigation &&
-          node.value.navigation.type == "CollectionNavigation"
-        ) {
+        if ( node.value.navigation && node.value.navigation.type == "CollectionNavigation" ) {
           tempNode = node.value.navigation;
           if (tempNode.value.path.type === "CollectionNavigationPath") {
             tempNode = tempNode.value.path;
@@ -227,12 +206,12 @@ export class PgVisitor {
           .join(<string>this.parentId);
         const tmpLinkSplit = tmpLink.split("in (");
         if (BigInt(this.id) > 0) {
-          this.where = `${tmpLinkSplit[0]} = (SELECT id FROM (${tmpLinkSplit[1]} as l WHERE id = ${this.id})`;
-        } else this.where = tmpLink;
+          this.query.where.init(`${tmpLinkSplit[0]} = (SELECT id FROM (${tmpLinkSplit[1]} as l WHERE id = ${this.id})`);
+        } else this.query.where.init(tmpLink);
         this.parentEntity = this.entity;
         this.entity = node.value.path.raw;
       } else if (this.ctx.model[this.entity].columns[node.value.path.raw]) {
-        this.select = `${addDoubleQuotes(node.value.path.raw )}${_COLUMNSEPARATOR}`;
+        this.query.select.add(`${addDoubleQuotes(node.value.path.raw )}${_COLUMNSEPARATOR}`);
         this.showRelations = false;
       } else this.entity = node.value.path.raw;
     }
@@ -243,37 +222,13 @@ export class PgVisitor {
     this.VisitRessources(node.value.query, context);
   }
 
-  getSqlFromPgVisitor(): string | undefined {
-    try {
-      return getSqlFromPgVisitor(this);
-    } catch (error) {
-      return undefined;
-    }
-  }
-
-  createPatchSql(datas: object): string | undefined {
-    try {
-      return postSqlFromPgVisitor(datas, this);
-    } catch (error) {
-      return undefined;
-    }
-  }
-
-  postSqlFromPgVisitor(datas: object): string | undefined {
-    try {
-      return postSqlFromPgVisitor(datas, this);
-    } catch (error) {
-      return undefined;
-    }
-  }
-
   // ***********************************************************************************************************************************************************************
   // ***                                                              QUERY                                                                                              ***
   // ***********************************************************************************************************************************************************************
 
-  getColumnResult(context: IodataContext, operation: string, ForceString?: boolean) {
+  formatColumnResult(context: IodataContext, operation: string, ForceString?: boolean) {
     switch (context.target) {
-      case "where":
+      case Etarget.Where:
         const nbs = Array.from({length: 5}, (v, k) => k+1);
         const translate = `TRANSLATE (SUBSTRING ("result"->>'value' FROM '(([0-9]+.*)*[0-9]+)'), '[]','')`;
         const isOperation = operation.trim() != "";
@@ -310,7 +265,7 @@ export class PgVisitor {
     const temp = this.Visit(node);
     this.verifyQuery();    
     // Logs.infos("PgVisitor", temp);
-    if (temp.where) temp.where = this.clear(temp.where);    
+    temp.query.where.init(this.clear(temp.query.where.toString()));    
     return temp;
   }
 
@@ -354,8 +309,8 @@ export class PgVisitor {
         if (this.debugOdata) {
           console.log(formatLog.debug("Visit",`Visit${node.type}`, ));
           console.log(formatLog.result("node.raw", node.raw));
-          console.log(formatLog.result("this.where", this.where)); 
-          console.log(formatLog.result("this.select", this.select)); 
+          console.log(formatLog.result("this.query.where", this.query.where.toString())); 
+          console.log(formatLog.result("this.select", this.query.select.toString())); 
           console.log(formatLog.result("this.arrayNames", this.arrayNames)); 
           console.log(formatLog.debug("context", context));
         }
@@ -370,15 +325,15 @@ export class PgVisitor {
     if (node == this.ast) {
       if (this.entity.startsWith("Lora")) {
         if (typeof this.id == "string") {
-          this.where = `"lora"."deveui" = '${this.id}'`;
+          this.query.where.init(`"lora"."deveui" = '${this.id}'`);
         }
       }
     }
     return this;
   }
 
-  isWhere  = (context: IodataContext): boolean => (context.target ? context.target === "where" : false);
-  isSelect = (context: IodataContext): boolean => (context.target ? context.target === "select" : false);
+  isWhere  = (context: IodataContext): boolean => (context.target ? context.target === Etarget.Where : false);
+  isSelect = (context: IodataContext): boolean => (context.target ? context.target === Etarget.Select : false);
 
  
   protected VisitExpand(node: Token, context: IodataContext) {
@@ -425,7 +380,6 @@ export class PgVisitor {
     this.Visit(node.value.path, context);
     if (node.value.options)
       node.value.options.forEach((item: Token) => this.Visit(item, context));
-    // do Nothing
   }
  
   protected VisitResultFormat(node: Token, context: IodataContext) {
@@ -436,7 +390,7 @@ export class PgVisitor {
       this.showRelations = false;
     if (isGraph(this)) { 
       this.showRelations = false; 
-      this.orderby += '"resultTime" ASC'; 
+      this.query.orderBy.add('"resultTime" ASC'); 
     }
   }
 
@@ -461,22 +415,22 @@ export class PgVisitor {
   }
 
   protected VisitFilter(node: Token, context: IodataContext) {
-    context.target = "where";
-    if (this.where.trim() != "") this.where += " AND ";
+    context.target = Etarget.Where;
+    if (this.query.where.toString().trim() != "") this.query.where.add(" AND ");
     this.Visit(node.value, context);
   }
 
   protected VisitOrderBy(node: Token, context: IodataContext) {    
-    context.target = "orderby";
+    context.target = Etarget.OrderBy;
     node.value.items.forEach((item: Token, i: number) => {
       this.Visit(item, context);
-      if (i < node.value.items.length - 1) this.orderby += ", ";
+      if (i < node.value.items.length - 1) this.query.orderBy.add(", ");
     });
   }
 
   protected VisitOrderByItem(node: Token, context: IodataContext) {
     this.Visit(node.value.expr, context);
-    if (!isNull(this.orderby)) this.orderby += node.value.direction > 0 ? " ASC" : " DESC";
+    if (this.query.orderBy.notNull()) this.query.orderBy.add(node.value.direction > 0 ? " ASC" : " DESC");
   }
  
   protected VisitSkip(node: Token, context: IodataContext) {
@@ -488,7 +442,7 @@ export class PgVisitor {
   }
 
   protected VisitSelect(node: Token, context: IodataContext) {
-    context.target = "select";
+    context.target = Etarget.Select;
     node.value.items.forEach((item: Token) => {
       this.Visit(item, context);
     });
@@ -498,32 +452,31 @@ export class PgVisitor {
     const tempColumn = this.getColumn(node.raw, "", context); 
     context.identifier = tempColumn ? tempColumn : node.raw;
     if (context.target)
-      this[context.target] += tempColumn ? `${tempColumn}${_COLUMNSEPARATOR}` : `${addDoubleQuotes(node.raw)}${_COLUMNSEPARATOR}`; 
-      this.addToArrayNames(context.identifier.includes(" AS ") ? context.identifier.split(" AS ")[1] : context.identifier);
+      this.query[context.target].add(tempColumn ? `${tempColumn}${_COLUMNSEPARATOR}` : `${addDoubleQuotes(node.raw)}${_COLUMNSEPARATOR}`); 
       this.showRelations = false;
   }
 
   protected VisitAndExpression(node: Token, context: IodataContext) {
     this.Visit(node.value.left, context);
-    this.where += context.in && context.in === true ? " INTERSECT " : " AND ";
+    this.query.where.add(context.in && context.in === true ? " INTERSECT " : " AND ");
     this.Visit(node.value.right, context);
   }
 
   protected VisitOrExpression(node: Token, context: IodataContext) {
     this.Visit(node.value.left, context);
-    this.where += " OR ";
+    this.query.where.add(" OR ");
     this.Visit(node.value.right, context);
   }
 
   protected VisitNotExpression(node: Token, context: IodataContext) {
-    this.where += " NOT ";
+    this.query.where.add(" NOT ");
     this.Visit(node.value, context);
   }
 
   protected VisitBoolParenExpression(node: Token, context: IodataContext) {
-    this.where += "(";
+    this.query.where.add("(");
     this.Visit(node.value, context);
-    this.where += ")";
+    this.query.where.add(")");
   }
 
   protected VisitCommonExpression(node: Token, context: IodataContext) {
@@ -544,7 +497,7 @@ export class PgVisitor {
       if (models.getRelationColumnTable(this.ctx.config, this.ctx.model[this.entity], node.value.current.raw) === EcolType.Column
             && models.isColumnType(this.ctx.config, this.ctx.model[this.entity], node.value.current.raw, "json") 
             && node.value.next.raw[0] == "/" ) {
-              this.where += `${addDoubleQuotes(node.value.current.raw)}->>${addSimpleQuotes(node.value.next.raw.slice(1))}`;
+              this.query.where.add(`${addDoubleQuotes(node.value.current.raw)}->>${addSimpleQuotes(node.value.next.raw.slice(1))}`);
       } else if (node.value.next.raw[0] == "/") {       
         this.Visit(node.value.current, context);
         context.identifier += ".";
@@ -587,21 +540,21 @@ export class PgVisitor {
       const testIsDate = oDataDateFormat(node, context.sign);
       const columnName = this.getColumnNameOrAlias(this.ctx.model[context.identifier || this.entity], node.value.left.raw, {table: true, as: true, cast: false, ...this.createDefaultOptions()});
       if (testIsDate) {
-        this.where += `${columnName 
+        this.query.where.add(`${columnName 
                           ? columnName 
-                          : `${addDoubleQuotes(node.value.left.raw)}`}${testIsDate}`;
+                          : `${addDoubleQuotes(node.value.left.raw)}`}${testIsDate}`);
         return true;
       }
     }
     return false;
   }
 
-  protected addExpressionToWhere(node: Token, context: IodataContext) {    
-    this.where = this.where.includes("@EXPRESSION@") 
-      ? this.where.replace("@EXPRESSION@",`@EXPRESSION@ ${context.sign}`) 
-      : this.where = this.where.includes("@EXPRESSIONSTRING@") 
-        ? this.where.replace("@EXPRESSIONSTRING@",`@EXPRESSIONSTRING@`) 
-        : `${this.where} ${context.sign} `;
+  protected addExpressionToWhere(node: Token, context: IodataContext) {
+    if (this.query.where.toString().includes("@EXPRESSION@") ) 
+      this.query.where.init(this.query.where.toString().replace("@EXPRESSION@",`@EXPRESSION@ ${context.sign}`));
+      else if (!this.query.where.toString().includes("@EXPRESSIONSTRING@") && context.sign) 
+      // Important to keep space
+        this.query.where.add(" " + context.sign);
   }
 
   protected VisitGreaterThanExpression(node: Token, context: IodataContext) {
@@ -640,7 +593,8 @@ export class PgVisitor {
           if ( Object.keys(tempEntity.relations).includes(context.relation) ) {
             if (!context.key) {
               context.key = tempEntity.relations[context.relation].entityColumn; 
-              this[context.target] += addDoubleQuotes(context.key);
+              this.query[context.target].add(context.key);
+              // this[context.target] += addDoubleQuotes(context.key);
             }
           }
         }
@@ -652,7 +606,7 @@ export class PgVisitor {
           } else context.relation = node.value.name;
           if (!context.key) {
             context.key = this.ctx.model[entity].relations[context.relation].entityColumn; 
-            this[context.target] = addDoubleQuotes(this.ctx.model[entity].relations[context.relation].entityColumn);
+            this.query[context.target].add(addDoubleQuotes(this.ctx.model[entity].relations[context.relation].entityColumn));
           }
           return;
         }
@@ -668,18 +622,18 @@ export class PgVisitor {
     } else {      
       if (this.isWhere(context)) this.createComplexWhere(context.identifier ? context.identifier.split(".")[0] : this.entity, node, context);
       if (!context.relation && !context.identifier && alias && context.target) {       
-        this[context.target] += alias;  
+        this.query[context.target].add(alias);  
       } else {        
         context.identifier = node.value.name;
         if (context.target && !context.key) {
           const alias = this.getColumnNameOrAlias(this.ctx.model[this.entity], node.value.name, this.createDefaultOptions());
-          this[context.target] += node.value.name.includes("->>") ||node.value.name.includes("->") || node.value.name.includes("::")
+          this.query[context.target].add(node.value.name.includes("->>") ||node.value.name.includes("->") || node.value.name.includes("::")
             ? node.value.name
             : this.entity && this.ctx.model[this.entity] 
               ? alias 
                 ? alias 
                 : ''
-              : addDoubleQuotes(node.value.name);
+              : addDoubleQuotes(node.value.name));
           }
       }
     }    
@@ -687,11 +641,14 @@ export class PgVisitor {
   
   protected VisitEqualsExpression(node: Token, context: IodataContext): void {
     context.sign = "=";
+    console.log("==========  lolo ==============");
+    console.log(this.query.where.toString());
+    
     if (!this.VisitDateType(node, context)) {   
       this.Visit(node.value.left, context);
       this.addExpressionToWhere(node, context);
       this.Visit(node.value.right, context);
-      this.where = this.where.replace(/= null/, "IS NULL");
+      this.query.where.init(this.query.where.toString().replace(/= null/, "IS NULL"));
     }
   }
 
@@ -701,55 +658,55 @@ export class PgVisitor {
       this.Visit(node.value.left, context);
       this.addExpressionToWhere(node, context);
       this.Visit(node.value.right, context);
-      this.where = this.where.replace(/<> null$/, "IS NOT NULL");
+      this.query.where.init(this.query.where.toString().replace(/<> null$/, "IS NOT NULL"));
     }
   }
 
-  protected VisitLiteral(node: Token, context: IodataContext): void {    
+  protected VisitLiteral(node: Token, context: IodataContext): void {
     if (context.relation && this.isWhere(context)) {
-      const temp = this.where.split(" ").filter(e => e != ""); 
+      const temp = this.query.where.toString().split(" ").filter(e => e != "");      
       context.sign = temp.pop(); 
-      this.where = temp.join(" ");
-      this.where += ` ${context.in && context.in === true ? '' : ' IN @START@'}(SELECT ${this.ctx.model[this.entity].relations[context.relation] ? addDoubleQuotes(this.ctx.model[this.entity].relations[context.relation]["relationKey"]) : `${addDoubleQuotes(this.ctx.model[context.relation].table)}."id"`} FROM ${addDoubleQuotes(this.ctx.model[context.relation].table)} WHERE `;
+      this.query.where.init(temp.join(" "));
+      this.query.where.add(` ${context.in && context.in === true ? '' : ' IN @START@'}(SELECT ${this.ctx.model[this.entity].relations[context.relation] ? addDoubleQuotes(this.ctx.model[this.entity].relations[context.relation]["relationKey"]) : `${addDoubleQuotes(this.ctx.model[context.relation].table)}."id"`} FROM ${addDoubleQuotes(this.ctx.model[context.relation].table)} WHERE `);
       context.in = true;
       if (context.identifier) {
         if (context.identifier.startsWith("CASE") || context.identifier.startsWith("("))
-          this.where += `${context.identifier} ${context.sign} ${SQLLiteral.convert(node.value, node.raw)})`;
+          this.query.where.add(`${context.identifier} ${context.sign} ${SQLLiteral.convert(node.value, node.raw)})`);
         else if (context.identifier.includes("@EXPRESSION@")) {
             const tempEntity = models.getEntity(this.ctx.config, context.relation);    
             const alias = tempEntity ? this.getColumnNameOrAlias(tempEntity, context.identifier , this.createDefaultOptions()) : undefined;
-            this.where += (context.sql)
+            this.query.where.add((context.sql)
               ? `${context.sql} ${context.target} ${addDoubleQuotes(context.identifier)}))@END@`
-              : `${alias ? alias : `${ context.identifier.replace("@EXPRESSION@", ` ${SQLLiteral.convert(node.value, node.raw)} ${context.sign}`) }`})`;
+              : `${alias ? alias : `${ context.identifier.replace("@EXPRESSION@", ` ${SQLLiteral.convert(node.value, node.raw)} ${context.sign}`) }`})`);
         } else {
           const tempEntity = models.getEntity(this.ctx.config, context.relation);    
 
           const quotes = context.identifier[0] === '"' ? '' : '"';
           const alias = tempEntity ? this.getColumnNameOrAlias(tempEntity, context.identifier , this.createDefaultOptions()) : undefined;
 
-          this.where += (context.sql)
+          this.query.where.add((context.sql)
             ? `${context.sql} ${context.target} ${addDoubleQuotes(context.identifier)} ${context.sign} ${SQLLiteral.convert(node.value, node.raw)}))@END@`
-            : `${alias ? '' : `${this.ctx.model[context.relation].table}.`}${alias ? alias : `${quotes}${ context.identifier }${quotes}`} ${context.sign} ${SQLLiteral.convert(node.value, node.raw)})`;
+            : `${alias ? '' : `${this.ctx.model[context.relation].table}.`}${alias ? alias : `${quotes}${ context.identifier }${quotes}`} ${context.sign} ${SQLLiteral.convert(node.value, node.raw)})`);
         }
       }
     } else {
       const temp = context.literal = node.value == "Edm.Boolean" ? node.raw : SQLLiteral.convert(node.value, node.raw);
-      if (this.where.includes("@EXPRESSION@")) this.where = this.where.replace("@EXPRESSION@", temp); 
-      else if (this.where.includes("@EXPRESSIONSTRING@")) this.where = this.where.replace("@EXPRESSIONSTRING@", `${temp} ${context.sign}`);       
-      else this.where += temp;
+      if (this.query.where.toString().includes("@EXPRESSION@")) this.query.where.init(this.query.where.toString().replace("@EXPRESSION@", temp)); 
+      else if (this.query.where.toString().includes("@EXPRESSIONSTRING@")) this.query.where.init(this.query.where.toString().replace("@EXPRESSIONSTRING@", `${temp} ${context.sign}`));       
+      else this.query.where.add(temp);
       
     }
   }
 
   protected VisitInExpression(node: Token, context: IodataContext): void {
     this.Visit(node.value.left, context);
-    this.where += " IN (";
+    this.query.where.add(" IN (");
     this.Visit(node.value.right, context);
-    this.where += ":list)";
+    this.query.where.add(":list)");
   }
 
   protected VisitArrayOrObject(node: Token, context: IodataContext): void {
-    this.where += context.literal = SQLLiteral.convert(node.value, node.raw);
+    this.query.where.add(context.literal = SQLLiteral.convert(node.value, node.raw));
   }
 
   protected createGeoColumn(entity: string | Ientity, column: string): string {    
@@ -801,7 +758,7 @@ export class PgVisitor {
 
     const columnOrData = (index: number, operation: string, ForceString: boolean): string => {
       const test = decodeURIComponent( Literal.convert(params[index].value, params[index].raw) );
-      if (test === "result") return this.getColumnResult(context, operation, ForceString);
+      if (test === "result") return this.formatColumnResult(context, operation, ForceString);
       const column =  isColumn(test);       
       // return `${operation.trim() != "" ? `${operation}(` : '' } ${column ? addDoubleQuotes(column) : addSimpleQuotes(geoColumnOrData(index, false))}${operation.trim() != "" ? ")" : "" }`;
       return column ? addDoubleQuotes(column) : addSimpleQuotes(geoColumnOrData(index, false));
@@ -826,44 +783,44 @@ export class PgVisitor {
     switch (method) {
       case "contains":
         this.Visit(params[0], context);
-        this.where += ` ~* '${SQLLiteral.convert( params[1].value, params[1].raw ).slice(1, -1)}'`;
+        this.query.where.add(` ~* '${SQLLiteral.convert( params[1].value, params[1].raw ).slice(1, -1)}'`);
         break;
       case "containsAny":
-        this.where += "array_to_string(";
+        this.query.where.add("array_to_string(");
         this.Visit(params[0], context);
-        this.where += `, ' ') ~* '${SQLLiteral.convert( params[1].value, params[1].raw ).slice(1, -1)}'`;
+        this.query.where.add(`, ' ') ~* '${SQLLiteral.convert( params[1].value, params[1].raw ).slice(1, -1)}'`);
         break;
       case "endswith":
-        this.where += `${columnOrData(0, "", true)}  ILIKE '%${cleanData(1)}'`;
+        this.query.where.add(`${columnOrData(0, "", true)}  ILIKE '%${cleanData(1)}'`);
         break;
       case "startswith":
-        this.where += `${columnOrData(0, "", true)} ILIKE '${cleanData(1)}%'`;
+        this.query.where.add(`${columnOrData(0, "", true)} ILIKE '${cleanData(1)}%'`);
         break;
       case "substring":
-        this.where += (params.length == 3) 
+        this.query.where.add((params.length == 3) 
             ? ` SUBSTR(${columnOrData(0, "", true)}, ${cleanData( 1 )} + 1, ${cleanData(2)})`
-            : this.where += ` SUBSTR(${columnOrData(0, "", true)}, ${cleanData(1)} + 1)`;
+            : ` SUBSTR(${columnOrData(0, "", true)}, ${cleanData(1)} + 1)`);
         break;
       case "substringof":
-        this.where += `${columnOrData(0, "", true)} ILIKE '%${cleanData(1)}%'`;
+        this.query.where.add(`${columnOrData(0, "", true)} ILIKE '%${cleanData(1)}%'`);
         break;
       case "indexof":
-        this.where += ` POSITION('${cleanData(1)}' IN ${columnOrData(0, "", true)})`;
+        this.query.where.add(` POSITION('${cleanData(1)}' IN ${columnOrData(0, "", true)})`);
         break;
       case "concat":
-        this.where += `(${columnOrData(0, "concat", true)} || '${cleanData(1)}')`;
+        this.query.where.add(`(${columnOrData(0, "concat", true)} || '${cleanData(1)}')`);
         break;
       case "length":
         // possibilty calc length string of each result or result 
-        this.where += (decodeURIComponent( Literal.convert(params[0].value, params[0].raw) ) === "result") 
+        this.query.where.add((decodeURIComponent( Literal.convert(params[0].value, params[0].raw) ) === "result") 
         ? `${columnOrData(0, "CHAR_LENGTH", true)}`
-        :  `CHAR_LENGTH(${columnOrData(0, "CHAR_LENGTH", true)})`;
+        :  `CHAR_LENGTH(${columnOrData(0, "CHAR_LENGTH", true)})`);
         break;
       case "tolower":
-        this.where += `LOWER(${columnOrData(0, "", true)})`;
+        this.query.where.add(`LOWER(${columnOrData(0, "", true)})`);
         break;
       case "toupper":
-        this.where += `UPPER(${columnOrData(0, "", true)})`;
+        this.query.where.add(`UPPER(${columnOrData(0, "", true)})`);
         break;
       case "year":
       case "month":
@@ -871,23 +828,23 @@ export class PgVisitor {
       case "hour":
       case "minute":
       case "second":
-        this.where += `EXTRACT(${method.toUpperCase()} FROM ${columnOrData( 0, "", false )})`;
+        this.query.where.add(`EXTRACT(${method.toUpperCase()} FROM ${columnOrData( 0, "", false )})`);
         break;
       case "round":
       case "floor":
       case "ceiling":
-        this.where += columnOrData(0, method.toUpperCase(),false);
+        this.query.where.add(columnOrData(0, method.toUpperCase(),false));
         break;
       case "now":
-        this.where += "NOW()";
+        this.query.where.add("NOW()");
         break;
       case "date":
-        this.where += `${method.toUpperCase()}(`;
+        this.query.where.add(`${method.toUpperCase()}(`);
         this.Visit(params[0], context);
-        this.where += ")";
+        this.query.where.add(")");
         break;
       case "time":
-        this.where += `(${columnOrData(0, "", true)})::time`;
+        this.query.where.add(`(${columnOrData(0, "", true)})::time`);
         break;
         case "geo.distance":
           case "geo.contains":
@@ -898,20 +855,67 @@ export class PgVisitor {
           case "geo.relate":
           case "geo.touches":
           case "geo.within":
-            this.where += `${method .toUpperCase() .replace("GEO.", "ST_")}(${this.createGeoColumn(this.entity, columnOrData(order[0], "", true) )}), ${columnOrData(order[1], "", true)}')`;
+            this.query.where.add(`${method .toUpperCase() .replace("GEO.", "ST_")}(${this.createGeoColumn(this.entity, columnOrData(order[0], "", true) )}), ${columnOrData(order[1], "", true)}')`);
             break;
           case "geo.length":
-            this.where += `ST_Length(ST_MakeLine(ST_AsText(${this.createGeoColumn(this.entity, columnOrData(order[0], "", true) )}), ${columnOrData(order[1], "", true)}'))`;
+            this.query.where.add(`ST_Length(ST_MakeLine(ST_AsText(${this.createGeoColumn(this.entity, columnOrData(order[0], "", true) )}), ${columnOrData(order[1], "", true)}'))`);
             break;
           case "geo.intersects":        
-            this.where += `st_intersects(ST_AsText(${this.createGeoColumn(this.entity, columnOrData(order[0], "", true) )}), ${columnOrData(order[1], "", true)})`;
+            this.query.where.add(`st_intersects(ST_AsText(${this.createGeoColumn(this.entity, columnOrData(order[0], "", true) )}), ${columnOrData(order[1], "", true)})`);
             break;
           case "trim":
-            this.where += `TRIM(BOTH '${ params.length == 2 ? cleanData(1) : " " }' FROM ${columnOrData(0, "", true)})`;
+            this.query.where.add(`TRIM(BOTH '${ params.length == 2 ? cleanData(1) : " " }' FROM ${columnOrData(0, "", true)})`);
             break;
           case "mindatetime":
-            this.where += `MIN(${this.where.split('" ')[0]}")`;
+            this.query.where.add(`MIN(${this.query.where.toString().split('" ')[0]}")`);
             break;
     }
   }
+}
+
+export class RootPgVisitor extends PgVisitor {
+  static root = true;
+  constructor(ctx: koa.Context, options = <SqlOptions>{}) {
+      console.log(formatLog.whereIam());
+      super(ctx, options);
+    }
+
+  getSql(_src?: PgVisitor): string {  
+    const src = _src ? _src : this; 
+    console.log(formatLog.whereIam(src.entity)); 
+    src.includes.forEach((include) => {
+        if (include.navigationProperty.includes("/")) {              
+            const names = include.navigationProperty.split("/");
+            include.navigationProperty = names[0];
+            const visitor = new PgVisitor(src.ctx, {...src.options});
+            if (visitor) {
+                visitor.entity =names[0];
+                visitor.navigationProperty = names[1];
+                include.includes.push(visitor);
+            }            
+        }
+      });
+    src.pgQuery = src.query.toPgQuery(src);
+    // src.addSql(src.query.toString(src));
+    // console.log(this);
+    
+    return this.onlyValue ? this.query.toString(this) : this.resultFormat.generateSql(this);
+  }
+
+  patchSql(datas: object): string | undefined {
+    try {
+      return postSqlFromPgVisitor(datas, this);
+    } catch (error) {
+      return undefined;
+    }
+  }
+
+  postSql(datas: object): string | undefined {
+    try {
+      return postSqlFromPgVisitor(datas, this);
+    } catch (error) {
+      return undefined;
+    }
+  }
+
 }

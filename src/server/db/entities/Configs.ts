@@ -16,7 +16,6 @@ import { ensureAuthenticated } from "../../authentication";
 import { addToService, createService } from "../helpers";
 import { _NOTOK, _OK } from "../../constants";
 
-
 export class Configs extends Common {
   constructor(ctx: koa.Context) {
     console.log(formatLog.whereIam());

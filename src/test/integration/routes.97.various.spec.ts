@@ -10,8 +10,7 @@ process.env.NODE_ENV = "test";
 import chai from "chai";
 import chaiHttp from "chai-http";
 import { server } from "../../server/index";
-import { Iinfos } from "./constant";
-import { addGetTest, addStartNewTest } from "./tests";
+import { addStartNewTest, addTest, writeLog } from "./tests";
 
 
 chai.use(chaiHttp);
@@ -51,25 +50,25 @@ console.log(demoStart);
 describe("Various Get tests", () => {
     before((done) => {
         addStartNewTest("Various");
-				done();
+		done();
 	});
+	afterEach(() => { writeLog(true); });
     Object.keys(tests).forEach((test: string) => {
         it(test, (done) => {
-            const infos: Iinfos = {
+            addTest({
 				api: `result => ${+tests[test]} : `,
 				url: test,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
             chai.request(server)
                 .get(test)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");
-                    res.body["@iot.count"].should.eql(+tests[test]);
-					addGetTest(infos);                    
+                    res.body["@iot.count"].should.eql(+tests[test]);					                    
                     done();
                 });
         });

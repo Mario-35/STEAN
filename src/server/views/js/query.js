@@ -149,7 +149,7 @@ function init() {
 	populateSelect(services, Object.keys(_PARAMS.services), _PARAMS.decodedUrl.root.split("/").pop());
 
 	populateSelect(methodOption, entityOption.value == "Loras" ? ["GET", "POST"] : _PARAMS.methods, _PARAMS.method ? _PARAMS.method : "GET");
-	hide(subExpandOption);
+	// hide(subExpandOption);
 	idOption.value = _PARAMS.decodedUrl.idStr | _PARAMS.decodedUrl.id;
 
 	refresh();

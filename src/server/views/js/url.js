@@ -29,7 +29,6 @@
       myPath.split('/')
             .filter((word) => word !== '')
             .forEach((element, index) => {
-              console.log(`element : ${element}`);
               if (index === 0) {
                 if (element.includes('(')) {
                   const temp = element.split('(');
@@ -70,7 +69,7 @@
       canShowQueryButton();
       return decode;
     } catch (error) {
-      console.log(error);
+      console.error(error);
         return false;
     } 
   }
@@ -95,99 +94,97 @@
     const root = `${optHost.value}/${optVersion.value}`;
   
     let directLink = root;
-    let queryLink = `${root}/Query?&method=${methodOption.value}`; 
-
+    let queryLink = `${root}/Query?&method=${methodOption.value}`;
     
-      if (index > 0) {
-        directLink = directLink + "/" + entityOption.value + "(" + index + ")";
+    if (index > 0) {
+      directLink = directLink + "/" + entityOption.value + "(" + index + ")";
+      queryLink = queryLink + `&entity=${entityOption.value}&id=${index}`;
+    } else {
+      if (entityOption.value == "Loras" && idOption.value != "" && idOption.value != "0") {
+        directLink = directLink + "/" + entityOption.value + "(" + idOption.value + ")";
         queryLink = queryLink + `&entity=${entityOption.value}&id=${index}`;
-      } else {
-        if (entityOption.value == "Loras" && idOption.value != "" && idOption.value != "0") {
-          directLink = directLink + "/" + entityOption.value + "(" + idOption.value + ")";
-          queryLink = queryLink + `&entity=${entityOption.value}&id=${index}`;
-        }
-        else {
-          directLink = directLink + "/" + entityOption.value;
-          queryLink = queryLink + `&entity=${entityOption.value}`;
-        }
       }
-      
-      if (subentityOption.value != "none") {
-        directLink = directLink + "/" + subentityOption.value;
-        queryLink = queryLink + `&subentity=${subentityOption.value}`;
+      else {
+        directLink = directLink + "/" + entityOption.value;
+        queryLink = queryLink + `&entity=${entityOption.value}`;
       }
+    }
 
-      if (propertyOption.value != "none" && idOption.value != "") {
-          directLink = directLink + "/" + propertyOption.value;
-          queryLink = queryLink + `&property=${propertyOption.value}`;
-      
-        if (getIfChecked("onlyValueOption") === true) {
-          directLink = directLink + "/$value";
-          queryLink = queryLink + `&onlyValueOption=true`;
-        } 
+    if (subentityOption.value != "none") {
+      directLink = directLink + "/" + subentityOption.value;
+      queryLink = queryLink + `&subentity=${subentityOption.value}`;
+    }
 
-        return { "direct" : directLink, "query": queryLink};
-      }  
+    if (propertyOption.value != "none" && idOption.value != "") {
+        directLink = directLink + "/" + propertyOption.value;
+        queryLink = queryLink + `&property=${propertyOption.value}`;
     
-      if (datas.innerText != "") {
-        const datasEncoded = encodeURIComponent(datas.innerText );
-        queryLink = queryLink + `&datas=${datasEncoded}`;
-      }
-    
-      addInOption("resultFormat", ["json", "logs"].includes(resultFormatOption.value) ? "" : resultFormatOption.value);
-      addInOption("debug", isDebug ? "true" : "");
-      addInOption("count", getIfChecked("countOption") ? "true" : "");
-      addInOption("valuesKeys", getIfChecked("valueskeysOption") ? "true" : "");
-      if (intervalOption.value != "" && isObservation() ) addInOption("interval",intervalOption.value);
-      if (!["","0"].includes(skipOption.value)) addInOption("skip",skipOption.value);
-      if (!["","0"].includes(topOption.value)) addInOption("top",topOption.value);
-      tempDatas = multiSelects["expandOption"].getData();
-      if (tempDatas && tempDatas.length > 0) addInOption("expand", tempDatas);
-      tempDatas = (resultFormatOption.value === "logs") ? ["id","date","code","method","database"] : multiSelects["selectOption"].getData();
-      if (tempDatas && tempDatas.length > 0) addInOption("select", tempDatas);
-      tempDatas = multiSelects["orderbyOption"].getData();
-      if (isLog() && tempDatas.length < 1) tempDatas = ["date desc"];
-      if (tempDatas && tempDatas.length > 0) addInOption("orderby", tempDatas);
-      if (payload.value != "" && ["Decoders"].includes(entityOption.value)) addInOption("payload", payload.value);
+      if (getIfChecked("onlyValueOption") === true) {
+        directLink = directLink + "/$value";
+        queryLink = queryLink + `&onlyValueOption=true`;
+      } 
 
-      // orderbyOption;
-      const queryBuilder = getElement("query-builder").innerText;
-      const listOr = [];
-      JSON.parse(queryBuilder).forEach((whereOr) => {    
-        const listAnd = [];
-        whereOr.forEach((whereAnd) => {    
-          if (whereAnd.criterium && whereAnd.criterium != "" && whereAnd.condition && whereAnd.criterium != "" && whereAnd.criterium && whereAnd.value != "")
-          {
-            const value = isNaN(whereAnd.value) ? `'${whereAnd.value}'` : whereAnd.value;
-            switch (whereAnd.condition) {
-              case "contains":
-                case "endswith":
-                  case "startswith":
-                listAnd.push(`${whereAnd.condition}(${whereAnd.criterium},${value})`);              
-                break;
-              case "between":
-                listAnd.push(`${whereAnd.criterium} gt ${whereAnd.value.first} and ${whereAnd.criterium} lt ${whereAnd.value.second} `);              
-                break;
-              case "nn":
-                listAnd.push(`${whereAnd.criterium} ne null`);              
-                break;
-              case "nu":
-                listAnd.push(`${whereAnd.criterium} eq null`);              
-                break;
-            
-              default:
-                listAnd.push(`${whereAnd.criterium} ${whereAnd.condition} ${value}`);
-                break;
-            }
+      return { "direct" : directLink, "query": queryLink};
+    }  
+
+    if (datas.innerText != "") {
+      const datasEncoded = encodeURIComponent(datas.innerText );
+      queryLink = queryLink + `&datas=${datasEncoded}`;
+    }
+
+    addInOption("resultFormat", ["json", "logs"].includes(resultFormatOption.value) ? "" : resultFormatOption.value);
+    addInOption("debug", isDebug ? "true" : "");
+    addInOption("count", getIfChecked("countOption") ? "true" : "");
+    addInOption("valuesKeys", getIfChecked("valueskeysOption") ? "true" : "");
+    if (isObservation()) addInOption("splitResult", splitResultOption.value);
+    if (intervalOption.value != "" && isObservation() ) addInOption("interval",intervalOption.value);
+    if (!["","0"].includes(skipOption.value)) addInOption("skip",skipOption.value);
+    if (!["","0"].includes(topOption.value)) addInOption("top",topOption.value);
+    tempDatas = multiSelects["expandOption"].getData();
+    if (tempDatas && tempDatas.length > 0) addInOption("expand", tempDatas);
+    tempDatas = (resultFormatOption.value === "logs") ? ["id","date","code","method","database"] : multiSelects["selectOption"].getData();
+    if (tempDatas && tempDatas.length > 0) addInOption("select", tempDatas);
+    tempDatas = multiSelects["orderbyOption"].getData();
+    if (isLog() && tempDatas.length < 1) tempDatas = ["date desc"];
+    if (tempDatas && tempDatas.length > 0) addInOption("orderby", tempDatas);
+    if (payload.value != "" && ["Decoders"].includes(entityOption.value)) addInOption("payload", payload.value);
+
+    // orderbyOption;
+    const queryBuilder = getElement("query-builder").innerText;
+    const listOr = [];
+    JSON.parse(queryBuilder).forEach((whereOr) => {    
+      const listAnd = [];
+      whereOr.forEach((whereAnd) => {    
+        if (whereAnd.criterium && whereAnd.criterium != "" && whereAnd.condition && whereAnd.criterium != "" && whereAnd.criterium && whereAnd.value != "") {
+          const value = isNaN(whereAnd.value) ? `'${whereAnd.value}'` : whereAnd.value;
+          switch (whereAnd.condition) {
+            case "contains":
+            case "endswith":
+            case "startswith":
+              listAnd.push(`${whereAnd.condition}(${whereAnd.criterium},${value})`);              
+              break;
+            case "between":
+              listAnd.push(`${whereAnd.criterium} gt ${whereAnd.value.first} and ${whereAnd.criterium} lt ${whereAnd.value.second} `);              
+              break;
+            case "nn":
+              listAnd.push(`${whereAnd.criterium} ne null`);              
+              break;
+            case "nu":
+              listAnd.push(`${whereAnd.criterium} eq null`);              
+              break;            
+            default:
+              listAnd.push(`${whereAnd.criterium} ${whereAnd.condition} ${value}`);
+              break;
           }
-          });
-        listOr.push(listAnd.join(" and "));
-      });
-      let where = listOr.join(" or ");
-      // Filter for logs
-      if (isLog() && Logfilter) where += Logfilter;
-      addInOption("filter", where);  
-    
+        }
+        });
+      listOr.push(listAnd.join(" and "));
+    });
+    let where = listOr.join(" or ");
+    // Filter for logs
+    if (isLog() && Logfilter) where += Logfilter;
+    addInOption("filter", where);  
+
     const addMark = queryOptions.length > 0 ? "?$":"";
     directLink = `${directLink}${addMark}${queryOptions.join("&$")}`;
     queryLink = `${queryLink}&${encodeURI(queryOptions.join("&"))}`;

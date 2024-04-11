@@ -10,9 +10,9 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult, testVersion, Iinfos } from "../integration/constant";
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult, testVersion } from "../integration/constant";
 import { server } from "../../server/index";
-import { addGetTest } from "../integration/tests";
+import { addStartNewTest, addTest } from "../integration/tests";
 
 const geoPos: { [key: string]: number[] } = {
     "Centre commercial Grand Quartier" : [48.13765198324515, -1.6956051932646596],
@@ -55,9 +55,12 @@ addToApiDoc({
 });
    
 describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
-
+    before((done) => {
+        addStartNewTest("Built in Geospatial");
+		done();
+	});
     it(`geo.distance(location, geography'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`, (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Location Distance location",
             url: `/${testVersion}/Locations?$filter=geo.distance(location, geography'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`,
             apiName: "BuiltInGeospatialDistanceLocation",
@@ -65,11 +68,11 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
             apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_built_in_query_functions",
             apiExample: { http: "/test", 
             url : "/test",
-                            curl: defaultGet("curl", "KEYHTTP"),
-                            javascript: defaultGet("javascript", "KEYHTTP"),
-                            python: defaultGet("python", "KEYHTTP") 
-                        }
-        };
+            curl: defaultGet("curl", "KEYHTTP"),
+            javascript: defaultGet("javascript", "KEYHTTP"),
+            python: defaultGet("python", "KEYHTTP") 
+        }
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -78,14 +81,13 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(4);
                 res.body["value"][0]["@iot.id"].should.eql(8);
-                addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                addToApiDoc({ ...infos, result: limitResult(res) });                
                 done();
             });
     });
 
     it(`geo.distance(FeatureOfInterest/feature,geography'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`, (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} FOI Distance Observations",
             url : `/${testVersion}/Observations?$filter=geo.distance(FeatureOfInterest/feature,geography'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`,
             apiName: "BuiltInGeospatialDistanceFoi",
@@ -96,7 +98,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {                
@@ -106,13 +108,13 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(5);
                 res.body["value"][0]["@iot.id"].should.eql(13);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it(`geo.length(location,'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`, (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Location Length location",
             url : `/${testVersion}/Locations?$filter=geo.length(location,'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`,
             apiName: "BuiltInGeospatiaLengthLocation",
@@ -123,7 +125,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -133,13 +135,13 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(4);
                 res.body["value"][0]["@iot.id"].should.eql(8);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it(`geo.length(FeatureOfInterest/feature,'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`, (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Location Length Observations",
             url : `/${testVersion}/Observations?$filter=geo.length(FeatureOfInterest/feature,'POINT(${startPoint[0]} ${startPoint[1]})') ge 0.11`,
             apiName: "BuiltInGeospatiaLengthFoi",
@@ -150,7 +152,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -160,13 +162,13 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(5);
                 res.body["value"][0]["@iot.id"].should.eql(13);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });    
 
     it("geo.intersects(location,'LINESTRING(48.13765198324515 -1.6956051932646596, 48.06467042196109 -1.623116279666956)')", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Location Intersects location",
             url : `/${testVersion}/Locations?$filter=geo.intersects(location,'LINESTRING(48.13765198324515 -1.6956051932646596, 48.06467042196109 -1.623116279666956)')`,
             apiName: "BuiltInGeospatialIntersectsLocation",
@@ -177,7 +179,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {                
@@ -187,13 +189,13 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(1);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it("geo.intersects(FeatureOfInterest/feature, 'LINESTRING(48.11829243294942 -1.717928984533772, 48.06467042196109 -1.623116279666956)')", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} FOI Intersects Observations",
             url : `/${testVersion}/Observations?$filter=geo.intersects(FeatureOfInterest/feature, 'LINESTRING(48.11829243294942 -1.717928984533772, 48.06467042196109 -1.623116279666956)')`,
             apiName: "BuiltInGeospatialIntersectsFoi",
@@ -204,7 +206,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -214,13 +216,13 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(26);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     // it("geo.intersects(observedArea, 'POLYGON(48.1470945265153 -1.7189909389547655, 48.1112154851337 -1.6464601361216131, 48.1470945265153 -1.7189909389547655)')", (done) => {
-    //     const infos:Iinfos  = {
+    //     const infos = addTest({
     //         api: "{get} Observations Intersects",
     //         apiName: "BuiltInGeospatialIntersectsDatastream",
     //         apiDescription: "The geo.intersects function returns true if the specified point lies within the interior or on the boundary of the specified polygon, otherwise it returns false.",
@@ -241,13 +243,13 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
     //             res.body["value"][0]["@iot.id"].should.eql(22);
     //             pipo
     //             addToApiDoc({ ...infos, result: limitResult(res) });
-    //             addGetTest(infos);
+    //             
      //           done();
     //         });
     // });
     
     it(`geo.equals(location,'POINT(${positions[1][0]} ${positions[1][1]})')`, (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Location Equals location",
             url : `/${testVersion}/Locations?$filter=geo.equals(location,'POINT(${positions[1][0]} ${positions[1][1]})')`,
             apiName: "BuiltInGeospatialEquarsLocation",
@@ -258,7 +260,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -268,13 +270,13 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(1);
                 res.body["value"][0]["@iot.id"].should.eql(7);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     }); 
 
     it(`geo.equals(FeatureOfInterest/feature,'POINT(${positions[1][0]} ${positions[1][1]})')`, (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Location Equals Observations",
             url : `/${testVersion}/Observations?$filter=geo.equals(FeatureOfInterest/feature,'POINT(${positions[1][0]} ${positions[1][1]})')`,
             apiName: "BuiltInGeospatialEquarsFoi",
@@ -285,7 +287,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -295,13 +297,13 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(4);
                 res.body["value"][0]["@iot.id"].should.eql(3);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });  
 
     it(`geo.disjoint(location, geography'MULTIPOINT(${point.join()})')`, (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Location Disjoint location",
             url : `/${testVersion}/Locations?$filter=geo.disjoint(location,'MULTIPOINT(${point.join()})')`,
             apiName: "BuiltInGeospatialDisjointLocation",
@@ -312,7 +314,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -322,13 +324,13 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(4);
                 res.body["value"][0]["@iot.id"].should.eql(21);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });    
 
     it(`geo.disjoint(FeatureOfInterest/feature, geography'MULTIPOINT(${point.join()})')`, (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Location Disjoint Observations",
             url : `/${testVersion}/Observations?$filter=geo.disjoint(FeatureOfInterest/feature,'MULTIPOINT(${point.join()})')`,
             apiName: "BuiltInGeospatialDisjointFoi",
@@ -339,7 +341,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -349,13 +351,13 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(2);
                 res.body["value"][0]["@iot.id"].should.eql(26);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });   
 
     it(`geo.contains(location, geography'POINT(${startPoint[0]} ${startPoint[1]})')`, (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Location Contains location",
             url : `/${testVersion}/Locations?$filter=geo.contains(location, geography'POINT(${startPoint[0]} ${startPoint[1]})')`,
             apiName: "BuiltInGeospatialContainsLocation",
@@ -366,7 +368,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -376,13 +378,13 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(1);
                 res.body["value"][0]["@iot.id"].should.eql(20);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it(`geo.contains(FeatureOfInterest/feature, geography'POINT(${startPoint[0]} ${startPoint[1]})')`, (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Location Contains location",
             url : `/${testVersion}/Observations?$filter=geo.contains(FeatureOfInterest/feature, geography'POINT(${positions[1][0]} ${positions[1][1]})')`,
             apiName: "BuiltInGeospatialContainsFoi",
@@ -393,7 +395,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
@@ -403,13 +405,13 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
                 res.body.value.length.should.eql(4);
                 res.body["value"][0]["@iot.id"].should.eql(3);
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });    
 
     // it(`geo.crosses(location, geography'MULTIPOINT(${point.join()})')`, (done) => {
-    //     const infos:Iinfos  = {
+    //     const infos = addTest({
     //         api: "{get} Location Crosses location",
     //         apiName: "BuiltInGeospatialContainsLocation",
     //         apiDescription: "Compares two geometry objects and returns true if their intersection 'spatially cross', that is, the geometries have some, but not all interior points in common. The intersection of the interiors of the geometries must be non-empty and must have dimension less than the maximum dimension of the two input geometries. Additionally, the intersection of the two geometries must not equal either of the source geometries. Otherwise, it returns false.",
@@ -432,14 +434,14 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
     //             res.body["value"][0]["@iot.id"].should.eql(20);
     //             pipo
     //             addToApiDoc({ ...infos, result: limitResult(res) });
-    //             addGetTest(infos);
+    //             
      //           done();
     //         });
     // });
  
 
     // it(`geo.overlaps(location, geography'MULTIPOINT(${point.join()})')`, (done) => {
-    //     const infos:Iinfos  = {
+    //     const infos = addTest({
     //         api: "{get} Location overlaps location",
     //         apiName: "BuiltInGeospatialOverlapsLocation",
     //         apiDescription: "geo.overlaps( geometry A , geometry B ) Returns TRUE if geometry A and B 'spatially overlap'. Two geometries overlap if they have the same dimension, each has at least one point not shared by the other (or equivalently neither covers the other), and the intersection of their interiors has the same dimension. The overlaps relationship is symmetrical.",
@@ -461,7 +463,7 @@ describe("{get} BuiltInGeospatial [9.3.3.5.2]", () => {
     //             res.body["value"][0]["@iot.id"].should.eql(7);
     //             pipo
     //             addToApiDoc({ ...infos, result: limitResult(res) });
-    //             addGetTest(infos);
+    //             
     //            done();
     //         });
     // }); 

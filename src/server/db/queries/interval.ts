@@ -6,12 +6,13 @@
 *
 */
 
-import { PgVisitor } from "../../odata";
+import { PgVisitor } from "../../odata/visitor";
+
 
 export const interval = (input: PgVisitor): string => 
     input.interval 
         ? 
-`WITH src as (${input.sql}), 
+`WITH src as (${input.query.toString(input)}), 
 range_values AS (
     SELECT 
         min(srcdate) as minval, 
@@ -29,6 +30,6 @@ SELECT
     ${input.intervalColumns ? input.intervalColumns.join(", ") : '' } 
 FROM 
     src RIGHT JOIN time_range on srcdate = step`
-        : input.sql;
+        : input.query.toString(input);
 
 

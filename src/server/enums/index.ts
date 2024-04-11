@@ -16,6 +16,7 @@ export { EmodelType } from "./model";
 export { EobservationType } from "./observationType";
 export { EoperationType } from "./operationType";
 export { Erelations } from "./relations";
+export { Etarget } from "./target";
 export { Esecurity } from "./security";
 export { EuserRights } from "./userRights";
 

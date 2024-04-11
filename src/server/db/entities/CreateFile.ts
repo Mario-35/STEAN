@@ -73,7 +73,8 @@ export class CreateFile extends Common {
       try {
         return await objectDatastream.post(myDatas);
       } catch (error) {
-        ctx.odata.where = `"name" ~* '${nameOfFile}'`;
+        // ctx.odata.where = `"name" ~* '${nameOfFile}'`;
+        ctx.odata.query.where.init(`"name" ~* '${nameOfFile}'`);
         const returnValueError = await objectDatastream.getAll();
         ctx.odata = copyCtx;
         if (returnValueError) {

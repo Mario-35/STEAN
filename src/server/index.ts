@@ -23,14 +23,14 @@ import favicon from 'koa-favicon';
 import { models } from "./models";
 import { log } from "./log";
 import { IconfigFile, IdecodedUrl, Ientities, Ilog, IuserToken } from "./types";
-import { PgVisitor } from "./odata";
+import { RootPgVisitor } from "./odata/visitor";
 
 // Extend koa context 
 declare module "koa" {
   interface DefaultContext {
     decodedUrl: IdecodedUrl;
     config: IconfigFile;
-    odata: PgVisitor;
+    odata: RootPgVisitor;
     datas: object;
     user: IuserToken;
     log: Ilog | undefined;

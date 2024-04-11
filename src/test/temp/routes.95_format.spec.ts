@@ -11,8 +11,9 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, limitResult, testVersion } from "./constant";
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, limitResult, testVersion } from "../integration/constant";
 import { server } from "../../server/index";
+import { addStartNewTest, addTest, writeLog } from "../integration/tests";
 
 chai.use(chaiHttp);
 
@@ -32,14 +33,19 @@ addToApiDoc({
 });
 
 describe("Output formats", () => {
+    before((done) => {
+        addStartNewTest("Output formats");
+		done();
+	});
+	afterEach(() => { writeLog(true); });
     describe("{get} resultFormat csv", () => {
         it("Return result in csv format.", (done) => {
-            const infos:Iinfos  = {
+            const infos = addTest({
                 api: `{get} ResultFormat as csv`,
                 apiName: "FormatCsv",
                 apiDescription: 'Use $resultFormat=csv to get datas as csv format.<br><img class="tabLogo" src="./assets/csv.jpg" alt="csv result">',
                 apiExample: { http: `/${testVersion}/Datastreams(1)/Observations?$top=20&$resultFormat=csv` }
-            };
+            });
             chai.request(server)
                 .get(`/test${infos.url}`)
                 .end((err: Error, res: any) => {
@@ -55,12 +61,12 @@ describe("Output formats", () => {
 
     describe("{get} resultFormat dataArray", () => {
         it("Return Things in dataArray format.", (done) => {
-            const infos:Iinfos  = {
+            const infos = addTest({
                 api: `{get} Things Things as dataArray`,
                 apiName: "FormatThingdataArray",
                 apiDescription: 'Use $resultFormat=dataArray to get datas as dataArray format.',
                 apiExample: { http: `/${testVersion}/Things?$resultFormat=dataArray` }
-            };
+            });
             chai.request(server)
                 .get(`/test${infos.url}`)
                 .end((err: Error, res: any) => {
@@ -78,12 +84,12 @@ describe("Output formats", () => {
         });
         
         it("Return Datastream/Observations in dataArray format.", (done) => {
-            const infos:Iinfos  = {
+            const infos = addTest({
                 api: `{get} Datastream Observations as dataArray`,
                 apiName: "FormatDataStreamdataArray",
                 apiDescription: 'Use $resultFormat=dataArray to get datas as dataArray format.',
                 apiExample: { http: `/${testVersion}/Datastreams(1)/Observations?$resultFormat=dataArray&$select=id,result` }
-            };
+            });
             chai.request(server)
                 .get(`/test${infos.url}`)
                 .end((err: Error, res: any) => { 
@@ -140,12 +146,12 @@ describe("Output formats", () => {
 
     describe("{get} resultFormat graph", () => {
         it("Return result in graph format.", (done) => {
-            const infos:Iinfos  = {
+            const infos = addTest({
                 api: `{get} ResultFormat as graph`,
                 apiName: "FormatGraph",
                 apiDescription: 'Use $resultFormat=graph to get datas into graphical representation.<br><img class="tabLogo" src="./assets/graph.png" alt="graph result">',
                 apiExample: { http: `/${testVersion}/Datastreams(1)/Observations?$resultFormat=graph` }
-            };
+            });
             chai.request(server)
                 .get(`/test${infos.url}`)
                 .end((err: Error, res: any) => {
@@ -160,13 +166,13 @@ describe("Output formats", () => {
     
     describe("{get} resultFormat graphDatas", () => {
         it("Return result in graphDatas format.", (done) => {
-            const infos:Iinfos  = {
+            const infos = addTest({
                 api: `{get} ResultFormat as graphDatas`,
                 apiName: "FormatGraphDatas",
                 apiDescription: "Use $resultFormat=graphDatas to get datas into echarts compatible format.",
                 apiExample: { http: `/${testVersion}/Datastreams(1)/Observations?$resultFormat=graphDatas` },
                 apiReference: "https://echarts.apache.org/en/index.html"
-            };
+            });
             chai.request(server)
                 .get(`/test${infos.url}`)
                 .end((err: Error, res: any) => {

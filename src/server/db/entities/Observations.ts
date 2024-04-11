@@ -69,6 +69,7 @@ export class Observations extends Common {
     return input;
   }
 
+  // Override post to prepare datas before use super class
   async post(dataInput: object): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     if (dataInput) dataInput = await this.prepareInputResult(dataInput);
@@ -76,7 +77,7 @@ export class Observations extends Common {
       
     } else return await super.post(dataInput);
   }
-
+  // Override update to prepare datas before use super class
   async update( idInput: bigint, dataInput: object | undefined ): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     if (dataInput) dataInput = await this.prepareInputResult(dataInput);

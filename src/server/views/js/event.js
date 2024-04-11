@@ -9,12 +9,18 @@ submit.onclick = () => {
 		datas.innerText = text;
 		document.getElementById("actionForm").requestSubmit();
 	} catch (error) {
-		console.log(error);
+		console.error(error);
 	}
 };
 
 services.addEventListener("change", () => {
 	window.location.href = `${_PARAMS.services[services.value].root}/Query`;
+});
+
+expandOption.addEventListener("exit", () => {
+	console.log("=====================================================");
+	show(subExpandOption);
+	populateMultiSelect("subExpandOption", getRelationsList(expandOption.value));
 });
 
 preview.onclick = () => {
@@ -268,13 +274,3 @@ function prepareForm() {
 		document.getElementById("actionForm").requestSubmit();
 	}
 }
-
-btnTool.onclick = async () => {
-	var i = 0;
-	var step = +loopStep.value;
-	for (i = 5; i <= 1000000; i += step) {
-
-		console.log(i);
-	}
-
-};

@@ -2,37 +2,36 @@ import fs from "fs";
 import path from "path";
 import { Iinfos, nbAdd, proxy } from "./constant";
 import util from "util";
+export const _LOG: string[] = [];
+let _INDEX = 0;
+export function writeLog(ok: boolean) {
+    if (ok === true) _LOG[_INDEX] = _LOG[_INDEX].replace('❌', '✔️');
+    fs.writeFile(path.resolve(__dirname, "../tests.md"), _LOG.join('\r'), function () {});
+}
+
+// const createJSON = (data: any) => JSON.stringify(data, null, 4).replace(/[\n]+/g, "|\t");
 
 const _SEP = '```';
 export const AddToTestFile = (datas: string): void => {
-    fs.appendFile(path.resolve(__dirname, "../tests.md"), datas, function (err) {
-        if (err) throw err;
-      });
+    _LOG.push(datas);
     };
 
 export function addStartNewTest(title: string) {
-    AddToTestFile(`\r\r## <a id="${title}">${title}</a>           [🚧](#start)\r\r`);
+    _LOG.push(`\r\r## <a id="${title.replace(/[ ]+/g, "")}">${title}</a>           [🚧](#start)\r\r`);
 }
 
-export function addGetTest(infos: Iinfos) {
-    AddToTestFile(`   ${nbAdd()}. ${infos.api}\r [GET ${infos.url}](${proxy(true)}${encodeURI(infos.url)}) ✔️\r`);
+export function addTest(infos: Iinfos): Iinfos {
+    const verb = infos.api.split("}")[0].split("{")[1];
+    _LOG.push(`   ${nbAdd()}. ${infos.api}\r [${verb ? verb.toUpperCase() : "GET"} ${infos.url}](${proxy(true)}${encodeURI(infos.url)}) ❌`);
+    _INDEX = _LOG.length - 1;
+    if(infos.apiParamExample) _LOG.push(postDatas(infos.apiParamExample));
+    writeLog(false);
+    return infos;
 }
 
-export function addPostTest(infos: Iinfos, datas: any) {
-    AddToTestFile(`  ${nbAdd()}. ${infos.api}\r [POST ${infos.url}](${proxy(true)}${encodeURI(infos.url)}) ✔️\r\n${postDatas(datas)}\r\n`);
-    // AddToTestFile(`  ${nbAdd()}. ${infos.api}\r [POST ${infos.url}](${proxy(true)}${encodeURI(infos.url +"?$datas=" + btoa(JSON.stringify(datas)))}) ✔️\r\n${postDatas(datas)}\r\n`);
-}
+
 export function addPostFile(infos: Iinfos) {
-    AddToTestFile(`  ${nbAdd()}. ${infos.api}\r [POST ${infos.url}](${proxy(true)}${encodeURI(infos.url)}) ✔️\r\n`);
-    // AddToTestFile(`  ${nbAdd()}. ${infos.api}\r [POST ${infos.url}](${proxy(true)}${encodeURI(infos.url +"?$datas=" + btoa(JSON.stringify(datas)))}) ✔️\r\n${postDatas(datas)}\r\n`);
-}
-export function addPatchTest(infos: Iinfos, datas: any) {
-    AddToTestFile(`  ${nbAdd()}. ${infos.api}\r [PATCH ${infos.url}](${proxy(true)}${encodeURI(infos.url)}) ✔️\r\n${postDatas(datas)}\r\n`);
-    // AddToTestFile(`  ${nbAdd()}. ${infos.api}\r [PATCH ${infos.url}](${proxy(true)}${encodeURI(infos.url +"?$datas=" + btoa(JSON.stringify(datas)))}) ✔️\r\n${postDatas(datas)}\r\n`);
-
-}
-export function addDeleteTest(infos: Iinfos) {
-    AddToTestFile(`  ${nbAdd()}. ${infos.api}\r [DELETE ${infos.url}](${proxy(true)}${encodeURI(infos.url)}) ✔️\r`);
+    _LOG.push(`  ${nbAdd()}. ${infos.api}\r [POST ${infos.url}](${proxy(true)}${encodeURI(infos.url)}) ✔️\r\n`);
 }
 
 export const postDatas = (input: any): string =>  `${_SEP}js\r\n${util.inspect(input, { breakLength: Infinity, showHidden: true, depth: Infinity })} \r\n${_SEP}\r\n`;

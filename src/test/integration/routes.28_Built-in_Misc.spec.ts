@@ -10,9 +10,9 @@ process.env.NODE_ENV = "test";
 
 import chai from "chai";
 import chaiHttp from "chai-http";
-import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult, testVersion, Iinfos } from "./constant";
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, limitResult, testVersion } from "./constant";
 import { server } from "../../server/index";
-import { addGetTest, addStartNewTest } from "./tests";
+import { addStartNewTest, addTest, writeLog } from "./tests";
 
 
 chai.use(chaiHttp);
@@ -34,8 +34,13 @@ addToApiDoc({
 });
    
 describe("Odata BuiltInMisc", () => {
+    before((done) => {
+        addStartNewTest("Built in Miscs");
+		done();
+	});
+	afterEach(() => { writeLog(true); });
     it("interval(1 hour)", (done) => {
-        const infos:Iinfos  = {
+        const infos = addTest({
             api: "{get} Observations Interval",
             url: `/${testVersion}/Datastreams(3)/Observations?$interval=1 hour`,
             apiName: "BuiltInMiscInterval",
@@ -46,11 +51,10 @@ describe("Odata BuiltInMisc", () => {
                             javascript: defaultGet("javascript", "KEYHTTP"),
                             python: defaultGet("python", "KEYHTTP") 
                         }
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {
-                addStartNewTest("Built in Miscs");
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
@@ -60,19 +64,19 @@ describe("Odata BuiltInMisc", () => {
                 res.body["value"][1]["@iot.id"].should.eql(0);
                 res.body["value"][1]["phenomenonTime"].should.eql('2023-03-01T12:00:00');
                 addToApiDoc({ ...infos, result: limitResult(res) });
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it("interval(15 min)", (done) => {
-        const infos: Iinfos = {
+        const infos = addTest({
             api: `{get} interval(15 min)`,
             url: `/${testVersion}/Datastreams(3)/Observations?$interval=15 min`,
             apiName: "",
             apiDescription: "",
             apiReference: ""
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => { 
@@ -84,19 +88,19 @@ describe("Odata BuiltInMisc", () => {
                 res.body["value"][0]["phenomenonTime"].should.eql('2023-03-01T11:00:00');
                 res.body["value"][1]["@iot.id"].should.eql(0);
                 res.body["value"][1]["phenomenonTime"].should.eql('2023-03-01T11:15:00');
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it("interval(1 min)", (done) => {
-        const infos: Iinfos = {
+        const infos = addTest({
             api: `{get} interval(1 min)`,
             url: `/${testVersion}/Datastreams(3)/Observations?$interval=1 min`,
             apiName: "",
             apiDescription: "",
             apiReference: ""
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => {     
@@ -108,19 +112,19 @@ describe("Odata BuiltInMisc", () => {
                 res.body["value"][0]["phenomenonTime"].should.eql('2023-03-01T10:50:00');
                 res.body["value"][1]["@iot.id"].should.eql(0);
                 res.body["value"][1]["phenomenonTime"].should.eql('2023-03-01T10:51:00');
-                addGetTest(infos);
+                
                 done();
             });
     });
 
     it("interval(1 day)", (done) => {
-        const infos: Iinfos = {
+        const infos = addTest({
             api: `{get} interval(1 day)`,
             url: `/${testVersion}/Datastreams(4)/Observations?$interval=1 day`,
             apiName: "",
             apiDescription: "",
             apiReference: ""
-        };
+        });
         chai.request(server)
             .get(`/test${infos.url}`)
             .end((err: Error, res: any) => { 
@@ -134,7 +138,7 @@ describe("Odata BuiltInMisc", () => {
                 res.body["value"][1]["phenomenonTime"].should.eql('2023-04-03T02:00:00');
                 res.body["value"][5]["@iot.id"].should.eql(78);
                 res.body["value"][5]["phenomenonTime"].should.eql('2023-04-07T02:00:00');
-                addGetTest(infos);
+                
                 done();
             });
     });

@@ -28,14 +28,13 @@ import {
     nbColorTitle,
     nbColor,
     testVersion,
-    _RAWDB,
-    Iinfos
+    _RAWDB
 } from "./constant";
 import { server } from "../../server/index";
 import { Ientity } from "../../server/types";
 import { testsKeys as observations_testsKeys } from "./routes.11_observations.spec";
 import { count, executeQuery, last } from "./executeQuery";
-import { addDeleteTest, addGetTest, addPatchTest, addPostTest, addStartNewTest } from "./tests";
+import { addStartNewTest, addTest, writeLog } from "./tests";
 
 const testsKeys = ["@iot.id", "@iot.selfLink", "Observations@iot.navigationLink", "name", "description", "encodingType", "feature"];
 chai.use(chaiHttp);
@@ -74,8 +73,9 @@ addToApiDoc({
     });
 
 	describe(`{get} ${entity.name} ${nbColorTitle}[9.2]`, () => {
+		afterEach(() => { writeLog(true); });
 		it(`Return all ${entity.name} ${nbColor}[9.2.2]`, (done) => {
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{get} ${entity.name} Get all`,
 				url: `/${testVersion}/${entity.name}`,
 				apiName: `GetAll${entity.name}`,
@@ -88,7 +88,7 @@ addToApiDoc({
 					python: defaultGet("python", "KEYHTTP")
 				},
 				apiSuccess: ["{number} id @iot.id", "{relation} selfLink @iot.selfLink", ...success]
-			};
+			});
             executeQuery(count(entity.table)).then((result) => {
                     chai.request(server)
                         .get(`/test/${testVersion}/${entity.name}`)
@@ -103,22 +103,20 @@ addToApiDoc({
                             res.body.value[0].should.include.keys(testsKeys);
                             addToApiDoc({ ...infos, result: limitResult(res) });
                             docs[docs.length - 1].apiErrorExample = JSON.stringify({ "code": 404, "message": "Not Found" }, null, 4);
-					addGetTest(infos);
-
                             done();
                         });
                 });
         });
 
         it(`Return Feature of interest ${nbColor}[9.2.3]`, (done) => {
-            const infos:Iinfos  = {
+            const infos = addTest({
                 api: `{get} ${entity.name}(:id) Get one`,
 				url : `/${testVersion}/${entity.name}(1)`,
                 apiName: `GetOne${entity.name}`,
                 apiDescription: "Get a specific Feature of interest.",
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-entity",
                 apiExample: { http: "/test" }
-            };
+            });
             chai.request(server)
                 .get(`/test${infos.url}`)
                 .end((err: Error, res: any) => {
@@ -130,19 +128,19 @@ addToApiDoc({
                     res.body["@iot.id"].should.eql(1);
                     res.body["Observations@iot.navigationLink"].should.contain("/FeaturesOfInterest(1)/Observations");
                     addToApiDoc({ ...infos, result: limitResult(res) });
-					addGetTest(infos);
+					
                     done();
                 });
         });
 
 		it(`Return error if ${entity.name} not exist ${nbColor}[9.2.4]`, (done) => {
-			const infos:Iinfos  = {
+			const infos = addTest({
 				api : `{get} return error if ${entity.name} not exist`,
 				url : `/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
 				.get(`/test${infos.url}`)
 				.end((err, res) => {
@@ -150,19 +148,19 @@ addToApiDoc({
 					res.status.should.equal(404);
 					res.type.should.equal("application/json");
 					docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4).replace(Number.MAX_SAFE_INTEGER.toString(), "1");
-					addGetTest(infos);
+					
 					done();
 				});
 		});
 
         it(`Return all features of interests using $expand query option ${nbColor}[9.3.2.1]`, (done) => {
-            const infos:Iinfos  = {
+            const infos = addTest({
                 api: `{get} ${entity.name}(:id) Get one and expand`,
                 url: `/${testVersion}/${entity.name}(1)?$expand=Observations`,
                 apiName: `GetExpandObservations${entity.name}`,
                 apiDescription: "Get a specific Feature of interest and expand Observations",
                 apiExample: { http: "/test" }
-            };
+            });
             chai.request(server)
                 .get(`/test${infos.url}`)
                 .end((err: Error, res: any) => {
@@ -174,20 +172,20 @@ addToApiDoc({
                     res.body.Observations[0].should.include.keys(observations_testsKeys);
                     res.body["@iot.id"].should.eql(1);
                     addToApiDoc({ ...infos, result: limitResult(res, "Observations") });
-					addGetTest(infos);
+					
                     done();
                 });
         });
 
         it(`Return Datastreams Subentity Observations ${nbColor}[9.2.6]`, (done) => {
             const name = "Observations";
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{get} ${entity.name}(:id) Get Subentity ${name}`,
 				url: `/${testVersion}/${entity.name}(12)/${name}`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};            
+			});            
             chai.request(server)
             .get(`/test${infos.url}`)
                 .end((err: Error, res: any) => {
@@ -199,20 +197,20 @@ addToApiDoc({
                     res.body.value[0]["Datastream@iot.navigationLink"].should.contain(`/${name}(${id})/Datastream`);
                     res.body.value[0]["MultiDatastream@iot.navigationLink"].should.contain(`/${name}(${id})/MultiDatastream`);
                     res.body.value[0]["FeatureOfInterest@iot.navigationLink"].should.contain(`/${name}(${id})/FeatureOfInterest`);
-					addGetTest(infos);
+					
                     done();
                 });
         });
 
         it(`Return Datastreams Expand Observations ${nbColor}[9.3.2.1]`, (done) => {
             const name = "Observations";
-            const infos: Iinfos = {
+            const infos = addTest({
 				api: `{get} return ${entity.name} Expand ${name}`,
 				url: `/${testVersion}/${entity.name}(12)?$expand=${name}`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
             chai.request(server)
             .get(`/test${infos.url}`)
                 .end((err: Error, res: any) => {
@@ -224,13 +222,14 @@ addToApiDoc({
                     res.body[name][0]["FeatureOfInterest@iot.navigationLink"].should.contain(`/${name}(${id})/FeatureOfInterest`);
                     res.body[name][0]["Datastream@iot.navigationLink"].should.contain(`${name}(${id})/Datastream`);
                     res.body[name][0]["MultiDatastream@iot.navigationLink"].should.contain(`${name}(${id})/MultiDatastream`);
-					addGetTest(infos);
+					
                     done();
                 });
         });
     });
 
 	describe(`{post} ${entity.name} ${nbColorTitle}[10.2]`, () => {
+		afterEach(() => { writeLog(true); });
 		it(`Return added ${entity.name} ${nbColor}[10.2.1]`, (done) => {
             const datas = {
                 "name": "Weather Station YYC.",
@@ -241,7 +240,7 @@ addToApiDoc({
                     "coordinates": [48.11829243294942, -1.717928984533772]
                 }
             };
-            const infos:Iinfos  = {
+            const infos = addTest({
                 api: `{post} ${entity.name} Post basic`,
                 url: `/${testVersion}/${entity.name}`,
                 apiName: `Post${entity.name}`,
@@ -255,7 +254,7 @@ addToApiDoc({
                 },
                 apiParam: params,
                 apiParamExample: datas
-            };
+            });
             chai.request(server)
                 .post(`/test/${infos.url}`)
                 .send(infos.apiParamExample)
@@ -266,19 +265,18 @@ addToApiDoc({
                     res.type.should.equal("application/json");
                     res.body.should.include.keys(testsKeys);
                     addToApiDoc({ ...infos, result: limitResult(res) });
-					addPostTest(infos, datas);
                     done();
                 });
         });
 
         it(`Return Error if the payload is malformed ${nbColor}[10.2.2]`, (done) => {
-            const infos:Iinfos  = {
+            const infos = addTest({
                 api : `{post} return Error if the payload is malformed`,
                 url : `/${testVersion}/${entity.name}`,
                 apiName: "",
                 apiDescription: "",
                 apiReference: ""
-            };
+            });
             chai.request(server)
                 .post(`/test${infos.url}`)
                 .send({})
@@ -288,13 +286,13 @@ addToApiDoc({
                     res.status.should.equal(400);
                     res.type.should.equal("application/json");
                     docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);
-                    addPostTest(infos, {});
                     done();
                 });
         });
     });
 
 	describe(`{patch} ${entity.name} ${nbColorTitle}[10.3]`, () => {
+		afterEach(() => { writeLog(true); });
 		it(`Return updated ${entity.name} ${nbColor}[10.3.1]`, (done) => {
 	            executeQuery(last(entity.table, true)).then((result) => {
                     const datas = {
@@ -304,7 +302,7 @@ addToApiDoc({
                             "coordinates": [48.11829243294942, -1.717928984533772]
                         }
                     };
-                    const infos:Iinfos  = {
+                    const infos = addTest({
                         api: `{patch} ${entity.name} Patch one`,
                         url : `/${testVersion}/${entity.name}(${result["id"]})`,
                         apiName: `Patch${entity.name}`,
@@ -317,7 +315,7 @@ addToApiDoc({
                             python: defaultPatch("python", "KEYHTTP", datas)
                         },
                         apiParamExample: datas
-                    };
+                    });
                     chai.request(server)
                         .patch(`/test${infos.url}`)
                         .send(infos.apiParamExample)
@@ -336,8 +334,6 @@ addToApiDoc({
                                 apiDescription: "Patch a sensor.",
                                 result: res
                             });
-						addPatchTest(infos, datas);
-
                             done();
                         });
                 });
@@ -351,13 +347,13 @@ addToApiDoc({
                     "coordinates": [-115.06, 55.05]
                 }
             };
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{patch} return Error if the ${entity.name} not exist`,
 				url: `/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
 				.patch(`/test${infos.url}`)
 				.send(datas)
@@ -367,16 +363,16 @@ addToApiDoc({
 					res.status.should.equal(404);
 					res.type.should.equal("application/json");
 					docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);
-					addPatchTest(infos, datas);
 					done();
 				});
 		});
 	});
 
 	describe(`{delete} ${entity.name} ${nbColorTitle}[10.4]`, () => {
+		afterEach(() => { writeLog(true); });
 		it(`Delete ${entity.name} return no content with code 204 ${nbColor}[10.4.1]`, (done) => {
 			executeQuery(`SELECT (SELECT count(id) FROM "${entity.table}")::int as count, (${last(entity.table)})::int as id `).then((beforeDelete) => {
-				const infos:Iinfos  = {
+				const infos = addTest({
 					api : `{delete} ${entity.name} Delete one`,
 					url : `/${testVersion}/${entity.name}(${beforeDelete["id"]})`,					
 					apiName: `Delete${entity.name}`,
@@ -388,7 +384,7 @@ addToApiDoc({
 						javascript: defaultDelete("javascript", "KEYHTTP"),
 						python: defaultDelete("python", "KEYHTTP")
 					}
-				};
+				});
 				chai.request(server)
 					.delete(`/test${infos.url}`)
 					.set("Cookie", `${keyTokenName}=${token}`)
@@ -401,7 +397,7 @@ addToApiDoc({
 								...infos,
 								result: res
 							});
-							addDeleteTest(infos);
+							
 							done();
 						});
 					});
@@ -409,15 +405,15 @@ addToApiDoc({
 		});
 
 		it(`Return Error if the ${entity.name} not exist`, (done) => {
-			const infos: Iinfos = {
+			const infos = addTest({
 				api: `{delete} return Error if the ${entity.name} not exist`,
 				url: `/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`,
 				apiName: "",
 				apiDescription: "",
 				apiReference: ""
-			};
+			});
 			chai.request(server)
-				.delete(`/test/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`)
+				.delete(`/test/${infos.url}`)
 				.set("Cookie", `${keyTokenName}=${token}`)
 				.end((err: Error, res: any) => {
 					should.not.exist(err);
@@ -425,7 +421,7 @@ addToApiDoc({
 					res.type.should.equal("application/json");
 					docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4);
 					generateApiDoc(docs, `apiDoc${entity.name}.js`);
-					addDeleteTest(infos);
+					
 					done();
 				});
 		});

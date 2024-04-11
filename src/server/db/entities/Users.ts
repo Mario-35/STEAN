@@ -23,7 +23,7 @@ export class Users extends Common {
     console.log(formatLog.whereIam());
     super(ctx);
   }
-
+  // Override get all to return all users only if rights are good
   async getAll(): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     if (this.ctx.user?.PDCUAS[EuserRights.SuperAdmin] === true || this.ctx.user?.PDCUAS[EuserRights.Admin] === true ) {
@@ -33,7 +33,7 @@ export class Users extends Common {
       });
     } else this.ctx.throw(401, { code: 401, detail: errors[401] });
   }
-
+  // Override to creste a new config and load it 
   async post(dataInput: object | undefined): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     if (dataInput)

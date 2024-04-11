@@ -22,8 +22,8 @@ export const graphMultiDatastream = (table: string, id: string | bigint, splitRe
           jsonb_array_elements("unitOfMeasurements")->>'name' AS name, 
           jsonb_array_elements("unitOfMeasurements")->>'symbol' AS symbol 
         FROM 
-        (SELECT * FROM ${table} WHERE id = ${id} )
-      ), 
+        (SELECT * FROM ${table} WHERE id = ${id} ) AS l
+      ),  
       results AS (
         SELECT 
           src.id, 
@@ -34,7 +34,7 @@ export const graphMultiDatastream = (table: string, id: string | bigint, splitRe
             SELECT 
               STRING_AGG(concat, ',') AS datas 
             FROM (
-                ${ query.replace("@GRAPH@", `CONCAT('[new Date("', round_minutes("resultTime", 5), '"), ', result->'value'->(select array_position(array(select jsonb_array_elements(\"unitOfMeasurements\")->> 'name' FROM (SELECT * FROM ${table} WHERE id = ${id} )), src.name)-1),']')`)}
+                ${ query.replace("@GRAPH@", `CONCAT('[new Date("', round_minutes("resultTime", 5), '"), ', result->'value'->(select array_position(array(select jsonb_array_elements(\"unitOfMeasurements\")->> 'name' FROM ( SELECT * FROM ${table} WHERE id = ${id} ) AS l), src.name)-1),']')`)}
                 ) AS nop )
         FROM 
           "multidatastream" 
@@ -49,7 +49,7 @@ export const graphMultiDatastream = (table: string, id: string | bigint, splitRe
       jsonb_array_elements("unitOfMeasurements")->> 'name' AS name, 
       jsonb_array_elements("unitOfMeasurements")->> 'symbol' AS symbol 
     FROM 
-    (SELECT * FROM ${table} WHERE id = ${ids[0]} )
+    ( SELECT * FROM ${table} WHERE id = ${ids[0]} ) AS l
   ), 
   results AS (
     SELECT 

@@ -11,14 +11,13 @@ import { addDoubleQuotes, getBigIntFromString } from "../../../helpers";
 import { formatLog } from "../../../logger";
 import { Ientity, IKeyString } from "../../../types";
 import { EoperationType } from "../../../enums";
-import { PgVisitor } from "../PgVisitor";
-import { pgQueryFromPgVisitor } from ".";
 import { asJson } from "../../../db/queries";
 import { models } from "../../../models";
 import { log } from "../../../log";
 import { createInsertValues, createUpdateValues } from "../../../models/helpers";
 import { apiAccess } from "../../../db/dataAccess";
 import * as entities from "../../../db/entities";
+import { PgVisitor } from "..";
 
 export function postSqlFromPgVisitor(datas: object, src: PgVisitor): string {
     const formatInsertEntityData = (entity: string, datas: object, main: PgVisitor): object => {
@@ -349,8 +348,8 @@ export function postSqlFromPgVisitor(datas: object, src: PgVisitor): string {
                 : `WITH ${postEntity.table} AS (INSERT INTO ${addDoubleQuotes(postEntity.table)} ${createInsertValues(src.ctx.config, formatInsertEntityData(postEntity.name, root, src))} RETURNING ${allFields})`
                 );
             }
-    const temp = pgQueryFromPgVisitor(src, src); 
-    sqlResult += asJson({
+    const temp = src.query.toPgQuery(src); 
+    if (temp) sqlResult += asJson({
         query: `SELECT ${temp && temp.select ? temp.select : "*"} FROM ${names[postEntity.table]} ${temp && temp.groupBy ? `GROUP BY ${temp.groupBy}` : ''}`, 
         singular: false, 
         strip: src.ctx.config.stripNull,

@@ -9,7 +9,7 @@
 import Koa from "koa";
 import { ADMIN } from "../constants";
 import { EuserRights } from "../enums";
-import { PgVisitor } from "../odata";
+import { PgVisitor } from "../odata/visitor";
 import { Ientity } from "../types";
 import { returnFormats } from "./returnFormats";
 
