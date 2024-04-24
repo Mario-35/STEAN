@@ -121,8 +121,7 @@
      // Return results
      if (sql) switch (this.ctx.odata.resultFormat ) {
        case returnFormats.sql:
-         return this.createReturnResult({ body: sql });
- 
+         return this.createReturnResult({ body: sql }); 
        default:
          return await executeSqlValues(this.ctx.config, sql).then((res: object) => {           
            if (this.ctx.odata.query.select && this.ctx.odata.onlyValue  === true) return this.createReturnResult({ body: String(res[ this.ctx.odata.query.select[0] == "id" ? "@iot.id" : 0 ]), });

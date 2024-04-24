@@ -1,11 +1,19 @@
+/**
+ * exportToXlsx.
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+
 import Excel from "exceljs";
 import koa from "koa";
 import postgres from "postgres";
 import { serverConfig } from "../../configuration";
 import { log } from "../../log";
-import { EextensionsType } from "../../enums";
-import { addDoubleQuotes, asyncForEach, getUrlKey, hidePassword, removeEmpty } from "../../helpers";
+import { asyncForEach } from "../../helpers";
 import { models } from "../../models";
+import { filterEntities } from "../../enums";
 
 const addConfigToExcel = async ( workbook: Excel.Workbook, config: object ) => {
   const worksheet = workbook.addWorksheet("Config");
@@ -81,7 +89,7 @@ const createColumnsList = async (ctx: koa.Context, entity: string) => {
   return columnList;
 };
 
-const exportToXlsx = async (ctx: koa.Context) => {
+export const exportToXlsx = async (ctx: koa.Context) => {
   // CReate new workBook
   const workbook = new Excel.Workbook();
   workbook.creator = "Me";
@@ -92,13 +100,7 @@ const exportToXlsx = async (ctx: koa.Context) => {
   addConfigToExcel(workbook, serverConfig.getConfigForExcelExport(ctx.config.name));
   // Loop on entities
   await asyncForEach(
-    Object.keys(ctx.model).filter(
-      (entity: string) =>
-        ctx.model[entity].table !== "" &&
-        [EextensionsType.base,
-          EextensionsType.multiDatastream,
-          EextensionsType.lora].some((r) => ctx.model[entity].extensions.includes(r))
-    ),
+    Object.keys(filterEntities(ctx.config)).filter((entity: string) => ctx.model[entity].table !== "" ),
     async (entity: string) => {
       const cols = await createColumnsList(ctx, entity);      
       const temp = await serverConfig.connection(ctx.config.name).unsafe(`select ${cols} from "${ctx.model[entity].table}" LIMIT 200`);  
@@ -112,44 +114,3 @@ const exportToXlsx = async (ctx: koa.Context) => {
   ctx.res.end();
 };
 
-const exportToJson = async (ctx: koa.Context) => {
-  // get config with hidden password
-  const result = { "create": hidePassword(serverConfig.getConfig(ctx.config.name))};
-  // get entites list
-  const entities = Object.keys(ctx.model).filter((e: string) => ctx.model[e].createOrder > 0);
-  // remove key ebservation by ThingsLocations
-  // entities[entities.indexOf('Observations')] = ctx.model.ThingsLocations.name;
-  entities.push(ctx.model.ThingsLocations.name);
-  // async loop
-  await asyncForEach(
-    // Entities list
-    entities,
-    // Action
-    async (entity: string) => {
-      if(Object.keys(ctx.model[entity].columns)) {
-        // Create columns list
-        const columnList = Object.keys(ctx.model[entity].columns).filter((e: string) => e != "id" && !e.endsWith('_id') && e[0] != '_' && ctx.model[entity].columns[e].create != "");
-        // Create relations list
-        const rels = [""];
-        Object.keys(ctx.model[entity].columns).filter((e: string) => e.endsWith('_id')).forEach((e: string) => {
-          const table = e.split("_")[0];
-          rels.push(`CASE WHEN "${e}" ISNULL THEN NULL ELSE JSON_BUILD_OBJECT('@iot.name', (SELECT REPLACE (name, '''', '''''') FROM "${table}" WHERE "${table}"."id" = ${e} LIMIT 1)) END AS "${e}"`);          
-        });   
-        const columnListWithQuotes = columnList.map(e => addDoubleQuotes(e)).join();        
-        if (columnListWithQuotes.length <= 1) rels.shift();
-        // Bulid query
-        const sql = `select ${columnListWithQuotes}${rels.length > 1 ? rels.join() : ""}\n from "${ctx.model[entity].table}" LIMIT ${getUrlKey(ctx.request.url, "limit") || ctx.config.nb_page}`;
-        // Execute query
-        const temp = await serverConfig.connection(ctx.config.name).unsafe(sql);  
-        // remove null and store datas result 
-        result[entity] = removeEmpty(temp);        
-      }  
-  });
-  // remove default columnListWithQuotes
-  delete result["FeaturesOfInterest"][0];
-  return result;
-};
-
-export const exportService = async (ctx: koa.Context) => {
-  return (ctx.url.includes("xls")) ? exportToXlsx(ctx) : exportToJson(ctx);
-};

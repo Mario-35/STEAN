@@ -6,7 +6,7 @@
  *
  */
 
-export enum EdatesType {    
+export enum EnumDatesType {    
     date = 'YYYY-MM-DD"T"HH24:MI:SSZ',
     dateWithTimeZone = 'YYYY-MM-DD HH:MI:SSTZH:TZM',
     dateWithOutTimeZone = 'YYYY-MM-DDXHH24:MI:SS'

@@ -6,16 +6,12 @@
  *
  */
 
-import { EextensionsType } from "../../enums";
+import { createEntity } from ".";
 import { Ientity } from "../../types";
 
-  export const LocationHistoricalLocation:Ientity = {
-    name: "locationsHistoricalLocations",
-    singular: "locationHistoricalLocation",
-    table: "location_historical_location",
+  export const LocationHistoricalLocation:Ientity  = createEntity("locationsHistoricalLocations", {
     createOrder: -1,
     order: -1,
-    extensions: [EextensionsType.base],
     orderBy: `"location_id"`,
     columns: {
       location_id: {
@@ -25,7 +21,7 @@ import { Ientity } from "../../types";
         },
         type: "bigint"
       },
-      historical_location_id: {
+      historicallocation_id: {
         create: "BIGINT NOT NULL",
         columnAlias() {
           return undefined;
@@ -34,18 +30,18 @@ import { Ientity } from "../../types";
       },
     },
     constraints: {
-      location_historical_location_pkey:
-        'PRIMARY KEY ("location_id", "historical_location_id")',
-      location_historical_location_historical_location_id_fkey:
-        'FOREIGN KEY ("historical_location_id") REFERENCES "historical_location"("id") ON UPDATE CASCADE ON DELETE CASCADE',
-      location_historical_location_location_id_fkey:
+      locationhistoricallocation_pkey:
+        'PRIMARY KEY ("location_id", "historicallocation_id")',
+      locationhistoricallocation_historicallocation_id_fkey:
+        'FOREIGN KEY ("historicallocation_id") REFERENCES "historicallocation"("id") ON UPDATE CASCADE ON DELETE CASCADE',
+      locationhistoricallocation_location_id_fkey:
         'FOREIGN KEY ("location_id") REFERENCES "location"("id") ON UPDATE CASCADE ON DELETE CASCADE',
     },
     indexes: {
-      location_historical_location_historical_location_id:
-        'ON public."location_historical_location" USING btree ("historical_location_id")',
-      location_historical_location_location_id:
-        'ON public."location_historical_location" USING btree ("location_id")',
+      locationhistoricallocation_historicallocation_id:
+        'ON public."locationhistoricallocation" USING btree ("historicallocation_id")',
+      locationhistoricallocation_location_id:
+        'ON public."locationhistoricallocation" USING btree ("location_id")',
     },
     relations: {},
-  };
+  });

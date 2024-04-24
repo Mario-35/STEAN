@@ -7,12 +7,10 @@
  */
 
 import { _COLUMNSEPARATOR } from "../../../constants";
-import { formatLog } from "../../../logger";
-import { core } from "./core";
+import { Core } from ".";
 
-export class GroupBy extends core {
-  constructor(input: string) {
-    console.log(formatLog.whereIam());
+export class GroupBy extends Core {
+  constructor(input?: string) {
     super(input);
   }
 }

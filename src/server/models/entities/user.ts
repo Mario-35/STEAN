@@ -6,16 +6,12 @@
  *
  */
 
-import { EextensionsType } from "../../enums";
 import { Ientity } from "../../types";
+import { createEntity } from ".";
 
-  export const User:Ientity = {
-    name: "Users",
-    singular: "User",
-    table: "user",
+  export const User:Ientity  = createEntity("Users", {
     createOrder: -1,
     order: 21,
-    extensions: [EextensionsType.admin],
     orderBy: `"name"`,
     columns: {
       id: {
@@ -97,4 +93,4 @@ import { Ientity } from "../../types";
       },
     },
     relations: {},
-  };
+  });

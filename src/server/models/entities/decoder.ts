@@ -6,16 +6,13 @@
  *
  */
 
-import { EextensionsType, Erelations } from "../../enums";
+import { createEntity } from ".";
+import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 
-  export const Decoder:Ientity = {
-    name: "Decoders",
-    singular: "Decoder",
-    table: "decoder",
+export const Decoder:Ientity  = createEntity("Decoders", {
     createOrder: 10,
     order: 12,
-    extensions: [EextensionsType.lora],
     orderBy: `"id"`,
     columns: {
       id: {
@@ -68,7 +65,7 @@ import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
     },
     relations: {
       Loras: {
-        type: Erelations.hasMany,
+        type: EnumRelations.hasMany,
         expand: `"lora"."id" in (SELECT "lora"."id" from "lora" WHERE "lora"."decoder_id" = "decoder"."id")`,
         link: `"lora"."id" in (SELECT "lora"."id" from "lora" WHERE "lora"."decoder_id" = $ID)`,
         entityName: "Loras",
@@ -78,4 +75,4 @@ import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
         tableKey: "id",
       },
     },
-  };
+  });

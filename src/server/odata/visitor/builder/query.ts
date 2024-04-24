@@ -1,5 +1,5 @@
 /**
- * OrderBy builder
+ * Query builder
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
@@ -8,16 +8,13 @@
 
 import { _COLUMNSEPARATOR } from "../../../constants";
 import { formatLog } from "../../../logger";
-import { addDoubleQuotes, cleanStringComma } from "../../../helpers";
+import { addDoubleQuotes, isCsvOrArray, isGraph, isObservation, pgQueryToString, removeAllQuotes, removeDoubleQuotes } from "../../../helpers";
 import { asJson } from "../../../db/queries";
-import { IpgQuery } from "../../../types";
+import { IconfigFile, Ientity, IKeyBoolean, IpgQuery } from "../../../types";
 import { PgVisitor, RootPgVisitor } from "..";
 import { models } from "../../../models";
-import { columnList } from "./columns";
-import { GroupBy } from "./groupBy";
-import { OrderBy } from "./orderBy";
-import { Select } from "./select";
-import { Where } from "./where";
+import { allEntities } from "../../../enums";
+import { GroupBy, OrderBy, Select, Where } from ".";
 
 export class Query  {
     where: Where;
@@ -27,47 +24,147 @@ export class Query  {
   
     constructor() {
       console.log(formatLog.whereIam());
-      this.where = new Where("");
-      this.select = new Select("");
-      this.orderBy = new OrderBy("");
-      this.groupBy = new GroupBy("");
+      this.where = new Where();
+      this.select = new Select();
+      this.orderBy = new OrderBy();
+      this.groupBy = new GroupBy();
     }
 
-    private create(main: RootPgVisitor | PgVisitor, _element?: PgVisitor): IpgQuery | undefined { 
+    private columnList(tableName: string, main: PgVisitor, element: PgVisitor): string[] | undefined  {   
+        console.log(formatLog.whereIam(tableName));
+        const testIn = (input: string): boolean => ["CONCAT", "CASE", "COALESCE"].map(e => input.includes(e) ? true : false).filter(e => e === true).length > 0;
+
+        /**
+         * 
+         * @param config config
+         * @param entity entity name
+         * @param column column name
+         * @param options options
+         * @returns formated column or 
+         */
+
+        function formatedColumn(config: IconfigFile, entity : Ientity, column: string, options?: IKeyBoolean): string | undefined {   
+            console.log(formatLog.whereIam(column));
+            if (entity.columns[column]) {
+                // is column have alias
+                const alias = entity.columns[column].columnAlias(config, options ? options : undefined);
+                if (testIn(alias || column) === true) return alias || column;
+                if (options) {
+                    if (alias && options["alias"] === true) return alias;
+                    let result: string = "";
+                    if (options["table"] === true && (testIn(alias || column) === false)) result += `${addDoubleQuotes(entity.table)}.`;
+                    result += alias || options["quoted"] === true ? addDoubleQuotes(column) : column;
+                    if (options["as"] === true || (alias && alias.includes("->")) ) result += ` AS ${addDoubleQuotes(column)}`;
+                    return result;
+                } else return column;
+            } else if (testIn(column) === true) return column;
+        };
+
+        function extractColumnName(input: string): string{   
+            const elem = input.split(input.includes(' AS ') ? ' AS ' : ".");
+            elem.shift();
+            return elem.join("."); 
+        }
+        
+        // get good entity name
+        const tempEntity = models.getEntity(main.ctx.config, tableName);
+        if (!tempEntity) {
+            console.log(formatLog.error("no entity For", tableName));
+            return;
+        }
+        // Add ceil and return if graph
+        if (isGraph(main)) return [ main.interval
+                                    ? `timestamp_ceil("resultTime", interval '${main.interval}') AS srcdate`
+                                    : `@GRAPH@`];
+        
+        // If array result add id 
+        const returnValue: string[] = isCsvOrArray(main) && !element.query.select.toString().includes(`"id"${_COLUMNSEPARATOR}`) ? ["id"] : []; 
+        // create selfLink                                   
+        const selfLink = `CONCAT('${main.ctx.decodedUrl.root}/${tempEntity.name}(', "${tempEntity.table}"."id", ')') AS "@iot.selfLink"`; 
+        // if $ref return only selfLink
+        if (element.onlyRef == true) return [selfLink];
+        if (element.showRelations == true ) returnValue.push(selfLink);
+        // create list of columns
+        const columns:string[] = (element.query.select.toString() === "*" || element.query.select.toString() === "")
+            ? Object.keys(tempEntity.columns)
+                .filter((word) => !word.includes("_"))
+                .filter(e => !(e === "result" && element.splitResult))
+                .filter(e => !tempEntity.columns[e].extensions || tempEntity.columns[e].extensions && main.ctx.config.extensions.includes(tempEntity.columns[e].extensions || ""))
+            : element.query.select.toString().split(_COLUMNSEPARATOR).filter((word: string) => word.trim() != "").map(e => removeDoubleQuotes(e));
+        // loop on columns
+        columns.map((column: string) => {
+            const force = ["id", "result"].includes(column) ? true : false;
+            return formatedColumn(main.ctx.config, tempEntity, column, { valueskeys: element.valueskeys, quoted: true, table: true, alias: force, as: isGraph(main) ? false : true } ) || "";
+        }) .filter(e => e != "" ).forEach((e: string) => {    
+            if (isCsvOrArray(main)) element.addToArrayNames(e);
+            returnValue.push(e);
+            if (main.interval) main.addToIntervalColumns(extractColumnName(e));
+            if (e === "id" && (element.showRelations == true || isCsvOrArray(main))) {
+                if (isCsvOrArray(main)) element.addToArrayNames("id"); 
+                else returnValue.push(selfLink);    
+            }     
+             if (isCsvOrArray(main) && ["payload", "deveui", "phenomenonTime"].includes(removeAllQuotes(e))) element.addToArrayNames(e);
+        });
+        // add interval if requested
+        if (main.interval) main.addToIntervalColumns(`CONCAT('${main.ctx.decodedUrl.root}/${tempEntity.name}(', COALESCE("@iot.id", '0')::text, ')') AS "@iot.selfLink"`);
+        // If observation entity
+        if (isObservation(tempEntity) === true && element.onlyRef === false ) {
+            if (main.interval && !isGraph(main)) returnValue.push(`timestamp_ceil("resultTime", interval '${main.interval}') AS srcdate`);
+            if (element.splitResult) element.splitResult.forEach((elem: string) => {
+                const one = element && element.splitResult && element.splitResult.length === 1;
+                const alias: string = one ? "result" : elem;
+                returnValue.push( `(result->>'valueskeys')::json->'${element.splitResult && one ? removeAllQuotes(element.splitResult[0]) : alias}' AS "${ one ? elem : alias}"` );
+                element.addToArrayNames(one ? elem : alias);
+            });
+        }
+        return returnValue;
+    }
+
+    // Create SQL Query
+    create(main: RootPgVisitor | PgVisitor, _element?: PgVisitor): IpgQuery | undefined { 
         const element = _element ? _element : main;
         console.log(formatLog.whereIam(element.entity || "blank"));
         if (element.entity.trim() !== "") {
-            const select = columnList(element.entity, main, element);        
+            // get columns
+            const select = this.columnList(element.entity, main, element);
+            // if not null
             if (select) {
-                const realEntityName = models.getEntityName(main.ctx.config, element.entity);
+                // Get real entity name (plural)
+                const realEntityName = models.getEntityName(main.ctx.config, element.entity);                
                 if (realEntityName) {
+                    // Create relations list
                     const relations: string[] = Object.keys(main.ctx.model[realEntityName].relations);
-                    element.includes.forEach((item) => {
+                    // loop includes
+                    if (element.includes) element.includes.forEach((item) => {
                         const name = item.navigationProperty;
                         const index = relations.indexOf(name);
+                        // if is relation
                         if (index >= 0) {
                             item.entity = name;
-                            item.query.where.add(`${item.query.where.toString().trim() == "" ? '' : " AND "}${main.ctx.model[realEntityName].relations[name].expand}`);                                                            
+                            item.query.where.add(`${item.query.where.notNull() === true ?  " AND " : ''}${main.ctx.model[realEntityName].relations[name].expand}`); 
+                            // create sql query    for this relatiion (IN JSON result)                                                       
                             relations[index] = `(${asJson({ 
-                                query: this.pgQueryToString(this.create(main, item)), 
+                                query: pgQueryToString(this.create(item)), 
                                 singular : models.isSingular(main.ctx.config, name),
                                 strip: main.ctx.config.stripNull,
                                 count: false })}) AS ${addDoubleQuotes(name)}`;
                         }
                     });
+                    // create all relations Query
                     relations
-                    .filter(e => e.includes('SELECT') || Object.keys(main.ctx.model).includes(models.getEntityName(main.ctx.config, e) || e))
-                    .forEach((rel: string) => {
-                        if (rel[0] == "(") select.push(rel);
-                        else if (element.showRelations == true && main.onlyRef == false ) {
-                            const tempTable = models.getEntityName(main.ctx.config, rel);
-                            let stream: string | undefined = undefined;
-                            if (tempTable && !main.ctx.model[realEntityName].relations[rel].relationKey.startsWith("_"))
-                                if ( main.ctx.config.stripNull === true && realEntityName === "Observations" &&  tempTable.endsWith("Datastreams")) stream = `CASE WHEN ${main.ctx.model[tempTable].table}_id NOTNULL THEN`;
-                                    select.push(`${stream ? stream : ""} CONCAT('${main.ctx.decodedUrl.root}/${main.ctx.model[realEntityName].name}(', ${addDoubleQuotes(main.ctx.model[realEntityName].table)}."id", ')/${rel}') ${stream ? "END ": ""}AS "${rel}@iot.navigationLink"`);                            
-                                    main.addToIntervalColumns(`'${main.ctx.decodedUrl.root}/${main.ctx.model[realEntityName].name}(0)/${rel}' AS "${rel}@iot.navigationLink"`);
-                        }
-                    });
+                        .filter(e => e.includes('SELECT') || Object.keys(main.ctx.model).includes(models.getEntityName(main.ctx.config, e) || e))
+                        .forEach((rel: string) => {
+                            if (rel[0] == "(") select.push(rel);
+                            else if (element.showRelations == true && main.onlyRef == false ) {
+                                const tempTable = models.getEntityName(main.ctx.config, rel);
+                                let stream: string | undefined = undefined;
+                                if (tempTable && !main.ctx.model[realEntityName].relations[rel].relationKey.startsWith("_"))
+                                    if ( main.ctx.config.stripNull === true && realEntityName === main.ctx.model[allEntities.Observations].name &&  tempTable.endsWith(main.ctx.model[allEntities.Datastreams].name)) stream = `CASE WHEN ${main.ctx.model[tempTable].table}_id NOTNULL THEN`;
+                                        select.push(`${stream ? stream : ""} CONCAT('${main.ctx.decodedUrl.root}/${main.ctx.model[realEntityName].name}(', ${addDoubleQuotes(main.ctx.model[realEntityName].table)}."id", ')/${rel}') ${stream ? "END ": ""}AS "${rel}@iot.navigationLink"`);                            
+                                        main.addToIntervalColumns(`'${main.ctx.decodedUrl.root}/${main.ctx.model[realEntityName].name}(0)/${rel}' AS "${rel}@iot.navigationLink"`);
+                            }
+                        });
+
                     return { 
                         select: select.join(",\n\t\t"), 
                         from: main.ctx.model[realEntityName].table , 
@@ -76,36 +173,12 @@ export class Query  {
                         orderby: element.query.orderBy.notNull() === true ?  element.query.orderBy.toString() : main.ctx.model[realEntityName].orderBy,
                         skip: element.skip,
                         limit: element.limit,
-                        count: `SELECT count (DISTINCT ${Object.keys(main.ctx.model[realEntityName].columns)[0]}) from (SELECT ${Object.keys(main.ctx.model[realEntityName].columns)[0]} FROM "${main.ctx.model[realEntityName].table}"${element.query.where.notNull() === true ? ` WHERE ${element.query.where.toString()}` : ''}) AS c`
+                        count: `SELECT COUNT (DISTINCT ${Object.keys(main.ctx.model[realEntityName].columns)[0]}) FROM (SELECT ${Object.keys(main.ctx.model[realEntityName].columns)[0]} FROM "${main.ctx.model[realEntityName].table}"${element.query.where.notNull() === true ? ` WHERE ${element.query.where.toString()}` : ''}) AS c`
                     };
                 }    
             }
         }
-        
         return undefined;
     }
 
-    private pgQueryToString (input: IpgQuery | undefined): string {    
-        return input ? 
-            `SELECT ${input.select}\n FROM "${input.from}"\n ${input.where 
-                ? `WHERE ${input.where}\n` 
-                : ''}${input.groupBy 
-                ? `GROUP BY ${cleanStringComma(input.groupBy)}\n` 
-                : ''}${input.orderby 
-                ? `ORDER BY ${cleanStringComma(input.orderby,["ASC","DESC"])}\n` 
-                : ''}${input.skip && input.skip > 0 
-                ? `OFFSET ${input.skip}\n` 
-                : ''} ${input.limit && input.limit > 0 
-                ? `LIMIT ${input.limit}\n` 
-                : ''}` 
-            : 'Error';
-    }
-
-    toString (main: RootPgVisitor | PgVisitor): string {    
-        return this.pgQueryToString(this.toPgQuery(main))
-    }
-
-    toPgQuery (main: RootPgVisitor | PgVisitor): IpgQuery | undefined {    
-        return this.create(main);
-    }
 }

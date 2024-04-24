@@ -7,13 +7,8 @@
  */
 
 import { IentityColumn, IentityRelation, IKeyString } from ".";
-import { EextensionsType } from "../enums";
 
-export interface Ientity {
-     name: string; // Entity Name
-     clone?: string;
-     singular: string;
-     table: string;
+export interface Ientity1 {
      createOrder: number;
      order: number;
      orderBy: string;
@@ -22,5 +17,10 @@ export interface Ientity {
      constraints?: IKeyString;
      indexes?: IKeyString;
      after?: string;
-     extensions: EextensionsType[];
+}
+
+export interface Ientity extends Ientity1 {
+     name: string; // Entity Name
+     singular: string;
+     table: string;
 }

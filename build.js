@@ -3,15 +3,20 @@ const minify = require("@node-minify/core");
 const cleanCSS = require("@node-minify/clean-css");
 const htmlMinifier = require('@node-minify/html-minifier');
 var UglifyJS = require("uglify-js");
-
 var globby = require("globby");
 var path = require("path");
 var extend = require("extend");
 var fs = require("graceful-fs");
 var mkdirp = require("mkdirp");
-
 var archiver = require("archiver");
 var crypto = require("crypto");
+process.env.NODE_ENV = "build";
+const updateJson = require("./src/server/configuration/update.json");
+updateJson["decoders"] = {
+  "rhf1s001" : require("./sandbox/loras/RHF1S001"),
+  "senscap" : require("./sandbox/loras/Sensecap.js"),
+  "wattEco" : require("./sandbox/loras/WattEco.js") 
+};
 
 const encrypt = (text, key) => {
   const iv = crypto.randomBytes(16);
@@ -129,7 +134,7 @@ function ugly (dirPath, options) {
     configFile: null,
     callback: null,
     logLevel: "info",
-    removeAttributeQuotes: true
+    removeAttributeQuotes: true,
   }, options);
     
   // grab and minify all the js files
@@ -164,9 +169,9 @@ function uglyJs (dirPath) {
   var files = globby.sync(["**/*.js"], {
     cwd: dirPath
   });
-  const options = { 
-    mangle: true,
+  const options = {
     compress: {
+      drop_console: true,
       sequences: true,
       dead_code: true,
       conditionals: true,
@@ -199,21 +204,26 @@ if (process.argv.includes("docker")) mode.push("docker");
 console.log(`\x1b[32m =========================== \x1b[36m Start ${mode} \x1b[32m =========================== \x1b[0m`);
 
 deleteFileSync("./dist.zip");
-
-copyFolderRecursiveSync("./src/apidoc", "build/");
+copyFolderRecursiveSync("./src/server/apidoc", "build/");
 copyFolderRecursiveSync("./src/server/views/js", "build/views/");
 copyFolderRecursiveSync( "./src/server/views/css", "build/views/" );
-copyFileSync( "./src/server/routes/favicon.ico", "build/routes/" );
+copyFolderRecursiveSync( "./src/server/db/createDb/triggers", "build/db/createDb/" );
+copyFileSync( "./src/server/favicon.ico", "build/" );
+copyFileSync("./src/server/models/model.drawio", "build/models/");
 
 const packageJson = require("./package.json");
 delete packageJson.scripts;
 delete packageJson.devDependencies;
 delete packageJson.apidoc;
 
+
+fs.writeFile("build/db/createDb/testsDatas.js", `"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.testsDatas=void 0;const testsDatas=()=>[];exports.testsDatas=testsDatas;`);
+messageWrite("Rewrite ====> testsDatas.js");
+  
 fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
     encoding: "utf-8"
 },function (err) {
-  console.log(err);
+  if (err) console.log(err);
   messageWrite("package.json");
   if (!mode.includes("dev")) {  
     ugly("./build/", {
@@ -232,19 +242,9 @@ fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
   
   try {
     try {
-      const temp = fs.readFileSync(path.join("./src/server/configuration/", "config.json"), "utf-8");
       const key = fs.readFileSync(path.join("./src/server/configuration/", ".key"), "utf-8");
       const queryHtml = fs.readFileSync(path.join("./src/server/views/query/", "query.html"), "utf-8");
-      const adminHtml = fs.readFileSync(path.join("./src/server/views/admin/", "admin.html"), "utf-8");
-      const input = JSON.parse(temp);
-      const what = "development";
-      Object.keys(input[what]).forEach(e => {
-        Object.keys(input[what][e]).forEach(r => {
-          input[what][e][r] = String(input[what][e][r]);
-          // input[what][e][r] = encrypt(String(input[what][e][r]), key);
-        });
-      });
-      const conf = mode.includes("docker") ? {
+      const conf = {
         "admin": {
             "key": "my qui ses scions",
             "pg_host": "db",
@@ -264,24 +264,15 @@ fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
             "webSite": "https://api.geosas.fr/sensorthings/",
             "retry": 10,
         }
-    }: input[what];
-      writeFile("./build/configuration/config.json", JSON.stringify(conf, null, 2));
+      };
+      if (mode.includes("docker")) writeFile("./build/configuration/config.json", JSON.stringify(conf, null, 2));
       writeFile("./build/configuration/.key", key);
-      minify({
-        compressor: htmlMinifier,
-        content: queryHtml.replace("@version@", packageJson.version)
-      }).then(function (min) {
-         console.log(`\x1b[32m query.html \x1b[36m minify to ==> \x1b[35m query.html \x1b[0m`);
+      writeFile("./build/configuration/update.json", JSON.stringify(updateJson, null, 2));
+
+      minify({ compressor: htmlMinifier, content: queryHtml.replace("@version@", packageJson.version) }).then(function (min) {
+        console.log(`\x1b[32m query.html \x1b[36m minify to ==> \x1b[35m query.html \x1b[0m`);
         writeFile("./build/views/query/query.html", min);
       });
-      minify({
-        compressor: htmlMinifier,
-        content: adminHtml.replace("@version@", packageJson.version)
-      }).then(function (min) {
-         console.log(`\x1b[32m admin.html \x1b[36m minify to ==> \x1b[35m admin.html \x1b[0m`);
-        writeFile("./build/views/admin/admin.html", min);
-      });
-
 
     } catch (error) {
       console.log(error);
@@ -297,4 +288,3 @@ fs.writeFile("build/package.json", JSON.stringify(packageJson, null, 2), {
   }); 
   
 });
-

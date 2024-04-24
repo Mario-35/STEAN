@@ -13,7 +13,7 @@ import { IreturnResult } from "../../types";
 import { serverConfig } from "../../configuration";
 import { hidePassword } from "../../helpers";
 import { errors } from "../../messages/";
-import { EuserRights } from "../../enums";
+import { EnumUserRights } from "../../enums";
 import { ADMIN } from "../../constants";
 import { executeSqlValues } from "../helpers";
 import { models } from "../../models";
@@ -26,7 +26,7 @@ export class Users extends Common {
   // Override get all to return all users only if rights are good
   async getAll(): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
-    if (this.ctx.user?.PDCUAS[EuserRights.SuperAdmin] === true || this.ctx.user?.PDCUAS[EuserRights.Admin] === true ) {
+    if (this.ctx.user?.PDCUAS[EnumUserRights.SuperAdmin] === true || this.ctx.user?.PDCUAS[EnumUserRights.Admin] === true ) {
       const temp = await executeSqlValues(serverConfig.getConfig(ADMIN), `SELECT ${models.getSelectColumnList(models.DBAdmin(serverConfig.getConfig(ADMIN)).Users)} FROM "user" ORDER BY "id"`);      
       return this.createReturnResult({
         body: hidePassword(temp),

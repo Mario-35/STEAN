@@ -10,7 +10,6 @@
         "moduleResolution": "node",
         "noUnusedLocals": true,
         "noUnusedParameters": false,
-        "removeComments": true,
         "strictPropertyInitialization": false,
         "preserveConstEnums": true,
         "sourceMap": false,
@@ -21,7 +20,7 @@
         "outDir": "build",
         "noEmit": false,
         "module": "commonjs",
-        "target": "es2017",
+        "target": "es2022",
         "lib": [
             "es2017"
         ]
@@ -34,7 +33,7 @@
     "include": [
         "src/server/**/*.ts",
         "env"
-    ],
+, "src/server/db/helpers/getEntitesListts", "src/server/views/monitor/index.js"    ],
     "exclude": [
         "node_modules",
         "migrations",

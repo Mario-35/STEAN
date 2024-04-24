@@ -153,7 +153,7 @@ function init() {
 	idOption.value = _PARAMS.decodedUrl.idStr | _PARAMS.decodedUrl.id;
 
 	refresh();
-	optVersion.value =  _PARAMS.decodedUrl.version;
+	optVersion.value = _PARAMS.decodedUrl.version;
 	optHost.value = _PARAMS.decodedUrl.linkbase;
 	if (_PARAMS.datas) datas.json_value = _PARAMS.datas;
 	queryOptions.value = _PARAMS.options;

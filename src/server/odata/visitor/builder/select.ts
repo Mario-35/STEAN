@@ -1,19 +1,14 @@
 /**
- * pgVisitor for odata.
+ * select for query builder.
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
+import { Core } from ".";
 
-import { _COLUMNSEPARATOR } from "../../../constants";
-import { formatLog } from "../../../logger";
-import { core } from "./core";
-
-export class Select extends core{
-  
-  constructor(input: string) {
-    console.log(formatLog.whereIam());
+export class Select extends Core{  
+  constructor(input?: string) {
     super(input);
   }
 }

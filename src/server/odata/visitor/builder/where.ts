@@ -5,15 +5,12 @@
  * @author mario.adam@inrae.fr
  *
  */
+import { Core } from ".";
 
 import { _COLUMNSEPARATOR } from "../../../constants";
-import { formatLog } from "../../../logger";
-import { core } from "./core";
 
-export class Where extends core {
-  
-  constructor(input: string) {
-    console.log(formatLog.whereIam());
+export class Where extends Core {  
+  constructor(input?: string) {
     super(input);
   }
 }

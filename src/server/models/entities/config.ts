@@ -6,7 +6,6 @@
  *
  */
 
-import { EextensionsType } from "../../enums";
 import { Ientity } from "../../types";
 
   export const Config:Ientity = {
@@ -15,7 +14,6 @@ import { Ientity } from "../../types";
     table: "",
     createOrder: -1,
     order: 20,
-    extensions: [EextensionsType.logs, EextensionsType.admin],
     orderBy: `"name"`,
     columns: {},
     relations: {},

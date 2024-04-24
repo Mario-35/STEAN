@@ -19,7 +19,7 @@ import { createIqueryFromContext } from "../views/helpers/";
 import { createQueryHtml } from "../views/query";
 import { createOdata } from "../odata";
 import { errors, infos, msg } from "../messages";
-import { EuserRights } from "../enums";
+import { EnumUserRights } from "../enums";
 import { loginUser } from "../authentication";
 import { ADMIN } from "../constants";
 import { executeSqlValues } from "../db/helpers";
@@ -181,7 +181,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
 
 protectedRoutes.patch("/(.*)", async (ctx) => {
   if (
-    isAllowedTo(ctx, EuserRights.Post) === true &&
+    isAllowedTo(ctx, EnumUserRights.Post) === true &&
     Object.keys(ctx.request.body).length > 0
   ) {
     const odataVisitor = await createOdata(ctx);
@@ -209,7 +209,7 @@ protectedRoutes.patch("/(.*)", async (ctx) => {
 });
 
 protectedRoutes.delete("/(.*)", async (ctx) => {
-  if (isAllowedTo(ctx, EuserRights.Delete) === true) {
+  if (isAllowedTo(ctx, EnumUserRights.Delete) === true) {
     const odataVisitor = await createOdata(ctx);
     if (odataVisitor) ctx.odata = odataVisitor;
     if (ctx.odata) {

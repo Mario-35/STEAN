@@ -13,7 +13,7 @@ import { DOUBLEQUOTEDCOMA, ESCAPE_SIMPLE_QUOTE, VOIDTABLE } from "../../constant
 import { formatLog } from "../../logger";
 import { IreturnResult } from "../../types";
 import { errors, msg } from "../../messages/";
-import { EdatesType } from "../../enums";
+import { EnumDatesType } from "../../enums";
 import { multiDatastreamFromDeveui, streamFromDeveui } from "../queries";
 import { decodeloraDeveuiPayload } from "../../lora";
 import { executeSql, executeSqlValues } from "../helpers";
@@ -193,8 +193,8 @@ export class Loras extends Common {
           ? `select coalesce((SELECT "id" from "featureofinterest" WHERE "id" = ${getFeatureOfInterest}), ${getFeatureOfInterest})`
           : `(SELECT multidatastream1._default_foi from multidatastream1)`,
         multidatastream_id: "(SELECT multidatastream1.id from multidatastream1)",
-        phenomenonTime: `to_timestamp('${this.stean["timestamp"]}','${EdatesType.dateWithOutTimeZone}')::timestamp`,
-        resultTime: `to_timestamp('${this.stean["timestamp"]}','${EdatesType.dateWithOutTimeZone}')::timestamp`,
+        phenomenonTime: `to_timestamp('${this.stean["timestamp"]}','${EnumDatesType.dateWithOutTimeZone}')::timestamp`,
+        resultTime: `to_timestamp('${this.stean["timestamp"]}','${EnumDatesType.dateWithOutTimeZone}')::timestamp`,
         result: resultCreate,
       };
 
@@ -289,8 +289,8 @@ export class Loras extends Common {
       const insertObject = {
         featureofinterest_id: "(SELECT datastream1._default_foi from datastream1)",
         datastream_id: "(SELECT datastream1.id from datastream1)",
-        phenomenonTime: `to_timestamp('${this.stean["timestamp"]}','${EdatesType.dateWithOutTimeZone}')::timestamp`,
-        resultTime: `to_timestamp('${this.stean["timestamp"]}}','${EdatesType.dateWithOutTimeZone}')::timestamp`,
+        phenomenonTime: `to_timestamp('${this.stean["timestamp"]}','${EnumDatesType.dateWithOutTimeZone}')::timestamp`,
+        resultTime: `to_timestamp('${this.stean["timestamp"]}}','${EnumDatesType.dateWithOutTimeZone}')::timestamp`,
         result: resultCreate,
       };
 

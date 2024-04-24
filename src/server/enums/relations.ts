@@ -6,7 +6,7 @@
  *
  */
 
-export enum Erelations {
+export enum EnumRelations {
     belongsTo,
     belongsToMany,
     hasMany

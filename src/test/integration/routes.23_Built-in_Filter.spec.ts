@@ -42,25 +42,25 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     it("Odata Built-in operator eq", (done) => {
         const infos = addTest({
             api: "{get} Observations eq",
-            url: `/${testVersion}/Observations?$filter=result eq 310`,
             apiName: "BuiltInOperatorsEq",
             apiDescription: "Use eq for equal to =",
             apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-            apiExample: { http: "/test",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP")}
+            apiExample: { 
+                http: `${testVersion}/Observations?$filter=result eq 310`,
+                curl: defaultGet("curl", "KEYHTTP"),
+                javascript: defaultGet("javascript", "KEYHTTP"),
+                python: defaultGet("python", "KEYHTTP")
+            }
         });
         chai.request(server)
-        .get(`/test${infos.url}`)
+        .get(`/test/${infos.apiExample.http}`)
         .end((err, res) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(5);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: limitResult(res) });
-                
+                addToApiDoc({ ...infos, result: limitResult(res) });                
                 done();
             });
     });
@@ -84,25 +84,25 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     it("Odata Built-in operator ne", (done) => {
         const infos = addTest({
             api: "{get} Observations ne",
-            url: `/${testVersion}/Observations?$filter=result ne 45` ,
             apiName: "BuiltInOperatorsNe",
             apiDescription: "Use ne for not equal to <>",
             apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-            apiExample: { http: "/test",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP") }
+            apiExample: { 
+                http: `${testVersion}/Observations?$filter=result ne 45` ,
+                curl: defaultGet("curl", "KEYHTTP"),
+                javascript: defaultGet("javascript", "KEYHTTP"),
+                python: defaultGet("python", "KEYHTTP")
+            }
         });
         chai.request(server)
-            .get(`/test${infos.url}`)
+            .get(`/test/${infos.apiExample.http}`)
             .end((err, res) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(530);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: limitResult(res) });
-                
+                addToApiDoc({ ...infos, result: limitResult(res) });                
                 done();
             });
     });
@@ -110,25 +110,25 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     it("Odata Built-in operator gt", (done) => {
         const infos = addTest({
             api: "{get} Observations gt",
-            url: `/${testVersion}/Observations?$filter=result gt 45`,
             apiName: "BuiltInOperatorsGt",
             apiDescription: "Use gt for greater than >",
             apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-            apiExample: { http: "/test",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP") }
+            apiExample: { 
+                http: `${testVersion}/Observations?$filter=result gt 45`,
+                curl: defaultGet("curl", "KEYHTTP"),
+                javascript: defaultGet("javascript", "KEYHTTP"),
+                python: defaultGet("python", "KEYHTTP")
+            }
         });
         chai.request(server)
-            .get(`/test${infos.url}`)
+            .get(`/test/${infos.apiExample.http}`)
             .end((err, res) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(335);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: limitResult(res) });
-                
+                addToApiDoc({ ...infos, result: limitResult(res) });                
                 done();
             });
     });
@@ -136,20 +136,21 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     it("Odata Built-in operator gt AND lt", (done) => {
         const infos = addTest({
             api: `{get} Odata Built-in operator gt AND lt`,
-            url: `/${testVersion}/Observations?$filter=result gt 20 and result lt 22`,
             apiName: "",
             apiDescription: "",
-            apiReference: ""
+            apiReference: "",
+            apiExample: {
+                http: `${testVersion}/Observations?$filter=result gt 20 and result lt 22`,
+            }
         });
         chai.request(server)
-        .get(`/test${infos.url}`)
+        .get(`/test/${infos.apiExample.http}`)
             .end((err, res) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(142);
-                res.body.should.include.keys("@iot.count", "value");
-                
+                res.body.should.include.keys("@iot.count", "value");                
                 done();
             });
     });  
@@ -157,17 +158,18 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     it("Odata Built-in operator ge", (done) => {
         const infos = addTest({
             api: "{get} Observations ge",
-            url: `/${testVersion}/Observations?$filter=result ge 45`,
             apiName: "BuiltInOperatorsGe",
             apiDescription: "Use gt for greater than or equal >=",
             apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-            apiExample: { http: "/test",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP") }
+            apiExample: { 
+                http: `${testVersion}/Observations?$filter=result ge 45`,
+                curl: defaultGet("curl", "KEYHTTP"),
+                javascript: defaultGet("javascript", "KEYHTTP"),
+                python: defaultGet("python", "KEYHTTP")
+            }
         });
         chai.request(server)
-            .get(`/test${infos.url}`)
+            .get(`/test/${infos.apiExample.http}`)
             .end((err, res) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
@@ -183,25 +185,25 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     it("Odata Built-in operator lt", (done) => {
         const infos = addTest({
             api: "{get} Observations lt",
-            url: `/${testVersion}/Observations?$filter=result lt 45`,
             apiName: "BuiltInOperatorsLt",
             apiDescription: "Use lt for smaller than <",
             apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-            apiExample: { http: "/test",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP") }
+            apiExample: { 
+                http: `${testVersion}/Observations?$filter=result lt 45`,
+                curl: defaultGet("curl", "KEYHTTP"),
+                javascript: defaultGet("javascript", "KEYHTTP"),
+                python: defaultGet("python", "KEYHTTP")
+            }
         });
         chai.request(server)
-            .get(`/test${infos.url}`)
+            .get(`/test/${infos.apiExample.http}`)
             .end((err, res) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(207);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: limitResult(res) });
-                
+                addToApiDoc({ ...infos, result: limitResult(res) });                
                 done();
             });
     });
@@ -209,25 +211,25 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     it("Odata Built-in operator le", (done) => {
         const infos = addTest({
             api: "{get} Observations le",
-            url: `/${testVersion}/Observations?$filter=result le 45`,
             apiName: "BuiltInOperatorsLe",
             apiDescription: "Use lt for Less than or equal <=",
             apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-            apiExample: { http: "/test",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP") }
+            apiExample: { 
+                http: `${testVersion}/Observations?$filter=result le 45`,
+                curl: defaultGet("curl", "KEYHTTP"),
+                javascript: defaultGet("javascript", "KEYHTTP"),
+                python: defaultGet("python", "KEYHTTP")
+            }
         });
         chai.request(server)
-            .get(`/test${infos.url}`)
+            .get(`/test/${infos.apiExample.http}`)
             .end((err, res) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(207);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: limitResult(res) });
-                
+                addToApiDoc({ ...infos, result: limitResult(res) });                
                 done();
             });
     });
@@ -235,26 +237,26 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     it("Odata Built-in operator and", (done) => {
         const infos = addTest({
             api: "{get} Thing and",
-            url: `/${testVersion}/Things?$filter=name eq 'classic Thing' and description eq 'Description of classic Thing'`,
             apiName: "BuiltInOperatorsAnd",
             apiDescription: "Use filter with and",
             apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-            apiExample: { http: "/test",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP") }
+            apiExample: { 
+                http: `${testVersion}/Things?$filter=name eq 'classic Thing' and description eq 'Description of classic Thing'`,
+                curl: defaultGet("curl", "KEYHTTP"),
+                javascript: defaultGet("javascript", "KEYHTTP"),
+                python: defaultGet("python", "KEYHTTP") 
+            }
         });
 
         chai.request(server)
-            .get(`/test${infos.url}`)
+            .get(`/test/${infos.apiExample.http}`)
             .end((err, res) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: limitResult(res) });
-                
+                addToApiDoc({ ...infos, result: limitResult(res) });                
                 done();
             });
     });
@@ -262,26 +264,26 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     it("Odata Built-in operator or", (done) => {
         const infos = addTest({
             api: "{get} Thing or",
-            url: `/${testVersion}/Things?$filter=name eq 'classic Thing' or description eq 'Description of Hack $debug=true Thing'`,
             apiName: "BuiltInOperatorsOr",
             apiDescription: "Use filter with or",
             apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-            apiExample: { http: "/test",
-            curl: defaultGet("curl", "KEYHTTP"),
-            javascript: defaultGet("javascript", "KEYHTTP"),
-            python: defaultGet("python", "KEYHTTP") }
+            apiExample: { 
+                http: `${testVersion}/Things?$filter=name eq 'classic Thing' or description eq 'Description of Hack $debug=true Thing'`,
+                curl: defaultGet("curl", "KEYHTTP"),
+                javascript: defaultGet("javascript", "KEYHTTP"),
+                python: defaultGet("python", "KEYHTTP") 
+            }
         });
 
         chai.request(server)
-            .get(`/test${infos.url}`)
+            .get(`/test/${infos.apiExample.http}`)
             .end((err, res) => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
                 res.body.value.length.should.eql(1);
                 res.body.should.include.keys("@iot.count", "value");
-                addToApiDoc({ ...infos, result: limitResult(res) });
-                
+                addToApiDoc({ ...infos, result: limitResult(res) });                
                 done();
             });
     });
@@ -292,15 +294,15 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     //         apiName: "BuiltInOperatorsFilter",
     //         apiDescription: "Use simple filter",
     //         apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-    //         apiExample: { http: "/test",
-    //            url: `/${testVersion}/Things?$filter=name eq 'SensorWebThing 9'",
+    //         apiExample: { 
+    //            http: `${testVersion}/Things?$filter=name eq 'SensorWebThing 9'",
     //         curl: defaultGet("curl", "KEYHTTP"),
     //         javascript: defaultGet("javascript", "KEYHTTP"),
     //         python: defaultGet("python", "KEYHTTP")  }
     //     };
 
     //     chai.request(server)
-    //         .get(`/test${infos.url}`)
+    //         .get(`/test/${infos.apiExample.http}`)
     //         .end((err, res) => {
     //             should.not.exist(err);
     //             res.status.should.equal(200);
@@ -319,15 +321,15 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     //         apiName: "BuiltInOperatorsFilterRelation",
     //         apiDescription: "Use filter with relation",
     //         apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-    //         apiExample: { http: "/test",
-    //            url: `/${testVersion}/Observations?$filter=Datastream/id eq 3",
+    //         apiExample: { 
+    //            http: `${testVersion}/Observations?$filter=Datastream/id eq 3",
     //         curl: defaultGet("curl", "KEYHTTP"),
     //         javascript: defaultGet("javascript", "KEYHTTP"),
     //         python: defaultGet("python", "KEYHTTP")  }
     //     };
 
     //     chai.request(server)
-    //         .get(`/test${infos.url}`)
+    //         .get(`/test/${infos.apiExample.http}`)
     //         .end((err, res) => {
     //             should.not.exist(err);
     //             res.status.should.equal(200);
@@ -346,15 +348,15 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     //         apiName: "BuiltInOperatorsFilterPropertyJson",
     //         apiDescription: "Use filter on json property",
     //         apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-    //         apiExample: { http: "/test",
-    //            url: `/${testVersion}/Datastreams?$filter=unitOfMeasurement/name eq 'Degrees Fahrenheit'",
+    //         apiExample: { 
+    //            http: `${testVersion}/Datastreams?$filter=unitOfMeasurement/name eq 'Degrees Fahrenheit'",
     //         curl: defaultGet("curl", "KEYHTTP"),
     //         javascript: defaultGet("javascript", "KEYHTTP"),
     //         python: defaultGet("python", "KEYHTTP")  }
     //     };
 
     //     chai.request(server)
-    //         .get(`/test${infos.url}`)
+    //         .get(`/test/${infos.apiExample.http}`)
     //         .end((err, res) => {
     //             should.not.exist(err);
     //             res.status.should.equal(200);
@@ -374,15 +376,15 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     //         apiName: "BuiltInOperatorsFilterStartWith",
     //         apiDescription: "Use filter startswith",
     //         apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-    //         apiExample: { http: "/test",
-    //            url: `/${testVersion}/Things?$filter=startswith(description,'A New')",
+    //         apiExample: { 
+    //            http: `${testVersion}/Things?$filter=startswith(description,'A New')",
     //         curl: defaultGet("curl", "KEYHTTP"),
     //         javascript: defaultGet("javascript", "KEYHTTP"),
     //         python: defaultGet("python", "KEYHTTP")  }
     //     };
 
     //     chai.request(server)
-    //         .get(`/test${infos.url}`)
+    //         .get(`/test/${infos.apiExample.http}`)
     //         .end((err, res) => {
     //             should.not.exist(err);
     //             res.status.should.equal(200);
@@ -401,15 +403,15 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     //         apiName: "BuiltInOperatorsFilterContains",
     //         apiDescription: "Use filter contains",
     //         apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-    //         apiExample: { http: "/test",
-    //            url: `/${testVersion}/Things?$filter=contains(description,'two')",
+    //         apiExample: { 
+    //            http: `${testVersion}/Things?$filter=contains(description,'two')",
     //         curl: defaultGet("curl", "KEYHTTP"),
     //         javascript: defaultGet("javascript", "KEYHTTP"),
     //         python: defaultGet("python", "KEYHTTP")  }
     //     };
 
     //     chai.request(server)
-    //         .get(`/test${infos.url}`)
+    //         .get(`/test/${infos.apiExample.http}`)
     //         .end((err, res) => {
     //             should.not.exist(err);
     //             res.status.should.equal(200);
@@ -428,15 +430,15 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     //         apiName: "BuiltInOperatorsFilterDateGt",
     //         apiDescription: "Use filter gt with date",
     //         apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-    //         apiExample: { http: "/test",
-    //            url: `/${testVersion}/Observations?$filter=phenomenonTime gt '2021-01-01'" ,
+    //         apiExample: { 
+    //            http: `${testVersion}/Observations?$filter=phenomenonTime gt '2021-01-01'" ,
     //         curl: defaultGet("curl", "KEYHTTP"),
     //         javascript: defaultGet("javascript", "KEYHTTP"),
     //         python: defaultGet("python", "KEYHTTP") }
     //     };
 
     //     chai.request(server)
-    //         .get(`/test${infos.url}`)
+    //         .get(`/test/${infos.apiExample.http}`)
     //         .end((err, res) => {
     //             should.not.exist(err);
     //             res.status.should.equal(200);
@@ -455,15 +457,15 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     //         apiName: "BuiltInOperatorsFilterDateEq",
     //         apiDescription: "Use filter eq with date",
     //         apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-    //         apiExample: { http: "/test",
-    //            url: `/${testVersion}/Observations?$filter=result eq '92' and resultTime eq '2017-02-13'",
+    //         apiExample: { 
+    //            http: `${testVersion}/Observations?$filter=result eq '92' and resultTime eq '2017-02-13'",
     //         curl: defaultGet("curl", "KEYHTTP"),
     //         javascript: defaultGet("javascript", "KEYHTTP"),
     //         python: defaultGet("python", "KEYHTTP")  }
     //     };
 
     //     chai.request(server)
-    //         .get(`/test${infos.url}`)
+    //         .get(`/test/${infos.apiExample.http}`)
     //         .end((err, res) => {
     //             should.not.exist(err);
     //             res.status.should.equal(200);
@@ -485,15 +487,15 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
     //         apiName: "BuiltInOperatorsFilterDateGtAndLt",
     //         apiDescription: "Use filter gt with date",
     //         apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
-    //         apiExample: { http: "/test",
-     //           url: `/${testVersion}/Observations?$filter=phenomenonTime gt '2021-01-01' and phenomenonTime lt '2021-10-16'",
+    //         apiExample: { 
+     //           http: `${testVersion}/Observations?$filter=phenomenonTime gt '2021-01-01' and phenomenonTime lt '2021-10-16'",
     //         curl: defaultGet("curl", "KEYHTTP"),
     //         javascript: defaultGet("javascript", "KEYHTTP"),
     //         python: defaultGet("python", "KEYHTTP")  }
     //     };
 
     //     chai.request(server)
-    //         .get(`/test${infos.url}`)
+    //         .get(`/test/${infos.apiExample.http}`)
     //         .end((err, res) => {
     //             should.not.exist(err);
     //             res.status.should.equal(200);

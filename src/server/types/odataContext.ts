@@ -6,7 +6,7 @@
  *
  */
 
-import { EcolType } from "../enums";
+import { EnumColumnType } from "../enums";
 
 
 export interface IodataContext {
@@ -14,7 +14,7 @@ export interface IodataContext {
     entity: string | undefined;
     target: string | undefined;
     identifier: string | undefined;
-    identifierType: EcolType | undefined;
+    identifierType: EnumColumnType | undefined;
     relation: string | undefined;
     literal: string | undefined;
     sign: string | undefined;

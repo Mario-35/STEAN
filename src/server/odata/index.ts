@@ -13,7 +13,6 @@ import { cleanUrl, returnFormats } from "../helpers";
 import { serverConfig } from "../configuration";
 import { SqlOptions } from "./parser/sqlOptions";
 import { multiDatastreamKeys } from "../db/queries";
-import { setDebug } from "../constants";
 import { RootPgVisitor } from "./visitor";
 
 const doSomeWarkAfterCreateAst = async (input: RootPgVisitor, ctx: koa.Context) => {
@@ -41,7 +40,6 @@ const escapesOdata = (input: string) : string => {
 export const createOdata = async (ctx: koa.Context): Promise<RootPgVisitor | undefined> => {
   // blank url if not defined
   // init Ressource wich have to be tested first
-setDebug(false);
   const options: SqlOptions = {
     onlyValue: false,
     onlyRef: false,
@@ -98,9 +96,7 @@ setDebug(false);
 
   const astQuery: Token = <Token>query(decodeURIComponent(urlSrcSplit[1]));
 
-  const temp = new RootPgVisitor(ctx, options)
-    .init(astRessources)
-    .start(astQuery);
+  const temp = new RootPgVisitor(ctx, options, astRessources).start(astQuery);
 
   await doSomeWarkAfterCreateAst(temp, ctx);
 

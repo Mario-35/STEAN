@@ -14,10 +14,7 @@ import { models } from "../../models";
 import { createInsertValues } from "../../models/helpers";
 import { sqlStopDbName } from "../../routes/helper";
 import { userAccess } from "../dataAccess";
-import fs from "fs";
-import path from "path";
 import koa from "koa";
-import { formatLog } from "../../logger";
 
 const prepareDatas = (dataInput: object, entity: string): object => {
   if (entity === "Observations") {
@@ -123,33 +120,4 @@ export const createService = async (dataInput: object, ctx?: koa.Context): Promi
       });
     }
     return results;
-}
-
-export const createPayloadsFile = async (dataInput: object, ctx?: koa.Context): Promise<object> => {
-  const createPayloadsFile = async (url: string, nb: number): Promise<string> => {
-    async function getFetchDatas(url: string) {
-      const response = await fetch(encodeURI(url), {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-    
-      return await response.text();
-    }
-    console.log(url);
-    const datas = await getFetchDatas(url);
-    fs.writeFileSync(path.resolve(__dirname, `import${nb}.json`), datas.toString(), { encoding: "utf-8" });
-    return JSON.parse(datas)["@iot.nextLink"] || "";
-    
-  };
-  console.log(formatLog.whereIam());
-  let nb = 1; 
-  let url = "https://sensorthings.geosas.fr/rennesmetro/v1.1/Observations?$select=phenomenonTime,payload,deveui&$orderby=phenomenonTime&$top=10000";
-  while (url.trim() != "") {
-    url = await createPayloadsFile(url, nb);
-    nb++;
-}
-return {"ok": _OK};
-
 }

@@ -6,7 +6,7 @@
  *
  */
 
-import { Eentities, Esecurity } from "../enums";
+// import { allEntitiesType } from "../enums";
 import { Ientity } from "./entity";
 export { Icomon } from "./comon";
 export { IconfigFile } from "./configFile";
@@ -17,7 +17,6 @@ export { IdbConnection } from "./dbConnection";
 export { Ientity } from "./entity";
 export { IentityColumn } from "./entityColumn";
 export { IentityRelation } from "./entityRelation";
-export { Ifield } from "./field";
 export { Ilog } from "./log";
 export { ILoraDecoder } from "./loraDecoder";
 export { IodataContext } from "./odataContext";
@@ -30,8 +29,6 @@ export { IstreamInfos } from "./streamInfos";
 export { Iuser } from "./user";
 export { IuserToken } from "./userToken";
 export { IdecodedUrl } from "./decodedUrl";
-
 export interface IKeyBoolean { [key: string]: boolean; }
 export interface IKeyString { [key: string]: string; }
-export type Ientities = { [key in Eentities]: Ientity }
-export type Isecurity = { [key in Esecurity]: Ientity }
+export type Ientities = { [key: string]: Ientity }

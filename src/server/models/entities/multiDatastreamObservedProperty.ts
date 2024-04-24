@@ -6,17 +6,11 @@
  *
  */
 
-import { EextensionsType } from "../../enums";
+import { createEntity } from ".";
 import { Ientity } from "../../types";
-
-  export const MultiDatastreamObservedProperty:Ientity = {
-
-    name: "MultiDatastreamObservedProperties",
-    singular: "MultiDatastreamObservedProperty",
-    table: "multi_datastream_observedproperty",
+    export const MultiDatastreamObservedProperty:Ientity  = createEntity("MultiDatastreamObservedProperties", {
     createOrder: 9,
     order: -1,
-    extensions: [EextensionsType.multiDatastream],
     orderBy: `"multidatastream_id"`,
     columns: {
       multidatastream_id: {
@@ -36,17 +30,17 @@ import { Ientity } from "../../types";
     },
     relations: {},
     constraints: {
-      multi_datastream_observedproperty_pkey:
+      multidatastreamobservedproperty_pkey:
         'PRIMARY KEY ("multidatastream_id", "observedproperty_id")',
-      multi_datastream_observedproperty_multidatastream_id_fkey:
+      multidatastreamobservedproperty_multidatastream_id_fkey:
         'FOREIGN KEY ("multidatastream_id") REFERENCES "multidatastream"("id") ON UPDATE CASCADE ON DELETE CASCADE',
-      multi_datastream_observedproperty_observedproperty_id_fkey:
+      multidatastreamobservedproperty_observedproperty_id_fkey:
         'FOREIGN KEY ("observedproperty_id") REFERENCES "observedproperty"("id") ON UPDATE CASCADE ON DELETE CASCADE',
     },
     indexes: {
-      multi_datastream_observedproperty_multidatastream_id:
-        'ON public."multi_datastream_observedproperty" USING btree ("multidatastream_id")',
-      multi_datastream_observedproperty_observedproperty_id:
-        'ON public."multi_datastream_observedproperty" USING btree ("observedproperty_id")',
+      multidatastreamobservedproperty_multidatastream_id:
+        'ON public."multidatastreamobservedproperty" USING btree ("multidatastream_id")',
+      multidatastreamobservedproperty_observedproperty_id:
+        'ON public."multidatastreamobservedproperty" USING btree ("observedproperty_id")',
     },
-  };
+  });

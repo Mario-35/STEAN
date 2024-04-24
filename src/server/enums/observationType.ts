@@ -6,7 +6,7 @@
  *
  */
 
-export enum EobservationType {    
+export enum EnumObservationType {    
     "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_CategoryObservation" = "_resulttext",
     "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_CountObservation" = "number",
     "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement" = "number",

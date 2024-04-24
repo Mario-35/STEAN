@@ -6,6 +6,10 @@
  *
  */
 
+import koa from "koa";
+import { exportToJson } from "./exportToJson";
+import { exportToXlsx } from "./exportToXlsx";
+
 export { addToService } from "./addToService";
 export { createDatabase } from "../createDb";
 export { createService } from "./createService";
@@ -15,10 +19,13 @@ export { dateToDateWithTimeZone } from "./dateToDateWithTimeZone";
 export { executeAdmin } from "./executeAdmin";
 export { executeSql } from "./executeSql";
 export { executeSqlValues } from "./executeSqlValues";
-export { exportService } from "./exportToXlsx";
 export { getDBDateNow } from "./getDBDateNow";
 export { removeKeyFromUrl } from "./removeKeyFromUrl";
 export { queryInsertFromCsv } from "./queryInsertFromCsv";
 export { columnsNameFromCsv } from "./columnsNameFromCsv";
 export { streamCsvFile } from "./streamCsvFile";
 export { columnsNameFromHydrasCsv } from "./columnsNameFromHydrasCsv";
+
+export const exportService = async (ctx: koa.Context) => {
+    return (ctx.url.includes("xls")) ? exportToXlsx(ctx) : exportToJson(ctx);
+};

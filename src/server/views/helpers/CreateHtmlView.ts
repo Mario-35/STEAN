@@ -8,7 +8,7 @@
 
 import koa from "koa";
 import { serverConfig } from "../../configuration";
-import { EextensionsType } from "../../enums";
+import { EnumExtensions } from "../../enums";
 import { IKeyString, Iuser } from "../../types";
 import { addCssFile } from "../css";
 
@@ -84,11 +84,11 @@ export class CreateHtmlView {
                         <table>
                           <tbody>
                           <tr>
-                            <td> ${this.addCheckBox({id: "lora", checked: conf.extensions.includes(EextensionsType.lora)})} </td>
+                            <td> ${this.addCheckBox({id: "lora", checked: conf.extensions.includes(EnumExtensions.lora)})} </td>
                             <td> ${this.addCheckBox({id: "highPrecision", checked: conf.highPrecision})} </td>
                           </tr>
                           <tr>
-                            <td> ${this.addCheckBox({id: "multiDatastream", checked: conf.extensions.includes(EextensionsType.multiDatastream)})} </td>
+                            <td> ${this.addCheckBox({id: "multiDatastream", checked: conf.extensions.includes(EnumExtensions.multiDatastream)})} </td>
                             <td> ${this.addCheckBox({id: "forceHttps", checked: conf.forceHttps})} </td>  
                           </tr>
                             <tr>

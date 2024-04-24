@@ -13,7 +13,7 @@ import { IcsvColumn, IcsvFile, IreturnResult, IstreamInfos } from "../../types";
 import { queryInsertFromCsv, dateToDateWithTimeZone, executeSql, executeSqlValues } from "../helpers";
 import { asyncForEach } from "../../helpers";
 import { errors, msg } from "../../messages/";
-import { EdatesType, EextensionsType } from "../../enums";
+import { EnumDatesType, EnumExtensions } from "../../enums";
 import util from "util";
 import { _NOTOK, _OK } from "../../constants";
 import { models } from "../../models";
@@ -44,11 +44,11 @@ export class CreateObservations extends Common {
             ? `'{"value": [${elem}]}'`
             : typeof elem === "string"
             ? elem.endsWith("Z")
-              ? `TO_TIMESTAMP('${dateToDateWithTimeZone(elem)}', '${ EdatesType.dateWithOutTimeZone }')::TIMESTAMP`
+              ? `TO_TIMESTAMP('${dateToDateWithTimeZone(elem)}', '${ EnumDatesType.dateWithOutTimeZone }')::TIMESTAMP`
               : `${separateur}${elem}${separateur}`
             : `${separateur}{${elem}}${separateur}`
           : index === this.indexResult && type === "VALUES"
-          ? this.ctx.config.extensions.includes(EextensionsType.numeric)
+          ? this.ctx.config.extensions.includes(EnumExtensions.numeric)
             ? elem
             : `'{"value": ${elem}}'`
           : elem
@@ -103,14 +103,14 @@ export class CreateObservations extends Common {
         const sqls = sqlInsert.query.map((e: string, index: number) => `${index === 0 ? 'WITH ' :', '}updated${index+1} as (${e})\n`);
         // Remove logs and triggers for speed insert
         await executeSql(this.ctx.config, [
-          'ALTER TABLE "historical_observation" SET UNLOGGED', 
+          'ALTER TABLE "historicalobservation" SET UNLOGGED', 
           'ALTER TABLE "observation" SET UNLOGGED', 
           'ALTER TABLE "observation" DISABLE TRIGGER ALL']);
         const resultSql = await executeSql(this.ctx.config, `${sqls.join("")}SELECT (SELECT count(*) FROM ${paramsFile.tempTable}) AS total, (SELECT count(*) FROM updated1) AS inserted`);
         // Restore logs and triggers
         await executeSql(this.ctx.config, [
           'ALTER TABLE "observation" SET LOGGED',
-          'ALTER TABLE "historical_observation" SET LOGGED',
+          'ALTER TABLE "historicalobservation" SET LOGGED',
           'ALTER TABLE "observation" ENABLE TRIGGER ALL']);
         return this.createReturnResult({
           total: sqlInsert.count,

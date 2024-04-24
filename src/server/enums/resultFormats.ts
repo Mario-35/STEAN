@@ -6,7 +6,7 @@
  *
  */
 
-export const enum Eformats {    
+export const enum EnumResultFormats {    
     json = "json", 
     csv = "csv",
     txt = "txt", 

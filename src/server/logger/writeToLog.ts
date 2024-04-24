@@ -16,7 +16,7 @@ import { createInsertValues } from "../models/helpers";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const writeToLog = async ( ctx: koa.Context, ...error: any[] ): Promise<void> => {
-  console.log(formatLog.whereIam());
+  console.log(formatLog.whereIam("LOG"));
   if (error.length > 0) formatLog.writeErrorInFile(ctx, error);  
   if (ctx.log && ctx.log.method != "GET") {
     ctx.log.code = error && error["code"] ? +error["code"] : +ctx.response.status;

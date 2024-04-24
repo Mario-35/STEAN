@@ -6,7 +6,7 @@
  *
  */
 
-export const enum EColor {
+export const enum EnumColor {
     Reset = 0,
     Bright = 1,
     Dim = 2,

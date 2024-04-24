@@ -55,7 +55,7 @@ describe("Configs", () => {
                 apiExample: { http: `/${testVersion}/Datastreams(1)/Observations?$top=20&$resultFormat=csv` }
             });
             chai.request(server)
-                .get(`/test${infos.url}`)
+                .get(`/test/${infos.apiExample.http}`)
                 .end((err: Error, res: any) => {
                     testLog(res.bady);
                     should.not.exist(err);
@@ -110,7 +110,7 @@ describe("Configs", () => {
                 apiParamExample: datas
             };
             chai.request(server)
-                .post(`/test/${infos.url}`)
+                .post(`/test/${infos.apiExample.http}`)
                 .send(infos.apiParamExample)
                 .set("Cookie", `${keyTokenName}=${token}`)
                 .end((err: Error, res: any) => {

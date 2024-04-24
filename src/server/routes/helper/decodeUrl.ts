@@ -11,7 +11,7 @@ import koa from "koa";
 import { getConfigFromPort } from ".";
 import { serverConfig } from "../../configuration";
 import { setDebug } from "../../constants";
-import { EmodelType } from "../../enums";
+import { EnumVersion } from "../../enums";
 import { cleanUrl } from "../../helpers";
 import { formatLog } from "../../logger";
 import { errors } from "../../messages";
@@ -26,7 +26,7 @@ import { IdecodedUrl  } from "../../types";
 //   |           |         |              |                |
 // protocol     host    version        pathname          search
 
-export const decodeUrl =  (ctx: koa.Context, input?: string): IdecodedUrl | undefined => {
+export const decodeUrl = (ctx: koa.Context, input?: string): IdecodedUrl | undefined => {
   console.log(formatLog.whereIam());
   // get input
   input = input || ctx.href;
@@ -72,7 +72,7 @@ export const decodeUrl =  (ctx: koa.Context, input?: string): IdecodedUrl | unde
       search: url.search,
       hash: url.hash,
       service: paths[0],
-      version: paths[0] === "admin" ? EmodelType.v1_0 : paths[1],
+      version: paths[0] === "admin" ? EnumVersion.v1_0 : paths[1],
       path: idStr ? path.replace(String(id), '0') : path,
       id: (isNaN(+id)) ? BigInt(0) : BigInt(id),
       idStr: idStr,

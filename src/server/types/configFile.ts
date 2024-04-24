@@ -7,7 +7,7 @@
  */
 
 import postgres from "postgres";
-import { EmodelType } from "../enums";
+import { EnumVersion } from "../enums";
 import { IdbConnection } from "./dbConnection";
 
 export interface IconfigFile {
@@ -15,7 +15,7 @@ export interface IconfigFile {
     key?: string; // key for crypto
     pg: IdbConnection;
     port: number;
-    apiVersion: EmodelType;
+    apiVersion: EnumVersion;
     date_format: string;
     webSite: string;
     nb_page: number;

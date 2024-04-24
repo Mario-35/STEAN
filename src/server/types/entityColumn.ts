@@ -7,12 +7,12 @@
  */
 
 import { IKeyString, IKeyBoolean, IconfigFile } from ".";
-import { EextensionsType } from "../enums";
+import { EnumExtensions } from "../enums";
 
 export interface IentityColumn {
     [key: string]: {
         readonly create: string;
-        extensions?: EextensionsType;
+        extensions?: EnumExtensions;
         columnAlias(config: IconfigFile, test?: IKeyBoolean): string | undefined;
         readonly unique?: boolean;
         readonly test?: string;

@@ -40,7 +40,7 @@ export const createIqueryFromContext = async (ctx: koa.Context): Promise<IqueryO
             ? Object.keys(model).filter((elem: string) => ctx.model[elem].order > 0 || ctx.model[elem].createOrder === 99 || ctx.model[elem].createOrder === -1)
             : user.canPost === true
                 ? Object.keys(model).filter((elem: string) => ctx.model[elem].order > 0 || ctx.model[elem].createOrder === 99 || ctx.model[elem].createOrder === -1)
-                : Object.keys(model).filter((elem: string) => ctx.model[elem].order > 0 && ctx.model[elem].createOrder !== -1);
+                : Object.keys(model).filter((elem: string) => ctx.model[elem].order > 0 );
 
     const decodedUrl = decodeUrl(ctx);
 

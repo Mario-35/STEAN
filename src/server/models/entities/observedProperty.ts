@@ -6,16 +6,13 @@
  *
  */
 
-import { EextensionsType, Erelations } from "../../enums";
+import { createEntity } from ".";
+import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 
-export const ObservedProperty:Ientity = {
-name: "ObservedProperties",
-singular: "ObservedProperty",
-table: "observedproperty",
+export const ObservedProperty:Ientity  = createEntity("ObservedProperties", {
 createOrder: 5,
 order: 8,
-extensions: [EextensionsType.base],
 orderBy: `"id"`,
 columns: {
     id: {
@@ -53,7 +50,7 @@ constraints: {
 },
 relations: {
     Datastreams: {
-    type: Erelations.hasMany,
+    type: EnumRelations.hasMany,
     // expand: "err: 501 : Not Implemented.",
     expand: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."observedproperty_id" = "observedproperty"."id")`,
     link: `"datastream"."id" in (SELECT "datastream"."id" FROM "datastream" WHERE "datastream"."observedproperty_id" = $ID)`,
@@ -64,14 +61,14 @@ relations: {
     tableKey: "id",
     },
     MultiDatastreams: {
-    type: Erelations.hasMany,
-    expand: `"multidatastream"."id" in (SELECT "multi_datastream_observedproperty"."multidatastream_id" FROM "multi_datastream_observedproperty" WHERE "multi_datastream_observedproperty"."observedproperty_id" = "observedproperty"."id")`,
-    link: `"multidatastream"."id" in (SELECT "multi_datastream_observedproperty"."multidatastream_id" FROM "multi_datastream_observedproperty" WHERE "multi_datastream_observedproperty"."observedproperty_id" = $ID)`,
+    type: EnumRelations.hasMany,
+    expand: `"multidatastream"."id" in (SELECT "multidatastreamobservedproperty"."multidatastream_id" FROM "multidatastreamobservedproperty" WHERE "multidatastreamobservedproperty"."observedproperty_id" = "observedproperty"."id")`,
+    link: `"multidatastream"."id" in (SELECT "multidatastreamobservedproperty"."multidatastream_id" FROM "multidatastreamobservedproperty" WHERE "multidatastreamobservedproperty"."observedproperty_id" = $ID)`,
     entityName: "MultiDatastreams",
-    tableName: "multi_datastream_observedproperty",
+    tableName: "multidatastreamobservedproperty",
     relationKey: "observedproperty_id",
     entityColumn: "multidatastream_id",
     tableKey: "multidatastream_id",
     },
 },
-};
+});

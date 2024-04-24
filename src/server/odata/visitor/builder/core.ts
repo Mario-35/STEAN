@@ -7,34 +7,32 @@
  */
 
 import { _COLUMNSEPARATOR } from "../../../constants";
-import { formatLog } from "../../../logger";
 
-export class core {
+export class Core {
   private _src: string;
   
-  constructor(input: string) {
-    console.log(formatLog.whereIam());
-    this._src = input;
+  constructor(input?: string) {
+    this._src = input || "";
   }
-
+  
   add(input: string) {
-    console.log(formatLog.whereIam());
     this._src += input;
   }
 
   init(input: string) {
-    console.log(formatLog.whereIam());
     this._src = input;
   }
   
-  toString() {
-    console.log(formatLog.whereIam());    
+  toString() {    
     return this._src;
   }
 
-  notNull() {
-    console.log(formatLog.whereIam());    
+  notNull() {    
     return this._src.trim() !== "";
+  }
+
+  replace(from: any, to: any) {
+    this._src = this._src.replace(from, to);
   }
 
 }

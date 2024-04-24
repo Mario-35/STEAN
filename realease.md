@@ -1,4 +1,18 @@
 
+# version 3.5
+    write a pseudo object builder for more readable query builder
+    re-write exponds to be more efficient with builder
+    add models automatic table name for more readability of database
+    add tests list in documentation
+# version 3.4
+    odata filter with multiDatastream are now full for 5 first element (automatic number will come)
+    count with filter
+    correct extension filter
+    dataArray can have expand in search
+# version 3.3
+    relations extension filter
+    correction and rewrite odata geo fuctions
+    add trim on name or despription post to remove unnecessary space
 # version 3.2
     Graph correction for using with space in json keys
     Perform csv import for huge file

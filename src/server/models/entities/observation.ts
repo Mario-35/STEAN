@@ -6,16 +6,13 @@
  *
  */
 
-import { EextensionsType, Erelations } from "../../enums";
+import { createEntity } from ".";
+import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 
-  export const Observation:Ientity = {
-    name: "Observations",
-    singular: "Observation",
-    table: "observation",
+  export const Observation:Ientity  = createEntity("Observations", {
     createOrder: 12,
     order: 7,
-    extensions: [EextensionsType.base],
     orderBy: `"phenomenonTime"`,
     columns: {
       id: {
@@ -120,7 +117,7 @@ import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
     },
     relations: {
       Datastream: {
-        type: Erelations.belongsTo,
+        type: EnumRelations.belongsTo,
         expand: `"datastream"."id" = "observation"."datastream_id"`,
         link: `"datastream"."id" = (SELECT "observation"."datastream_id" FROM "observation" WHERE "observation"."id" = $ID)`,
         entityName: "Datastreams",
@@ -130,7 +127,7 @@ import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
         tableKey: "id",
       },
       MultiDatastream: {
-        type: Erelations.belongsTo,
+        type: EnumRelations.belongsTo,
         expand: `"multidatastream"."id" = "observation"."multidatastream_id"`,
         link: `"multidatastream"."id" = (SELECT "observation"."multidatastream_id" FROM "observation" WHERE "observation"."id" = $ID)`,
         entityName: "MultiDatastreams",
@@ -140,7 +137,7 @@ import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
         tableKey: "id",
       },
       FeatureOfInterest: {
-        type: Erelations.belongsTo,
+        type: EnumRelations.belongsTo,
         expand: `"featureofinterest"."id" = "observation"."featureofinterest_id"`,
         // link: "err: 501 : Not Implemented.",
         link: `"featureofinterest"."id" = (SELECT "observation"."featureofinterest_id" FROM "observation" WHERE "observation"."id" = $ID)`,        
@@ -151,4 +148,4 @@ import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
         tableKey: "id",
       },
     },
-  };
+  });

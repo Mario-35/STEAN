@@ -13,7 +13,7 @@ import { IreturnFormat } from "../types";
 import { addCssFile } from "../views/css";
 import { addJsFile } from "../views/js";
 import util from "util";
-import { Eformats } from "../enums";
+import { EnumResultFormats } from "../enums";
 import { isGraph } from ".";
 import { DOUBLEQUOTEDCOMA } from "../constants";
 import { log } from "../log";
@@ -22,7 +22,7 @@ import { PgVisitor } from "../odata/visitor";
 // Default "blank" function
 const defaultFunction = (input: string | object) => input;
 // Default "blank" format function
-const defaultForwat = (input: PgVisitor): string => input.query.toString(input);
+const defaultForwat = (input: PgVisitor): string => input.toString();
 
 const generateFields = (input: PgVisitor): string[] => {
   let fields: string[] = [];
@@ -60,7 +60,7 @@ const generateGrahSql = (input: PgVisitor): string => {
 };
 
 // all returns format functions
-const _returnFormats: { [key in Eformats]: IreturnFormat } = {
+const _returnFormats: { [key in EnumResultFormats]: IreturnFormat } = {
   xlsx: {
     name: "xlsx",
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -77,7 +77,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
       return input.interval
         ? asJson({ query: interval(input), singular: false, strip: false, count: true })
         : asJson({
-            query: input.query.toString(input),
+            query: input.toString(),
             singular: false,
             count: true,
             strip: input.ctx.config.stripNull,
@@ -179,7 +179,7 @@ const _returnFormats: { [key in Eformats]: IreturnFormat } = {
         ? util.inspect(input, { showHidden: true, depth: 4 })
         : JSON.stringify(input),
     generateSql(input: PgVisitor) {
-      return asJson({ query: input.query.toString(input), singular: false, strip: false, count: false });
+      return asJson({ query: input.toString(), singular: false, strip: false, count: false });
     },
   },
 

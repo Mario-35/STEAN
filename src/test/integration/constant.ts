@@ -27,7 +27,7 @@ export const nbColorTitle = "\x1b[35m";
 export const testLog = (input: any) => {
     process.stdout.write(util.inspect(input, { showHidden: false, depth: null, colors: false, }));
 }
-export const proxy = (moi: boolean) => moi !== true ? 'http://localhost:8029/test' : `${apidocJson.proxy}/test`;
+export const proxy = (moi: boolean) => moi !== true ? 'http://localhost:8029/test' : `${apidocJson.proxy}/`;
 import packageJson from "../../../package.json";
 export const VERSION = packageJson.version;
 
@@ -35,12 +35,11 @@ const createJSON = (data: any) => JSON.stringify(data, null, 4).replace(/[\n]+/g
 
 export interface Iinfos {
     api: string;
-    url: string;
     apiName: string;
     apiPermission?: string;
     apiDescription: string;
     apiReference?: string;
-    apiExample?: {[key: string]: string};
+    apiExample: {[key: string]: string};
     apiSuccess?: string[];
     apiParam?: string[];
     apiParamExample?: Object;
@@ -135,7 +134,7 @@ const _HEADERS: { [key: string]: string } = {
 };
 
 export const prepareToApiDoc = (input: IApiInput, Entity: string): IApiDoc => {
-    return {
+    const pipo = {
         api: input.api,
         apiVersion: "1.1.0",
         apiName: input.apiName,
@@ -155,6 +154,8 @@ export const prepareToApiDoc = (input: IApiInput, Entity: string): IApiDoc => {
                 ? JSON.stringify(input.result.body, null, 4)
                 : undefined
     };
+    return pipo;
+    
 };
 
 export const generateApiDoc = (input: IApiDoc[], filename: string): boolean => {
@@ -164,7 +165,7 @@ export const generateApiDoc = (input: IApiDoc[], filename: string): boolean => {
             lines.push(`*          ${elemTemp.replace(/[\t]+/g, "   ")}`);
         });
     };
-    const proxy = apidocJson.proxy;
+    const proxy = apidocJson.proxy + "/";
 
     const lines: string[] = [];
 
@@ -180,7 +181,6 @@ export const generateApiDoc = (input: IApiDoc[], filename: string): boolean => {
             if (key === "apiSuccess" && value) {
                 value.forEach((tab: string) => {
                     lines.push(`*    @apiSuccess ${tab}`);
-                    // lines.push(`*    @apiSuccess ${tab.replace("[", "").replace("]", "")}`);
                 });
             } else if (key === "apiParam" && value) {
                 value.forEach((tab: string) => {
@@ -199,9 +199,6 @@ export const generateApiDoc = (input: IApiDoc[], filename: string): boolean => {
                         case "javascript":
                         case "python":
                             createExamplesLines(value[elem].replace("KEYHTTP", value.http).replace("proxy", proxy).replace("KEYDATA", element.apiParamExample));
-                            break;
-                        default:
-                            createExamplesLines(`${proxy}${value[elem]}`);
                             break;
                     }
                 });
@@ -332,11 +329,11 @@ export const infos  = {
     locationsHistoricalLocations: {
         name: "locationsHistoricalLocations",
         singular: "locationHistoricalLocation",
-        table: "location_historical_location",
+        table: "locationhistoricallocation",
         order: -1,
         columns: {
             location_id: "BIGINT NOT NULL",
-            historical_location_id: "BIGINT NOT NULL"
+            historicallocation_id: "BIGINT NOT NULL"
         },
         relations: {}
     },
@@ -424,7 +421,7 @@ export const infos  = {
     MultiDatastreamObservedProperties: {
         name: "MultiDatastreamObservedProperties",
         singular: "MultiDatastreamObservedProperty",
-        table: "multi_datastream_observedproperty",
+        table: "multidatastreamobservedproperty",
         order: -1,
         columns: {
             multidatastream_id: {
@@ -437,15 +434,15 @@ export const infos  = {
         admin: false,
         relations: {},
         constraints: {
-            multi_datastream_observedproperty_pkey: 'PRIMARY KEY ("multidatastream_id", "observedproperty_id")',
-            multi_datastream_observedproperty_multidatastream_id_fkey:
+            multidatastreamobservedproperty_pkey: 'PRIMARY KEY ("multidatastream_id", "observedproperty_id")',
+            multidatastreamobservedproperty_multidatastream_id_fkey:
                 'FOREIGN KEY ("multidatastream_id") REFERENCES "multidatastream"("id") ON UPDATE CASCADE ON DELETE CASCADE',
-            multi_datastream_observedproperty_observedproperty_id_fkey:
+            multidatastreamobservedproperty_observedproperty_id_fkey:
                 'FOREIGN KEY ("observedproperty_id") REFERENCES "observedproperty"("id") ON UPDATE CASCADE ON DELETE CASCADE'
         },
         indexes: {
-            multi_datastream_observedproperty_multidatastream_id: 'ON public."multi_datastream_observedproperty" USING btree ("multidatastream_id")',
-            multi_datastream_observedproperty_observedproperty_id: 'ON public."multi_datastream_observedproperty" USING btree ("observedproperty_id")'
+            multidatastreamobservedproperty_multidatastream_id: 'ON public."multidatastreamobservedproperty" USING btree ("multidatastream_id")',
+            multidatastreamobservedproperty_observedproperty_id: 'ON public."multidatastreamobservedproperty" USING btree ("observedproperty_id")'
         }
     },
 
@@ -475,7 +472,7 @@ export const infos  = {
     ThingsLocations: {
         name: "ThingsLocations",
         singular: "ThingLocation",
-        table: "thing_location",
+        table: "thinglocation",
         order: -1,
         columns: {
             thing_id: {
@@ -488,13 +485,13 @@ export const infos  = {
         admin: false,
         relations: {},
         constraints: {
-            thing_location_pkey: 'PRIMARY KEY ("thing_id", "location_id")',
-            thing_location_location_id_fkey: 'FOREIGN KEY ("location_id") REFERENCES "location"("id") ON UPDATE CASCADE ON DELETE CASCADE',
-            thing_location_thing_id_fkey: 'FOREIGN KEY ("thing_id") REFERENCES "thing"("id") ON UPDATE CASCADE ON DELETE CASCADE'
+            thinglocation_pkey: 'PRIMARY KEY ("thing_id", "location_id")',
+            thinglocation_location_id_fkey: 'FOREIGN KEY ("location_id") REFERENCES "location"("id") ON UPDATE CASCADE ON DELETE CASCADE',
+            thinglocation_thing_id_fkey: 'FOREIGN KEY ("thing_id") REFERENCES "thing"("id") ON UPDATE CASCADE ON DELETE CASCADE'
         },
         indexes: {
-            thing_location_location_id: 'ON public."thing_location" USING btree ("location_id")',
-            thing_location_thing_id: 'ON public."thing_location" USING btree ("thing_id")'
+            thinglocation_location_id: 'ON public."thinglocation" USING btree ("location_id")',
+            thinglocation_thing_id: 'ON public."thinglocation" USING btree ("thing_id")'
         }
     },
 

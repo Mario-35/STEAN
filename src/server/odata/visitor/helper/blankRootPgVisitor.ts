@@ -21,7 +21,7 @@ export const blankRootPgVisitor = (ctx: koa.Context, entity: Ientity): RootPgVis
         onlyValue: false,
         onlyRef: false,
         valueskeys: false,
-      }) .init(astRessources) .start(astQuery);    
+      }, astRessources) .start(astQuery);    
     } catch (error) {
       log.errorMsg(error);
       return undefined;

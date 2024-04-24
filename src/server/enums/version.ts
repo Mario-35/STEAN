@@ -1,5 +1,5 @@
 /**
- * EextensionsType Enum.
+ * version Enum.
  *
  * @copyright 2020-present Inrae
  * @review 29-10-2024
@@ -7,7 +7,7 @@
  *
  */
 
-export enum EmodelType { 
+export enum EnumVersion { 
     v1_0 = "v1.0",
     v1_1 = "v1.1"
 }

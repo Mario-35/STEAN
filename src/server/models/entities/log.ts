@@ -6,16 +6,12 @@
  *
  */
 
-import { EextensionsType } from "../../enums";
+import { createEntity } from ".";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 
-export const Log:Ientity = {
-    name: "Logs",
-    singular: "Log",
-    table: "logs",
+export const Log:Ientity  = createEntity("Logs", {
     createOrder: -1,
     order: -1,
-    extensions: [EextensionsType.logs],
     orderBy: `"date DESC"`,
     columns: {
       id: {
@@ -90,4 +86,4 @@ export const Log:Ientity = {
       },
     },
     relations: {},
-  };
+  });

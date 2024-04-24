@@ -4,8 +4,8 @@ CREATE OR REPLACE FUNCTION thing_location_update_insert() RETURNS TRIGGER
 AS $$
 DECLARE t_id integer;    
 BEGIN
-  INSERT INTO historical_location(time, thing_id) VALUES(current_timestamp, new.thing_id) returning id into t_id;
-  INSERT INTO location_historical_location(historical_location_id, location_id) VALUES(t_id, new.location_id);
+  INSERT INTO historicallocation(time, thing_id) VALUES(current_timestamp, new.thing_id) returning id into t_id;
+  INSERT INTO locationhistoricallocation(historicallocation_id, location_id) VALUES(t_id, new.location_id);
   RETURN NEW;
 END;
 $$

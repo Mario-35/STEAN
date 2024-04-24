@@ -11,8 +11,8 @@ import koa from "koa";
 import { _COLUMNSEPARATOR } from "../../../constants";
 import { IreturnFormat } from "../../../types";
 import { returnFormats } from "../../../helpers";
-import { PgVisitor } from "..";
-import { Query } from "./query";
+import { PgVisitor } from "../";
+import { Query } from "../builder";
 
 export class Visitor {
   public ctx: koa.Context;
@@ -21,20 +21,19 @@ export class Visitor {
   onlyValue = false;
   valueskeys = false;
   resultFormat: IreturnFormat = returnFormats.json;
-  query: Query;
-  includes: PgVisitor[] = [];
+  query: Query = new Query();
+  includes: PgVisitor[];
   constructor(ctx: koa.Context, options = <SqlOptions>{}) {
     this.ctx = ctx;
     this.options = options;
     this.onlyRef = options.onlyRef;
     this.onlyValue = options.onlyValue;
     this.valueskeys = options.valueskeys;
-    this.resultFormat =  (options.onlyValue === true) ? returnFormats.txt : returnFormats.json;  
-    this.query = new Query();
+    this.resultFormat = (options.onlyValue === true) ? returnFormats.txt : returnFormats.json;
   }
 
-  addInclde(input: PgVisitor) {
-    this.includes.push(input)
+  addInclude(input: PgVisitor) {
+    this.includes.push(input);
   }
 
 }

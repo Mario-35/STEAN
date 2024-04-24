@@ -11,7 +11,7 @@ import { decodeToken } from "../authentication";
 import { _DEBUG } from "../constants";
 import { log } from "../log";
 import { formatLog, writeToLog } from "../logger";
-import { EextensionsType } from "../enums";
+import { EnumExtensions } from "../enums";
 import { createBearerToken, getUserId } from "../helpers";
 import { decodeUrl } from "./helper";
 import { errors } from "../messages";
@@ -54,7 +54,7 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
   ctx.querystring = decodeURIComponent(querystring.unescape(ctx.querystring));
   // prepare logs object
   try {
-    if (ctx.config.extensions.includes(EextensionsType.logs))
+    if (ctx.config.extensions.includes(EnumExtensions.logs))
       ctx.log = {
         datas: { ...ctx.request.body },
         code: -999,
@@ -74,12 +74,12 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
     ctx.user = decodeToken(ctx);
     // Write in logs
     await next().then(async () => {  
-      if (ctx.config.extensions.includes(EextensionsType.logs)) await writeToLog(ctx);
+      if (ctx.config.extensions.includes(EnumExtensions.logs)) await writeToLog(ctx);
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {         
     log.errorMsg(error);
-    if (ctx.config && ctx.config.extensions.includes(EextensionsType.logs))
+    if (ctx.config && ctx.config.extensions.includes(EnumExtensions.logs))
       writeToLog(ctx, error);      
       const tempError = {
         code: error.statusCode,

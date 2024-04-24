@@ -6,16 +6,13 @@
  *
  */
 
-import { EextensionsType, Erelations } from "../../enums";
+import { createEntity } from ".";
+import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 
-  export const HistoricalObservation:Ientity = {
-    name: "HistoricalObservations",
-    singular: "HistoricalObservation",
-    table: "historical_observation",
+  export const HistoricalObservation:Ientity  = createEntity("HistoricalObservations", {
     createOrder: -1,
     order: -1,
-    extensions: [EextensionsType.base],
     orderBy: `"id"`,
     columns: {
       id: {
@@ -54,12 +51,12 @@ import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
     },
     indexes: {
       HistoricalObservations_observation_id:
-        'ON public."historical_observation" USING btree ("observation_id")',
+        'ON public."historicalobservation" USING btree ("observation_id")',
     },
     relations: {
       Observations: {
-        type: Erelations.belongsTo,
-        expand: `"observation"."id" = "historical_observation"."observation_id"`,
+        type: EnumRelations.belongsTo,
+        expand: `"observation"."id" = "historicalobservation"."observation_id"`,
         link: "err: 501 : Not Implemented.",        
         entityName: "Observations",
         tableName: "observation",
@@ -68,4 +65,4 @@ import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
         tableKey: "id",
       },
     },
-  };
+  });

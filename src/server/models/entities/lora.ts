@@ -6,16 +6,13 @@
  *
  */
 
-import { EextensionsType, Erelations } from "../../enums";
+import { createEntity } from ".";
+import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 
-export const Lora:Ientity = {
-  name: "Loras",
-  singular: "Lora",
-  table: "lora",
+export const Lora:Ientity  = createEntity("Loras", {
   createOrder: 11,
   order: 11,
-  extensions: [EextensionsType.lora],
   orderBy: `"id"`,
   columns: {
     id: {
@@ -91,7 +88,7 @@ export const Lora:Ientity = {
   },
   relations: {
     Datastream: {
-      type: Erelations.belongsTo,
+      type: EnumRelations.belongsTo,
       expand: `"datastream"."id" = "lora"."datastream_id"`,
       link: `"datastream"."id" = (SELECT "lora"."datastream_id" FROM "lora" WHERE "lora"."id" = $ID)`,
       entityName: "Datastreams",
@@ -101,7 +98,7 @@ export const Lora:Ientity = {
       tableKey: "id",
     },
     MultiDatastream: {
-      type: Erelations.belongsTo,
+      type: EnumRelations.belongsTo,
       expand: `"multidatastream"."id" = "lora"."multidatastream_id"`,
       link: `"multidatastream"."id" = (SELECT "lora"."multidatastream_id" FROM "lora" WHERE "lora"."id" = $ID)`,
       entityName: "MultiDatastreams",
@@ -111,7 +108,7 @@ export const Lora:Ientity = {
       tableKey: "id",
     },
     Decoder: {
-      type: Erelations.belongsTo,
+      type: EnumRelations.belongsTo,
       expand: `"decoder"."id" = "lora"."decoder_id"`,
       link: `"decoder"."id" = (SELECT "lora"."decoder_id" FROM "lora" WHERE "lora"."id" = $ID)`,
       entityName: "Decoders",
@@ -121,4 +118,4 @@ export const Lora:Ientity = {
       tableKey: "id",
     },
   },
-};
+});

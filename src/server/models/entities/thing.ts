@@ -6,16 +6,14 @@
  *
  */
 
-import { EextensionsType, Erelations } from "../../enums";
+import { createEntity } from ".";
+import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 
-export const Thing:Ientity = {
-    name: "Things",
-    singular: "Thing",
-    table: "thing",
-    createOrder: 1,
+
+export const Thing: Ientity = createEntity("Things", {
+      createOrder: 1,
     order: 10,
-    extensions: [EextensionsType.base],
     orderBy: `"id"`,
     columns: {
       id: {
@@ -47,19 +45,19 @@ export const Thing:Ientity = {
     },
     relations: {
       Locations: {
-        type: Erelations.belongsToMany,
-        expand: `"location"."id" in (SELECT "thing_location"."location_id" from "thing_location" WHERE "thing_location"."thing_id" = "thing"."id")`,
-        link: `"location"."id" in (SELECT "thing_location"."location_id" from "thing_location" WHERE "thing_location"."thing_id" = $ID)`,
+        type: EnumRelations.belongsToMany,
+        expand: `"location"."id" in (SELECT "thinglocation"."location_id" from "thinglocation" WHERE "thinglocation"."thing_id" = "thing"."id")`,
+        link: `"location"."id" in (SELECT "thinglocation"."location_id" from "thinglocation" WHERE "thinglocation"."thing_id" = $ID)`,
         entityName: "Locations",
-        tableName: "thing_location",
+        tableName: "thinglocation",
         relationKey: "location_id",
         entityColumn: "thing_id",
         tableKey: "thing_id",
       },
       HistoricalLocations: {
-        type: Erelations.hasMany,
-        expand: `"historical_location"."id" in (SELECT "historical_location"."id" from "historical_location" WHERE "historical_location"."thing_id" = "thing"."id")`,
-        link: `"historical_location"."id" in (SELECT "historical_location"."id" from "historical_location" WHERE "historical_location"."thing_id" = $ID)`,
+        type: EnumRelations.hasMany,
+        expand: `"historicallocation"."id" in (SELECT "historicallocation"."id" from "historicallocation" WHERE "historicallocation"."thing_id" = "thing"."id")`,
+        link: `"historicallocation"."id" in (SELECT "historicallocation"."id" from "historicallocation" WHERE "historicallocation"."thing_id" = $ID)`,
         entityName: "HistoricalLocations",
         tableName: "historicalLocation",
         relationKey: "thing_id",
@@ -67,7 +65,7 @@ export const Thing:Ientity = {
         tableKey: "id",
       },
       Datastreams: {
-        type: Erelations.hasMany,
+        type: EnumRelations.hasMany,
         expand: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."thing_id" = "thing"."id")`,
         link: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."thing_id" = $ID)`,
         entityName: "Datastreams",
@@ -77,7 +75,7 @@ export const Thing:Ientity = {
         tableKey: "id",
       },
       MultiDatastreams: {
-        type: Erelations.hasMany,
+        type: EnumRelations.hasMany,
         expand: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."thing_id" = "thing"."id")`,
         link: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."thing_id" = $ID)`,
         entityName: "MultiDatastreams",
@@ -87,4 +85,4 @@ export const Thing:Ientity = {
         tableKey: "id",
       },
     },
-  };
+  });

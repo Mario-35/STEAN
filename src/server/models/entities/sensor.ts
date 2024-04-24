@@ -6,18 +6,13 @@
  *
  */
 
-import { EextensionsType, Erelations } from "../../enums";
+import { createEntity } from ".";
+import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 
-
-
-  export const Sensor:Ientity = {
-    name: "Sensors",
-    singular: "Sensor",
-    table: "sensor",
+  export const Sensor:Ientity  = createEntity("Sensors", {
     createOrder: 6,
     order: 9,
-    extensions: [EextensionsType.base],
     orderBy: `"id"`,
     columns: {
       id: {
@@ -66,7 +61,7 @@ import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
     },
     relations: {
       Datastreams: {
-        type: Erelations.hasMany,
+        type: EnumRelations.hasMany,
         expand: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."sensor_id" = "sensor"."id")`,
         link: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."sensor_id" = $ID)`,
         entityName: "Datastreams",
@@ -76,7 +71,7 @@ import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
         tableKey: "id",
       },
       MultiDatastreams: {
-        type: Erelations.hasMany,
+        type: EnumRelations.hasMany,
         expand: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."sensor_id" = "sensor"."id")`,
         link: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."sensor_id" = $ID)`,
         entityName: "MultiDatastreams",
@@ -86,4 +81,4 @@ import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
         tableKey: "id",
       }
     },
-  };
+  });

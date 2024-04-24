@@ -11,7 +11,7 @@ import { IconfigFile, IdbConnection, IserviceLink } from "../types";
 import { errors, infos, msg } from "../messages";
 import { createDatabase, createService, executeSql} from "../db/helpers";
 import { app } from "..";
-import { EColor, EextensionsType, EmodelType } from "../enums";
+import { EnumColor, EnumExtensions, EnumVersion } from "../enums";
 import fs from "fs";
 import util from "util";
 import update from "./update.json";
@@ -33,7 +33,7 @@ class Configuration {
 
   constructor(file: fs.PathOrFileDescriptor) {
     try {
-      process.stdout.write(`${color(EColor.FgRed)} ${"=".repeat(24)} ${color( EColor.FgCyan )} ${`START ${APP_NAME} version : ${APP_VERSION} [${NODE_ENV}]`} ${color( EColor.FgWhite )} ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()} ${color( EColor.FgRed )} ${"=".repeat(24)}${color(EColor.Reset)}\n`);
+      process.stdout.write(`${color(EnumColor.FgRed)} ${"=".repeat(24)} ${color( EnumColor.FgCyan )} ${`START ${APP_NAME} version : ${APP_VERSION} [${NODE_ENV}]`} ${color( EnumColor.FgWhite )} ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()} ${color( EnumColor.FgRed )} ${"=".repeat(24)}${color(EnumColor.Reset)}\n`);
       Configuration.filePath = file;
       const fileContent = fs.readFileSync(file, "utf8");
       Configuration.jsonConfiguration = JSON.parse(decrypt(fileContent));
@@ -56,12 +56,13 @@ class Configuration {
     }
   }
   private async createConfigTest() {
-  if (isTest()) return;
+    if (isTest()) return;
 		const result = Configuration.configs[ADMIN];
 		result.name = TEST;
     result.pg.database = TEST;
     result.nb_page = 1000;
-    result.extensions = ["base", "multiDatastream", "lora", "logs"];
+    result.extensions = ["base", "multiDatastream", "lora", "logs", ];
+    // result.extensions = Object.keys(EnumExtensions);
     result.canDrop = true;
     result.logFile = "";
     result.connection = undefined;
@@ -97,7 +98,7 @@ class Configuration {
   public getAllInfos(ctx: koa.Context): { [key: string]: IserviceLink } {
     const result = {};    
     this.getConfigs().forEach((conf: string) => {
-      result[conf] =  this.getLinkBase(ctx, conf)
+      result[conf] = this.getLinkBase(ctx, conf)
     });
     return result;
   }
@@ -247,7 +248,7 @@ class Configuration {
     if ( update && update["decoders"] && Object.entries(update["decoders"]).length > 0 ) {
       this.clearQueries();
       Object.keys(Configuration.configs)
-        .filter( (e) => e != "admin" && Configuration.configs[e].extensions.includes(EextensionsType.lora) )
+        .filter( (e) => e != "admin" && Configuration.configs[e].extensions.includes(EnumExtensions.lora) )
         .forEach((connectName: string) => {
           Object.keys(update["decoders"]).forEach((name: string) => {
             const hash = this.hashCode(update["decoders"][name]);
@@ -324,13 +325,13 @@ class Configuration {
     }
   };
 
-  public getModelVersion = (name: string): EmodelType => {
+  public getModelVersion = (name: string): EnumVersion => {
     switch (name) {
       case "v1.1":
       case "1.1":
-        return EmodelType.v1_1
+        return EnumVersion.v1_1
       default:
-        return EmodelType.v1_0
+        return EnumVersion.v1_0
     }
   }
 
@@ -346,8 +347,7 @@ class Configuration {
     let extensions = input["extensions"]
       ? ["base", ... String(input["extensions"]).split(",")]
       : ["base"];
-    extensions = unikeList(extensions);
-    const version = goodDbName === "admin" ? EmodelType.v1_1  : String(input["apiVersion"]).trim();
+    const version = goodDbName === "admin" ? EnumVersion.v1_1  : String(input["apiVersion"]).trim();
     const returnValue: IconfigFile = {
       name: goodDbName,
       port:

@@ -31,6 +31,7 @@ addToApiDoc({
     <a class="tabLogo" href="https://github.com/Mario-35/STEAN" target="_blank"><img src="./assets/github.png" alt="github"></a><span class="tabLink">https://github.com/Mario-35/STEAN</span>${blank(2)}
     <a class="tabLogo" href="mailto: sensorThings@inrae.fr"><img src="./assets/mail.png" alt="mail"></a><span class="tabLink">sensorThings@inrae.fr</span>${blank(2)}
     <a class="tabLogo" href="https://sensorthings.wiki.inrae.fr" target="_blank"><img src="./assets/wiki.png" alt="wiki"></a><span class="tabLink">https://sensorthings.wiki.inrae.fr</span>${blank(2)}
+    <a class="tabLogo" href="./assets/tests.html" target="_blank"><img src="./assets/tests.png" alt="wiki"></a><span class="tabLink">All Tests</span>${blank(2)}
     <div class="text">
       <p>Welcome to API documentation for the Open Geospatial Consortium (OGC) SensorThings international standard. This
         API provides an open and unified way to interconnect Internet of Things (IoT) devices over the Web as well as
@@ -55,14 +56,14 @@ describe("endpoint : index", () => {
     describe(`GET /${testVersion}/ [9.2.1]`, () => {
         afterEach(() => { writeLog(true); });
         it("should inform on result", (done) => {
+            
             addStartNewTest("Root");
             const infos = addTest({
                 api: "{get} resource result",
-                url: `/${testVersion}/`,
                 apiName: "resultSensorThings",
                 apiDescription: `Stean use differents type of result : ${apiInfos["0"]}`,
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#resource-path",
-                apiExample: { http: `/test` },
+                apiExample: { http: `${testVersion}/` },
                 apiSuccess: [
                     "{relation} Datastreams Get all datastreams.",
                     "{relation} MultiDatastreams Get all multidatastreams.",
@@ -77,10 +78,12 @@ describe("endpoint : index", () => {
                     "{relation} Decoders Get all decoders."
                 ]
             });
+
             chai.request(server)
-                .get(`/test${infos.url}`)
-                .end((err, res) => {
-                    should.not.exist(err);
+            .get(`/test/${infos.apiExample.http}`)
+            .end((err, res) => {
+                console.log("trace === true");
+                should.not.exist(err);
                     res.status.should.eql(200);
                     res.type.should.eql("application/json");
                     res.body.value[0].url.should.contain("/Datastreams");
@@ -99,6 +102,5 @@ describe("endpoint : index", () => {
                     done();
                 });
         });
-
     });
 });

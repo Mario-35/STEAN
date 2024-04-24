@@ -6,17 +6,13 @@
  *
  */
 
-import { EextensionsType } from "../../enums";
+import { createEntity } from ".";
 import { Ientity } from "../../types";
 
 
-  export const ThingLocation:Ientity = {
-    name: "ThingsLocations",
-    singular: "ThingLocation",
-    table: "thing_location",
+  export const ThingLocation:Ientity  = createEntity("ThingsLocations", {
     createOrder: 3,
     order: -1,
-    extensions: [EextensionsType.base],
     orderBy: `"thing_id"`,
     columns: {
       thing_id: {
@@ -36,16 +32,16 @@ import { Ientity } from "../../types";
     },
     relations: {},
     constraints: {
-      thing_location_pkey: 'PRIMARY KEY ("thing_id", "location_id")',
-      thing_location_location_id_fkey:
+      thinglocation_pkey: 'PRIMARY KEY ("thing_id", "location_id")',
+      thinglocation_location_id_fkey:
         'FOREIGN KEY ("location_id") REFERENCES "location"("id") ON UPDATE CASCADE ON DELETE CASCADE',
-      thing_location_thing_id_fkey:
+      thinglocation_thing_id_fkey:
         'FOREIGN KEY ("thing_id") REFERENCES "thing"("id") ON UPDATE CASCADE ON DELETE CASCADE',
     },
     indexes: {
-      thing_location_location_id:
-        'ON public."thing_location" USING btree ("location_id")',
-      thing_location_thing_id:
-        'ON public."thing_location" USING btree ("thing_id")',
+      thinglocation_location_id:
+        'ON public."thinglocation" USING btree ("location_id")',
+      thinglocation_thing_id:
+        'ON public."thinglocation" USING btree ("thing_id")',
     },
-  };
+  });

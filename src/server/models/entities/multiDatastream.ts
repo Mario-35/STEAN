@@ -5,17 +5,13 @@
  * @author mario.adam@inrae.fr
  *
  */
-
-import { EdatesType, EextensionsType, EobservationType, Erelations } from "../../enums";
+import { createEntity } from ".";
+import { EnumDatesType, EnumObservationType, EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 
-export const MultiDatastream:Ientity = {
-    name: "MultiDatastreams",
-    singular: "MultiDatastream",
-    table: "multidatastream",
+export const MultiDatastream:Ientity  = createEntity("MultiDatastreams", {
     createOrder: 8,
     order: 2,
-    extensions: [EextensionsType.multiDatastream],
     orderBy: `"id"`,
     columns: {
       id: {
@@ -54,7 +50,7 @@ export const MultiDatastream:Ientity = {
         },
         type: "list",
         verify: {
-          list: Object.keys(EobservationType),
+          list: Object.keys(EnumObservationType),
           default:
             "http://www.opengis.net/def/observation-type/ogc-om/2.0/om_complex-observation",
         },
@@ -76,14 +72,14 @@ export const MultiDatastream:Ientity = {
       phenomenonTime: {
         create: "",
         columnAlias(config: IconfigFile, test: IKeyBoolean | undefined) {  
-          return `CONCAT(to_char("_phenomenonTimeStart",'${EdatesType.date}'),'/',to_char("_phenomenonTimeEnd",'${EdatesType.date}'))${test && test["as"] === true ? ` AS "phenomenonTime"`: ''}`;
+          return `CONCAT(to_char("_phenomenonTimeStart",'${EnumDatesType.date}'),'/',to_char("_phenomenonTimeEnd",'${EnumDatesType.date}')) AS "phenomenonTime"`;
         },
         type: "text",
       },
       resultTime: {
         create: "",
         columnAlias(config: IconfigFile, test: IKeyBoolean | undefined) {  
-          return `CONCAT(to_char("_resultTimeStart",'${EdatesType.date}'),'/',to_char("_resultTimeEnd",'${EdatesType.date}'))${test && test["as"] === true ? ` AS "resultTime"`: ''}`;
+          return `CONCAT(to_char("_resultTimeStart",'${EnumDatesType.date}'),'/',to_char("_resultTimeEnd",'${EnumDatesType.date}')) AS "resultTime"`;
         },
         type: "text",
       },
@@ -139,7 +135,7 @@ export const MultiDatastream:Ientity = {
     },
     relations: {
       Thing: {
-        type: Erelations.belongsTo,
+        type: EnumRelations.belongsTo,
         expand: `"thing"."id" = "multidatastream"."thing_id"`,
         link: `"thing"."id" = (SELECT "multidatastream"."thing_id" from "multidatastream" WHERE "multidatastream"."id" =$ID)`,        
         entityName: "Things",
@@ -149,7 +145,7 @@ export const MultiDatastream:Ientity = {
         tableKey: "id",
       },
       Sensor: {
-        type: Erelations.belongsTo,
+        type: EnumRelations.belongsTo,
         expand: `"sensor"."id" = "multidatastream"."sensor_id"`,
         link: `"sensor"."id" = (SELECT "multidatastream"."sensor_id" from "multidatastream" WHERE "multidatastream"."id" =$ID)`,
         entityName: "Sensors",
@@ -159,7 +155,7 @@ export const MultiDatastream:Ientity = {
         tableKey: "id",
       },
       Observations: {
-        type: Erelations.hasMany,
+        type: EnumRelations.hasMany,
         expand: `"observation"."id" in (SELECT "observation"."id" from "observation" WHERE "observation"."multidatastream_id" = "multidatastream"."id")`,
         link: `"observation"."id" in (SELECT "observation"."id" from "observation" WHERE "observation"."multidatastream_id" = $ID)`,
 
@@ -170,17 +166,17 @@ export const MultiDatastream:Ientity = {
         tableKey: "id",
       },
       ObservedProperties: {
-        type: Erelations.belongsTo,
-        expand: `"observedproperty"."id" in (SELECT "multi_datastream_observedproperty"."observedproperty_id" FROM "multi_datastream_observedproperty" WHERE "multi_datastream_observedproperty"."multidatastream_id" = "multidatastream"."id")`,
-        link: `"observedproperty"."id" in (SELECT "multi_datastream_observedproperty"."observedproperty_id" FROM "multi_datastream_observedproperty" WHERE "multi_datastream_observedproperty"."multidatastream_id" = $ID)`,
+        type: EnumRelations.belongsTo,
+        expand: `"observedproperty"."id" in (SELECT "multidatastreamobservedproperty"."observedproperty_id" FROM "multidatastreamobservedproperty" WHERE "multidatastreamobservedproperty"."multidatastream_id" = "multidatastream"."id")`,
+        link: `"observedproperty"."id" in (SELECT "multidatastreamobservedproperty"."observedproperty_id" FROM "multidatastreamobservedproperty" WHERE "multidatastreamobservedproperty"."multidatastream_id" = $ID)`,
         entityName: "ObservedProperties",
-        tableName: "multi_datastream_observedproperty",
+        tableName: "multidatastreamobservedproperty",
         relationKey: "observedproperty_id",
         entityColumn: "multidatastream_id",
         tableKey: "multidatastream_id",
       },
       Lora: {
-        type: Erelations.belongsTo,
+        type: EnumRelations.belongsTo,
         expand: `"lora"."id" = (SELECT "lora"."id" from "lora" WHERE "lora"."multidatastream_id" = "multidatastream"."id")`,
         link: `"lora"."id" = (SELECT "lora"."id" from "lora" WHERE "lora"."multidatastream_id" = $ID)`,
         entityName: "loras",
@@ -190,7 +186,7 @@ export const MultiDatastream:Ientity = {
         tableKey: "id",
       },
       FeatureOfInterest: {
-        type: Erelations.belongsTo,
+        type: EnumRelations.belongsTo,
         expand: "",
         link: "",
         entityName: "FeaturesOfInterest",
@@ -216,4 +212,4 @@ export const MultiDatastream:Ientity = {
       multidatastream_thing_id:
         'ON public."multidatastream" USING btree ("thing_id")',
     },
-};
+});

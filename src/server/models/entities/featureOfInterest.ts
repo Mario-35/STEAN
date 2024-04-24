@@ -6,16 +6,13 @@
  *
  */
 
-import { EextensionsType, Erelations } from "../../enums";
+import { createEntity } from ".";
+import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 
-export const FeatureOfInterest:Ientity = {
-            name: "FeaturesOfInterest",
-            singular: "FeatureOfInterest",
-            table: "featureofinterest",
+export const FeatureOfInterest:Ientity  = createEntity("FeaturesOfInterest", {
             createOrder: 4,
             order: 4,
-            extensions: [EextensionsType.base],
             orderBy: `"id"`,
             columns: {
               id: {
@@ -57,7 +54,7 @@ export const FeatureOfInterest:Ientity = {
             },
             relations: {
               Observations: {
-                type: Erelations.hasMany,
+                type: EnumRelations.hasMany,
                 expand: `"observation"."id" in (SELECT "observation"."id" from "observation" WHERE "observation"."featureofinterest_id" = "featureofinterest"."id")`,
                 link: `"observation"."id" in (SELECT "observation"."id" from "observation" WHERE "observation"."featureofinterest_id" = $ID)`,
                 entityName: "Observations",
@@ -67,7 +64,7 @@ export const FeatureOfInterest:Ientity = {
                 tableKey: "id",
               },
               Datastreams: {
-                type: Erelations.hasMany,
+                type: EnumRelations.hasMany,
                 expand: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."_default_foi" = "featureofinterest"."id")`,
                 link: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."_default_foi" = $ID)`,
                 entityName: "Datastreams",
@@ -83,4 +80,4 @@ export const FeatureOfInterest:Ientity = {
             },
             after:
               "INSERT INTO featureofinterest (name, description, \"encodingType\", feature) VALUES ('Default Feature of Interest', 'Default Feature of Interest', 'application/vnd.geo+json', '{}');",
-          };
+          });

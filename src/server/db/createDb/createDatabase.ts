@@ -12,7 +12,7 @@ import { addDoubleQuotes, addSimpleQuotes, asyncForEach } from "../../helpers";
 import { formatLog } from "../../logger";
 import { _RIGHTS } from "../constants";
 import { IKeyString } from "../../types";
-import { EextensionsType } from "../../enums";
+import { EnumExtensions } from "../../enums";
 import { _NOTOK, _OK } from "../../constants";
 import { triggers } from "./triggers";
 import { models } from "../../models";
@@ -97,7 +97,7 @@ export const createDatabase = async (configName: string): Promise<IKeyString> =>
     }
   );
 
-  if ( serverConfig.getConfig(configName).extensions.includes( EextensionsType.numeric ) ) {
+  if ( serverConfig.getConfig(configName).extensions.includes( EnumExtensions.numeric ) ) {
     await dbConnection.unsafe(`ALTER TABLE ${addDoubleQuotes(DB.Observations.table)} ALTER COLUMN 'result' TYPE float4 USING null;`)
       .catch((error: Error) => {
         log.errorMsg(error);

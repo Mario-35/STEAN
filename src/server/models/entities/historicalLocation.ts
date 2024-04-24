@@ -6,16 +6,13 @@
  *
  */
 
-import { EextensionsType, Erelations } from "../../enums";
+import { createEntity } from ".";
+import {  EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 
-export const HistoricalLocation:Ientity = {
-    name: "HistoricalLocations",
-    singular: "HistoricalLocation",
-    table: "historical_location",
+  export const HistoricalLocation:Ientity  = createEntity("HistoricalLocations", {
     createOrder: -1,
     order: 5,
-    extensions: [EextensionsType.base],
     orderBy: `"id"`,
     columns: {
       id: {
@@ -41,19 +38,19 @@ export const HistoricalLocation:Ientity = {
       },
     },
     constraints: {
-      historical_location_pkey: 'PRIMARY KEY ("id")',
-      historical_location_thing_id_fkey:
+      historicallocation_pkey: 'PRIMARY KEY ("id")',
+      historicallocation_thing_id_fkey:
         'FOREIGN KEY ("thing_id") REFERENCES "thing"("id") ON UPDATE CASCADE ON DELETE CASCADE',
     },
     indexes: {
-      historical_location_thing_id:
-        'ON public."historical_location" USING btree ("thing_id")',
+      historicallocation_thing_id:
+        'ON public."historicallocation" USING btree ("thing_id")',
     },
     relations: {
       Things: {
-        type: Erelations.belongsTo,
-        expand: `"thing"."id" = "historical_location"."thing_id"`,
-        link: `"thing"."id" = (SELECT "historical_location"."thing_id" from "historical_location" WHERE "historical_location"."id" = $ID)`,
+        type: EnumRelations.belongsTo,
+        expand: `"thing"."id" = "historicallocation"."thing_id"`,
+        link: `"thing"."id" = (SELECT "historicallocation"."thing_id" from "historicallocation" WHERE "historicallocation"."id" = $ID)`,
         entityName: "Things",
         tableName: "thing",
         relationKey: "thing_id",
@@ -61,14 +58,14 @@ export const HistoricalLocation:Ientity = {
         tableKey: "id",
       },
       Locations: {
-        type: Erelations.belongsToMany,
-        expand: `"location"."id" in (SELECT "location"."id" from "location" WHERE "location"."id" in (SELECT "thing_location"."location_id" from "thing_location" WHERE "thing_location"."thing_id" = "historical_location"."thing_id"))`,
-        link: `"location"."id" in (SELECT "location"."id" from "location" WHERE "location"."id" in (SELECT "thing_location"."location_id" from "thing_location" WHERE "thing_location"."thing_id" in (SELECT "historical_location"."thing_id" from "historical_location" WHERE "historical_location"."id" = $ID)))`,
+        type: EnumRelations.belongsToMany,
+        expand: `"location"."id" in (SELECT "location"."id" from "location" WHERE "location"."id" in (SELECT "thinglocation"."location_id" from "thinglocation" WHERE "thinglocation"."thing_id" = "historicallocation"."thing_id"))`,
+        link: `"location"."id" in (SELECT "location"."id" from "location" WHERE "location"."id" in (SELECT "thinglocation"."location_id" from "thinglocation" WHERE "thinglocation"."thing_id" in (SELECT "historicallocation"."thing_id" from "historicallocation" WHERE "historicallocation"."id" = $ID)))`,
         entityName: "locationsHistoricalLocations",
-        tableName: "location_historical_location",
-        relationKey: "historical_location_id",
+        tableName: "locationhistoricallocation",
+        relationKey: "historicallocation_id",
         entityColumn: "location_id",
         tableKey: "location_id",
       },
     },
-  };
+  });

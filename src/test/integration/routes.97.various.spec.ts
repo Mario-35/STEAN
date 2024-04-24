@@ -57,10 +57,12 @@ describe("Various Get tests", () => {
         it(test, (done) => {
             addTest({
 				api: `result => ${+tests[test]} : `,
-				url: test,
 				apiName: "",
 				apiDescription: "",
-				apiReference: ""
+				apiReference: "",
+				apiExample: {
+                    http: test,
+				}
 			});
             chai.request(server)
                 .get(test)

@@ -1,10 +1,10 @@
 import { serverConfig } from "../configuration";
-import { TEST } from "../constants";
+import { ADMIN, TEST } from "../constants";
 import { log } from "../log";
 import { _STREAM } from "../db/constants";
 import { executeSqlValues } from "../db/helpers";
 import { asJson } from "../db/queries";
-import { EcolType, EextensionsType, EmodelType } from "../enums";
+import { EnumColumnType, EnumExtensions, EnumVersion, filterEntities } from "../enums";
 import { addDoubleQuotes, deepClone, isTest } from "../helpers";
 import { errors, msg } from "../messages";
 import { IconfigFile, Ientities, Ientity, IstreamInfos } from "../types";
@@ -21,7 +21,7 @@ class Models {
   static models : { [key: string]: Ientities; } = {};
   // Create Object FOR v1.0
   constructor() { 
-      Models.models[EmodelType.v1_0] = {
+      Models.models[EnumVersion.v1_0] = {
           Things: Thing,        
           FeaturesOfInterest: FeatureOfInterest,        
           Locations: Location,        
@@ -75,8 +75,8 @@ class Models {
     const entities = Models.models[ctx.config.apiVersion];
     let fileContent = fs.readFileSync(__dirname + `/model.drawio`, "utf8");
     fileContent = fileContent.replace('&gt;Version&lt;', `&gt;version : ${ctx.config.apiVersion}&lt;`);
-    if(!ctx.config.extensions.includes(EextensionsType.logs)) deleteId("124");
-    if(!ctx.config.extensions.includes(EextensionsType.multiDatastream)) {
+    if(!ctx.config.extensions.includes(EnumExtensions.logs)) deleteId("124");
+    if(!ctx.config.extensions.includes(EnumExtensions.multiDatastream)) {
       ["114" ,"115" ,"117" ,"118" ,"119" ,"116" ,"120" ,"121"].forEach(e => deleteId(e));
       fileContent = fileContent.replace(`&lt;hr&gt;COLUMNS.${entities.MultiDatastreams.name}`, "");
       fileContent = fileContent.replace(`&lt;hr&gt;COLUMNS.${entities.MultiDatastreams.name}`, "");
@@ -98,7 +98,7 @@ class Models {
     };
     const extensions = {};
     switch (ctx.config.apiVersion) {
-      case EmodelType.v1_1:
+      case EnumVersion.v1_1:
         result["Ogc link"] = "https://docs.ogc.org/is/18-088/18-088.html";
         break;
         
@@ -106,8 +106,8 @@ class Models {
         result["Ogc link"] = "https://docs.ogc.org/is/15-078r6/15-078r6.html";
         break;
     }
-    if (ctx.config.extensions.includes(EextensionsType.tasking)) extensions["tasking"] = "https://docs.ogc.org/is/17-079r1/17-079r1.html";
-    if (ctx.config.extensions.includes(EextensionsType.logs)) extensions["logs"] = `${ctx.decodedUrl.linkbase}/${ctx.config.apiVersion}/Logs`;
+    if (ctx.config.extensions.includes(EnumExtensions.tasking)) extensions["tasking"] = "https://docs.ogc.org/is/17-079r1/17-079r1.html";
+    if (ctx.config.extensions.includes(EnumExtensions.logs)) extensions["logs"] = `${ctx.decodedUrl.linkbase}/${ctx.config.apiVersion}/Logs`;
       
     result["extensions"] = extensions;
     await executeSqlValues(ctx.config, `
@@ -116,7 +116,6 @@ class Models {
     (SELECT c.relname||'.'||a.attname FROM pg_attribute a JOIN pg_class c ON (a.attrelid=c.relfilenode) WHERE a.atttypid = 114)
     ;`
     ).then(res => {
-      console.log(res);
       result["Postgres"]["version"] = res[0];
       result["Postgres"]["extensions"] = res[1];
     });
@@ -185,15 +184,17 @@ class Models {
     switch (nb) {
       case "1.1":          
       case "v1.1":          
-      case EmodelType.v1_1:          
-        Models.models[EmodelType.v1_1] = this.version1_1(deepClone(Models.models[EmodelType.v1_0]));
+      case EnumVersion.v1_1:          
+        Models.models[EnumVersion.v1_1] = this.version1_1(deepClone(Models.models[EnumVersion.v1_0]));
     } 
     return testVersion(nb);
   }
 
+  
   private filtering(config: IconfigFile) { 
-    const entities = Object.keys(Models.models[config.apiVersion]).filter((e) => [ EextensionsType.base,  EextensionsType.logs, ... config.extensions, ].some((r) => Models.models[config.apiVersion][e].extensions.includes(r)));
-    return Object.fromEntries(Object.entries(Models.models[config.apiVersion]).filter( ([k]) => entities.includes(k))) as Ientities;
+    return Object.fromEntries(Object.entries(Models.models[config.apiVersion]).filter(([, v]) => Object.keys(filterEntities(config)).includes(v.name))) as Ientities;
+
+    // return Object.fromEntries(Object.entries(Models.models[config.apiVersion]).filter(([, v]) => Object.keys(getListOfEntities("admin")).includes(v.name))) as Ientities;
   }
 
   public version(config: IconfigFile): string {
@@ -203,7 +204,7 @@ class Models {
 
   public filteredModelFromConfig(config: IconfigFile, ): Ientities {
     if (testVersion(config.apiVersion) === false) this.createVersion(config.apiVersion);
-    return config.name === "admin" ? this.DBAdmin(config) : this.filtering(config);
+    return config.name === ADMIN ? this.DBAdmin(config) : this.filtering(config);
   }
   
   public DBFull(config: IconfigFile | string): Ientities {
@@ -217,8 +218,8 @@ class Models {
   }
   
   public DBAdmin(config: IconfigFile):Ientities {
-    const entities = Models.models[EmodelType.v1_0];
-    return Object.fromEntries(Object.entries(entities).filter(([, v]) => v.extensions.includes(EextensionsType.admin))) as Ientities;
+    // return Object.fromEntries(Object.entries( Models.models[EnumVersion.v1_0]).filter(([, v]) => Object.keys(getListOfEntities("admin")).includes(v.name))) as Ientities;
+    return Object.fromEntries(Object.entries( Models.models[EnumVersion.v1_0]));
   } 
 
   public isSingular(config: IconfigFile, input: string): boolean { 
@@ -260,14 +261,14 @@ class Models {
     }
   };
   
-  public getRelationColumnTable = (config: IconfigFile, entity: Ientity | string, test: string): EcolType | undefined => {
+  public getRelationColumnTable = (config: IconfigFile, entity: Ientity | string, test: string): EnumColumnType | undefined => {
     if (config && entity) {
       const tempEntity = this.getEntity(config, entity);
       if (tempEntity)
           return tempEntity.relations.hasOwnProperty(test)
-          ? EcolType.Relation
+          ? EnumColumnType.Relation
           : tempEntity.columns.hasOwnProperty(test)
-              ? EcolType.Column
+              ? EnumColumnType.Column
               : undefined;
     }      
   };
@@ -302,11 +303,11 @@ class Models {
       });
     
     switch (ctx.config.apiVersion) {
-      case EmodelType.v1_0:
+      case EnumVersion.v1_0:
         return {
           value : expectedResponse.filter((elem) => Object.keys(elem).length)
         };    
-      case EmodelType.v1_1:
+      case EnumVersion.v1_1:
         expectedResponse = expectedResponse.filter((elem) => Object.keys(elem).length);    
         const list:string[] = [];
         list.push(conformance["1.1"].root);
@@ -315,8 +316,8 @@ class Models {
         list.push("https://docs.ogc.org/is/18-088/18-088.html#requesting-data");
         list.push("https://docs.ogc.org/is/18-088/18-088.html#create-update-delete");
         // conformance.push("https://docs.ogc.org/is/18-088/18-088.html#batch-requests");
-        if(ctx.config.extensions.includes(EextensionsType.multiDatastream)) list.push("https://docs.ogc.org/is/18-088/18-088.html#multidatastream-extension");
-        if(ctx.config.extensions.includes(EextensionsType.mqtt)) list.push("https://docs.ogc.org/is/18-088/18-088.html#create-observation-dataarray");
+        if(ctx.config.extensions.includes(EnumExtensions.multiDatastream)) list.push("https://docs.ogc.org/is/18-088/18-088.html#multidatastream-extension");
+        if(ctx.config.extensions.includes(EnumExtensions.mqtt)) list.push("https://docs.ogc.org/is/18-088/18-088.html#create-observation-dataarray");
         // conformance.push("https://docs.ogc.org/is/18-088/18-088.html#mqtt-extension");
         list.push("http://docs.oasis-open.org/odata/odata-json-format/v4.01/odata-json-format-v4.01.html");
         list.push("https://datatracker.ietf.org/doc/html/rfc4180");
@@ -335,6 +336,8 @@ class Models {
       this.createVersion(serverConfig.getConfig(TEST).apiVersion);
     }
   }
+
+
 }
 
 export const models = new Models();

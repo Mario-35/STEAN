@@ -8,12 +8,12 @@
 
 import Router from "koa-router";
 import { decodeToken, ensureAuthenticated, getAuthenticatedUser, } from "../authentication";
-import { ADMIN, _READY } from "../constants";
+import { ADMIN, LOL, _READY } from "../constants";
 import { addSimpleQuotes, getUrlId, getUrlKey, isAdmin, returnFormats } from "../helpers";
 import { apiAccess, userAccess } from "../db/dataAccess";
 import { formatLog } from "../logger";
 import { IreturnResult } from "../types";
-import { EuserRights } from "../enums";
+import { EnumUserRights } from "../enums";
 import { createQueryHtml } from "../views/query";
 import { CreateHtmlView, createIqueryFromContext } from "../views/helpers/";
 import { DefaultState, Context } from "koa";
@@ -87,7 +87,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
     // Only to get user Infos
     case "USER":
       const id = getUrlId(ctx.url.toUpperCase());
-      if (id && decodeToken(ctx)?.PDCUAS[EuserRights.SuperAdmin] === true) {
+      if (id && decodeToken(ctx)?.PDCUAS[EnumUserRights.SuperAdmin] === true) {
         const user = await userAccess.getSingle(id);
         const bodyUuerEdit = new CreateHtmlView(ctx);
         ctx.type = returnFormats.html.type;
@@ -140,7 +140,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
     case "CREATEDBTEST":
       console.log(formatLog.head("GET createDB"));
       try {        
-        ctx.body =  await createService(testDatas),    
+        ctx.body = await createService(testDatas),    
         ctx.status = 201;
       } catch (error) {
         ctx.status = 400;
@@ -175,6 +175,19 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         ctx.body = createQueryHtml(tempContext);
       }
       return;      
+    case "TEST":
+      const ent = models.DBAdmin(ctx.config);
+      const myTest = {};
+      Object.keys(ent).forEach(e => {
+        const a = ent[e].table;
+        const b = LOL(ent[e].singular);
+        if (a != b) myTest[a] = b;
+      })
+      console.log(myTest);
+      
+        ctx.type = returnFormats.json.type;
+        ctx.body = myTest;
+      return;      
   } // END Switch
 
   // API GET REQUEST  
@@ -196,7 +209,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         if (ctx.odata.entity && Number(ctx.odata.id) === 0) {
           const returnValue = await objectAccess.getAll();
           if (returnValue) {
-            const datas =  ctx.odata.resultFormat === returnFormats.json
+            const datas = ctx.odata.resultFormat === returnFormats.json
                 ? ({
                     "@iot.count": returnValue.id,
                     "@iot.nextLink": returnValue.nextLink,

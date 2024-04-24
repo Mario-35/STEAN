@@ -27,6 +27,7 @@
 	"noStream": "No Datastream or MultiDatastream found",
 	"noStreamDeveui": "No datastream or multiDatastream found for deveui : ",
 	"noValidDate": "No valid date found",
+	"noValidEntity": "($1) is not a valid entity",
 	"observationExist": "Observation already exist",
 	"payloadIsMalformed": "Payload is malformed",
 	"sizeListKeys": "Size of list of results ($1) is not equal to size of keys ($2)",

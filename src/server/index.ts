@@ -11,6 +11,7 @@ import Koa from "koa";
 import bodyParser from "koa-bodyparser";
 import logger from "koa-logger";
 import helmet from "koa-helmet";
+import compress from "koa-compress";
 import json from "koa-json";
 import { protectedRoutes, routerHandle, unProtectedRoutes } from "./routes/";
 import cors from "@koa/cors";
@@ -24,6 +25,7 @@ import { models } from "./models";
 import { log } from "./log";
 import { IconfigFile, IdecodedUrl, Ientities, Ilog, IuserToken } from "./types";
 import { RootPgVisitor } from "./odata/visitor";
+import { constants } from "zlib";
 
 // Extend koa context 
 declare module "koa" {
@@ -50,6 +52,20 @@ app.use(helmet.contentSecurityPolicy({ directives: HELMET_CONFIG }));
 
 // bodybarser https://github.com/koajs/bodyparser
 app.use(bodyParser({ enableTypes: ["json", "text", "form"] }));
+
+app.use(compress({
+  filter: function (content_type) { return ( /json/i.test(content_type) || /text/i.test(content_type)) },
+  threshold: 1024,
+  gzip: {
+  flush: constants.Z_NO_FLUSH,
+  level: constants.Z_BEST_COMPRESSION
+  }
+  }));
+
+
+
+
+
 
 // router
 app.use(routerHandle);

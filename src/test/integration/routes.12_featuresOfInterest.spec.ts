@@ -77,12 +77,11 @@ addToApiDoc({
 		it(`Return all ${entity.name} ${nbColor}[9.2.2]`, (done) => {
 			const infos = addTest({
 				api: `{get} ${entity.name} Get all`,
-				url: `/${testVersion}/${entity.name}`,
 				apiName: `GetAll${entity.name}`,
 				apiDescription: `Retrieve all ${entity.name}.${showHide(`Get${entity.name}`, apiInfos["9.2.2"])}`,
 				apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-collection-entities",
 				apiExample: {
-					http: `/test`,
+                    http: `${testVersion}/${entity.name}`,					
 					curl: defaultGet("curl", "KEYHTTP"),
 					javascript: defaultGet("javascript", "KEYHTTP"),
 					python: defaultGet("python", "KEYHTTP")
@@ -111,14 +110,15 @@ addToApiDoc({
         it(`Return Feature of interest ${nbColor}[9.2.3]`, (done) => {
             const infos = addTest({
                 api: `{get} ${entity.name}(:id) Get one`,
-				url : `/${testVersion}/${entity.name}(1)`,
                 apiName: `GetOne${entity.name}`,
                 apiDescription: "Get a specific Feature of interest.",
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-entity",
-                apiExample: { http: "/test" }
+                apiExample: { 
+                    http: `${testVersion}/${entity.name}(1)`,
+                }
             });
             chai.request(server)
-                .get(`/test${infos.url}`)
+                .get(`/test/${infos.apiExample.http}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -136,13 +136,15 @@ addToApiDoc({
 		it(`Return error if ${entity.name} not exist ${nbColor}[9.2.4]`, (done) => {
 			const infos = addTest({
 				api : `{get} return error if ${entity.name} not exist`,
-				url : `/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`,
 				apiName: "",
 				apiDescription: "",
-				apiReference: ""
+				apiReference: "",
+				apiExample: {
+                    http: `${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`,
+				}
 			});
 			chai.request(server)
-				.get(`/test${infos.url}`)
+				.get(`/test/${infos.apiExample.http}`)
 				.end((err, res) => {
 					should.not.exist(err);
 					res.status.should.equal(404);
@@ -156,13 +158,15 @@ addToApiDoc({
         it(`Return all features of interests using $expand query option ${nbColor}[9.3.2.1]`, (done) => {
             const infos = addTest({
                 api: `{get} ${entity.name}(:id) Get one and expand`,
-                url: `/${testVersion}/${entity.name}(1)?$expand=Observations`,
                 apiName: `GetExpandObservations${entity.name}`,
                 apiDescription: "Get a specific Feature of interest and expand Observations",
-                apiExample: { http: "/test" }
+                apiReference: "",
+                apiExample: {
+                    http: `${testVersion}/${entity.name}(1)?$expand=Observations`,
+                }
             });
             chai.request(server)
-                .get(`/test${infos.url}`)
+                .get(`/test/${infos.apiExample.http}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -171,8 +175,7 @@ addToApiDoc({
                     res.body.should.include.keys("Observations");
                     res.body.Observations[0].should.include.keys(observations_testsKeys);
                     res.body["@iot.id"].should.eql(1);
-                    addToApiDoc({ ...infos, result: limitResult(res, "Observations") });
-					
+                    addToApiDoc({ ...infos, result: limitResult(res, "Observations") });					
                     done();
                 });
         });
@@ -181,13 +184,15 @@ addToApiDoc({
             const name = "Observations";
 			const infos = addTest({
 				api: `{get} ${entity.name}(:id) Get Subentity ${name}`,
-				url: `/${testVersion}/${entity.name}(12)/${name}`,
 				apiName: "",
 				apiDescription: "",
-				apiReference: ""
+				apiReference: "",
+				apiExample: {
+                    http: `${testVersion}/${entity.name}(12)/${name}`,
+				}
 			});            
             chai.request(server)
-            .get(`/test${infos.url}`)
+            .get(`/test/${infos.apiExample.http}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -206,13 +211,15 @@ addToApiDoc({
             const name = "Observations";
             const infos = addTest({
 				api: `{get} return ${entity.name} Expand ${name}`,
-				url: `/${testVersion}/${entity.name}(12)?$expand=${name}`,
 				apiName: "",
 				apiDescription: "",
-				apiReference: ""
+				apiReference: "",
+				apiExample: {
+                    http: `${testVersion}/${entity.name}(12)?$expand=${name}`,
+				}
 			});
             chai.request(server)
-            .get(`/test${infos.url}`)
+            .get(`/test/${infos.apiExample.http}`)
                 .end((err: Error, res: any) => {
                     should.not.exist(err);
                     res.status.should.equal(200);
@@ -242,12 +249,11 @@ addToApiDoc({
             };
             const infos = addTest({
                 api: `{post} ${entity.name} Post basic`,
-                url: `/${testVersion}/${entity.name}`,
                 apiName: `Post${entity.name}`,
                 apiDescription: `Post a new ${entity.name}.${showHide(`Post${entity.name}`, apiInfos["10.2"])}`,
                 apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request",
                 apiExample: {
-                    http: "/test",
+                    http: `${testVersion}/${entity.name}`,                    
                     curl: defaultPost("curl", "KEYHTTP", datas),
                     javascript: defaultPost("javascript", "KEYHTTP", datas),
                     python: defaultPost("python", "KEYHTTP", datas)
@@ -256,7 +262,7 @@ addToApiDoc({
                 apiParamExample: datas
             });
             chai.request(server)
-                .post(`/test/${infos.url}`)
+                .post(`/test/${infos.apiExample.http}`)
                 .send(infos.apiParamExample)
                 .set("Cookie", `${keyTokenName}=${token}`)
                 .end((err: Error, res: any) => {
@@ -272,13 +278,15 @@ addToApiDoc({
         it(`Return Error if the payload is malformed ${nbColor}[10.2.2]`, (done) => {
             const infos = addTest({
                 api : `{post} return Error if the payload is malformed`,
-                url : `/${testVersion}/${entity.name}`,
                 apiName: "",
                 apiDescription: "",
-                apiReference: ""
-            });
+                apiReference: "",
+				apiExample: {
+                    http: `${testVersion}/${entity.name}`,
+				}
+			});
             chai.request(server)
-                .post(`/test${infos.url}`)
+                .post(`/test/${infos.apiExample.http}`)
                 .send({})
                 .set("Cookie", `${keyTokenName}=${token}`)
                 .end((err: Error, res: any) => {
@@ -304,12 +312,11 @@ addToApiDoc({
                     };
                     const infos = addTest({
                         api: `{patch} ${entity.name} Patch one`,
-                        url : `/${testVersion}/${entity.name}(${result["id"]})`,
                         apiName: `Patch${entity.name}`,
                         apiDescription: `Patch a ${entity.singular}.${showHide(`Patch${entity.name}`, apiInfos["10.3"])}`,
                         apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_2",
                         apiExample: {
-                            http: "/test",
+                            http: `${testVersion}/${entity.name}(${result["id"]})`,                            
                             curl: defaultPatch("curl", "KEYHTTP", datas),
                             javascript: defaultPatch("javascript", "KEYHTTP", datas),
                             python: defaultPatch("python", "KEYHTTP", datas)
@@ -317,7 +324,7 @@ addToApiDoc({
                         apiParamExample: datas
                     });
                     chai.request(server)
-                        .patch(`/test${infos.url}`)
+                        .patch(`/test/${infos.apiExample.http}`)
                         .send(infos.apiParamExample)
                         .set("Cookie", `${keyTokenName}=${token}`)
                         .end((err: Error, res: any) => {
@@ -349,13 +356,15 @@ addToApiDoc({
             };
 			const infos = addTest({
 				api: `{patch} return Error if the ${entity.name} not exist`,
-				url: `/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`,
 				apiName: "",
 				apiDescription: "",
-				apiReference: ""
+				apiReference: "",
+				apiExample: {
+                    http: `${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`,
+				}
 			});
 			chai.request(server)
-				.patch(`/test${infos.url}`)
+				.patch(`/test/${infos.apiExample.http}`)
 				.send(datas)
 				.set("Cookie", `${keyTokenName}=${token}`)
 				.end((err: Error, res: any) => {
@@ -374,19 +383,18 @@ addToApiDoc({
 			executeQuery(`SELECT (SELECT count(id) FROM "${entity.table}")::int as count, (${last(entity.table)})::int as id `).then((beforeDelete) => {
 				const infos = addTest({
 					api : `{delete} ${entity.name} Delete one`,
-					url : `/${testVersion}/${entity.name}(${beforeDelete["id"]})`,					
 					apiName: `Delete${entity.name}`,
 					apiDescription: `Delete a ${entity.singular}.${showHide(`Delete${entity.name}`, apiInfos["10.4"])}`,
 					apiReference: "https://docs.ogc.org/is/18-088/18-088.html#_request_3",
 					apiExample: {
-						http: "/test",
+                        http: `${testVersion}/${entity.name}(${beforeDelete["id"]})`,						
 						curl: defaultDelete("curl", "KEYHTTP"),
 						javascript: defaultDelete("javascript", "KEYHTTP"),
 						python: defaultDelete("python", "KEYHTTP")
 					}
 				});
 				chai.request(server)
-					.delete(`/test${infos.url}`)
+					.delete(`/test/${infos.apiExample.http}`)
 					.set("Cookie", `${keyTokenName}=${token}`)
 					.end((err: Error, res: any) => {
 						should.not.exist(err);
@@ -407,13 +415,15 @@ addToApiDoc({
 		it(`Return Error if the ${entity.name} not exist`, (done) => {
 			const infos = addTest({
 				api: `{delete} return Error if the ${entity.name} not exist`,
-				url: `/${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`,
 				apiName: "",
 				apiDescription: "",
-				apiReference: ""
+				apiReference: "",
+				apiExample: {
+                    http: `${testVersion}/${entity.name}(${BigInt(Number.MAX_SAFE_INTEGER)})`,
+				}
 			});
 			chai.request(server)
-				.delete(`/test/${infos.url}`)
+				.delete(`/test/${infos.apiExample.http}`)
 				.set("Cookie", `${keyTokenName}=${token}`)
 				.end((err: Error, res: any) => {
 					should.not.exist(err);

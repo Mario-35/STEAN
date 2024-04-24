@@ -6,7 +6,7 @@
  *
  */
 
-export enum EuserRights {
+export enum EnumUserRights {
     Post = 0,
     Delete = 1,
     Create = 2,
