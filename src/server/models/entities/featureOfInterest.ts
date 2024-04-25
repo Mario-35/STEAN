@@ -9,6 +9,7 @@
 import { createEntity } from ".";
 import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
+import { _id, _text } from "./constants";
 
 export const FeatureOfInterest:Ientity  = createEntity("FeaturesOfInterest", {
             createOrder: 4,
@@ -16,38 +17,30 @@ export const FeatureOfInterest:Ientity  = createEntity("FeaturesOfInterest", {
             orderBy: `"id"`,
             columns: {
               id: {
-                create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-                columnAlias(config: IconfigFile, test: IKeyBoolean) {
+                create: _id,
+                alias(config: IconfigFile, test: IKeyBoolean) {
                   return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS "@iot.id"`: ''}` ;
                 },
                 type: "number",
               },
               name: {
-                create: "text NOT NULL DEFAULT 'no name'::text",
-                columnAlias() {
-                  return undefined;
-                },
+                create: _text('no name'),
+                alias() {},
                 type: "text",
               },
               description: {
-                create: "text NOT NULL DEFAULT 'description'::text",
-                columnAlias() {
-                  return undefined;
-                },
+                create: _text('no description'), 
+                alias() {},
                 type: "text",
               },
               encodingType: {
-                create: "text NOT NULL",
-                columnAlias() {
-                  return undefined;
-                },
+                create: _text(), 
+                alias() {},
                 type: "text",
               },
               feature: {
                 create: "jsonb NOT NULL",
-                columnAlias() {
-                  return undefined;
-                },
+                alias() {},
                 type: "json",
                 test: "encodingType",
               }

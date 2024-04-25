@@ -9,6 +9,7 @@
 import { createEntity } from ".";
 import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
+import { _id, _text } from "./constants";
 
 export const Decoder:Ientity  = createEntity("Decoders", {
     createOrder: 10,
@@ -16,46 +17,35 @@ export const Decoder:Ientity  = createEntity("Decoders", {
     orderBy: `"id"`,
     columns: {
       id: {
-        create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-        columnAlias(config: IconfigFile, test: IKeyBoolean) {
+        create: _id,
+        alias(config: IconfigFile, test: IKeyBoolean) {
            return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS "@iot.id"`: ''}` ;
         },
         type: "number",
       },
       name: {
-        create: "text NOT NULL DEFAULT 'no name'::text",
-        columnAlias() {
-          return undefined;
-        },
+        create: _text('no name'),
+        alias() {},
         type: "text",
       },
       hash: {
-        create: "text NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: "TEXT NULL",
+        alias() {},
         type: "text",
       },
       code: {
-        create:
-          "text NOT NULL DEFAULT 'const decoded = null; return decoded;'::text",
-        columnAlias() {
-          return undefined;
-        },
+        create: _text('const decoded = null; return decoded;'),
+        alias() {},
         type: "text",
       },
       nomenclature: {
-        create: "text NOT NULL DEFAULT '{}'::text",
-        columnAlias() {
-          return undefined;
-        },
+        create: _text('{}'),
+        alias() {},
         type: "jsonb",
       },
       synonym: {
-        create: "text NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: "TEXT NULL",
+        alias() {},
         type: "jsonb",
       },
     },

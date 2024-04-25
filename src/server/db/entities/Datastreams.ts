@@ -20,11 +20,12 @@ export class Datastreams extends Common {
   formatDataInput(input: object | undefined): object | undefined {
     console.log(formatLog.whereIam());
     if (input) {
-      if (input["observationType"]) {
-        if ( !this.ctx.model.Datastreams.columns[ "observationType" ].verify?.list.includes(input["observationType"]) )
-          this.ctx.throw(400, { code: 400, detail: errors["observationType"] });
+      const colName = "observationType";
+      if (input[colName]) {
+        if ( !this.ctx.model.Datastreams.columns[ colName ].verify?.list.includes(input[colName]) )
+          this.ctx.throw(400, { code: 400, detail: errors[colName] });
       } else
-        input["observationType"] = this.ctx.model.Datastreams.columns["observationType"].verify?.default;
+        input[colName] = this.ctx.model.Datastreams.columns[colName].verify?.default;
     }
     return input;
   }

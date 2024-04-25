@@ -1,3 +1,11 @@
+/**
+ * tests datas.
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+
 // Shortcuts for space
 const n = {
 	types: ["classic","apostrophe","accent","special","hack"],
@@ -1963,7 +1971,7 @@ export const testDatas = {
 		{
 			"name": "Watteco",
 			"hash": "994849785",
-			"code": "function decode (bytes) { if (typeof bytes === \"string\") bytes = Buffer.from(bytes,\"hex\");\tvar decoded = { valid: false, payload: \"\", messages: []\t}; function Bytes2Float32(bytes) { var sign = (bytes & 0x80000000) ? -1 : 1; var exponent = ((bytes >> 23) & 0xFF) - 127; var significand = (bytes & ~(-1 << 23));  if (exponent == 128)  return sign * ((significand) ? Number.NaN : Number.POSITIVE_INFINITY);  if (exponent == -127) {  if (significand == 0) return sign * 0.0;  exponent = -126;  significand /= (1 << 22); } else significand = (significand | (1 << 23)) / (1 << 23);  return sign * significand * Math.pow(2, exponent); }\tvar bytes_len_\t= bytes.length;\tvar temp_hex_str = \"\";\tfor( var j = 0; j < bytes_len_; j++ )\t{ temp_hex_str = bytes[j].toString( 16 ).toUpperCase( ); if( temp_hex_str.length == 1 ) { temp_hex_str = \"0\" + temp_hex_str; } decoded.payload += temp_hex_str; var date = new Date(); decoded.date = date.toISOString();\t} if (!(bytes[0] & 0x01) === false) { attributID = -1; cmdID = -1; clusterdID = -1; cmdID = bytes[1]; clusterdID = bytes[2]*256 + bytes[3]; if((cmdID === 0x0a)|(cmdID === 0x8a)|(cmdID === 0x01)){ attributID = bytes[4]*256 + bytes[5]; if ((cmdID === 0x0a) | (cmdID === 0x8a))\tindex = 7; if (cmdID === 0x01)\tindex = 8; if ((clusterdID === 0x000c ) & (attributID === 0x0055)) { const decodedValue = Bytes2Float32(bytes[index]*256*256*256+bytes[index+1]*256*256+bytes[index+2]*256+bytes[index+3]); decoded.messages.push({ type : \"analog\", measurementName: \"analog\", measurementValue: decodedValue }); decoded.datas = decodedValue; } }\t}\tdecoded.valid=true;\treturn decoded;}; return decode(input, nomenclature);",
+			"code": "function decode (bytes) { if (typeof bytes === \"string\") bytes = Buffer.from(bytes,\"hex\");\tvar decoded = { valid: false, payload: \"\", messages: []\t}; function Bytes2Float32(bytes) { var sign = (bytes & 0x80000000) ? -1 : 1; var exponent = ((bytes >> 23) & 0xFF) - 127; var significand = (bytes & ~(-1 << 23));  if (exponent == 128)  return sign * ((significand) ? Number.NaN : Number.POSITIVE_INFINITY);  if (exponent == -127) {  if (significand == 0) return sign * 0.0;  exponent = -126;  significand /= (1 << 22); } else significand = (significand | (1 << 23)) / (1 << 23);  return sign * significand * Math.pow(2, exponent); }\tvar bytes_len_\t= bytes.length;\tvar temp_hex_str = \"\";\tfor( var j = 0; j < bytes_len_; j++ )\t{ temp_hex_str = bytes[j].toString( 16 ).toUpperCase( ); if ( temp_hex_str.length == 1 ) { temp_hex_str = \"0\" + temp_hex_str; } decoded.payload += temp_hex_str; var date = new Date(); decoded.date = date.toISOString();\t} if (!(bytes[0] & 0x01) === false) { attributID = -1; cmdID = -1; clusterdID = -1; cmdID = bytes[1]; clusterdID = bytes[2]*256 + bytes[3]; if ((cmdID === 0x0a)|(cmdID === 0x8a)|(cmdID === 0x01)){ attributID = bytes[4]*256 + bytes[5]; if ((cmdID === 0x0a) | (cmdID === 0x8a))\tindex = 7; if (cmdID === 0x01)\tindex = 8; if ((clusterdID === 0x000c ) & (attributID === 0x0055)) { const decodedValue = Bytes2Float32(bytes[index]*256*256*256+bytes[index+1]*256*256+bytes[index+2]*256+bytes[index+3]); decoded.messages.push({ type : \"analog\", measurementName: \"analog\", measurementValue: decodedValue }); decoded.datas = decodedValue; } }\t}\tdecoded.valid=true;\treturn decoded;}; return decode(input, nomenclature);",
 			"nomenclature": "{}"
 		}
 	],

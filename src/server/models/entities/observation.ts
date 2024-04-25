@@ -9,6 +9,7 @@
 import { createEntity } from ".";
 import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
+import { _id } from "./constants";
 
   export const Observation:Ientity  = createEntity("Observations", {
     createOrder: 12,
@@ -16,22 +17,20 @@ import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
     orderBy: `"phenomenonTime"`,
     columns: {
       id: {
-        create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-        columnAlias(config: IconfigFile, test: IKeyBoolean) {
+        create: _id,
+        alias(config: IconfigFile, test: IKeyBoolean) {
            return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS "@iot.id"`: ''}` ;
         },
         type: "number",
       },
       phenomenonTime: {
         create: "timestamptz NOT NULL",
-        columnAlias() {
-          return undefined;
-        },
+        alias() {},
         type: "date",
       },
       result: {
-        create: "jsonb NULL",
-        columnAlias(config: IconfigFile, test: IKeyBoolean | undefined) {
+        create: "JSONB NULL",
+        alias(config: IconfigFile, test: IKeyBoolean | undefined) {
           if (!test) return "result";  
           if (test["valueskeys"] && test["valueskeys"] === true) 
             return `COALESCE("result"-> 'valueskeys', "result"-> 'value')${test && test["as"] === true ? ` AS "result"`: ''}`;
@@ -46,51 +45,37 @@ import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
       },
       resultTime: {
         create: "timestamptz NOT NULL",
-        columnAlias() {
-          return undefined;
-        },
+        alias() {},
         type: "date",
       },
       resultQuality: {
-        create: "jsonb NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: "JSONB NULL",
+        alias() {},
         type: "json",
       },
       validTime: {
         create: "timestamptz DEFAULT CURRENT_TIMESTAMP",
-        columnAlias() {
-          return undefined;
-        },
+        alias() {},
         type: "date",
       },
       parameters: {
-        create: "jsonb NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: "JSONB NULL",
+        alias() {},
         type: "json",
       },
       datastream_id: {
         create: "BIGINT NULL",
-        columnAlias() {
-          return undefined;
-        },
+        alias() {},
         type: "relation:Datastreams",
       },
       multidatastream_id: {
         create: "BIGINT NULL",
-        columnAlias() {
-          return undefined;
-        },
+        alias() {},
         type: "relation:MultiDatastreams",
       },
       featureofinterest_id: {
         create: "BIGINT NOT NULL DEFAULT 1",
-        columnAlias() {
-          return undefined;
-        },
+        alias() {},
         type: "relation:FeaturesOfInterest",
       },
     },

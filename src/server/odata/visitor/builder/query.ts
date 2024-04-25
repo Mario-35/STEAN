@@ -8,19 +8,22 @@
 
 import { _COLUMNSEPARATOR } from "../../../constants";
 import { formatLog } from "../../../logger";
-import { addDoubleQuotes, isCsvOrArray, isGraph, isObservation, pgQueryToString, removeAllQuotes, removeDoubleQuotes } from "../../../helpers";
+import { addDoubleQuotes, cleanStringComma, isCsvOrArray, isGraph, isObservation, removeAllQuotes, removeDoubleQuotes } from "../../../helpers";
 import { asJson } from "../../../db/queries";
 import { IconfigFile, Ientity, IKeyBoolean, IpgQuery } from "../../../types";
 import { PgVisitor, RootPgVisitor } from "..";
 import { models } from "../../../models";
 import { allEntities } from "../../../enums";
-import { GroupBy, OrderBy, Select, Where } from ".";
+import { GroupBy, Key, OrderBy, Select, Where } from ".";
 
 export class Query  {
     where: Where;
     select: Select;
     orderBy: OrderBy;
     groupBy: GroupBy;
+    keyNames: Key;
+    _pgQuery: IpgQuery | undefined = undefined;
+
   
     constructor() {
       console.log(formatLog.whereIam());
@@ -28,6 +31,7 @@ export class Query  {
       this.select = new Select();
       this.orderBy = new OrderBy();
       this.groupBy = new GroupBy();
+      this.keyNames = new Key([]);
     }
 
     private columnList(tableName: string, main: PgVisitor, element: PgVisitor): string[] | undefined  {   
@@ -47,7 +51,7 @@ export class Query  {
             console.log(formatLog.whereIam(column));
             if (entity.columns[column]) {
                 // is column have alias
-                const alias = entity.columns[column].columnAlias(config, options ? options : undefined);
+                const alias = entity.columns[column].alias(config, options ? options : undefined);
                 if (testIn(alias || column) === true) return alias || column;
                 if (options) {
                     if (alias && options["alias"] === true) return alias;
@@ -96,14 +100,15 @@ export class Query  {
             const force = ["id", "result"].includes(column) ? true : false;
             return formatedColumn(main.ctx.config, tempEntity, column, { valueskeys: element.valueskeys, quoted: true, table: true, alias: force, as: isGraph(main) ? false : true } ) || "";
         }) .filter(e => e != "" ).forEach((e: string) => {    
-            if (isCsvOrArray(main)) element.addToArrayNames(e);
+            const testIisCsvOrArray = isCsvOrArray(element);            
+            if (testIisCsvOrArray) this.keyNames.add(e);
             returnValue.push(e);
             if (main.interval) main.addToIntervalColumns(extractColumnName(e));
             if (e === "id" && (element.showRelations == true || isCsvOrArray(main))) {
-                if (isCsvOrArray(main)) element.addToArrayNames("id"); 
+                if (testIisCsvOrArray) this.keyNames.add("id"); 
                 else returnValue.push(selfLink);    
             }     
-             if (isCsvOrArray(main) && ["payload", "deveui", "phenomenonTime"].includes(removeAllQuotes(e))) element.addToArrayNames(e);
+             if (testIisCsvOrArray && ["payload", "deveui", "phenomenonTime"].includes(removeAllQuotes(e))) this.keyNames.add(e);
         });
         // add interval if requested
         if (main.interval) main.addToIntervalColumns(`CONCAT('${main.ctx.decodedUrl.root}/${tempEntity.name}(', COALESCE("@iot.id", '0')::text, ')') AS "@iot.selfLink"`);
@@ -114,14 +119,14 @@ export class Query  {
                 const one = element && element.splitResult && element.splitResult.length === 1;
                 const alias: string = one ? "result" : elem;
                 returnValue.push( `(result->>'valueskeys')::json->'${element.splitResult && one ? removeAllQuotes(element.splitResult[0]) : alias}' AS "${ one ? elem : alias}"` );
-                element.addToArrayNames(one ? elem : alias);
+                this.keyNames.add(one ? elem : alias);
             });
         }
         return returnValue;
     }
 
     // Create SQL Query
-    create(main: RootPgVisitor | PgVisitor, _element?: PgVisitor): IpgQuery | undefined { 
+    private create(main: RootPgVisitor | PgVisitor, _element?: PgVisitor): IpgQuery | undefined { 
         const element = _element ? _element : main;
         console.log(formatLog.whereIam(element.entity || "blank"));
         if (element.entity.trim() !== "") {
@@ -144,7 +149,7 @@ export class Query  {
                             item.query.where.add(`${item.query.where.notNull() === true ?  " AND " : ''}${main.ctx.model[realEntityName].relations[name].expand}`); 
                             // create sql query    for this relatiion (IN JSON result)                                                       
                             relations[index] = `(${asJson({ 
-                                query: pgQueryToString(this.create(item)), 
+                                query: this.pgQueryToString(this.create(item)), 
                                 singular : models.isSingular(main.ctx.config, name),
                                 strip: main.ctx.config.stripNull,
                                 count: false })}) AS ${addDoubleQuotes(name)}`;
@@ -173,12 +178,41 @@ export class Query  {
                         orderby: element.query.orderBy.notNull() === true ?  element.query.orderBy.toString() : main.ctx.model[realEntityName].orderBy,
                         skip: element.skip,
                         limit: element.limit,
+                        keys: this.keyNames.toArray(),
                         count: `SELECT COUNT (DISTINCT ${Object.keys(main.ctx.model[realEntityName].columns)[0]}) FROM (SELECT ${Object.keys(main.ctx.model[realEntityName].columns)[0]} FROM "${main.ctx.model[realEntityName].table}"${element.query.where.notNull() === true ? ` WHERE ${element.query.where.toString()}` : ''}) AS c`
                     };
                 }    
             }
         }
         return undefined;
+    }
+
+    private pgQueryToString(input: IpgQuery | undefined): string {    
+        return input ? 
+            `SELECT ${input.select}\n FROM "${input.from}"\n ${input.where 
+                ? `WHERE ${input.where}\n` 
+                : ''}${input.groupBy 
+                ? `GROUP BY ${cleanStringComma(input.groupBy)}\n` 
+                : ''}${input.orderby 
+                ? `ORDER BY ${cleanStringComma(input.orderby,["ASC","DESC"])}\n` 
+                : ''}${input.skip && input.skip > 0 
+                ? `OFFSET ${input.skip}\n` 
+                : ''} ${input.limit && input.limit > 0 
+                ? `LIMIT ${input.limit}\n` 
+                : ''}` 
+            : 'Error';
+    }
+
+    toString(main: RootPgVisitor | PgVisitor, _element?: PgVisitor): string {
+        console.log(formatLog.whereIam());
+        if(!this._pgQuery) this._pgQuery = this.create(main, _element);
+        return this.pgQueryToString(this._pgQuery);
+    }
+    
+    toPgQuery(main: RootPgVisitor | PgVisitor, _element?: PgVisitor): IpgQuery | undefined {
+        console.log(formatLog.whereIam());
+        if(!this._pgQuery) this._pgQuery = this.create(main, _element);
+        return this._pgQuery;
     }
 
 }

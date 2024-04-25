@@ -13,11 +13,10 @@ import { addDoubleQuotes, addSimpleQuotes, removeAllQuotes } from "../../helpers
 import { PgVisitor } from "../../odata/visitor";
 
 export const asDataArray = (input: PgVisitor): string => {  
-  const names:string[] = input.arrayNames.map((e: string) => removeAllQuotes(e));
+  const names:string[] = input.toPgQuery()?.keys.map((e: string) => removeAllQuotes(e)) || [];
   // create names
-  if (input.includes) 
-    input.includes.forEach((include: PgVisitor) => { names.push(include.entity); });
-  // Return SQL query
+  if (input.includes) input.includes.forEach((include: PgVisitor) => { names.push(include.entity); });
+  // Return SQL query  
   return asJson({
     query: `SELECT (ARRAY[${_NEWLINE}\t${names
       .map((e: string) => addSimpleQuotes(ESCAPE_SIMPLE_QUOTE(e)))

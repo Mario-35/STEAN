@@ -13,7 +13,7 @@ export interface IentityColumn {
     [key: string]: {
         readonly create: string;
         extensions?: EnumExtensions;
-        columnAlias(config: IconfigFile, test?: IKeyBoolean): string | undefined;
+        alias(config: IconfigFile, test?: IKeyBoolean): string | undefined | void;
         readonly unique?: boolean;
         readonly test?: string;
         readonly dataList?: IKeyString;

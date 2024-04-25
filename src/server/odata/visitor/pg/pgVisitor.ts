@@ -6,7 +6,7 @@
  *
  */
 
-import { addDoubleQuotes, addSimpleQuotes, isGraph, isObservation, isTest, pgQueryToString, removeAllQuotes, returnFormats } from "../../../helpers";
+import { addDoubleQuotes, addSimpleQuotes, isGraph, isObservation, isTest, removeAllQuotes, returnFormats } from "../../../helpers";
 import { IodataContext, IKeyString, Ientity, IKeyBoolean, IpgQuery } from "../../../types";
 import { Token } from "../../parser/lexer";
 import { Literal } from "../../parser/literal";
@@ -28,7 +28,6 @@ export class PgVisitor extends Visitor {
   parentEntity: string | undefined = undefined;  
   id: bigint | string = BigInt(0);
   parentId: bigint | string = BigInt(0);
-  arrayNames: string[] = [];
   intervalColumns: string[] | undefined = undefined;
   splitResult: string[] | undefined;
   interval: string | undefined;
@@ -43,8 +42,6 @@ export class PgVisitor extends Visitor {
   ast: Token;
   showRelations = true;
   results: IKeyString = {};
-  // sql = "";
-  pgQuery: IpgQuery | undefined = undefined;
   debugOdata = isTest() ? false : true;
   constructor(ctx: koa.Context, options = <SqlOptions>{}) {
     console.log(formatLog.whereIam());
@@ -59,16 +56,7 @@ export class PgVisitor extends Visitor {
     this.skip = 0;
   }
 
-  addToArrayNames(key: string | string[]) {
-    const addTo = (input: string[]) => {
-      input.forEach(key =>  {
-        key = key.includes(" AS ") ? key.split(" AS ")[1] : key;
-        key = key.includes(".") ? key.split(".")[1] : key;
-        if(!this.arrayNames.includes(key) && key.trim() !== "") this.arrayNames.push(key);      
-      });
-    }
-    addTo((typeof key === "string") ? [key] : key);    
-  }
+
 
   addToIntervalColumns(input: string) {
     // TODO test with create    
@@ -128,9 +116,9 @@ export class PgVisitor extends Visitor {
 }
 
   getColumnNameOrAlias(entity: Ientity, column : string, options: IKeyBoolean): string | undefined {
-    let result: string | undefined = undefined;
+    let result: string | undefined | void = undefined;
     if (entity && column != "" && entity.columns[column]) {
-      result = entity.columns[column].columnAlias(this.ctx.config, options);
+      result = entity.columns[column].alias(this.ctx.config, options);
       if (!result) result = addDoubleQuotes(column);
     }
     return result ? `${ options.table === true && result && result[0] === '"' ? `"${entity.table}".${result}` : result }` : undefined;
@@ -156,7 +144,7 @@ export class PgVisitor extends Visitor {
   verifyQuery = (): void => {
     console.log(formatLog.head("verifyQuery"));
     const expands: string[] = [];
-    if(this.includes) this.includes.forEach((element: PgVisitor) => {
+    if (this.includes) this.includes.forEach((element: PgVisitor) => {
       if (element.ast.type === "ExpandItem")
         expands.push(element.ast.raw.split("(")[0]);
     });
@@ -194,7 +182,6 @@ export class PgVisitor extends Visitor {
           console.log(formatLog.debug("Visit",`Visit${node.type}`, ));
           console.log(formatLog.result("node.raw", node.raw));
           console.log(formatLog.result("this.query.where", this.query.where.toString()));
-          console.log(formatLog.result("this.arrayNames", this.arrayNames)); 
           console.log(formatLog.debug("context", context));
         }
 
@@ -508,7 +495,6 @@ export class PgVisitor extends Visitor {
         context.identifier = node.value.name;
         if (context.target && !context.key) {
           let alias = this.getColumnNameOrAlias(this.ctx.model[this.entity], node.value.name, this.createDefaultOptions());
-          console.log(alias);
           alias = context.target ===  EnumQuery.Where ? alias?.split(" AS ")[0]: alias;
           this.query[context.target].add(node.value.name.includes("->>") ||node.value.name.includes("->") || node.value.name.includes("::")
             ? node.value.name
@@ -753,15 +739,11 @@ export class PgVisitor extends Visitor {
   }
 
   toString(): string {
-    console.log(formatLog.whereIam());
-    if(!this.pgQuery) this.pgQuery = this.query.create(this);
-    return pgQueryToString(this.pgQuery);
+    return this.query.toString(this);
   }
 
   toPgQuery(): IpgQuery | undefined {
-      console.log(formatLog.whereIam());
-      if(!this.pgQuery) this.pgQuery = this.query.create(this);
-      return this.pgQuery;
+      return this.query.toPgQuery(this);
   }
 
 }

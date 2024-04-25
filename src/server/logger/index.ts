@@ -23,7 +23,7 @@ class FormatLog {
   constructor() {
     // override console log important in production build will remove all console.log
     console.log = (data: any) => {  
-      if(data && process.env.NODE_ENV?.trim() !== TEST ) this.write(data);
+      if (data && process.env.NODE_ENV?.trim() !== TEST ) this.write(data);
     };
   }
 

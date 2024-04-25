@@ -13,3 +13,4 @@ export { OrderBy } from "./orderBy";
 export { Query } from "./query";
 export { Select } from "./select";
 export { Where } from "./where";
+export { Key } from "./key";

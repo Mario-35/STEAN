@@ -25,11 +25,11 @@ export class Configs extends Common {
   async getAll(): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     // Return result If not authorised
-    if (!ensureAuthenticated(this.ctx)) return this.createReturnResult({
+    if (!ensureAuthenticated(this.ctx)) return this.formatReturnResult({
       body: hidePassword(serverConfig.getConfig(this.ctx.config.name))
     });    
     // Return result
-    return this.createReturnResult({
+    return this.formatReturnResult({
       body: hidePassword(serverConfig.getConfigs().map((elem: string) => ({ 
         [elem] : { ...serverConfig.getConfig(elem) }
       })))
@@ -41,7 +41,7 @@ export class Configs extends Common {
     // Return result If not authorised
     if (!ensureAuthenticated(this.ctx)) this.ctx.throw(401);
     // Return result
-    return this.createReturnResult({
+    return this.formatReturnResult({
       body: hideKeysInJson(
         serverConfig.getConfig( typeof idInput === "string" ? idInput : this.ctx.config.name ), ["entities"] ),
     });
@@ -50,25 +50,25 @@ export class Configs extends Common {
   async post(dataInput: object | undefined): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     
-    if(dataInput && dataInput["create"] && dataInput["create"]["name"]) {
-      return this.createReturnResult({
+    if (dataInput && dataInput["create"] && dataInput["create"]["name"]) {
+      return this.formatReturnResult({
         body: await createService(dataInput, this.ctx),
       });
-    } else if(dataInput && dataInput["add"] && dataInput["add"]["name"]) {
-      return this.createReturnResult({
+    } else if (dataInput && dataInput["add"] && dataInput["add"]["name"]) {
+      return this.formatReturnResult({
         body: await addToService(this.ctx, dataInput),
       });
     }
     if (!ensureAuthenticated(this.ctx)) this.ctx.throw(401);    
     if (dataInput)
-      return this.createReturnResult({
+      return this.formatReturnResult({
         body: await serverConfig.addConfig(dataInput),
       });
   }
 
   // Delete an item
   async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {
-   console.log(formatLog.whereIam(idInput));
+    console.log(formatLog.whereIam(idInput));
     return;
   }
 }

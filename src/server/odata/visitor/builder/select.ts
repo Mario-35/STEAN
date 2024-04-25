@@ -8,7 +8,7 @@
 import { Core } from ".";
 
 export class Select extends Core{  
-  constructor(input?: string) {
+  constructor(input?: string | string[]) {
     super(input);
   }
 }

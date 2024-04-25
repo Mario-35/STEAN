@@ -31,7 +31,7 @@ export function createInsertValues(config: IconfigFile, input : object, entityNa
                   }               
                 } else if (input[e] && entity.relations[e]) {                
                   const col = entity.relations[e].entityColumn;
-                  if(entity.columns[col]) {
+                  if (entity.columns[col]) {
                     const temp = formatColumnValue(col, input[e], entity.columns[col].type);
                     if (temp) {
                       keys.push(addDoubleQuotes(col));

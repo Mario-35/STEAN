@@ -15,4 +15,5 @@ export interface IpgQuery {
     groupBy?: string;
     skip?: number;
     limit?: number;
+    keys: string[];
 }

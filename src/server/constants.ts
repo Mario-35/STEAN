@@ -34,8 +34,6 @@ export const _NEWLINE = '\r\n';
 export const _COLUMNSEPARATOR = '@|@';
 export const ESCAPE_ARRAY_JSON = (input: string) => input ? input.replace("[", "{") .replace("]", "}") : undefined;
 export const ESCAPE_SIMPLE_QUOTE = (input: string) => input.replace(/[']+/g, "''");
-export const LOL = (input: string) => input.replace(/(?<!^)(?=[A-Z])+/g, "_").toLowerCase();
-
 export const HELMET_CONFIG = Object.freeze({
   defaultSrc: ["'self'"],
   scriptSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com"],
@@ -58,3 +56,4 @@ export let _DEBUG = false;
 export let _READY = false;
 
 export function creatNameFile(fileName: string):string { return `${fileName}${new Date().toLocaleDateString().replace(/\D/g, "")}${new Date().toLocaleTimeString().replace(/\D/g, "")}` };
+export function addToStrings(input: string[], data: string) { if (input) input.push(data); else input = [data]; }

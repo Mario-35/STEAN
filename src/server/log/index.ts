@@ -20,7 +20,7 @@ class Log {
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public errorMsg(...data: any[]) {
-    if(isTest()) return;
+    if (isTest()) return;
     Log.logFile = fs.createWriteStream(_ERRORFILE, { flags: "a" });
     Log.logFile.write( util.format.apply(null, data).replace(/\u001b[^m]*?m/g, "") + "\n" );
     process.stdout.write(util.format.apply(null, data) + "\n");
@@ -44,7 +44,7 @@ class Log {
   }
 
   public query(sql: unknown) {
-    if(_DEBUG) process.stdout.write(`${color(EnumColor.FgYellow)}${"=".repeat(20)}[ Query ]${"=".repeat(20)}\n${color(EnumColor.FgCyan)} ${showAll(sql)}${color( EnumColor.Reset )}\n`);
+    if (_DEBUG) process.stdout.write(`${color(EnumColor.FgYellow)}${"=".repeat(20)}[ Query ]${"=".repeat(20)}\n${color(EnumColor.FgCyan)} ${showAll(sql)}${color( EnumColor.Reset )}\n`);
   }
 
   public queryError<T>(query: unknown, error: T) {  
@@ -56,7 +56,7 @@ class Log {
       // Usefull for id not used ;)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   oData(infos: Lexer.Token | undefined) {  
-    if(infos && _DEBUG)  {
+    if (infos && _DEBUG)  {
       const tmp = `${color(EnumColor.FgFadeWhite)} ${infos} ${color(EnumColor.Reset)}`;
       process.stdout.write(`${color(EnumColor.FgRed)} ${"=".repeat(8)} ${color(EnumColor.FgCyan)} ${ new Error().stack?.split("\n")[2].trim().split("(")[0].split("at ")[1].trim() } ${tmp}${color(EnumColor.FgRed)} ${"=".repeat(8)}${color(EnumColor.Reset)}`);
     }

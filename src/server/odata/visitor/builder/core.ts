@@ -6,33 +6,50 @@
  *
  */
 
-import { _COLUMNSEPARATOR } from "../../../constants";
+import { removeAllQuotes } from "../../../helpers";
+
+
 
 export class Core {
-  private _src: string;
+  private _src: string[];
   
-  constructor(input?: string) {
-    this._src = input || "";
+  constructor(input?: string | string[]) {
+    this._src = input ? typeof input === "string" ? [input]  : input : [] ;
   }
   
+  addKey(input: string) {      
+    const addTo = (input: string[]) => {
+      input.forEach(key =>  {
+        key = key.includes(" AS ") ? key.split(" AS ")[1] : key;
+        key = key.includes(".") ? key.split(".")[1] : key;
+        if (!this._src.includes(key) && key.trim() !== "") this._src.push(removeAllQuotes(key));      
+      });
+    }
+    addTo((typeof input === "string") ? [input] : input);    
+}
+  
   add(input: string) {
-    this._src += input;
+    this._src.push(input);
   }
 
   init(input: string) {
-    this._src = input;
+    this._src = [input];
   }
   
-  toString() {    
+  toArray():string[] {    
     return this._src;
   }
 
-  notNull() {    
-    return this._src.trim() !== "";
+  toString():string {    
+    return this._src.join("");
   }
 
-  replace(from: any, to: any) {
-    this._src = this._src.replace(from, to);
+  notNull() {    
+    return this._src.filter(e => e !+ "").length > 0;
+  }
+
+  replace(from: any, to: any) {    
+    this._src = this._src.map(e => typeof e === "string" ? e.replace(from, to) : e);
   }
 
 }

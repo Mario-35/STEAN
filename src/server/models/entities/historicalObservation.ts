@@ -9,6 +9,7 @@
 import { createEntity } from ".";
 import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
+import { _id } from "./constants";
 
   export const HistoricalObservation:Ientity  = createEntity("HistoricalObservations", {
     createOrder: -1,
@@ -16,31 +17,25 @@ import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
     orderBy: `"id"`,
     columns: {
       id: {
-        create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-        columnAlias(config: IconfigFile, test: IKeyBoolean) {
+        create: _id,
+        alias(config: IconfigFile, test: IKeyBoolean) {
            return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS "@iot.id"`: ''}` ;
         },
         type: "bigint"
       },
       validTime: {
         create: "timestamptz DEFAULT CURRENT_TIMESTAMP",
-        columnAlias() {
-          return undefined;
-        },
+        alias() {},
         type: "date"
       },
       _result: {
-        create: "jsonb NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: "JSONB NULL",
+        alias() {},
         type: "json"
       },
       observation_id: {
         create: "BIGINT NULL",
-        columnAlias() {
-          return undefined;
-        },
+        alias() {},
         type: "bigint"
       },
     },

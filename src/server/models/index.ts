@@ -14,7 +14,6 @@ import { formatLog } from "../logger";
 import conformance from "./conformance.json";
 import { FeatureOfInterest, Thing, Location, Config, CreateFile, CreateObservation, Datastream, Decoder, HistoricalLocation, HistoricalObservation, Log, Lora, MultiDatastream, MultiDatastreamObservedProperty, Observation, Sensor, User, LocationHistoricalLocation, ObservedProperty, ThingLocation } from "./entities";
 
-
 const testVersion = (input: string) => Object.keys(Models.models).includes(input);
 
 class Models {
@@ -75,8 +74,8 @@ class Models {
     const entities = Models.models[ctx.config.apiVersion];
     let fileContent = fs.readFileSync(__dirname + `/model.drawio`, "utf8");
     fileContent = fileContent.replace('&gt;Version&lt;', `&gt;version : ${ctx.config.apiVersion}&lt;`);
-    if(!ctx.config.extensions.includes(EnumExtensions.logs)) deleteId("124");
-    if(!ctx.config.extensions.includes(EnumExtensions.multiDatastream)) {
+    if (!ctx.config.extensions.includes(EnumExtensions.logs)) deleteId("124");
+    if (!ctx.config.extensions.includes(EnumExtensions.multiDatastream)) {
       ["114" ,"115" ,"117" ,"118" ,"119" ,"116" ,"120" ,"121"].forEach(e => deleteId(e));
       fileContent = fileContent.replace(`&lt;hr&gt;COLUMNS.${entities.MultiDatastreams.name}`, "");
       fileContent = fileContent.replace(`&lt;hr&gt;COLUMNS.${entities.MultiDatastreams.name}`, "");
@@ -90,7 +89,7 @@ class Models {
   }
   
   async getInfos(ctx: koa.Context) {
-    const temp = serverConfig.getLinkBase(ctx, ctx.config.name)
+    const temp = serverConfig.getInfos(ctx, ctx.config.name)
     const result = {
       ... temp,
       ready : ctx.config.connection ? true : false,
@@ -154,7 +153,7 @@ class Models {
     const makeJson = (name:string) => {
       return {
         create : "jsonb NULL",
-        columnAlias() {
+        alias() {
           return `"${name}"`;
         },
         type: "json"
@@ -166,7 +165,7 @@ class Models {
   
     input.Locations.columns["geom"] = {
       create: "geometry NULL",
-      columnAlias() {
+      alias() {
         return `"geom"`;
       },
       type: "json",
@@ -193,8 +192,6 @@ class Models {
   
   private filtering(config: IconfigFile) { 
     return Object.fromEntries(Object.entries(Models.models[config.apiVersion]).filter(([, v]) => Object.keys(filterEntities(config)).includes(v.name))) as Ientities;
-
-    // return Object.fromEntries(Object.entries(Models.models[config.apiVersion]).filter(([, v]) => Object.keys(getListOfEntities("admin")).includes(v.name))) as Ientities;
   }
 
   public version(config: IconfigFile): string {
@@ -210,7 +207,7 @@ class Models {
   public DBFull(config: IconfigFile | string): Ientities {
     if (typeof config === "string") {
       const nameConfig = serverConfig.getConfigNameFromName(config);
-      if(!nameConfig) throw new Error(errors.configName);
+      if (!nameConfig) throw new Error(errors.configName);
       if (testVersion(serverConfig.getConfig(nameConfig).apiVersion) === false) this.createVersion(serverConfig.getConfig(nameConfig).apiVersion);
       config = serverConfig.getConfig(nameConfig);
     }  
@@ -218,12 +215,14 @@ class Models {
   }
   
   public DBAdmin(config: IconfigFile):Ientities {
-    // return Object.fromEntries(Object.entries( Models.models[EnumVersion.v1_0]).filter(([, v]) => Object.keys(getListOfEntities("admin")).includes(v.name))) as Ientities;
-    return Object.fromEntries(Object.entries( Models.models[EnumVersion.v1_0]));
+    const entities = Models.models[EnumVersion.v1_0];
+    return Object.fromEntries(Object.entries(entities)) as Ientities;
+
+    // return Object.fromEntries(Object.entries( Models.models[EnumVersion.v1_0]));
   } 
 
   public isSingular(config: IconfigFile, input: string): boolean { 
-    if(config && input) {
+    if (config && input) {
       const entityName = this.getEntityName(config, input); 
       return entityName ? Models.models[config.apiVersion][entityName].singular == input : false; 
     }          
@@ -231,7 +230,7 @@ class Models {
   }
 
   public getEntityName(config: IconfigFile, search: string): string | undefined {
-    if(config && search) {        
+    if (config && search) {        
       const tempModel = Models.models[config.apiVersion];
       const testString: string | undefined = search
           .trim()
@@ -316,8 +315,8 @@ class Models {
         list.push("https://docs.ogc.org/is/18-088/18-088.html#requesting-data");
         list.push("https://docs.ogc.org/is/18-088/18-088.html#create-update-delete");
         // conformance.push("https://docs.ogc.org/is/18-088/18-088.html#batch-requests");
-        if(ctx.config.extensions.includes(EnumExtensions.multiDatastream)) list.push("https://docs.ogc.org/is/18-088/18-088.html#multidatastream-extension");
-        if(ctx.config.extensions.includes(EnumExtensions.mqtt)) list.push("https://docs.ogc.org/is/18-088/18-088.html#create-observation-dataarray");
+        if (ctx.config.extensions.includes(EnumExtensions.multiDatastream)) list.push("https://docs.ogc.org/is/18-088/18-088.html#multidatastream-extension");
+        if (ctx.config.extensions.includes(EnumExtensions.mqtt)) list.push("https://docs.ogc.org/is/18-088/18-088.html#create-observation-dataarray");
         // conformance.push("https://docs.ogc.org/is/18-088/18-088.html#mqtt-extension");
         list.push("http://docs.oasis-open.org/odata/odata-json-format/v4.01/odata-json-format-v4.01.html");
         list.push("https://datatracker.ietf.org/doc/html/rfc4180");

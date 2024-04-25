@@ -7,6 +7,7 @@
  */
 
 // import { allEntitiesType } from "../enums";
+import { allEntitiesType } from "../enums";
 import { Ientity } from "./entity";
 export { Icomon } from "./comon";
 export { IconfigFile } from "./configFile";
@@ -31,4 +32,4 @@ export { IuserToken } from "./userToken";
 export { IdecodedUrl } from "./decodedUrl";
 export interface IKeyBoolean { [key: string]: boolean; }
 export interface IKeyString { [key: string]: string; }
-export type Ientities = { [key: string]: Ientity }
+export type Ientities = { [key in allEntitiesType]: Ientity }

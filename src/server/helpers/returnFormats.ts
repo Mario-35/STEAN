@@ -81,7 +81,7 @@ const _returnFormats: { [key in EnumResultFormats]: IreturnFormat } = {
             singular: false,
             count: true,
             strip: input.ctx.config.stripNull,
-            fullCount: input.count === true ? input.pgQuery?.count : undefined,
+            fullCount: input.count === true ? input.toPgQuery()?.count : undefined,
             fields: generateFields(input),
           });
     },

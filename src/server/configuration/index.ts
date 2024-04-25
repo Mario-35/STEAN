@@ -5,11 +5,12 @@
  * @author mario.adam@inrae.fr
  *
  */
-import { ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_DB, NODE_ENV, setReady, TEST, TIMESTAMP, _DEBUG, _ERRORFILE, _NOTOK, _OK, _WEB, } from "../constants";
-import { addSimpleQuotes, asyncForEach, decrypt, encrypt, hidePassword, isProduction, isTest, unikeList, } from "../helpers";
+
+import { addToStrings, ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_DB, NODE_ENV, setReady, TEST, TIMESTAMP, _DEBUG, _ERRORFILE, _NOTOK, _OK, _WEB, } from "../constants";
+import { asyncForEach, decrypt, encrypt, hidePassword, isProduction, isTest, unikeList, } from "../helpers";
 import { IconfigFile, IdbConnection, IserviceLink } from "../types";
 import { errors, infos, msg } from "../messages";
-import { createDatabase, createService, executeSql} from "../db/helpers";
+import { createDatabase, createService} from "../db/helpers";
 import { app } from "..";
 import { EnumColor, EnumExtensions, EnumVersion } from "../enums";
 import fs from "fs";
@@ -50,18 +51,19 @@ class Configuration {
       // rewrite file (to update config modification)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      console.log(error);
       log.error("Config Not correct", error["message"]);
       process.exit(111);      
     }
   }
+
   private async createConfigTest() {
+    // In tests there a test to create service
     if (isTest()) return;
 		const result = Configuration.configs[ADMIN];
 		result.name = TEST;
     result.pg.database = TEST;
     result.nb_page = 1000;
-    result.extensions = ["base", "multiDatastream", "lora", "logs", ];
+    result.extensions = ["base", "multiDatastream", "lora", "logs"];
     // result.extensions = Object.keys(EnumExtensions);
     result.canDrop = true;
     result.logFile = "";
@@ -69,36 +71,37 @@ class Configuration {
     Configuration.configs[TEST] = this.formatConfig(result);
 	}
 
-  getLinkBase = (ctx: koa.Context, name: string): IserviceLink  => {
+  getInfos = (ctx: koa.Context, name: string): IserviceLink  => {
     const protocol:string = ctx.request.headers["x-forwarded-proto"]
           ? ctx.request.headers["x-forwarded-proto"].toString()
           : Configuration.configs[name].forceHttps && Configuration.configs[name].forceHttps === true
             ? "https"
             : ctx.protocol;
-        // make linkbase
-    let linkBase = ctx.request.headers["x-forwarded-host"]
+        
+    // make linkbase
+    let linkBase = 
+      ctx.request.headers["x-forwarded-host"]
         ? `${protocol}://${ctx.request.headers["x-forwarded-host"].toString()}`
         : ctx.request.header.host
-        ? `${protocol}://${ctx.request.header.host}`
-        : "";
-      // make  rootName
-      if (!linkBase.includes(name)) linkBase +=  "/" + name;
-      const version = Configuration.configs[name].apiVersion
-      return {
-        protocol: protocol,
-        linkBase: linkBase,
-        version: version,
-        root : process.env.NODE_ENV?.trim() === "test"
-          ? `proxy/${version}`
-          : `${linkBase}/${version}`,
-        model : `https://app.diagrams.net/?lightbox=1&edit=_blank#U${linkBase}/${version}/draw`
-      };
+          ? `${protocol}://${ctx.request.header.host}`
+          : "";
+
+    // make  rootName
+    if (!linkBase.includes(name)) linkBase +=  "/" + name;
+    const version = Configuration.configs[name].apiVersion;
+    return {
+      protocol: protocol,
+      linkBase: linkBase,
+      version: version,
+      root : process.env.NODE_ENV?.trim() === "test" ? `proxy/${version}` : `${linkBase}/${version}`,
+      model : `https://app.diagrams.net/?lightbox=1&edit=_blank#U${linkBase}/${version}/draw`
+    };
   }
 
   public getAllInfos(ctx: koa.Context): { [key: string]: IserviceLink } {
     const result = {};    
     this.getConfigs().forEach((conf: string) => {
-      result[conf] = this.getLinkBase(ctx, conf)
+      result[conf] = this.getInfos(ctx, conf)
     });
     return result;
   }
@@ -113,12 +116,12 @@ class Configuration {
 
   // verifi is valid config
   private validJSONConfig(input : JSON): boolean {    
-    if (!input.hasOwnProperty("admin")) return false;
-    if (!input["admin"].hasOwnProperty("pg")) return false;
-    if (!input["admin"][["pg"]].hasOwnProperty("host")) return false;
-    if (!input["admin"][["pg"]].hasOwnProperty("user")) return false;
-    if (!input["admin"][["pg"]].hasOwnProperty("password")) return false;
-    if (!input["admin"][["pg"]].hasOwnProperty("database")) return false;
+    if (!input.hasOwnProperty(ADMIN)) return false;
+    if (!input[ADMIN].hasOwnProperty("pg")) return false;
+    if (!input[ADMIN][["pg"]].hasOwnProperty("host")) return false;
+    if (!input[ADMIN][["pg"]].hasOwnProperty("user")) return false;
+    if (!input[ADMIN][["pg"]].hasOwnProperty("password")) return false;
+    if (!input[ADMIN][["pg"]].hasOwnProperty("database")) return false;
     return true;
   }
 
@@ -139,17 +142,19 @@ class Configuration {
           log.error(formatLog.error(err));
           return false;
         }
-      });
-      return true;
+    });
+    return true;
   }
 
   async executeMultipleQueries(configName: string, queries: string[], infos: string):Promise<boolean> {
     await asyncForEach( queries, async (query: string) => {
-      await serverConfig.connection(configName).unsafe(query)
-      .catch((error: Error) => {
-        log.error(formatLog.error(error));
-        return false;
-      });
+      await serverConfig
+        .connection(configName)
+        .unsafe(query)
+        .catch((error: Error) => {
+          log.error(formatLog.error(error));
+          return false;
+        });
     });
     log.create(`${infos} : [${configName}]`, _OK);
     return true;
@@ -182,25 +187,28 @@ class Configuration {
     return Configuration.configs[name].connection || this.createDbConnection(Configuration.configs[name].pg);
   }
   
+  // return postgres.js connection with ADMIN rights
   public connectionAdminFor(name: string): postgres.Sql<Record<string, unknown>> {
     const input = Configuration.configs[ADMIN].pg;
-    return postgres(`postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${DEFAULT_DB}`,
-    {
-      debug: _DEBUG,          
-      connection           : {
-        application_name   : `${APP_NAME} ${APP_VERSION}`,
+    return postgres(
+      `postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${DEFAULT_DB}`,
+      {
+        debug: _DEBUG,          
+        connection: { application_name   : `${APP_NAME} ${APP_VERSION}`, }
       }
-    }
     );
   }
 
   // return postgres.js connection from Connection
   private createDbConnection(input: IdbConnection): postgres.Sql<Record<string, unknown>> {
-    return postgres(`postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${input.database}`, {
-      debug: _DEBUG,
-      max : 2000,            
-      connection : { application_name : `${APP_NAME} ${APP_VERSION}` },
-    });
+    return postgres(
+      `postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${input.database}`, 
+      {
+        debug: _DEBUG,
+        max : 2000,            
+        connection : { application_name : `${APP_NAME} ${APP_VERSION}` },
+      }
+    );
   }
   
   public createDbConnectionFromConfigName(input: string): postgres.Sql<Record<string, unknown>> {
@@ -209,10 +217,8 @@ class Configuration {
     return temp;
   }
 
-  async addToQueries(connectName: string, query: string) {
-    if (Configuration.queries[connectName]) 
-      Configuration.queries[connectName].push(query);
-    else Configuration.queries[connectName] = [query];
+  addToQueries(connectName: string, query: string) {
+    addToStrings(Configuration.queries[connectName], query);
   }
 
   private clearQueries() { 
@@ -238,7 +244,7 @@ class Configuration {
     if ( update && update["afterAll"] && Object.entries(update["afterAll"]).length > 0 ) {
       this.clearQueries();
       Object.keys(Configuration.configs)
-        .filter((e) => e != "admin")
+        .filter((e) => e != ADMIN)
         .forEach(async (connectName: string) => {
           update["afterAll"].forEach((operation: string) => { this.addToQueries(connectName, operation); });
         });
@@ -248,11 +254,11 @@ class Configuration {
     if ( update && update["decoders"] && Object.entries(update["decoders"]).length > 0 ) {
       this.clearQueries();
       Object.keys(Configuration.configs)
-        .filter( (e) => e != "admin" && Configuration.configs[e].extensions.includes(EnumExtensions.lora) )
+        .filter( (e) => e != ADMIN && Configuration.configs[e].extensions.includes(EnumExtensions.lora) )
         .forEach((connectName: string) => {
           Object.keys(update["decoders"]).forEach((name: string) => {
             const hash = this.hashCode(update["decoders"][name]);
-            this.addToQueries( connectName, `update decoder set code='${update["decoders"][name]}', hash = '${hash}' WHERE name = '${name}' and hash <> '${hash}' ` );
+            this.addToQueries( connectName, `UPDATE decoder SET code='${update["decoders"][name]}', hash = '${hash}' WHERE name = '${name}' AND hash <> '${hash}' ` );
           });
         });
       }
@@ -268,10 +274,9 @@ class Configuration {
     log.booting("active error to file", _ERRORFILE) ;
     errFile.write(`## Start : ${TIMESTAMP()} \n`);
     await asyncForEach(
-      // Start connectionsening ALL entries in config file
+      // Start connection ALL entries in config file
       Object.keys(Configuration.configs).filter(e => e.toUpperCase() !== TEST),
       async (key: string) => {
-        // await Configuration.configs[ADMIN].connection?.unsafe ( `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND datname = '${key}'`);
         try {
           await this.addToServer(key);
         } catch (error) {
@@ -283,26 +288,18 @@ class Configuration {
     setReady(status);
     if (status === true) {
       this.afterAll();
-      this.saveConfig();
     }           
-    console.log(log.message(`${APP_NAME} version : ${APP_VERSION}`, `ready ${(status === true ) ? _OK : _NOTOK}`));    
-
+    console.log(log.message(`${APP_NAME} version : ${APP_VERSION}`, `ready ${(status === true ) ? _OK : _NOTOK}`));
     return status;
-  }
-  
-  private async saveConfig():Promise<boolean> {
-    const temp = encrypt(JSON.stringify(Configuration.configs, null, 4));
-    return await executeSql(serverConfig.getConfig(ADMIN), `INSERT INTO "public"."configs" ("key", "config")  VALUES(${addSimpleQuotes(temp.substring(32, 0))} ,${addSimpleQuotes(temp.slice(33))});`)
-      .then(() => true)
-      .catch(() => false);
   }
 
   // return config name from config name
   public getConfigNameFromDatabase(input: string): string | undefined {
-    if (input === "all") return;
-    const aliasName = Object.keys(Configuration.configs).filter( (configName: string) => Configuration.configs[configName].pg.database === input )[0];
-    if (aliasName) return aliasName;
-    throw new Error(`No configuration found for ${input} name`);
+    if (input !== "all") {
+      const aliasName = Object.keys(Configuration.configs).filter( (configName: string) => Configuration.configs[configName].pg.database === input )[0];
+      if (aliasName) return aliasName;
+      throw new Error(`No configuration found for ${input} name`);
+    }
   }
 
   public getConfigForExcelExport = (name: string): object=> {
@@ -316,12 +313,10 @@ class Configuration {
   
   public getConfigNameFromName = (name: string): string | undefined => {
     if (name) {
-      const databaseName = Object.keys(Configuration.configs).includes(name) ? name : undefined;
-      if (databaseName) return databaseName;
-      let aliasName: undefined | string = undefined;
+      if (Object.keys(Configuration.configs).includes(name)) return name;
       Object.keys(Configuration.configs).forEach((configName: string) => {
-        if (Configuration.configs[configName].alias.includes(name)) aliasName = configName; });
-      if (aliasName) return aliasName;
+        if (Configuration.configs[configName].alias.includes(name)) return configName;
+      });
     }
   };
 
@@ -347,11 +342,11 @@ class Configuration {
     let extensions = input["extensions"]
       ? ["base", ... String(input["extensions"]).split(",")]
       : ["base"];
-    const version = goodDbName === "admin" ? EnumVersion.v1_1  : String(input["apiVersion"]).trim();
+    const version = goodDbName === ADMIN ? EnumVersion.v1_1  : String(input["apiVersion"]).trim();
     const returnValue: IconfigFile = {
       name: goodDbName,
       port:
-        goodDbName === "admin"
+        goodDbName === ADMIN
           ? input["port"] || 8029
           : input["port"] || Configuration.configs[ADMIN].port || 8029,
       pg: {
@@ -385,6 +380,7 @@ class Configuration {
     return returnValue;
   }
 
+  // Add config to configuration file
   public async addConfig(addJson: object): Promise<IconfigFile | undefined> {
     try {
       const addedConfig = this.formatConfig(addJson);
@@ -475,13 +471,13 @@ class Configuration {
             }).then(() => _OK)
               .catch((err: Error) => err.message)
           );
-        if (update["triggers"] && update["triggers"] === true && connectName !== "admin") await this.relogCreateTrigger(connectName);
+        if (update["triggers"] && update["triggers"] === true && connectName !== ADMIN) await this.relogCreateTrigger(connectName);
         if ( update && update["beforeAll"] && Object.entries(update["beforeAll"]).length > 0 ) {
           if ( update && update["beforeAll"] && Object.entries(update["beforeAll"]).length > 0 ) {
             console.log(formatLog.head("beforeAll"));
             try {              
               Object.keys(Configuration.configs)
-                .filter((e) => e != "admin")
+                .filter((e) => e != ADMIN)
                 .forEach((connectName: string) => {
                   update["beforeAll"].forEach((operation: string) => {
                     this.addToQueries(connectName, operation);
@@ -498,11 +494,14 @@ class Configuration {
       })
       .catch(async (err: Error) => {
         let returnResult = false;
+        // Password authentication failed 
         if (err["code"] === "28P01") {
           returnResult = await this.tryToCreateDB(connectName);
           if (returnResult === false) log.error(formatLog.error(err));
+          //database does not exist
         } else if (err["code"] === "3D000" && logCreate == true) {
           console.log(formatLog.debug( msg(infos.tryCreate, infos.db), Configuration.configs[connectName].pg.database ));
+          // If not in tdd tests create test DB for documentation
           if (!isTest() && connectName === TEST) {
             await createService(testDatas);
           } else returnResult = await this.tryToCreateDB(connectName);

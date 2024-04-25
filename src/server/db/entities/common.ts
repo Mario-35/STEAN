@@ -53,7 +53,7 @@
    }
  
    // create a blank ReturnResult
-   public createReturnResult(args: Record<string, unknown>): IreturnResult {
+   public formatReturnResult(args: Record<string, unknown>): IreturnResult {
      console.log(formatLog.whereIam());
      return {
        ...{
@@ -94,21 +94,21 @@
      // Return results
      if (sql) switch (this.ctx.odata.resultFormat ) {
        case returnFormats.sql:
-         return this.createReturnResult({ body: sql });
+         return this.formatReturnResult({ body: sql });
  
        case returnFormats.graph:
          return await executeSqlValues(this.ctx.config, sql).then(async (res: object) => { 
-           return (res[0].length > 0)  ?  this.createReturnResult({ body: res[0]}) : this.createReturnResult({ body: "nothing"});
+           return (res[0].length > 0)  ?  this.formatReturnResult({ body: res[0]}) : this.formatReturnResult({ body: "nothing"});
          });
        default:        
          return await executeSqlValues(this.ctx.config, sql).then(async (res: object) => { 
            return (res[0] > 0) ? 
-             this.createReturnResult({
+             this.formatReturnResult({
                id: isNaN(res[0][0]) ? undefined : +res[0],
                nextLink: this.nextLink(res[0]),
                prevLink: this.prevLink(res[0]),
                body: res[1],
-             }) : this.createReturnResult({ body: res[0] == 0 ? [] : res[0]});
+             }) : this.formatReturnResult({ body: res[0] == 0 ? [] : res[0]});
          }).catch((err: Error) => this.ctx.throw(400, { code: 400, detail: err.message }) );
      }
    }
@@ -121,11 +121,11 @@
      // Return results
      if (sql) switch (this.ctx.odata.resultFormat ) {
        case returnFormats.sql:
-         return this.createReturnResult({ body: sql }); 
+         return this.formatReturnResult({ body: sql }); 
        default:
          return await executeSqlValues(this.ctx.config, sql).then((res: object) => {           
-           if (this.ctx.odata.query.select && this.ctx.odata.onlyValue  === true) return this.createReturnResult({ body: String(res[ this.ctx.odata.query.select[0] == "id" ? "@iot.id" : 0 ]), });
-           if (res[0] > 0) return this.createReturnResult({ id: +res[0], nextLink: this.nextLink(res[0]), prevLink: this.prevLink(res[0]), body: res[1][0], });
+           if (this.ctx.odata.query.select && this.ctx.odata.onlyValue  === true) return this.formatReturnResult({ body: String(res[ this.ctx.odata.query.select[0] == "id" ? "@iot.id" : 0 ]), });
+           if (res[0] > 0) return this.formatReturnResult({ id: +res[0], nextLink: this.nextLink(res[0]), prevLink: this.prevLink(res[0]), body: res[1][0], });
          }).catch((err: Error) => this.ctx.throw(400, { code: 400, detail: err }) );
      }
    }
@@ -152,7 +152,7 @@
            this.ctx.throw(400, { code: 400, detail: err["detail"] });
          });
      // Return results
-     return this.createReturnResult({
+     return this.formatReturnResult({
        body: results,
      });
    }
@@ -168,7 +168,7 @@
      // Return results
      if (sql) switch (this.ctx.odata.resultFormat ) {
        case returnFormats.sql:
-         return this.createReturnResult({ body: sql });
+         return this.formatReturnResult({ body: sql });
  
        default:
          return await executeSqlValues(this.ctx.config, sql) 
@@ -180,7 +180,7 @@
                    detail: `${this.constructor.name} already exist`,
                    link: `${this.linkBase}(${[res[0].duplicate]})`,
                  });
-               return this.createReturnResult({
+               return this.formatReturnResult({
                  body: res[0][0],
                  query: sql,
                });
@@ -204,13 +204,13 @@
      // Return results
      if (sql) switch (this.ctx.odata.resultFormat ) {
        case returnFormats.sql:
-         return this.createReturnResult({ body: sql });
+         return this.formatReturnResult({ body: sql });
          
        default:
          return await executeSqlValues(this.ctx.config, sql) 
          .then((res: object) => {    
            if (res[0]) {
-             return this.createReturnResult({
+             return this.formatReturnResult({
                body: res[0][0],
                query: sql,
              });
@@ -231,10 +231,10 @@
      // Return results
      if (sql) switch (this.ctx.odata.resultFormat ) {
        case returnFormats.sql:
-         return this.createReturnResult({ body: sql });  
+         return this.formatReturnResult({ body: sql });  
           
        default:
-         return this.createReturnResult( { id: await executeSqlValues(this.ctx.config, sql) .then((res) => res[0]) .catch(() => BigInt(0)) } );
+         return this.formatReturnResult( { id: await executeSqlValues(this.ctx.config, sql) .then((res) => res[0]) .catch(() => BigInt(0)) } );
      }
    }
  }

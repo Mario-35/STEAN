@@ -10,7 +10,7 @@
 import koa from "koa";
 import { getConfigFromPort } from ".";
 import { serverConfig } from "../../configuration";
-import { setDebug } from "../../constants";
+import { ADMIN, setDebug } from "../../constants";
 import { EnumVersion } from "../../enums";
 import { cleanUrl } from "../../helpers";
 import { formatLog } from "../../logger";
@@ -48,7 +48,7 @@ export const decodeUrl = (ctx: koa.Context, input?: string): IdecodedUrl | undef
     else throw new Error(errors.noNameIdentified);
   // get getLinkBase from service
   if (configName) {
-    const LinkBase = serverConfig.getLinkBase(ctx, configName);
+    const LinkBase = serverConfig.getInfos(ctx, configName);
     let idStr: string | undefined = undefined;
     let id: string | 0 = 0;
     // if nothing ===> root
@@ -72,7 +72,7 @@ export const decodeUrl = (ctx: koa.Context, input?: string): IdecodedUrl | undef
       search: url.search,
       hash: url.hash,
       service: paths[0],
-      version: paths[0] === "admin" ? EnumVersion.v1_0 : paths[1],
+      version: paths[0] === ADMIN ? EnumVersion.v1_0 : paths[1],
       path: idStr ? path.replace(String(id), '0') : path,
       id: (isNaN(+id)) ? BigInt(0) : BigInt(id),
       idStr: idStr,

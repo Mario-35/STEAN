@@ -13,6 +13,7 @@ import { ADMIN } from "../../constants";
 import { models } from "../../models";
 
 const cols = () => Object.keys(models.DBAdmin(serverConfig.getConfig(ADMIN)).Users.columns);
+
 export const userAccess = {
   getAll: async () => {
     const query = await serverConfig
@@ -41,7 +42,7 @@ export const userAccess = {
               return await serverConfig .connection(configName).unsafe(`UPDATE "user" SET "username" = '${data.username}', "email" = '${data.email}', "database" = '${data.database}', "canPost" = ${data.canPost || false}, "canDelete" = ${data.canDelete || false}, "canCreateUser" = ${data.canCreateUser || false}, "canCreateDb" = ${data.canCreateDb || false}, "superAdmin" = ${data.superAdmin || false}, "admin" = ${data.admin || false} WHERE "id" = ${data.id} RETURNING *`);
             }
         }
-      })
+      });
   },
 
   update: async (configName: string, data: Iuser): Promise<Iuser | any> => {    

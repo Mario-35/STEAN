@@ -13,7 +13,7 @@ import { IconfigFile } from "../../types";
 
 export const executeSqlValues = async (config: IconfigFile | string, query: string | string[]): Promise<object> => {
     log.query(`${query}`);
-    if(typeof query === "string") {
+    if (typeof query === "string") {
         return new Promise(async function (resolve, reject) {
             await serverConfig.connection(typeof config === "string" ? config : config.name).unsafe(query).values().then((res: object) => { 
                 resolve(res[0]);

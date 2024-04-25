@@ -11,20 +11,42 @@ import { errors, msg } from "../../messages";
 import { Ientity } from "../../types";
 import { Ientity1 } from "../../types/entity";
 
-export const createEntity = (name: string, datas : Ientity1) : Ientity => {  
-    const singular = allEntities[name];
-    if(singular) return  {
-      name: name,
-      singular: singular,
-      table: singular.replace(/[_]+/g, "").toLowerCase(),
-      ... datas
+const singular = (input: string) : string => {
+  if (input.endsWith("ies")) input = input.slice(0, -3) + "y";
+  if (input.endsWith("s")) input = input.slice(0, -1);
+  return input.split("").map((e, i) => {
+    if (!(e === "s" && /^[A-Z]*$/.test(input[i+1]) ) )return e;      
+  }).join("").trim();
+};
+
+export const createEntity = (name: string, datas?: Ientity1) : Ientity => {
+    const entity = allEntities[name];
+    if (entity) {
+      const t = singular(entity);
+      return datas ? {
+        name: name,
+        singular: t,
+        table: t.toLowerCase(),
+        ... datas
+      } :  {
+        name: name,
+        singular: t,
+        table: "",
+        createOrder: 99,
+        order: 0,
+        orderBy: "",
+        columns: {},
+        relations: {},
+        constraints: {},
+        indexes: {},
+      };
     }
     throw new Error(msg( errors.noValidEntity, name));
   };
   
-export { Config } from "./config";
-export { CreateFile } from "./createFile";
-export { CreateObservation } from "./createObservation";
+export const Config: Ientity = createEntity("Configs");
+export const CreateFile: Ientity = createEntity("CreateFile");
+export const CreateObservation:Ientity = createEntity("CreateObservations");
 export { Datastream } from "./datastream";
 export { Decoder } from "./decoder";
 export { FeatureOfInterest } from "./featureOfInterest";

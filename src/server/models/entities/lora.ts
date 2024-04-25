@@ -9,6 +9,7 @@
 import { createEntity } from ".";
 import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
+import { _id, _idRel, _text } from "./constants";
 
 export const Lora:Ientity  = createEntity("Loras", {
   createOrder: 11,
@@ -16,57 +17,57 @@ export const Lora:Ientity  = createEntity("Loras", {
   orderBy: `"id"`,
   columns: {
     id: {
-      create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-      columnAlias(config: IconfigFile, test: IKeyBoolean) {
+      create: _id,
+      alias(config: IconfigFile, test: IKeyBoolean) {
           return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS "@iot.id"`: ''}` ;
       },
       type: "number",
     },
     name: {
-      create: "text NOT NULL DEFAULT 'no name'::text",
-      columnAlias() {
+      create: _text('no name'),
+      alias() {
         return undefined;
       },
       type: "text",
     },
     description: {
-      create: "text NOT NULL DEFAULT 'no description'::text",
-      columnAlias() {
+      create: _text('no description'),
+      alias() {
         return undefined;
       },
       type: "text",
     },
     properties: {
-      create: "jsonb NULL",
-      columnAlias() {
+      create: "JSONB NULL",
+      alias() {
         return undefined;
       },
       type: "json",
     },
     deveui: {
-      create: "text NOT NULL",
-      columnAlias() {
+      create: _text(), 
+      alias() {
         return undefined;
       },
       type: "text",
     },
     decoder_id: {
-      create: "BIGINT NOT NULL",
-      columnAlias() {
+      create: _idRel,
+      alias() {
         return undefined;
       },
       type: "relation:Decoders",
     },
     datastream_id: {
       create: "BIGINT NULL",
-      columnAlias() {
+      alias() {
         return undefined;
       },
       type: "relation:Datastreams",
     },
     multidatastream_id: {
       create: "BIGINT NULL",
-      columnAlias() {
+      alias() {
         return undefined;
       },
       type: "relation:MultiDatastreams",

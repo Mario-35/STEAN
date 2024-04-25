@@ -28,7 +28,7 @@ export class Users extends Common {
     console.log(formatLog.whereIam());
     if (this.ctx.user?.PDCUAS[EnumUserRights.SuperAdmin] === true || this.ctx.user?.PDCUAS[EnumUserRights.Admin] === true ) {
       const temp = await executeSqlValues(serverConfig.getConfig(ADMIN), `SELECT ${models.getSelectColumnList(models.DBAdmin(serverConfig.getConfig(ADMIN)).Users)} FROM "user" ORDER BY "id"`);      
-      return this.createReturnResult({
+      return this.formatReturnResult({
         body: hidePassword(temp),
       });
     } else this.ctx.throw(401, { code: 401, detail: errors[401] });
@@ -37,7 +37,7 @@ export class Users extends Common {
   async post(dataInput: object | undefined): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     if (dataInput)
-      return this.createReturnResult({
+      return this.formatReturnResult({
         body: await serverConfig.addConfig(dataInput),
       });
   }

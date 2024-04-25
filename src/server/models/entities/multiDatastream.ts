@@ -8,6 +8,7 @@
 import { createEntity } from ".";
 import { EnumDatesType, EnumObservationType, EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
+import { _id, _idRel, _text, _tz } from "./constants";
 
 export const MultiDatastream:Ientity  = createEntity("MultiDatastreams", {
     createOrder: 8,
@@ -15,39 +16,30 @@ export const MultiDatastream:Ientity  = createEntity("MultiDatastreams", {
     orderBy: `"id"`,
     columns: {
       id: {
-        create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-        columnAlias(config: IconfigFile, test: IKeyBoolean) {
+        create: _id,
+        alias(config: IconfigFile, test: IKeyBoolean) {
            return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS "@iot.id"`: ''}` ;
         },
         type: "number",
       },
       name: {
-        create: "text NOT NULL DEFAULT 'no name'::text",
-        columnAlias() {
-          return undefined;
-        },
+        create: _text('no name'),
+        alias() {},
         type: "text",
       },
       description: {
-        create: "text NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: "TEXT NULL",
+        alias() {},
         type: "text",
       },
       unitOfMeasurements: {
-        create: "jsonb NOT NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: "JSONB NOT NULL",
+        alias() {},
         type: "json",
       },
       observationType: {
-        create:
-          "text NOT NULL DEFAULT 'http://www.opengis.net/def/observation-type/ogc-om/2.0/om_complex-observation'::text",
-        columnAlias() {
-          return undefined;
-        },
+        create: _text('http://www.opengis.net/def/observation-type/ogc-om/2.0/om_complex-observation'),
+        alias() {},
         type: "list",
         verify: {
           list: Object.keys(EnumObservationType),
@@ -56,80 +48,62 @@ export const MultiDatastream:Ientity  = createEntity("MultiDatastreams", {
         },
       },
       multiObservationDataTypes: {
-        create: "text[] NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: "TEXT[] NULL",
+        alias() {},
         type: "text[]",
       },
       observedArea: {
         create: "geometry NULL",
-        columnAlias() {
-          return undefined;
-        },
+        alias() {},
         type: "json",
       },
       phenomenonTime: {
         create: "",
-        columnAlias(config: IconfigFile, test: IKeyBoolean | undefined) {  
+        alias(config: IconfigFile, test: IKeyBoolean | undefined) {  
           return `CONCAT(to_char("_phenomenonTimeStart",'${EnumDatesType.date}'),'/',to_char("_phenomenonTimeEnd",'${EnumDatesType.date}')) AS "phenomenonTime"`;
         },
         type: "text",
       },
       resultTime: {
         create: "",
-        columnAlias(config: IconfigFile, test: IKeyBoolean | undefined) {  
+        alias(config: IconfigFile, test: IKeyBoolean | undefined) {  
           return `CONCAT(to_char("_resultTimeStart",'${EnumDatesType.date}'),'/',to_char("_resultTimeEnd",'${EnumDatesType.date}')) AS "resultTime"`;
         },
         type: "text",
       },
       _phenomenonTimeStart: {
-        create: "timestamptz NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: _tz,
+        alias() {},
         type: "date",
       },
       _phenomenonTimeEnd: {
-        create: "timestamptz NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: _tz,
+        alias() {},
         type: "date",
       },
       _resultTimeStart: {
-        create: "timestamptz NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: _tz,
+        alias() {},
         type: "date",
       },
       _resultTimeEnd: {
-        create: "timestamptz NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: _tz,
+        alias() {},
         type: "date",
       },
       thing_id: {
-        create: "BIGINT NOT NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: _idRel,
+        alias() {},
         type: "relation:Things",
       },
       sensor_id: {
-        create: "BIGINT NOT NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: _idRel,
+        alias() {},
         type: "relation:Sensors",
       },
       _default_foi: {
         create: "BIGINT NOT NULL DEFAULT 1",
-        columnAlias() {
-          return undefined;
-        },
+        alias() {},
         type: "bigint"
       },
     },

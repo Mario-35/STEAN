@@ -36,16 +36,16 @@ export class Decoders extends Common {
           }
         }
       );
-      return this.createReturnResult({ body: result });
+      return this.formatReturnResult({ body: result });
     } else return await super.getAll();
   }
   // Override get one decoders to be able to search by deveui instead of id only
   async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     if (this.ctx.odata.payload) {
-      const decoder = await executeSqlValues(this.ctx.config, `SELECT "id", "name", "code", "nomenclature", "synonym" FROM "${this.ctx.model.Decoders.table}" WHERE id = this.ctx.odata.id`);
+      const decoder = await executeSqlValues(this.ctx.config, `SELECT "id", "name", "code", "nomenclature", "synonym" FROM "${this.ctx.model.Decoders.table}" WHERE id = ${this.ctx.odata.id}`);
       return decoder[0]
-        ? this.createReturnResult({
+        ? this.formatReturnResult({
             body: decodingPayload( { name: decoder[0]["name"], 
             code: String(decoder[0]["code"]), 
             nomenclature: decoder[0]["nomenclature"], },

@@ -8,6 +8,7 @@
 
 import { createEntity } from ".";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
+import { _id, _text } from "./constants";
 
 export const Log:Ientity  = createEntity("Logs", {
     createOrder: -1,
@@ -15,73 +16,55 @@ export const Log:Ientity  = createEntity("Logs", {
     orderBy: `"date DESC"`,
     columns: {
       id: {
-        create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-        columnAlias(config: IconfigFile, test: IKeyBoolean) {
+        create: _id,
+        alias(config: IconfigFile, test: IKeyBoolean) {
            return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS "@iot.id"`: ''}` ;
         },
         type: "number",
       },
       date: {
         create: "timestamptz DEFAULT CURRENT_TIMESTAMP",
-        columnAlias() {
-          return undefined;
-        },
+        alias() {},
         type: "date",
       },
       user_id: {
-        create: "BIGINT",
-        columnAlias() {
-          return undefined;
-        },
+        create: "BIGINT NULL",
+        alias() {},
         type: "number",
       },
       method: {
-        create: "text",
-        columnAlias() {
-          return undefined;
-        },
+        create: "TEXT NULL",
+        alias() {},
         type: "text",
       },
       code: {
-        create: "INT",
-        columnAlias() {
-          return undefined;
-        },
+        create: "INT NULL",
+        alias() {},
         type: "number",
       },
       url: {
-        create: "text NOT NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: _text(), 
+        alias() {},
         type: "text",
       },
       datas: {
-        create: "jsonb NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: "JSONB NULL",
+        alias() {},
         type: "json",
       },
       database: {
-        create: "text NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: "TEXT NULL",
+        alias() {},
         type: "text",
       },
       returnid: {
-        create: "text NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: "TEXT NULL",
+        alias() {},
         type: "text",
       },
       error: {
-        create: "jsonb NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: "JSONB NULL",
+        alias() {},
         type: "json",
       },
     },

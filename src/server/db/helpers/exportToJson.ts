@@ -23,7 +23,7 @@ export const exportToJson = async (ctx: koa.Context) => {
     entities,
     // Action
     async (entity: string) => {
-      if(Object.keys(ctx.model[entity].columns) && ctx.model[entity].table != "") {
+      if (Object.keys(ctx.model[entity].columns) && ctx.model[entity].table != "") {
         // Create columns list
         const columnList = Object.keys(ctx.model[entity].columns).filter((e: string) => e != "id" && !e.endsWith('_id') && e[0] != '_' && ctx.model[entity].columns[e].create != "");
         // Create relations list

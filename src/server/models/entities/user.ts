@@ -8,6 +8,7 @@
 
 import { Ientity } from "../../types";
 import { createEntity } from ".";
+import { _id, _text } from "./constants";
 
   export const User:Ientity  = createEntity("Users", {
     createOrder: -1,
@@ -15,80 +16,58 @@ import { createEntity } from ".";
     orderBy: `"name"`,
     columns: {
       id: {
-        create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-        columnAlias() {
-          return undefined;
-        },
+        create: _id,
+        alias() {},
         type: "bigint"
       },
       username: {
         create: "text NOT NULL UNIQUE",
-        columnAlias() {
-          return undefined;
-        },
+        alias() {},
         type: "string"
       },
       email: {
-        create: "text NOT NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: _text(), 
+        alias() {},
         type: "string"
       },
       password: {
-        create: "text NOT NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: _text(), 
+        alias() {},
         type: "string"
       },
       database: {
-        create: "text NOT NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: _text(), 
+        alias() {},
         type: "string"
       },
       canPost: {
         create: "bool NULL",
-        columnAlias() {
-          return undefined;
-        },
+        alias() {},
         type: "boolean"
       },
       canDelete: {
         create: "bool NULL",
-        columnAlias() {
-          return undefined;
-        },
+        alias() {},
         type: "boolean"
       },
       canCreateUser: {
         create: "bool NULL",
-        columnAlias() {
-          return undefined;
-        },
+        alias() {},
         type: "boolean"
       },
       canCreateDb: {
         create: "bool NULL",
-        columnAlias() {
-          return undefined;
-        },
+        alias() {},
         type: "boolean"
       },
       admin: {
         create: "bool NULL",
-        columnAlias() {
-          return undefined;
-        },
+        alias() {},
         type: "boolean"
       },
       superAdmin: {
         create: "bool NULL",
-        columnAlias() {
-          return undefined;
-        },
+        alias() {},
         type: "boolean"
       },
     },

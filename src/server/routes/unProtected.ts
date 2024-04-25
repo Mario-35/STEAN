@@ -8,7 +8,7 @@
 
 import Router from "koa-router";
 import { decodeToken, ensureAuthenticated, getAuthenticatedUser, } from "../authentication";
-import { ADMIN, LOL, _READY } from "../constants";
+import { ADMIN, _READY } from "../constants";
 import { addSimpleQuotes, getUrlId, getUrlKey, isAdmin, returnFormats } from "../helpers";
 import { apiAccess, userAccess } from "../db/dataAccess";
 import { formatLog } from "../logger";
@@ -166,7 +166,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       return;
     // Return Query HTML Page Tool    
     case "QUERY":
-      if (ctx.decodedUrl.service === "admin" && isAdmin(ctx) === false) ctx.redirect(`${ctx.decodedUrl.root}/login`);
+      if (ctx.decodedUrl.service === ADMIN&& isAdmin(ctx) === false) ctx.redirect(`${ctx.decodedUrl.root}/login`);
       const tempContext = await createIqueryFromContext(ctx);    
       if (tempContext) {
         ctx.set("script-src", "self");
@@ -176,17 +176,9 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       }
       return;      
     case "TEST":
-      const ent = models.DBAdmin(ctx.config);
-      const myTest = {};
-      Object.keys(ent).forEach(e => {
-        const a = ent[e].table;
-        const b = LOL(ent[e].singular);
-        if (a != b) myTest[a] = b;
-      })
-      console.log(myTest);
-      
+      const ent = models.DBAdmin(ctx.config);     
         ctx.type = returnFormats.json.type;
-        ctx.body = myTest;
+        ctx.body = ent;
       return;      
   } // END Switch
 

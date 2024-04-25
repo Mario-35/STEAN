@@ -9,6 +9,7 @@
 import { createEntity } from ".";
 import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
+import { _id, _text } from "./constants";
 
   export const Sensor:Ientity  = createEntity("Sensors", {
     createOrder: 6,
@@ -16,31 +17,25 @@ import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
     orderBy: `"id"`,
     columns: {
       id: {
-        create: "BIGINT GENERATED ALWAYS AS IDENTITY",
-        columnAlias(config: IconfigFile, test: IKeyBoolean) {
+        create: _id,
+        alias(config: IconfigFile, test: IKeyBoolean) {
            return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS "@iot.id"`: ''}` ;
         },
         type: "number",
       },
       name: {
-        create: "text NOT NULL DEFAULT 'no name'::text",
-        columnAlias() {
-          return undefined;
-        },
+        create: _text('no name'),
+        alias() {},
         type: "text",
       },
       description: {
-        create: "text NOT NULL DEFAULT 'no description'::text",
-        columnAlias() {
-          return undefined;
-        },
+        create: _text('no description'),
+        alias() {},
         type: "text",
       },
       encodingType: {
-        create: "text NOT NULL DEFAULT 'application/pdf'::text",
-        columnAlias() {
-          return undefined;
-        },
+        create: _text('application/pdf'),
+        alias() {},
         dataList: {
           PDF: "application/pdf",
           SensorML: "http://www.opengis.net/doc/IS/SensorML/2.0",
@@ -48,10 +43,8 @@ import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
         type: "list",
       },
       metadata: {
-        create: "text NOT NULL DEFAULT 'none.pdf'::text",
-        columnAlias() {
-          return undefined;
-        },
+        create: _text('none.pdf'),
+        alias() {},
         type: "text",
       },
     },

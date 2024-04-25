@@ -97,6 +97,7 @@ export const createDatabase = async (configName: string): Promise<IKeyString> =>
     }
   );
 
+  // If only numeric extension
   if ( serverConfig.getConfig(configName).extensions.includes( EnumExtensions.numeric ) ) {
     await dbConnection.unsafe(`ALTER TABLE ${addDoubleQuotes(DB.Observations.table)} ALTER COLUMN 'result' TYPE float4 USING null;`)
       .catch((error: Error) => {

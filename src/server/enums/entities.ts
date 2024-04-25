@@ -11,38 +11,38 @@ import { serverConfig } from "../configuration";
 import { IconfigFile } from "../types";
 
 export enum  EnumBaseEntities {    
-    Things = 'Thing',
-    FeaturesOfInterest = 'FeatureOfInterest',
-    Locations = 'Location',
-    HistoricalLocations = 'HistoricalLocation',
-    locationsHistoricalLocations = 'locationHistoricalLocation',
-    ObservedProperties = 'ObservedProperty',
-    Sensors = 'Sensor',
-    Datastreams = 'Datastream',
-    Observations = 'Observation',
-    HistoricalObservations = 'HistoricalObservation',
-    ThingsLocations = 'ThingLocation',
+    Things = 'Things',
+    FeaturesOfInterest = 'FeaturesOfInterest',
+    Locations = 'Locations',
+    HistoricalLocations = 'HistoricalLocations',
+    locationsHistoricalLocations = 'locationsHistoricalLocations',
+    ObservedProperties = 'ObservedProperties',
+    Sensors = 'Sensors',
+    Datastreams = 'Datastreams',
+    Observations = 'Observations',
+    HistoricalObservations = 'HistoricalObservations',
+    ThingsLocations = 'ThingsLocations',
     CreateObservations = 'CreateObservations',
     CreateFile = 'CreateFile',
 }
 
 enum EnumMultiDatastreamEntities {
-    MultiDatastreams = 'MultiDatastream',
-    MultiDatastreamObservedProperties = 'MultiDatastreamObservedProperty'
+    MultiDatastreams = 'MultiDatastreams',
+    MultiDatastreamObservedProperties = 'MultiDatastreamObservedProperties'
 }
 
 enum EnumAdminEntities {
-    Users = 'User',
-    Configs = 'Config' 
+    Users = 'Users',
+    Configs = 'Configs' 
 }
 
 enum EnumLoraEntities {
-    Decoders = 'Decoder',
-    Loras = 'Lora'
+    Decoders = 'Decoders',
+    Loras = 'Loras'
 }
 
 enum EnumLogEntities {
-    Logs = 'Log'
+    Logs = 'Logs'
 }
 
 export const filterEntities = (input: IconfigFile | string, name?: string) => {    

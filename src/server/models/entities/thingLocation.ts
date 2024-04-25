@@ -8,6 +8,7 @@
 
 import { createEntity } from ".";
 import { Ientity } from "../../types";
+import { _idRel } from "./constants";
 
 
   export const ThingLocation:Ientity  = createEntity("ThingsLocations", {
@@ -16,17 +17,13 @@ import { Ientity } from "../../types";
     orderBy: `"thing_id"`,
     columns: {
       thing_id: {
-        create: "BIGINT NOT NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: _idRel,
+        alias() {},
         type: "bigint"
       },
       location_id: {
-        create: "BIGINT NOT NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: _idRel,
+        alias() {},
         type: "bigint"
       },
     },

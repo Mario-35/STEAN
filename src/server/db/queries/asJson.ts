@@ -7,8 +7,7 @@
  *
  */
 
-export const asJson = (input: { 
-                                query: string; 
+export const asJson = (input: { query: string; 
                                 singular: boolean; 
                                 count: boolean; 
                                 strip: boolean ;

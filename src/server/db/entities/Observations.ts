@@ -65,7 +65,7 @@ export class Observations extends Common {
   formatDataInput(input: object | undefined): object | undefined {
     console.log(formatLog.whereIam());
     if (input) 
-      if(!input["resultTime"] && input["phenomenonTime"]) input["resultTime"] = input["phenomenonTime"];
+      if (!input["resultTime"] && input["phenomenonTime"]) input["resultTime"] = input["phenomenonTime"];
     return input;
   }
 

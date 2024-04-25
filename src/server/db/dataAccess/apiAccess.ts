@@ -48,8 +48,8 @@ export class apiAccess implements Icomon {
     console.log(formatLog.whereIam());
     if (this.myEntity) 
       return isObjectArray(this.ctx.request.body)
-      ? await this.myEntity.addWultipleLines(dataInput || this.ctx.request.body)
-      : await this.myEntity.post(dataInput || this.ctx.request.body);
+        ? await this.myEntity.addWultipleLines(dataInput || this.ctx.request.body)
+        : await this.myEntity.post(dataInput || this.ctx.request.body);
   }
 
   async update(idInput: bigint | string): Promise<IreturnResult | undefined> {

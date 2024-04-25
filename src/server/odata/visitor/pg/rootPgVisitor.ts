@@ -148,13 +148,12 @@ export class RootPgVisitor extends PgVisitor {
     return temp;
   }
 
-  getSql(_src?: PgVisitor): string {  
-    const src = _src || this;
-    if (src.includes) src.includes.forEach((include) => {
+  getSql(): string {  
+    if (this.includes) this.includes.forEach((include) => {
       if (include.navigationProperty.includes("/")) {              
         const names = include.navigationProperty.split("/");
         include.navigationProperty = names[0];
-        const visitor = new PgVisitor(src.ctx, {...src.options});
+        const visitor = new PgVisitor(this.ctx, {...this.options});
         if (visitor) {
           visitor.entity =names[0];
           visitor.navigationProperty = names[1];
@@ -162,7 +161,6 @@ export class RootPgVisitor extends PgVisitor {
         }            
       }
     });
-    src.pgQuery = src.toPgQuery();
     return this.onlyValue ? this.toString() : this.resultFormat.generateSql(this);
   }
 

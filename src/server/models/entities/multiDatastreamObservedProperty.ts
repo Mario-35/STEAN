@@ -8,21 +8,20 @@
 
 import { createEntity } from ".";
 import { Ientity } from "../../types";
+import { _idRel } from "./constants";
     export const MultiDatastreamObservedProperty:Ientity  = createEntity("MultiDatastreamObservedProperties", {
     createOrder: 9,
     order: -1,
     orderBy: `"multidatastream_id"`,
     columns: {
       multidatastream_id: {
-        create: "BIGINT NOT NULL",
-        columnAlias() {
-          return undefined;
-        },
+        create: _idRel,
+        alias() {},
         type: "bigint"
       },
       observedproperty_id: {
-        create: "BIGINT NOT NULL",
-        columnAlias() {
+        create: _idRel,
+        alias() {
           return undefined;
         },
         type: "bigint"

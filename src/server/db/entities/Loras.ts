@@ -57,7 +57,7 @@ export class Loras extends Common {
     // search for MultiDatastream
     if (notNull(dataInput["MultiDatastream"])) {
       if (!notNull(this.stean["deveui"])) {
-        if (silent) return this.createReturnResult({ body: errors.deveuiMessage });
+        if (silent) return this.formatReturnResult({ body: errors.deveuiMessage });
         else this.ctx.throw(400, { code: 400, detail: errors.deveuiMessage });
       }
       addToStean("MultiDatastream");
@@ -67,7 +67,7 @@ export class Loras extends Common {
     // search for Datastream 
     if (notNull(dataInput["Datastream"])) {
       if (!notNull(dataInput["deveui"])) {
-        if (silent) return this.createReturnResult({ body: errors.deveuiMessage });
+        if (silent) return this.formatReturnResult({ body: errors.deveuiMessage });
         else this.ctx.throw(400, { code: 400, detail: errors.deveuiMessage });
       }
       addToStean("Datastream");
@@ -76,7 +76,7 @@ export class Loras extends Common {
 
     // search for deveui
     if (!notNull(this.stean["deveui"])) {
-      if (silent) return this.createReturnResult({ body: errors.deveuiMessage });
+      if (silent) return this.formatReturnResult({ body: errors.deveuiMessage });
       else this.ctx.throw(400, { code: 400, detail: errors.deveuiMessage });
     }
 
@@ -93,7 +93,7 @@ export class Loras extends Common {
       const temp = await decodeloraDeveuiPayload( this.ctx, this.stean["deveui"], this.stean["frame"] );
       if (!temp) return this.ctx.throw(400, { code: 400, detail: "dons ton cul lulu"});
       if (temp && temp.error) {
-        if (silent) return this.createReturnResult({ body: temp.error });
+        if (silent) return this.formatReturnResult({ body: temp.error });
         else this.ctx.throw(400, { code: 400, detail: temp.error });
       }      
       this.stean["decodedPayload"] = temp["result"];
@@ -117,7 +117,7 @@ export class Loras extends Common {
         });
   
       if (!notNull(this.stean["formatedDatas"])) {
-        if (silent) return this.createReturnResult({ body: errors.dataMessage });
+        if (silent) return this.formatReturnResult({ body: errors.dataMessage });
         else this.ctx.throw(400, { code: 400, detail: errors.dataMessage });
       }
     } else {
@@ -125,7 +125,7 @@ export class Loras extends Common {
       if (this.stean["decodedPayload"] && this.stean["decodedPayload"]["datas"]) {
         this.stean["formatedDatas"] = this.stean["decodedPayload"]["datas"];
       } else if (!this.stean["value"]) {
-          if (silent) return this.createReturnResult({ body: errors.dataMessage });
+          if (silent) return this.formatReturnResult({ body: errors.dataMessage });
           else this.ctx.throw(400, { code: 400, detail: errors.dataMessage });
         }
     }
@@ -134,7 +134,7 @@ export class Loras extends Common {
 
     this.stean["date"] = gedataInputtDate();
     if (!this.stean["date"]) {
-      if (silent) return this.createReturnResult({ body: errors.noValidDate });
+      if (silent) return this.formatReturnResult({ body: errors.noValidDate });
       else this.ctx.throw(400, { code: 400, detail: errors.noValidDate });
     }    
     
@@ -161,7 +161,7 @@ export class Loras extends Common {
 
       if ( Object.values(listOfSortedValues).filter((word) => word != null) .length < 1 ) {
         const errorMessage = `${errors.dataNotCorresponding} [${stream["keys"]}] with [${Object.keys(this.stean["formatedDatas"])}]`;
-        if (silent) return this.createReturnResult({ body: errorMessage });
+        if (silent) return this.formatReturnResult({ body: errorMessage });
         else this.ctx.throw(400, { code: 400, detail: errorMessage });
       }
 
@@ -178,7 +178,7 @@ export class Loras extends Common {
             String(tempLength),
             stream["keys"].length
           );
-          if (silent) return this.createReturnResult({ body: errorMessage });
+          if (silent) return this.formatReturnResult({ body: errorMessage });
           else this.ctx.throw(400, { code: 400, detail: errorMessage });
         }
       }
@@ -190,9 +190,9 @@ export class Loras extends Common {
       })}'::jsonb`;
       const insertObject = {
         featureofinterest_id: getFeatureOfInterest
-          ? `select coalesce((SELECT "id" from "featureofinterest" WHERE "id" = ${getFeatureOfInterest}), ${getFeatureOfInterest})`
-          : `(SELECT multidatastream1._default_foi from multidatastream1)`,
-        multidatastream_id: "(SELECT multidatastream1.id from multidatastream1)",
+          ? `SELECT COALESCE((SELECT "id" FROM "featureofinterest" WHERE "id" = ${getFeatureOfInterest}), ${getFeatureOfInterest})`
+          : `(SELECT multidatastream1._default_foi FROM multidatastream1)`,
+        multidatastream_id: "(SELECT multidatastream1.id FROM multidatastream1)",
         phenomenonTime: `to_timestamp('${this.stean["timestamp"]}','${EnumDatesType.dateWithOutTimeZone}')::timestamp`,
         resultTime: `to_timestamp('${this.stean["timestamp"]}','${EnumDatesType.dateWithOutTimeZone}')::timestamp`,
         result: resultCreate,
@@ -243,9 +243,9 @@ export class Loras extends Common {
             result[ `${word}@iot.navigationLink` ] = `${this.ctx.decodedUrl.root}/Observations(${tempResult.id})/${word}`;
           });
 
-          return this.createReturnResult({ body: result, query: sql, });
+          return this.formatReturnResult({ body: result, query: sql, });
         } else {
-          if (silent) return this.createReturnResult({ body: errors.observationExist });
+          if (silent) return this.formatReturnResult({ body: errors.observationExist });
           else
             this.ctx.throw(409, {
               code: 409,
@@ -268,7 +268,7 @@ export class Loras extends Common {
       );
       
       if (searchFOI[0].length < 1) {
-        if (silent) return this.createReturnResult({ body: errors.noFoi });
+        if (silent) return this.formatReturnResult({ body: errors.noFoi });
         else this.ctx.throw(400, { code: 400, detail: errors.noFoi });
       }
 
@@ -281,7 +281,7 @@ export class Loras extends Common {
                       : undefined;
 
       if (!value) {
-        if (silent) return this.createReturnResult({ body: errors.noValue });
+        if (silent) return this.formatReturnResult({ body: errors.noValue });
         else this.ctx.throw(400, { code: 400, detail: errors.noValue });
       }
 
@@ -344,12 +344,12 @@ export class Loras extends Common {
             result[ `${word}@iot.navigationLink` ] = `${this.ctx.decodedUrl.root}/Observations(${tempResult.id})/${word}`;
           });
 
-          return this.createReturnResult({
+          return this.formatReturnResult({
             body: result,
             query: sql,
           });
         } else {
-          if (silent) return this.createReturnResult({ body: errors.observationExist });
+          if (silent) return this.formatReturnResult({ body: errors.observationExist });
           else
             this.ctx.throw(409, {
               code: 409,
