@@ -10,7 +10,7 @@ import { EnumExtensions } from ".";
 import { serverConfig } from "../configuration";
 import { IconfigFile } from "../types";
 
-export enum  EnumBaseEntities {    
+enum EnumBaseEntities {    
     Things = 'Things',
     FeaturesOfInterest = 'FeaturesOfInterest',
     Locations = 'Locations',

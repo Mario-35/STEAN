@@ -6,7 +6,7 @@
  *
  */
 
-import koa from "koa";
+import { koaContext } from "../../types";
 import { exportToJson } from "./exportToJson";
 import { exportToXlsx } from "./exportToXlsx";
 
@@ -26,6 +26,6 @@ export { columnsNameFromCsv } from "./columnsNameFromCsv";
 export { streamCsvFile } from "./streamCsvFile";
 export { columnsNameFromHydrasCsv } from "./columnsNameFromHydrasCsv";
 
-export const exportService = async (ctx: koa.Context) => {
+export const exportService = async (ctx: koaContext) => {
     return (ctx.url.includes("xls")) ? exportToXlsx(ctx) : exportToJson(ctx);
 };

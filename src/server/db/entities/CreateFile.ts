@@ -6,10 +6,9 @@
  *
  */
 
-import koa from "koa";
 import { Common } from "./common";
 import { formatLog } from "../../logger";
-import { IcsvColumn, IcsvFile, IreturnResult } from "../../types";
+import { IcsvColumn, IcsvFile, IreturnResult, koaContext } from "../../types";
 import { columnsNameFromCsv, executeSqlValues } from "../helpers";
 import { errors } from "../../messages/";
 import * as entities from "../entities/index";
@@ -20,12 +19,12 @@ import { serverConfig } from "../../configuration";
 import { log } from "../../log";
 
 export class CreateFile extends Common {
-  constructor(ctx: koa.Context) {
+  constructor(ctx: koaContext) {
     console.log(formatLog.whereIam());
     super(ctx);
   }
 
-  streamCsvFileInPostgreSqlFileInDatastream = async ( ctx: koa.Context, paramsFile: IcsvFile ): Promise<string | undefined> => {
+  streamCsvFileInPostgreSqlFileInDatastream = async ( ctx: koaContext, paramsFile: IcsvFile ): Promise<string | undefined> => {
     console.log(formatLog.head("streamCsvFileInPostgreSqlFileInDatastream"));
     const headers = await columnsNameFromCsv(paramsFile.filename);
 
@@ -43,7 +42,7 @@ export class CreateFile extends Common {
 
       // IMPORTANT TO ADD instead update
       ctx.odata.id = "";
-      ctx.odata.resultFormat = returnFormats.json;
+      ctx.odata.returnFormat = returnFormats.json;
       ctx.log = undefined;
       const objectDatastream = new entities[this.ctx.model.Datastreams.name]( ctx );
       const myDatas = {

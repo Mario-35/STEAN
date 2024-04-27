@@ -7,12 +7,11 @@
  */
 
 import { addDoubleQuotes, addSimpleQuotes, isGraph, isObservation, isTest, removeAllQuotes, returnFormats } from "../../../helpers";
-import { IodataContext, IKeyString, Ientity, IKeyBoolean, IpgQuery } from "../../../types";
+import { IodataContext, IKeyString, Ientity, IKeyBoolean, IpgQuery, koaContext } from "../../../types";
 import { Token } from "../../parser/lexer";
 import { Literal } from "../../parser/literal";
 import { SQLLiteral } from "../../parser/sqlLiteral";
 import { SqlOptions } from "../../parser/sqlOptions";
-import koa from "koa";
 import { formatLog } from "../../../logger";
 import { oDataDateFormat } from "../helper";
 import { errors, msg } from "../../../messages";
@@ -43,7 +42,7 @@ export class PgVisitor extends Visitor {
   showRelations = true;
   results: IKeyString = {};
   debugOdata = isTest() ? false : true;
-  constructor(ctx: koa.Context, options = <SqlOptions>{}) {
+  constructor(ctx: koaContext, options = <SqlOptions>{}) {
     console.log(formatLog.whereIam());
     super(ctx, options);
   }
@@ -164,7 +163,7 @@ export class PgVisitor extends Visitor {
       this.ctx.throw(400, { detail: errors.splitNotAllowed });
     }
 
-    if (this.resultFormat === returnFormats.dataArray && BigInt(this.id) > 0 && !this.parentEntity) {
+    if (this.returnFormat === returnFormats.dataArray && BigInt(this.id) > 0 && !this.parentEntity) {
       this.ctx.throw(400, { detail: errors.dataArrayNotAllowed });
     }
   };
@@ -253,8 +252,8 @@ export class PgVisitor extends Visitor {
  
   protected VisitResultFormat(node: Token, context: IodataContext) {
     if (node.value.format) 
-      this.resultFormat = returnFormats[node.value.format];
-    if ( [ returnFormats.dataArray, returnFormats.graph, returnFormats.graphDatas, returnFormats.csv ].includes(this.resultFormat) ) 
+      this.returnFormat = returnFormats[node.value.format];
+    if ( [ returnFormats.dataArray, returnFormats.graph, returnFormats.graphDatas, returnFormats.csv ].includes(this.returnFormat) ) 
       this.noLimit();
       this.showRelations = false;
     if (isGraph(this)) { 

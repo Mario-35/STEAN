@@ -6,16 +6,16 @@
  *
  */
 
-import koa from "koa";
 import { formatLog } from ".";
 import { addDoubleQuotes, hidePassword, isTest } from "../helpers";
 import { executeSqlValues } from "../db/helpers";
 import { models } from "../models";
 import { log } from "../log";
 import { createInsertValues } from "../models/helpers";
+import { koaContext } from "../types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const writeToLog = async ( ctx: koa.Context, ...error: any[] ): Promise<void> => {
+export const writeToLog = async ( ctx: koaContext, ...error: any[] ): Promise<void> => {
   console.log(formatLog.whereIam("LOG"));
   if (error.length > 0) formatLog.writeErrorInFile(ctx, error);  
   if (ctx.log && ctx.log.method != "GET") {

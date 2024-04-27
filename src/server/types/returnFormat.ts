@@ -6,13 +6,13 @@
  *
  */
 
-import koa from "koa";
+import { koaContext } from ".";
 import { PgVisitor } from "../odata/visitor";
 
  export interface IreturnFormat {
-    name: string; 
-    type: string; 
-    format(input: string | object, ctx?: koa.Context): string | object;
-    generateSql(input: PgVisitor): string;
+    name: string; // name of the format (extension) default JSON
+    type: string; // type of format
+    format(input: string | object, ctx?: koaContext): string | object; // formating datas
+    generateSql(input: PgVisitor): string; // generate postgresSql query
 }
 

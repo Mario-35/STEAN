@@ -11,21 +11,21 @@ import { EnumVersion } from "../enums";
 import { IdbConnection } from "./dbConnection";
 
 export interface IconfigFile {
-    name: string; // item of the config file
+    name: string; // name of the config file
     key?: string; // key for crypto
-    pg: IdbConnection;
-    port: number;
-    apiVersion: EnumVersion;
-    date_format: string;
-    webSite: string;
-    nb_page: number;
-    forceHttps: boolean;
-    stripNull: boolean;
-    extensions: string[];
-    alias: string[];
-    highPrecision: boolean;
-    canDrop: boolean;
-    logFile: string;
-    connection: postgres.Sql<Record<string, unknown>> | undefined;
+    pg: IdbConnection; // postgresSql connection
+    port: number; // server port
+    apiVersion: EnumVersion; // api version / model
+    date_format: string; // formating date
+    webSite: string; // website
+    nb_page: number; // number of items by page
+    forceHttps: boolean; // add s to http
+    stripNull: boolean; // remove all null value in json result
+    extensions: string[]; // extensions see Enum EnumExtensions
+    alias: string[]; // alias name of the service
+    highPrecision: boolean; // int8 instead of int4 in postgresSql
+    canDrop: boolean; // can drop database (like test db or usefull when build new service)
+    logFile: string; // name of the log fole
+    connection: postgres.Sql<Record<string, unknown>> | undefined; // not in file only when running to store connection
 }
 

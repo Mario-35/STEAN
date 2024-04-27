@@ -253,7 +253,7 @@ a {
     text-align: center;
     text-decoration: none;
     text-transform: uppercase;
-    transition: all .6s ease
+    transition: all .6s ease;
 }
 
 .button-logout:hover {
@@ -262,8 +262,8 @@ a {
     transform: scale(1.1, 1.1)
 }
 
-.button-admin {
-    background-color: #61ea78;
+.button-query {
+    background-color: #619cea;
     border-radius: 6px;
     color: #fff;
     display: block;
@@ -272,11 +272,11 @@ a {
     text-align: center;
     text-decoration: none;
     text-transform: uppercase;
-    transition: all .6s ease
+    transition: all .6s ease;
 }
 
-.button-logout:hover {
-    background-color: #21cc11;
+.button-query:hover {
+    background-color: #11cc49;
     box-shadow: 0 24px 48px rgba(0, 0, 0, .3);
     transform: scale(1.1, 1.1)
 }
@@ -327,7 +327,6 @@ a {
 
 .inner {
     display: inline-block;
-    width: 23%
 }
 
 .tooltip {

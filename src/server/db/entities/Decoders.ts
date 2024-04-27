@@ -6,15 +6,14 @@
  *
  */
 
-import koa from "koa";
-import { IreturnResult } from "../../types";
+import { IreturnResult, koaContext } from "../../types";
 import { Common } from "./common";
 import { formatLog } from "../../logger";
 import { addDoubleQuotes, asyncForEach } from "../../helpers";
 import { decodingPayload } from "../../lora";
 import { executeSql, executeSqlValues } from "../helpers";
 export class Decoders extends Common {
-  constructor(ctx: koa.Context) {
+  constructor(ctx: koaContext) {
     console.log(formatLog.whereIam());
     super(ctx);
   }

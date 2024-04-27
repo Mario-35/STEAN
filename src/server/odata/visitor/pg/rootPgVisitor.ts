@@ -7,10 +7,9 @@
  */
 
 import { addDoubleQuotes } from "../../../helpers";
-import { IodataContext } from "../../../types";
+import { IodataContext, koaContext } from "../../../types";
 import { Token } from "../../parser/lexer";
 import { SqlOptions } from "../../parser/sqlOptions";
-import koa from "koa";
 import { formatLog } from "../../../logger";
 import { postSqlFromPgVisitor } from "../helper";
 import { EnumColumnType, EnumExtensions } from "../../../enums";
@@ -22,7 +21,7 @@ import { PgVisitor } from "../.";
 
 export class RootPgVisitor extends PgVisitor {
   static root = true;
-  constructor(ctx: koa.Context, options = <SqlOptions>{}, node?: Token) {
+  constructor(ctx: koaContext, options = <SqlOptions>{}, node?: Token) {
       console.log(formatLog.whereIam());
       super(ctx, options);
       if (node) this.StartVisitRessources(node);
@@ -161,7 +160,7 @@ export class RootPgVisitor extends PgVisitor {
         }            
       }
     });
-    return this.onlyValue ? this.toString() : this.resultFormat.generateSql(this);
+    return this.onlyValue ? this.toString() : this.returnFormat.generateSql(this);
   }
 
   patchSql(datas: object): string | undefined {

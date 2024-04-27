@@ -6,14 +6,14 @@
  *
  */
 
-export interface IpgQuery {
+export interface IpgQuery { // postgresSql query simple Interface
     select: string;
-    from: string;
+    from: string; 
     count?: string;
     where?: string;
-    orderby?: string;
+    orderBy?: string;
     groupBy?: string;
     skip?: number;
     limit?: number;
-    keys: string[];
+    keys: string[]; // for datarray
 }

@@ -7,12 +7,11 @@
  */
 
 import { formatLog } from "../../logger";
-import { IcsvColumn, IcsvFile } from "../../types";
-import koa from "koa";
+import { IcsvColumn, IcsvFile, koaContext } from "../../types";
 import { columnsNameFromHydrasCsv, streamCsvFile } from ".";
 import { _NOTOK, _OK } from "../../constants";
 
-export async function queryInsertFromCsv( ctx: koa.Context, paramsFile: IcsvFile ): Promise<{count: number, query: string[]} | undefined> {
+export async function queryInsertFromCsv( ctx: koaContext, paramsFile: IcsvFile ): Promise<{count: number, query: string[]} | undefined> {
   console.log(formatLog.whereIam());
   const sqlRequest = await columnsNameFromHydrasCsv(paramsFile);
   if (sqlRequest) {

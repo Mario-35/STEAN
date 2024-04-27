@@ -8,8 +8,7 @@
 
 import { asDataArray, asJson, graphDatastream, graphMultiDatastream, interval, } from "../db/queries";
 import { Parser } from "json2csv";
-import koa from "koa";
-import { IreturnFormat } from "../types";
+import { IreturnFormat, koaContext } from "../types";
 import { addCssFile } from "../views/css";
 import { addJsFile } from "../views/js";
 import util from "util";
@@ -98,7 +97,7 @@ const _returnFormats: { [key in EnumResultFormats]: IreturnFormat } = {
   graph: {
     name: "graph",
     type: "text/html;charset=utf8",
-    format(input: string | object, ctx: koa.Context): string | object {
+    format(input: string | object, ctx: koaContext): string | object {
       const graphNames: string[] = [];
       const formatedDatas: string[] = [];
       const height = String(100 / Object.entries(input).length).split(".")[0];

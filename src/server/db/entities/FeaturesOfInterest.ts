@@ -6,12 +6,12 @@
  *
  */
 
-import koa from "koa";
 import { formatLog } from "../../logger";
+import { koaContext } from "../../types";
 import { Common } from "./common";
 
 export class FeaturesOfInterest extends Common {
-  constructor(ctx: koa.Context) {
+  constructor(ctx: koaContext) {
     console.log(formatLog.whereIam());
     super(ctx);
   }

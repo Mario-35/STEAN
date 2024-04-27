@@ -7,16 +7,16 @@
  */
 
 export interface Iuser {
-    id?: number; // integer
-    username: string; // character varying
-    password: string; // character varying
-    email: string; // character varying
-    database: string; // character varying
+    id?: number; // id in database
+    username: string; //user name
+    password: string; // user password
+    email: string; // email name
+    database: string; // dabase access or all to have all access
     canPost: boolean; // boolean
     canDelete: boolean; // boolean
     canCreateUser: boolean; // boolean
     canCreateDb: boolean; // boolean
     admin: boolean; // boolean
     superAdmin: boolean; // boolean
-    token?: string; // integer
+    token?: string; // use to store token
 }

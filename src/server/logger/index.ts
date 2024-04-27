@@ -9,8 +9,8 @@
 import util from "util";
 import { TEST, color,  TIMESTAMP, _DEBUG, _ERRORFILE, _WEB } from "../constants";
 import fs from "fs";
-import Koa from "koa";
 import { EnumColor } from "../enums";
+import { koaContext } from "../types";
 export { writeToLog } from "./writeToLog";
 
 
@@ -80,7 +80,7 @@ class FormatLog {
     return `${color(EnumColor.FgYellow)} ${this.line(4)} ${color(EnumColor.FgCyan)} ${ new Error().stack?.split("\n")[2].trim().split(" ")[1] } ${color(EnumColor.FgYellow)} ${this.line(4)}${color(EnumColor.Reset)}`;
   }
 
-  writeErrorInFile<T>(ctx: Koa.Context | undefined, ...data: T[]) {
+  writeErrorInFile<T>(ctx: koaContext | undefined, ...data: T[]) {
     const errFile = fs.createWriteStream(_ERRORFILE, { flags: "a" });
     if (ctx) {
       errFile.write(`# ${TIMESTAMP()} : ${ctx.request.url}\n`);

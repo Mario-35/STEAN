@@ -15,6 +15,7 @@ import { PgVisitor, RootPgVisitor } from "..";
 import { models } from "../../../models";
 import { allEntities } from "../../../enums";
 import { GroupBy, Key, OrderBy, Select, Where } from ".";
+import { errors } from "../../../messages";
 
 export class Query  {
     where: Where;
@@ -147,12 +148,14 @@ export class Query  {
                         if (index >= 0) {
                             item.entity = name;
                             item.query.where.add(`${item.query.where.notNull() === true ?  " AND " : ''}${main.ctx.model[realEntityName].relations[name].expand}`); 
-                            // create sql query    for this relatiion (IN JSON result)                                                       
-                            relations[index] = `(${asJson({ 
-                                query: this.pgQueryToString(this.create(item)), 
+                            // create sql query    for this relatiion (IN JSON result)   
+                            const query = this.pgQueryToString(this.create(item));
+                            if (query) relations[index] = `(${asJson({ 
+                                query: query, 
                                 singular : models.isSingular(main.ctx.config, name),
                                 strip: main.ctx.config.stripNull,
                                 count: false })}) AS ${addDoubleQuotes(name)}`;
+                            else throw new Error(errors.invalidQuery);
                         }
                     });
                     // create all relations Query
@@ -175,7 +178,7 @@ export class Query  {
                         from: main.ctx.model[realEntityName].table , 
                         where: element.query.where.toString(), 
                         groupBy: element.query.groupBy.notNull() === true ?  element.query.groupBy.toString() : undefined,
-                        orderby: element.query.orderBy.notNull() === true ?  element.query.orderBy.toString() : main.ctx.model[realEntityName].orderBy,
+                        orderBy: element.query.orderBy.notNull() === true ?  element.query.orderBy.toString() : main.ctx.model[realEntityName].orderBy,
                         skip: element.skip,
                         limit: element.limit,
                         keys: this.keyNames.toArray(),
@@ -187,26 +190,28 @@ export class Query  {
         return undefined;
     }
 
-    private pgQueryToString(input: IpgQuery | undefined): string {    
+    private pgQueryToString(input: IpgQuery | undefined): string | undefined{    
         return input ? 
             `SELECT ${input.select}\n FROM "${input.from}"\n ${input.where 
                 ? `WHERE ${input.where}\n` 
                 : ''}${input.groupBy 
                 ? `GROUP BY ${cleanStringComma(input.groupBy)}\n` 
-                : ''}${input.orderby 
-                ? `ORDER BY ${cleanStringComma(input.orderby,["ASC","DESC"])}\n` 
+                : ''}${input.orderBy 
+                ? `ORDER BY ${cleanStringComma(input.orderBy,["ASC","DESC"])}\n` 
                 : ''}${input.skip && input.skip > 0 
                 ? `OFFSET ${input.skip}\n` 
                 : ''} ${input.limit && input.limit > 0 
                 ? `LIMIT ${input.limit}\n` 
                 : ''}` 
-            : 'Error';
+            : undefined;
     }
 
     toString(main: RootPgVisitor | PgVisitor, _element?: PgVisitor): string {
         console.log(formatLog.whereIam());
         if(!this._pgQuery) this._pgQuery = this.create(main, _element);
-        return this.pgQueryToString(this._pgQuery);
+        const query = this.pgQueryToString(this._pgQuery);
+        if (query) return query;        
+        throw new Error(errors.invalidQuery);
     }
     
     toPgQuery(main: RootPgVisitor | PgVisitor, _element?: PgVisitor): IpgQuery | undefined {

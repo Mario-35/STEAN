@@ -23,7 +23,7 @@ import { serverConfig } from "./configuration";
 import favicon from 'koa-favicon';
 import { models } from "./models";
 import { log } from "./log";
-import { IconfigFile, IdecodedUrl, Ientities, Ilog, IuserToken } from "./types";
+import { IconfigFile, IdecodedUrl, Ientities, Ilog, IuserToken, koaContext } from "./types";
 import { RootPgVisitor } from "./odata/visitor";
 import { constants } from "zlib";
 
@@ -37,6 +37,7 @@ declare module "koa" {
     user: IuserToken;
     log: Ilog | undefined;
     model: Ientities;
+    body: any;
   }
 }
 
@@ -54,18 +55,13 @@ app.use(helmet.contentSecurityPolicy({ directives: HELMET_CONFIG }));
 app.use(bodyParser({ enableTypes: ["json", "text", "form"] }));
 
 app.use(compress({
-  filter: function (content_type) { return ( /json/i.test(content_type) || /text/i.test(content_type)) },
-  threshold: 1024,
-  gzip: {
-  flush: constants.Z_NO_FLUSH,
-  level: constants.Z_BEST_COMPRESSION
-  }
-  }));
-
-
-
-
-
+  filter: function (content_type) {
+    return ( /json/i.test(content_type) || /text/i.test(content_type)) },
+    threshold: 1024,
+    gzip: {
+    flush: constants.Z_NO_FLUSH,
+    level: constants.Z_BEST_COMPRESSION
+  }}));
 
 // router
 app.use(routerHandle);
@@ -83,8 +79,9 @@ app.use(cors());
 app.use(unProtectedRoutes.routes());
 
 // app key
-app.use((ctx, next) => {
+app.use((ctx: koaContext, next) => {
   ctx.state.secret = APP_KEY;
+  ctx.body = ctx.request.body;
   return next();
 });
 

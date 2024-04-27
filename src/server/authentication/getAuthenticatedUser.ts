@@ -6,13 +6,12 @@
  *
  */
 
-import koa from "koa";
 import { decodeToken } from ".";
 import { userAccess } from "../db/dataAccess";
 import { decrypt } from "../helpers";
-import { Iuser } from "../types";
+import { Iuser, koaContext } from "../types";
 
-export const getAuthenticatedUser = async ( ctx: koa.Context ): Promise<Iuser | undefined> => {
+export const getAuthenticatedUser = async ( ctx: koaContext ): Promise<Iuser | undefined> => {
   const token = decodeToken(ctx);
   if (token && token.id > 0) {
     const user = await userAccess.getSingle(token.id);    

@@ -7,15 +7,14 @@
  */
 
 import Router from "koa-router";
-import { decodeToken, ensureAuthenticated, getAuthenticatedUser, } from "../authentication";
+import { ensureAuthenticated, getAuthenticatedUser, } from "../authentication";
 import { ADMIN, _READY } from "../constants";
-import { addSimpleQuotes, getUrlId, getUrlKey, isAdmin, returnFormats } from "../helpers";
-import { apiAccess, userAccess } from "../db/dataAccess";
+import { addSimpleQuotes, getUrlKey, isAdmin, returnFormats } from "../helpers";
+import { apiAccess } from "../db/dataAccess";
 import { formatLog } from "../logger";
 import { IreturnResult } from "../types";
-import { EnumUserRights } from "../enums";
-import { createQueryHtml } from "../views/query";
-import { CreateHtmlView, createIqueryFromContext } from "../views/helpers/";
+import { createQueryHtml } from "../views/";
+import { createIqueryFromContext } from "../views/helpers/";
 import { DefaultState, Context } from "koa";
 import { createOdata } from "../odata";
 import { infos } from "../messages";
@@ -25,6 +24,7 @@ import { executeAdmin, executeSql, exportService } from "../db/helpers";
 import { models } from "../models";
 import { sqlStopDbName } from "./helper";
 import { createService } from "../db/helpers";
+import { HtmlError, Login, Status } from "../views/";
 
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 // ALl others
@@ -37,9 +37,9 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       return;
     // error show in html if query call
     case "ERROR":
-      const bodyError = new CreateHtmlView(ctx);
+      const bodyError = new HtmlError(ctx, "what ?");
       ctx.type = returnFormats.html.type;
-      ctx.body = bodyError.error("what ?");
+      ctx.body = bodyError.toString();
       return;
     // export service
     case "EXPORT":
@@ -50,9 +50,9 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
     case "LOGIN":
       if (ensureAuthenticated(ctx)) ctx.redirect(`${ctx.decodedUrl.root}/status`);
       else {
-        const bodyLogin = new CreateHtmlView(ctx);
+        const bodyLogin = new Login(ctx,{ login: true });
         ctx.type = returnFormats.html.type;
-        ctx.body = bodyLogin.login({ login: true });
+        ctx.body = bodyLogin.toString();
       }
       return;
     // Status user 
@@ -60,9 +60,9 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       if (ensureAuthenticated(ctx)) {
         const user = await getAuthenticatedUser(ctx);
         if (user) {
-          const bodyStatus = new CreateHtmlView(ctx);
+          const bodyStatus = new Status(ctx, user);
           ctx.type = returnFormats.html.type;
-          ctx.body = bodyStatus.status(user);
+          ctx.body = bodyStatus.toString();
           return;
         }
       }
@@ -70,9 +70,9 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       return;
     // Create user 
     case "REGISTER":
-      const bodyLogin = new CreateHtmlView(ctx);
+      const bodyLogin = new Login(ctx, { login: false });
       ctx.type = returnFormats.html.type;
-      ctx.body = bodyLogin.login({ login: false });
+      ctx.body = bodyLogin.toString();
       return;
     // Logout user
     case "LOGOUT":
@@ -83,17 +83,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       ctx.body = {
         message: infos.logoutOk,
       };
-      return;
-    // Only to get user Infos
-    case "USER":
-      const id = getUrlId(ctx.url.toUpperCase());
-      if (id && decodeToken(ctx)?.PDCUAS[EnumUserRights.SuperAdmin] === true) {
-        const user = await userAccess.getSingle(id);
-        const bodyUuerEdit = new CreateHtmlView(ctx);
-        ctx.type = returnFormats.html.type;
-        ctx.body = bodyUuerEdit.userEdit({ body: user });
-      } else ctx.throw(401);
-      return;      
+      return; 
     // Execute Sql query pass in url 
     case "SQL":
       let sql = getUrlKey(ctx.request.url, "query");
@@ -109,11 +99,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       ctx.type = returnFormats.xml.type;
       ctx.body = models.getDraw(ctx);
       return;
-    // Infos and link of a services    
-    case "READY":
-      ctx.type = returnFormats.json.type;
-      ctx.body = await models.getInfos(ctx);
-      return;
+    // Infos and link of a services
     case "INFOS":
       ctx.type = returnFormats.json.type;
       ctx.body = await models.getInfos(ctx);
@@ -164,7 +150,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         ctx.redirect(`${ctx.decodedUrl.root}/error`);
       }
       return;
-    // Return Query HTML Page Tool    
+    // Return Query HTML Page Tool 
     case "QUERY":
       if (ctx.decodedUrl.service === ADMIN&& isAdmin(ctx) === false) ctx.redirect(`${ctx.decodedUrl.root}/login`);
       const tempContext = await createIqueryFromContext(ctx);    
@@ -174,12 +160,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         ctx.type = returnFormats.html.type;
         ctx.body = createQueryHtml(tempContext);
       }
-      return;      
-    case "TEST":
-      const ent = models.DBAdmin(ctx.config);     
-        ctx.type = returnFormats.json.type;
-        ctx.body = ent;
-      return;      
+      return;
   } // END Switch
 
   // API GET REQUEST  
@@ -201,23 +182,21 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         if (ctx.odata.entity && Number(ctx.odata.id) === 0) {
           const returnValue = await objectAccess.getAll();
           if (returnValue) {
-            const datas = ctx.odata.resultFormat === returnFormats.json
-                ? ({
-                    "@iot.count": returnValue.id,
-                    "@iot.nextLink": returnValue.nextLink,
-                    "@iot.prevLink": returnValue.prevLink,
-                    value: returnValue.body,
-                  } as object)
+            const datas = ctx.odata.returnFormat === returnFormats.json
+                ? ({  "@iot.count": returnValue.id,
+                      "@iot.nextLink": returnValue.nextLink,
+                      "@iot.prevLink": returnValue.prevLink,
+                      value: returnValue.body} as object)
                 : returnValue.body;
-            ctx.type = ctx.odata.resultFormat.type;
-            ctx.body = ctx.odata.resultFormat.format(datas as object, ctx);
+            ctx.type = ctx.odata.returnFormat.type;
+            ctx.body = ctx.odata.returnFormat.format(datas as object, ctx);
           } else ctx.throw(404);
         // Get One
         } else if ( (ctx.odata.id && typeof ctx.odata.id == "bigint" && ctx.odata.id > 0) || (typeof ctx.odata.id == "string" && ctx.odata.id != "") ) {
           const returnValue: IreturnResult | undefined = await objectAccess.getSingle(ctx.odata.id);
           if (returnValue && returnValue.body) {
-            ctx.type = ctx.odata.resultFormat.type;
-            ctx.body = ctx.odata.resultFormat.format(returnValue.body);
+            ctx.type = ctx.odata.returnFormat.type;
+            ctx.body = ctx.odata.returnFormat.format(returnValue.body);
           } else ctx.throw(404, { detail: `id : ${ctx.odata.id} not found` });
         } else ctx.throw(400);
       }

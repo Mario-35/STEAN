@@ -11,8 +11,8 @@ import Busboy from "busboy";
 import path from "path";
 import util from "util";
 import fs from "fs";
-import koa from "koa";
 import { log } from "../log";
+import { koaContext } from "../types";
 
 /**
  *
@@ -20,7 +20,7 @@ import { log } from "../log";
  * @returns KeyString
  */
 
-export const upload = (ctx: koa.Context): Promise<object> => {
+export const upload = (ctx: koaContext): Promise<object> => {
   // Init results
   const data:object = {};
   // Create promise
@@ -40,7 +40,6 @@ export const upload = (ctx: koa.Context): Promise<object> => {
     // Stream
     busboy.on("file", (fieldname, file, filename) => {
       const extname = path.extname(filename).substring(1);
-
       if (!allowedExtName.includes(extname)) {
         data["state"] = "UPLOAD UNALLOWED FILE";
         file.resume();

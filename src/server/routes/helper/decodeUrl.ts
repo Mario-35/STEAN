@@ -7,7 +7,6 @@
  *
  */
 
-import koa from "koa";
 import { getConfigFromPort } from ".";
 import { serverConfig } from "../../configuration";
 import { ADMIN, setDebug } from "../../constants";
@@ -15,7 +14,7 @@ import { EnumVersion } from "../../enums";
 import { cleanUrl } from "../../helpers";
 import { formatLog } from "../../logger";
 import { errors } from "../../messages";
-import { IdecodedUrl  } from "../../types";
+import { IdecodedUrl, koaContext  } from "../../types";
 
 
 //   service root URI       resource path       query options
@@ -26,10 +25,10 @@ import { IdecodedUrl  } from "../../types";
 //   |           |         |              |                |
 // protocol     host    version        pathname          search
 
-export const decodeUrl = (ctx: koa.Context, input?: string): IdecodedUrl | undefined => {
+export const decodeUrl = (ctx: koaContext, input?: string): IdecodedUrl | undefined => {
   console.log(formatLog.whereIam());
   // get input
-  input = input || ctx.href;
+  input = input || ctx.href; 
   input = input;
   // debug mode
   setDebug(input.includes("?$debug=true") || input.includes("&$debug=true"));
@@ -61,16 +60,7 @@ export const decodeUrl = (ctx: koa.Context, input?: string): IdecodedUrl | undef
     }  
     // result
     return  {
-      href: url.href, 
-      protocol: url.protocol, 
-      username: url.username,
-      password: url.password,
-      host: url.host,
-      hostname: url.hostname,
-      port: url.port,
-      pathname: url.pathname,
       search: url.search,
-      hash: url.hash,
       service: paths[0],
       version: paths[0] === ADMIN ? EnumVersion.v1_0 : paths[1],
       path: idStr ? path.replace(String(id), '0') : path,
@@ -79,7 +69,6 @@ export const decodeUrl = (ctx: koa.Context, input?: string): IdecodedUrl | undef
       config: configName,
       linkbase: LinkBase.linkBase,
       root: LinkBase.root,
-      model: LinkBase.model
     }  
   }
   

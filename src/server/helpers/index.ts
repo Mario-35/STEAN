@@ -6,7 +6,7 @@
  *
  */
 
-import koa from "koa";
+import { koaContext } from "../types";
 export const removeFirstOrEnd = (input: string, char: string) => {    
     while (input[0] === char[0]) input = input.slice(1).trim();
     while (input[input.length - 1] === char[0]) input = input.slice(0, -1);
@@ -19,7 +19,7 @@ export const removeFirstAndEnd = (input: string, char: string) => input[0] === c
 export const removeDoubleQuotes = (input: string) => removeFirstAndEnd(input, '"');
 export const removeSimpleQuotes = (input: string) => removeFirstAndEnd(input, "'");
 export const addSimpleQuotes = (input: string): string => addQuotes(input, "'");
-export const getUserId = (ctx: koa.Context): number => ctx.state.user && ctx.state.user.id ? ctx.state.user.id : -1;
+export const getUserId = (ctx: koaContext): number => ctx.state.user && ctx.state.user.id ? ctx.state.user.id : -1;
 export const removeAllQuotes = (input: string): string => input.replace(/['"]+/g, "");
 export const unikeList = (input: string[]) => [...new Set(input)];
 export { asyncForEach } from "./asyncForEach";
@@ -33,7 +33,7 @@ export { getUrlId } from "./getUrlId";
 export { getUrlKey } from "./getUrlKey";
 export { hideKeysInJson } from "./hideKeysInJson";
 export { hidePassword} from "./hidePassword";
-export { isTest, isProduction, isCsvOrArray, isGraph, isObservation, isAdmin, isAllowedTo, isObjectArray } from "./tests";
+export  * from "./tests";
 export { notNull, isNull } from "./notNull";
 export { bigIntReplacer } from "./bigIntReplacer";
 export { returnFormats } from "./returnFormats";

@@ -9,6 +9,6 @@
 import { IstreamInfos } from "./streamInfos";
 
 export interface IcsvColumn {
-    column: string;
+    column: string; 
     stream: IstreamInfos;
 }

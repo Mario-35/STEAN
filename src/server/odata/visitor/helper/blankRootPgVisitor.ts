@@ -6,14 +6,13 @@
  *
  */
 
-import koa from "koa";
 import { RootPgVisitor } from "..";
 import { log } from "../../../log";
-import { Ientity } from "../../../types";
+import { Ientity, koaContext } from "../../../types";
 import { Token } from "../../parser";
 import { query, resourcePath } from "../../parser/parser";
 
-export const blankRootPgVisitor = (ctx: koa.Context, entity: Ientity): RootPgVisitor | undefined => {  
+export const blankRootPgVisitor = (ctx: koaContext, entity: Ientity): RootPgVisitor | undefined => {  
     const astRessources: Token = <Token>resourcePath(entity.name);  
     const astQuery: Token = <Token>query(decodeURIComponent(`$top=${ctx.config.nb_page ? ctx.config.nb_page : 200}`));
     try {

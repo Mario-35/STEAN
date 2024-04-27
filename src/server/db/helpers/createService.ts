@@ -14,7 +14,7 @@ import { models } from "../../models";
 import { createInsertValues } from "../../models/helpers";
 import { sqlStopDbName } from "../../routes/helper";
 import { userAccess } from "../dataAccess";
-import koa from "koa";
+import { koaContext } from "../../types";
 
 const prepareDatas = (dataInput: object, entity: string): object => {
   if (entity === "Observations") {
@@ -30,7 +30,7 @@ const getConvertedData = async (url: string): Promise<object> => {
 
 
 
-const addToServiceFromUrl = async (url: string | undefined, ctx: koa.Context): Promise<string> => {
+const addToServiceFromUrl = async (url: string | undefined, ctx: koaContext): Promise<string> => {
   while(url) {
     console.log(url);    
     try {      
@@ -45,7 +45,7 @@ const addToServiceFromUrl = async (url: string | undefined, ctx: koa.Context): P
   return "";
 }
 
-export const createService = async (dataInput: object, ctx?: koa.Context): Promise<object> => {
+export const createService = async (dataInput: object, ctx?: koaContext): Promise<object> => {
   const results = {};
   const serviceName = dataInput["create"]["name"];
   const config = serverConfig.getConfig(serviceName);

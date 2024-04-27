@@ -6,13 +6,13 @@
  *
  */
 
-import koa from "koa";
+import { koaContext } from "../../types";
 import { Common } from "./common";
 import { errors, msg } from "../../messages/";
 import { formatLog } from "../../logger";
 
 export class MultiDatastreams extends Common {
-  constructor(ctx: koa.Context) {
+  constructor(ctx: koaContext) {
     console.log(formatLog.whereIam());
     super(ctx);
   }

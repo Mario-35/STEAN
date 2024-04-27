@@ -8,15 +8,14 @@
 
 /* eslint-disable quotes */
 
-import koa from "koa";
 import { getAuthenticatedUser } from "../../authentication";
 import { serverConfig } from "../../configuration";
 import { models } from "../../models";
 import { decodeUrl } from "../../routes/helper/decodeUrl";
-import { Ientities, IqueryOptions } from "../../types";
+import { Ientities, IqueryOptions, koaContext } from "../../types";
 
 
-export const createIqueryFromContext = async (ctx: koa.Context): Promise<IqueryOptions| undefined> => {
+export const createIqueryFromContext = async (ctx: koaContext): Promise<IqueryOptions| undefined> => {
     const model = models.filteredModelFromConfig(ctx.config);
     let user = await getAuthenticatedUser(ctx); 
     user = user

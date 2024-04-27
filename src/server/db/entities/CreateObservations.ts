@@ -6,10 +6,9 @@
  *
  */
 
-import koa from "koa";
 import { Common } from "./common";
 import { formatLog } from "../../logger";
-import { IcsvColumn, IcsvFile, IreturnResult, IstreamInfos } from "../../types";
+import { IcsvColumn, IcsvFile, IreturnResult, IstreamInfos, koaContext } from "../../types";
 import { queryInsertFromCsv, dateToDateWithTimeZone, executeSql, executeSqlValues } from "../helpers";
 import { addDoubleQuotes, asyncForEach } from "../../helpers";
 import { errors, msg } from "../../messages/";
@@ -21,7 +20,7 @@ import { log } from "../../log";
 
 export class CreateObservations extends Common {
   public indexResult = -1;
-  constructor(ctx: koa.Context) {
+  constructor(ctx: koaContext) {
     console.log(formatLog.whereIam());
     super(ctx);
   }

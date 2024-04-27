@@ -7,8 +7,7 @@
  */
 
 import { formatLog } from "../../logger";
-import { IcsvFile, IcsvImport } from "../../types";
-import koa from "koa";
+import { IcsvFile, IcsvImport, koaContext } from "../../types";
 import { createReadStream } from 'fs';
 import { addAbortSignal } from 'stream';
 import { serverConfig } from "../../configuration";
@@ -16,7 +15,7 @@ import { executeSql, executeSqlValues } from ".";
 import { _NOTOK, _OK } from "../../constants";
 import { log } from "../../log";
 
-export async function streamCsvFile( ctx: koa.Context, paramsFile: IcsvFile, sqlRequest: IcsvImport ): Promise<number> {
+export async function streamCsvFile( ctx: koaContext, paramsFile: IcsvFile, sqlRequest: IcsvImport ): Promise<number> {
   console.log(formatLog.whereIam());
   const cols:string[] = [];
   const controller = new AbortController();

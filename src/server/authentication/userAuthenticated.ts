@@ -6,10 +6,10 @@
  *
  */
 
-import koa from "koa";
 import { decodeToken } from ".";
+import { koaContext } from "../types";
 
-export const userAuthenticated = (ctx: koa.Context): boolean => {
+export const userAuthenticated = (ctx: koaContext): boolean => {
   const token = decodeToken(ctx);
   return (token && +token.id > 0) ? true : false;
 };

@@ -6,7 +6,7 @@
  *
  */
 
-import koa from "koa";
+import { koaContext } from "../../types";
 import { Common } from "./common";
 import { formatLog } from "../../logger";
 import { IreturnResult } from "../../types";
@@ -19,7 +19,7 @@ import { executeSqlValues } from "../helpers";
 import { models } from "../../models";
 
 export class Users extends Common {
-  constructor(ctx: koa.Context) {
+  constructor(ctx: koaContext) {
     console.log(formatLog.whereIam());
     super(ctx);
   }

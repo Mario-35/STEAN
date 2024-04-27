@@ -7,11 +7,10 @@
  */
 
 import jsonwebtoken from "jsonwebtoken";
-import koa from "koa";
-import { IuserToken } from "../types";
+import { IuserToken, koaContext } from "../types";
 import { blankUserToken } from "../types/userToken";
 
-export const decodeToken = (ctx: koa.Context): IuserToken => {
+export const decodeToken = (ctx: koaContext): IuserToken => {
   if (ctx.request["token"]) {    
     const token = jsonwebtoken.decode(ctx.request["token"]);
     if (token && token["data"].id > 0)

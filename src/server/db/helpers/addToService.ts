@@ -6,18 +6,17 @@
  *
  */
 
-import koa from "koa";
 import { _NOTOK, _OK } from "../../constants";
 import { addDoubleQuotes, asyncForEach } from "../../helpers";
 import { formatLog } from "../../logger";
 import { models } from "../../models";
 import { createInsertValues } from "../../models/helpers";
 import { blankRootPgVisitor } from "../../odata/visitor/helper";
-import { Ilog } from "../../types";
+import { Ilog, koaContext } from "../../types";
 import { apiAccess } from "../dataAccess";
 import { executeSqlValues } from "./executeSqlValues";
 
-export const addToService = async (ctx: koa.Context, dataInput: object): Promise<object> => {
+export const addToService = async (ctx: koaContext, dataInput: object): Promise<object> => {
   console.log(formatLog.whereIam());
   // setDebug(true);
   const results = {};    

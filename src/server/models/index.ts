@@ -7,8 +7,7 @@ import { asJson } from "../db/queries";
 import { EnumColumnType, EnumExtensions, EnumVersion, filterEntities } from "../enums";
 import { addDoubleQuotes, deepClone, isTest } from "../helpers";
 import { errors, msg } from "../messages";
-import { IconfigFile, Ientities, Ientity, IstreamInfos } from "../types";
-import koa from "koa";
+import { IconfigFile, Ientities, Ientity, IstreamInfos, koaContext } from "../types";
 import fs from "fs";
 import { formatLog } from "../logger";
 import conformance from "./conformance.json";
@@ -65,7 +64,7 @@ class Models {
   }
 
   // create drawIO Model
-  getDraw(ctx: koa.Context) {
+  getDraw(ctx: koaContext) {
     const deleteId = (id: string) => {
       const start = `<mxCell id="${id}"`;
       const end = "</mxCell>";
@@ -88,7 +87,7 @@ class Models {
     return fileContent;
   }
   
-  async getInfos(ctx: koa.Context) {
+  async getInfos(ctx: koaContext) {
     const temp = serverConfig.getInfos(ctx, ctx.config.name)
     const result = {
       ... temp,
@@ -288,7 +287,7 @@ class Models {
     return false;
   }
 
-  public getRoot(ctx: koa.Context) {
+  public getRoot(ctx: koaContext) {
     console.log(formatLog.whereIam());
     let expectedResponse: object[] = [];
     Object. keys(ctx.model)

@@ -6,12 +6,11 @@
  *
  */
 
-import koa from "koa";
 import { Common } from "./common";
 import { getBigIntFromString, notNull, } from "../../helpers/index";
 import { DOUBLEQUOTEDCOMA, ESCAPE_SIMPLE_QUOTE, VOIDTABLE } from "../../constants";
 import { formatLog } from "../../logger";
-import { IreturnResult } from "../../types";
+import { IreturnResult, koaContext } from "../../types";
 import { errors, msg } from "../../messages/";
 import { EnumDatesType } from "../../enums";
 import { multiDatastreamFromDeveui, streamFromDeveui } from "../queries";
@@ -21,7 +20,7 @@ import { executeSql, executeSqlValues } from "../helpers";
 export class Loras extends Common {
   synonym: object = {};
   stean: object = {};
-  constructor(ctx: koa.Context) {
+  constructor(ctx: koaContext) {
     console.log(formatLog.whereIam());
     super(ctx);
   }
@@ -44,7 +43,7 @@ export class Loras extends Common {
     return tempList[0].concat( '"', input.join(`"${tempList[1]}${tempList[0]}"`), '"', tempList[1] );
   }
   // Override post
-  async post( dataInput: object, silent?: boolean ): Promise<IreturnResult | undefined> {
+  async post( dataInput: object, silent?: boolean ): Promise<IreturnResult | undefined | void> {
     console.log(formatLog.whereIam());
     const addToStean = (key: string) => (this.stean[key] = dataInput[key]);
     if (dataInput) this.stean = await this.prepareInputResult(dataInput);

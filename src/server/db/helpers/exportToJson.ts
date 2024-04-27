@@ -6,11 +6,11 @@
  *
  */
 
-import koa from "koa";
 import { serverConfig } from "../../configuration";
 import { addDoubleQuotes, asyncForEach, getUrlKey, hidePassword, removeEmpty } from "../../helpers";
+import { koaContext } from "../../types";
 
-export const exportToJson = async (ctx: koa.Context) => {
+export const exportToJson = async (ctx: koaContext) => {
   // get config with hidden password
   const result = { "create": hidePassword(serverConfig.getConfig(ctx.config.name))};
   // get entites list

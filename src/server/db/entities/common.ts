@@ -7,21 +7,20 @@
  *
  */
 
- import koa from "koa";
  import { addDoubleQuotes, returnFormats } from "../../helpers/index";
  import { formatLog } from "../../logger";
- import { IreturnResult } from "../../types";
+ import { IreturnResult, koaContext } from "../../types";
  import { executeSqlValues, removeKeyFromUrl } from "../helpers";
  import { getErrorCode, infos } from "../../messages";
  import { log } from "../../log";
  
  // Common class
  export class Common {
-   readonly ctx: koa.Context;
+   readonly ctx: koaContext;
    public nextLinkBase: string;
    public linkBase: string;
  
-   constructor(ctx: koa.Context) {
+   constructor(ctx: koaContext) {
      console.log(formatLog.whereIam());
      this.ctx = ctx;
      this.nextLinkBase = removeKeyFromUrl(`${this.ctx.decodedUrl.root}/${ this.ctx.href.split(`${ctx.config.apiVersion}/`)[1] }`, ["top", "skip"] );
@@ -92,7 +91,7 @@
      const sql = this.ctx.odata.getSql();
      
      // Return results
-     if (sql) switch (this.ctx.odata.resultFormat ) {
+     if (sql) switch (this.ctx.odata.returnFormat ) {
        case returnFormats.sql:
          return this.formatReturnResult({ body: sql });
  
@@ -119,7 +118,7 @@
      // create query
      const sql = this.ctx.odata.getSql();
      // Return results
-     if (sql) switch (this.ctx.odata.resultFormat ) {
+     if (sql) switch (this.ctx.odata.returnFormat ) {
        case returnFormats.sql:
          return this.formatReturnResult({ body: sql }); 
        default:
@@ -158,7 +157,7 @@
    }
  
    // Post an item
-   async post(dataInput: object | undefined): Promise<IreturnResult | undefined> {
+   async post(dataInput: object | undefined): Promise<IreturnResult | undefined | void> {
      console.log(formatLog.whereIam());
      // Format datas
      dataInput = this.formatDataInput(dataInput);
@@ -166,7 +165,7 @@
      // create query
      const sql = this.ctx.odata.postSql(dataInput);
      // Return results
-     if (sql) switch (this.ctx.odata.resultFormat ) {
+     if (sql) switch (this.ctx.odata.returnFormat ) {
        case returnFormats.sql:
          return this.formatReturnResult({ body: sql });
  
@@ -194,7 +193,7 @@
    }
  
    // Update an item
-   async update( idInput: bigint | string, dataInput: object | undefined ): Promise<IreturnResult | undefined> {
+   async update( idInput: bigint | string, dataInput: object | undefined ): Promise<IreturnResult | undefined | void> {
      console.log(formatLog.whereIam()); 
      // Format datas
      dataInput = this.formatDataInput(dataInput);
@@ -202,7 +201,7 @@
      // create Query
      const sql = this.ctx.odata.patchSql(dataInput);
      // Return results
-     if (sql) switch (this.ctx.odata.resultFormat ) {
+     if (sql) switch (this.ctx.odata.returnFormat ) {
        case returnFormats.sql:
          return this.formatReturnResult({ body: sql });
          
@@ -229,7 +228,7 @@
      // create Query
      const sql = `DELETE FROM ${addDoubleQuotes(this.ctx.model[this.constructor.name].table)} WHERE "id" = ${idInput} RETURNING id`;
      // Return results
-     if (sql) switch (this.ctx.odata.resultFormat ) {
+     if (sql) switch (this.ctx.odata.returnFormat ) {
        case returnFormats.sql:
          return this.formatReturnResult({ body: sql });  
           

@@ -9,7 +9,7 @@
 import { EnumColumnType } from "../enums";
 
 
-export interface IodataContext {
+export interface IodataContext { //odata context pass to token
     key: string | undefined;
     entity: string | undefined;
     target: string | undefined;
@@ -20,5 +20,4 @@ export interface IodataContext {
     sign: string | undefined;
     sql: string | undefined;    
     in: boolean | undefined;
-    result: boolean | undefined;
 }

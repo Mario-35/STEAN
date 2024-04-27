@@ -6,7 +6,7 @@
  *
  */
 
-import koa from "koa";
 import { userAuthenticated } from ".";
+import { koaContext } from "../types";
 
-export const ensureAuthenticated = (context: koa.Context): boolean => userAuthenticated(context);
+export const ensureAuthenticated = (context: koaContext): boolean => userAuthenticated(context);

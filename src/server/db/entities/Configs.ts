@@ -6,10 +6,9 @@
  *
  */
 
-import koa from "koa";
 import { Common } from "./common";
 import { formatLog } from "../../logger";
-import { IreturnResult } from "../../types";
+import { IreturnResult, koaContext } from "../../types";
 import { serverConfig } from "../../configuration";
 import { hideKeysInJson, hidePassword } from "../../helpers";
 import { ensureAuthenticated } from "../../authentication";
@@ -17,7 +16,7 @@ import { addToService, createService } from "../helpers";
 import { _NOTOK, _OK } from "../../constants";
 
 export class Configs extends Common {
-  constructor(ctx: koa.Context) {
+  constructor(ctx: koaContext) {
     console.log(formatLog.whereIam());
     super(ctx);
   }

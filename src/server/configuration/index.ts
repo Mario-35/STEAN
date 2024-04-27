@@ -8,7 +8,7 @@
 
 import { addToStrings, ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_DB, NODE_ENV, setReady, TEST, TIMESTAMP, _DEBUG, _ERRORFILE, _NOTOK, _OK, _WEB, } from "../constants";
 import { asyncForEach, decrypt, encrypt, hidePassword, isProduction, isTest, unikeList, } from "../helpers";
-import { IconfigFile, IdbConnection, IserviceLink } from "../types";
+import { IconfigFile, IdbConnection, IserviceInfos, koaContext } from "../types";
 import { errors, infos, msg } from "../messages";
 import { createDatabase, createService} from "../db/helpers";
 import { app } from "..";
@@ -20,7 +20,6 @@ import postgres from "postgres";
 import { triggers } from "../db/createDb/triggers";
 import { formatLog } from "../logger";
 import { log } from "../log";
-import koa from "koa";
 import { testDatas } from "../db/createDb";
 import { userAccess } from "../db/dataAccess";
 
@@ -71,7 +70,7 @@ class Configuration {
     Configuration.configs[TEST] = this.formatConfig(result);
 	}
 
-  getInfos = (ctx: koa.Context, name: string): IserviceLink  => {
+  getInfos = (ctx: koaContext, name: string): IserviceInfos  => {
     const protocol:string = ctx.request.headers["x-forwarded-proto"]
           ? ctx.request.headers["x-forwarded-proto"].toString()
           : Configuration.configs[name].forceHttps && Configuration.configs[name].forceHttps === true
@@ -98,7 +97,7 @@ class Configuration {
     };
   }
 
-  public getAllInfos(ctx: koa.Context): { [key: string]: IserviceLink } {
+  public getAllInfos(ctx: koaContext): { [key: string]: IserviceInfos } {
     const result = {};    
     this.getConfigs().forEach((conf: string) => {
       result[conf] = this.getInfos(ctx, conf)

@@ -7,5 +7,4 @@
  */
 
 export { commonHtml } from "./commonHtml";
-export { CreateHtmlView } from "./CreateHtmlView";
 export { createIqueryFromContext } from "./createIqueryFromContext";

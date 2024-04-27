@@ -7,14 +7,14 @@
  */
 
 import cookieParser from "cookie-parser";
-import koa from "koa";
 import { APP_KEY } from "../constants";
 import { errors } from "../messages";
 import cookieModule from "cookie";
+import { koaContext } from "../types";
 
 const getCookie = (serializedCookies: string, key: string) => cookieModule.parse(serializedCookies)[key] ?? false;
 
-export const createBearerToken = (ctx: koa.Context) => {
+export const createBearerToken = (ctx: koaContext) => {
     const queryKey = "access_token";
     const bodyKey = "access_token";
     const headerKey = "Bearer";

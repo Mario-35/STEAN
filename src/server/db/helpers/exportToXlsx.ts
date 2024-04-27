@@ -7,13 +7,13 @@
  */
 
 import Excel from "exceljs";
-import koa from "koa";
 import postgres from "postgres";
 import { serverConfig } from "../../configuration";
 import { log } from "../../log";
 import { asyncForEach } from "../../helpers";
 import { models } from "../../models";
 import { filterEntities } from "../../enums";
+import { koaContext } from "../../types";
 
 const addConfigToExcel = async ( workbook: Excel.Workbook, config: object ) => {
   const worksheet = workbook.addWorksheet("Config");
@@ -57,7 +57,7 @@ const addToExcel = async ( workbook: Excel.Workbook, name: string, input: object
 };
 
 // Create column List
-const createColumnsList = async (ctx: koa.Context, entity: string) => {
+const createColumnsList = async (ctx: koaContext, entity: string) => {
   const columnList: string[] = [];
   await asyncForEach(
     Object.keys(ctx.model[entity].columns),
@@ -89,7 +89,7 @@ const createColumnsList = async (ctx: koa.Context, entity: string) => {
   return columnList;
 };
 
-export const exportToXlsx = async (ctx: koa.Context) => {
+export const exportToXlsx = async (ctx: koaContext) => {
   // CReate new workBook
   const workbook = new Excel.Workbook();
   workbook.creator = "Me";

@@ -8,16 +8,16 @@
 
 import { query, resourcePath } from "./parser/parser";
 import { Token } from "./parser/lexer";
-import koa from "koa";
 import { cleanUrl, returnFormats } from "../helpers";
 import { serverConfig } from "../configuration";
 import { SqlOptions } from "./parser/sqlOptions";
 import { multiDatastreamKeys } from "../db/queries";
 import { RootPgVisitor } from "./visitor";
+import { koaContext } from "../types";
 
-const doSomeWarkAfterCreateAst = async (input: RootPgVisitor, ctx: koa.Context) => {
+const doSomeWarkAfterCreateAst = async (input: RootPgVisitor, ctx: koaContext) => {
   if (
-    (input.resultFormat === returnFormats.csv && input.entity === "Observations" &&  input.parentEntity?.endsWith('atastreams') && input.parentId && <bigint>input.parentId > 0) ||
+    (input.returnFormat === returnFormats.csv && input.entity === "Observations" &&  input.parentEntity?.endsWith('atastreams') && input.parentId && <bigint>input.parentId > 0) ||
     (input.splitResult && input.splitResult[0].toUpperCase() == "ALL" && input.parentId && <bigint>input.parentId > 0) ) {
     const temp = await serverConfig.connection(ctx.config.name).unsafe(`${multiDatastreamKeys(input.parentId)}`);
     input.splitResult = temp[0]["keys"];
@@ -37,7 +37,7 @@ const escapesOdata = (input: string) : string => {
   return input;
 };
 
-export const createOdata = async (ctx: koa.Context): Promise<RootPgVisitor | undefined> => {
+export const createOdata = async (ctx: koaContext): Promise<RootPgVisitor | undefined> => {
   // blank url if not defined
   // init Ressource wich have to be tested first
   const options: SqlOptions = {

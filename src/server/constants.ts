@@ -54,6 +54,4 @@ export function setReady(input: boolean) { _READY = input; }
 export function showAll<T>(input: T, colors?: boolean) { return typeof input === "object" ? util.inspect(input, { showHidden: false, depth: null, colors: colors || false, }) : input; }
 export let _DEBUG = false;
 export let _READY = false;
-
-export function creatNameFile(fileName: string):string { return `${fileName}${new Date().toLocaleDateString().replace(/\D/g, "")}${new Date().toLocaleTimeString().replace(/\D/g, "")}` };
 export function addToStrings(input: string[], data: string) { if (input) input.push(data); else input = [data]; }

@@ -9,9 +9,9 @@
 import { log } from "../log";
 import { formatLog } from "../logger";
 import { errors } from "../messages";
-import { ILoraDecoder } from "../types";
+import { ILoraDecodingResult } from "../types";
 
-export const decodingPayload = ( decoder: { name: string; code: string; nomenclature: string }, payload: string ): ILoraDecoder | undefined => {
+export const decodingPayload = ( decoder: { name: string; code: string; nomenclature: string }, payload: string ): ILoraDecodingResult | undefined => {
   console.log(formatLog.head("decodingPayload"));
   if (decoder.name && decoder.nomenclature && decoder.code != 'undefined') {
     try {

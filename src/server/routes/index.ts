@@ -6,7 +6,6 @@
  *
  */
 
-import Koa from "koa";
 import { decodeToken } from "../authentication";
 import { _DEBUG } from "../constants";
 import { log } from "../log";
@@ -20,9 +19,10 @@ import { models } from "../models";
 export { protectedRoutes } from "./protected";
 export { unProtectedRoutes } from "./unProtected";
 import querystring from "querystring";
+import { koaContext } from "../types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const routerHandle = async (ctx: Koa.Context, next: any) => { 
+export const routerHandle = async (ctx: koaContext, next: any) => { 
   // create token
   createBearerToken(ctx);
   const decodedUrl = decodeUrl(ctx);
@@ -56,7 +56,7 @@ export const routerHandle = async (ctx: Koa.Context, next: any) => {
   try {
     if (ctx.config.extensions.includes(EnumExtensions.logs))
       ctx.log = {
-        datas: { ...ctx.request.body },
+        datas: { ... ctx.body},
         code: -999,
         method: ctx.method,
         url: ctx.url,

@@ -6,13 +6,13 @@
  *
  */
 
-export interface Ilog{
-    method: string;
-    returnid?: string;
-    code: number;
-    url: string;
-    database: string;
-    datas: object;
-    user_id: string;
-    error?: object;
+export interface Ilog{ // Log save Interface
+    method: string; // verb method
+    returnid?: string; // id return in result
+    code: number; // error code
+    url: string; // url request
+    database: string; // database of the service
+    datas: object; // datas posted
+    user_id: string; // user id logged
+    error?: object; // error returned
   }

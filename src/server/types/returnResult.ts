@@ -6,10 +6,10 @@
  *
  */
 
-export interface IreturnResult {
-    id: bigint | undefined;
-    nextLink: string | undefined;
-    prevLink: string | undefined;
-    body: JSON | string | undefined;
-    total: bigint | undefined;
+export interface IreturnResult { // return format api
+    id: bigint | undefined; // id for single
+    nextLink: string | undefined; // pagination next link
+    prevLink: string | undefined;// pagination prev link
+    body: JSON | string | undefined; // body result
+    total: bigint | undefined; // total items
 }

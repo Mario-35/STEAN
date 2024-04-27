@@ -10,13 +10,11 @@ import Router from "koa-router";
 import { apiAccess, userAccess } from "../db/dataAccess";
 import { isAllowedTo, returnFormats, upload } from "../helpers";
 import fs from "fs";
-import koa from "koa";
 import { formatLog } from "../logger";
-import { IKeyString, IreturnResult, Iuser } from "../types";
+import { IKeyString, IreturnResult, Iuser, koaContext } from "../types";
 import { DefaultState, Context } from "koa";
-import { CreateHtmlView } from "../views/helpers/CreateHtmlView";
 import { createIqueryFromContext } from "../views/helpers/";
-import { createQueryHtml } from "../views/query";
+import { createQueryHtml } from "../views/";
 import { createOdata } from "../odata";
 import { errors, infos, msg } from "../messages";
 import { EnumUserRights } from "../enums";
@@ -25,11 +23,12 @@ import { ADMIN } from "../constants";
 import { executeSqlValues } from "../db/helpers";
 import { serverConfig } from "../configuration";
 import { checkPassword, emailIsValid } from "./helper";
+import { Login } from "../views";
 
 export const protectedRoutes = new Router<DefaultState, Context>();
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
+protectedRoutes.post("/(.*)", async (ctx: koaContext, next) => {
   switch (ctx.decodedUrl.path.toUpperCase()) {
     // login html page or connection login
     case "LOGIN":      
@@ -52,57 +51,59 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
       return;
     // register html page or registration new user route
     case "REGISTER":
-      const isObject = typeof ctx.request.body !== "string";
+      // const isObject = typeof ctx.request.body !== "string";
       const why: IKeyString = {};
       // Username
-      if (isObject && ctx.request.body["username"].trim() === "") {
+      if (ctx.body["username"].trim() === "") {
         why["username"] = msg(errors.empty, "username");
       } else {
-        const user = await executeSqlValues(serverConfig.getConfig(ADMIN), `SELECT "username" FROM "user" WHERE username = '${ctx.request.body["username"]}' LIMIT 1`);
+        const user = await executeSqlValues(serverConfig.getConfig(ADMIN), `SELECT "username" FROM "user" WHERE username = '${ctx.body["username"]}' LIMIT 1`);
         if (user) why["username"] = errors.alreadyPresent;
       }
       // Email
-      if (isObject && ctx.request.body["email"].trim() === "") {
+      if (ctx.body["email"].trim() === "") {
         why["email"] = msg(errors.empty, "email");
       } else {
-        if (emailIsValid(ctx.request.body["email"]) === false)
+        if (emailIsValid(ctx.body["email"]) === false)
           why["email"] = msg(errors.invalid, "email");
       }
       // Password
-      if (isObject && ctx.request.body["password"].trim() === "") {
+      if (ctx.body["password"].trim() === "") {
         why["password"] = msg(errors.empty, "password");
       }
       // Repeat password
-      if (isObject && (ctx.request.body["repeat"] as string).trim() === "") {
+      if ((ctx.body["repeat"] as string).trim() === "") {
         why["repeat"] = msg(errors.empty, "repeat password");
       } else {
-        if (ctx.request.body["password"] != ctx.request.body.repeat) {
+        if (ctx.body["password"] != ctx.body.repeat) {
           why["repeat"] = errors.passowrdDifferent;
         } else {
-          if (checkPassword(ctx.request.body["password"]) === false)
+          if (checkPassword(ctx.body["password"]) === false)
             why["password"] = msg(errors.invalid, "password");
         }
       }
 
       if (Object.keys(why).length === 0) {
         try {
-          await userAccess.post(ctx.config.name, ctx.request.body);
+          await userAccess.post(ctx.config.name, ctx.body);
         } catch (error) {
           ctx.redirect(`${ctx.decodedUrl.root}/error`);
         }
       } else {
-        const createHtml = new CreateHtmlView(ctx);
-        ctx.type = returnFormats.html.type;
-        ctx.body = createHtml.login({
+        const createHtml = new Login(ctx, {
           login: false,
           body: ctx.request.body,
           why: why,
         });
+        ctx.type = returnFormats.html.type;
+        ctx.body = createHtml.toString();
       }
       return;
 
     case "USER":
-      const user = await userAccess.update(ctx.config.name, ctx.request.body);
+      console.log("eee");
+      
+      const user = await userAccess.update(ctx.config.name, ctx.body);
       if (user) {
         ctx.login(user);
         ctx.redirect(`${ctx.decodedUrl.root}/admin`);
@@ -115,7 +116,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
 
   // Add new lora observation this is a special route without ahtorisatiaon to post (deveui and correct payload limit risks)
   if ((ctx.user && ctx.user.id > 0) || ctx.request.url.includes("/Lora")) {
-    if (ctx.request.type.startsWith("application/json") && Object.keys(ctx.request.body).length > 0) {
+    if (ctx.request.type.startsWith("application/json") && Object.keys(ctx.body).length > 0) {
       const odataVisitor = await createOdata(ctx);
       if (odataVisitor) ctx.odata = odataVisitor;
       if (ctx.odata) {
@@ -182,7 +183,7 @@ protectedRoutes.post("/(.*)", async (ctx: koa.Context, next) => {
 protectedRoutes.patch("/(.*)", async (ctx) => {
   if (
     isAllowedTo(ctx, EnumUserRights.Post) === true &&
-    Object.keys(ctx.request.body).length > 0
+    Object.keys(ctx.body).length > 0
   ) {
     const odataVisitor = await createOdata(ctx);
     if (odataVisitor) ctx.odata = odataVisitor;

@@ -6,18 +6,17 @@
  *
  */
 
-import koa from "koa";
 import { Common } from "./common";
 import { executeSqlValues, getDBDateNow } from "../helpers";
 import { formatLog } from "../../logger";
-import { IreturnResult } from "../../types";
+import { IreturnResult, koaContext } from "../../types";
 import { getBigIntFromString } from "../../helpers";
 import { errors, msg } from "../../messages";
 import { multiDatastreamsUnitsKeys } from "../queries";
 import { EnumExtensions } from "../../enums";
 
 export class Observations extends Common {
-  constructor(ctx: koa.Context) {
+  constructor(ctx: koaContext) {
     console.log(formatLog.whereIam());
     super(ctx);
   }
@@ -70,7 +69,7 @@ export class Observations extends Common {
   }
 
   // Override post to prepare datas before use super class
-  async post(dataInput: object): Promise<IreturnResult | undefined> {
+  async post(dataInput: object): Promise<IreturnResult | undefined | void> {
     console.log(formatLog.whereIam());
     if (dataInput) dataInput = await this.prepareInputResult(dataInput);
     if (dataInput["import"]) {
@@ -78,7 +77,7 @@ export class Observations extends Common {
     } else return await super.post(dataInput);
   }
   // Override update to prepare datas before use super class
-  async update( idInput: bigint, dataInput: object | undefined ): Promise<IreturnResult | undefined> {
+  async update( idInput: bigint, dataInput: object | undefined ): Promise<IreturnResult | undefined | void> {
     console.log(formatLog.whereIam());
     if (dataInput) dataInput = await this.prepareInputResult(dataInput);
     if (dataInput) dataInput["validTime"] = await getDBDateNow(this.ctx.config);

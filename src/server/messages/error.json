@@ -1,5 +1,6 @@
 {
 	"alreadyPresent": "Already present",
+	"invalidQuery": "Invalid Query",
 	"inConfigFile": "Error in config file",
 	"configFileError": "Config not correct",
 	"configName": "Configname $1 not found",

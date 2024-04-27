@@ -7,11 +7,11 @@
  */
 
 
-export interface IdbConnection {
-    host: string;
-    user: string;
-    password: string;
-    database: string;
-    port: number;
-    retry: number;
+export interface IdbConnection { //postgresSqlconnection
+    host: string; // host name
+    user: string; // user name
+    password: string; // password
+    database: string; // database name
+    port: number; // port || 5332
+    retry: number; // nube of connection try || 2
 }

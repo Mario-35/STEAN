@@ -5,12 +5,13 @@
  * @author mario.adam@inrae.fr
  *
  */
-import koa from "koa";
+
+import { koaContext } from "../../types";
 import { formatLog } from "../../logger";
 import { Common } from "./common";
 
 export class Logs extends Common {
-  constructor(ctx: koa.Context) {
+  constructor(ctx: koaContext) {
     console.log(formatLog.whereIam());
     super(ctx);
   }
