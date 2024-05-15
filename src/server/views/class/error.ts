@@ -24,6 +24,7 @@ export class HtmlError extends CoreHtmlView {
                 <body>
                     <div class="login-wrap">
                         <div class="login-html">
+                            ${this.title("Error")}
                             <h1>Error.</h1>
                             <div class="hr">
                             </div>

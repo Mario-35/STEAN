@@ -13,3 +13,4 @@ export const checkPassword = (str: string): boolean => /^(?=.*\d)(?=.*[a-z])(?=.
 export const sqlStopDbName = (dbName: string): string => `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND datname = ${dbName};`;
 export { decodeUrl } from "./decodeUrl";
 export { getConfigFromPort } from "./getConfigFromPort";
+export { firstInstall } from "./firstInstall";

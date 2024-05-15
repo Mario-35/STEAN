@@ -6,5 +6,5 @@
  *
  */
 
-export { commonHtml } from "./commonHtml";
-export { createIqueryFromContext } from "./createIqueryFromContext";
+export { createQueryHtmlString } from "./createQueryHtmlString";
+export { createQueryParams } from "./createQueryParams";

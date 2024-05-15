@@ -1,12 +1,10 @@
 /**
- * createIqueryFromContext Index HTML / JS maker.
+ * createQueryParams.
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-
-/* eslint-disable quotes */
 
 import { getAuthenticatedUser } from "../../authentication";
 import { serverConfig } from "../../configuration";
@@ -14,10 +12,9 @@ import { models } from "../../models";
 import { decodeUrl } from "../../routes/helper/decodeUrl";
 import { Ientities, IqueryOptions, koaContext } from "../../types";
 
-
-export const createIqueryFromContext = async (ctx: koaContext): Promise<IqueryOptions| undefined> => {
+export async function createQueryParams(ctx: koaContext): Promise<IqueryOptions| undefined> {
     const model = models.filteredModelFromConfig(ctx.config);
-    let user = await getAuthenticatedUser(ctx); 
+    let user = await getAuthenticatedUser(ctx);
     user = user
             ? user
             : {
@@ -53,6 +50,5 @@ export const createIqueryFromContext = async (ctx: koaContext): Promise<IqueryOp
         admin: ctx.config.name === 'admin',
         services: serverConfig.getAllInfos(ctx),
         _DATAS:  Object.fromEntries(Object.entries(model).filter( ([k]) => listEntities.includes(k))) as Ientities,
-
     };
 };

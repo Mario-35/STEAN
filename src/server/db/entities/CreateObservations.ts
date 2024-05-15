@@ -14,7 +14,7 @@ import { addDoubleQuotes, asyncForEach } from "../../helpers";
 import { errors, msg } from "../../messages/";
 import { EnumDatesType, EnumExtensions } from "../../enums";
 import util from "util";
-import { _NOTOK, _OK } from "../../constants";
+import { setDebug, _NOTOK, _OK } from "../../constants";
 import { models } from "../../models";
 import { log } from "../../log";
 
@@ -69,9 +69,11 @@ export class CreateObservations extends Common {
   }
   // Override post to posted file as createObservations
   async postForm(dataInput: JSON): Promise<IreturnResult | undefined> {
+    setDebug(true);
     console.log(formatLog.whereIam());
     // verify is there FORM data    
-    const datasJson = JSON.parse(this.ctx.datas["datas"]);
+    // const datasJson = JSON.parse(this.ctx.datas["datas"]);
+    const datasJson = JSON.parse(this.ctx.datas["datas"] || this.ctx.datas["json"]);
     if (!datasJson["columns"]) this.ctx.throw(404, { code: 404, detail: errors.noColumn });
     const myColumns: IcsvColumn[] = [];
     const streamInfos: IstreamInfos[] = [];
@@ -105,16 +107,10 @@ export class CreateObservations extends Common {
     if (sqlInsert) {
       const sqls = sqlInsert.query.map((e: string, index: number) => `${index === 0 ? 'WITH ' :', '}updated${index+1} as (${e})\n`);
       // Remove logs and triggers for speed insert
-      await executeSql(this.ctx.config, [
-        `ALTER TABLE ${addDoubleQuotes(this.ctx.model.HistoricalObservations.table)} SET UNLOGGED`, 
-        `ALTER TABLE ${addDoubleQuotes(this.ctx.model.Observations.table)} SET UNLOGGED`, 
-        `ALTER TABLE ${addDoubleQuotes(this.ctx.model.Observations.table)} DISABLE TRIGGER ALL`]);
+      await executeSql(this.ctx.config, `SET session_replication_role = replica;`);
       const resultSql = await executeSql(this.ctx.config, `${sqls.join("")}SELECT (SELECT count(*) FROM ${paramsFile.tempTable}) AS total, (SELECT count(*) FROM updated1) AS inserted`);
       // Restore logs and triggers
-      await executeSql(this.ctx.config, [
-        `ALTER TABLE ${addDoubleQuotes(this.ctx.model.Observations.table)} SET LOGGED`,
-        `ALTER TABLE ${addDoubleQuotes(this.ctx.model.HistoricalObservations.table)} SET LOGGED`,
-        `ALTER TABLE ${addDoubleQuotes(this.ctx.model.Observations.table)} ENABLE TRIGGER ALL`]);
+      await executeSql(this.ctx.config, `SET session_replication_role = DEFAULT;`);
       return this.formatReturnResult({
         total: sqlInsert.count,
         body: [`Add ${ resultSql[0]["inserted"] } on ${resultSql[0]["total"]} lines from ${ paramsFile.filename.split("/").reverse()[0] }`],

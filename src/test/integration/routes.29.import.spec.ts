@@ -28,8 +28,8 @@ const simple = {
     "nan": true,
     "columns": {
         "1": {
-            "Datastream": "1",
-            "FeaturesOfInterest": "1"
+            "Datastream": 1,
+            "FeaturesOfInterest": 1
         }
     }
 };

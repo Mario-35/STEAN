@@ -7,7 +7,6 @@
     try {
       // return true if some works are done (for init to not delete value)
       let decode = false;
-
       // delete all before
       let myRoot = input;
       let myOptions = input;
@@ -44,10 +43,6 @@
       myOptions.split('&').filter(e => e.trim() !== "").forEach((element) => {
         const temp = element.split('=');
         switch (temp[0]) {
-          // case 'orderby':
-  	      //   const elementOrderby= getElement("orderbyOption");
-          //   if(elementOrderby) multiSelects[elementOrderby.id].setValue(temp[1].replace("%20","").split(","));
-          //   break;
           default:
             const element = getElement(`${temp[0]}Option`);
             if(element) {

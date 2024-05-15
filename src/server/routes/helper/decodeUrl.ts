@@ -12,7 +12,6 @@ import { serverConfig } from "../../configuration";
 import { ADMIN, setDebug } from "../../constants";
 import { EnumVersion } from "../../enums";
 import { cleanUrl } from "../../helpers";
-import { formatLog } from "../../logger";
 import { errors } from "../../messages";
 import { IdecodedUrl, koaContext  } from "../../types";
 
@@ -26,7 +25,8 @@ import { IdecodedUrl, koaContext  } from "../../types";
 // protocol     host    version        pathname          search
 
 export const decodeUrl = (ctx: koaContext, input?: string): IdecodedUrl | undefined => {
-  console.log(formatLog.whereIam());
+  
+
   // get input
   input = input || ctx.href; 
   input = input;
@@ -66,7 +66,7 @@ export const decodeUrl = (ctx: koaContext, input?: string): IdecodedUrl | undefi
       path: idStr ? path.replace(String(id), '0') : path,
       id: (isNaN(+id)) ? BigInt(0) : BigInt(id),
       idStr: idStr,
-      config: configName,
+      configName: configName,
       linkbase: LinkBase.linkBase,
       root: LinkBase.root,
     }  

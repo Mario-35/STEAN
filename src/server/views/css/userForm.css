@@ -50,11 +50,10 @@ a {
 
 .login-html .title {
     position: relative;
-    color: #11cc21;
-    top: -30px;
-    left: 30%;
-    transform: translateX(-50%);
+    color: #a1a6ab;
+    top: -50px;
     font-size: 38px;
+    text-align: center;
 }
 
 .login-html {

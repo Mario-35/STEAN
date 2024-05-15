@@ -34,6 +34,7 @@ export class Login extends CoreHtmlView {
             <body>
                 <div class="login-wrap">
                   <div class="login-html">
+                    ${this.title("Identification")}
                     <input  id="tab-1" 
                             type="radio" 
                             name="tab" 

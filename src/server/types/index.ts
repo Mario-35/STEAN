@@ -11,7 +11,6 @@ import { allEntitiesType } from "../enums";
 import { Ientity } from "./entity";
 export { Icomon } from "./comon";
 export { IconfigFile } from "./configFile";
-export { IContext } from "./context";
 export { IcsvColumn } from "./csvColumn";
 export { IcsvFile } from "./csvFile";
 export { IcsvImport } from "./csvImport";

@@ -26,16 +26,20 @@ import { userAccess } from "../db/dataAccess";
 // class to logCreate configs environements
 class Configuration {
   static configs: { [key: string]: IconfigFile } = {};
-  static filePath: fs.PathOrFileDescriptor;  
+  static filePath: string; 
   static jsonConfiguration: JSON;
   static ports: number[] = [];
   static queries: { [key: string]: string[] } = {};
 
   constructor(file: fs.PathOrFileDescriptor) {
+    process.stdout.write(`${color(EnumColor.FgRed)} ${"=".repeat(24)} ${color( EnumColor.FgCyan )} ${`START ${APP_NAME} version : ${APP_VERSION} [${NODE_ENV}]`} ${color( EnumColor.FgWhite )} ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()} ${color( EnumColor.FgRed )} ${"=".repeat(24)}${color(EnumColor.Reset)}\n`);
+    Configuration.filePath = file.toString();
+    if (isTest()) this.readConfigFile();
+  }
+    
+  public readConfigFile(input?: string) {
     try {
-      process.stdout.write(`${color(EnumColor.FgRed)} ${"=".repeat(24)} ${color( EnumColor.FgCyan )} ${`START ${APP_NAME} version : ${APP_VERSION} [${NODE_ENV}]`} ${color( EnumColor.FgWhite )} ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()} ${color( EnumColor.FgRed )} ${"=".repeat(24)}${color(EnumColor.Reset)}\n`);
-      Configuration.filePath = file;
-      const fileContent = fs.readFileSync(file, "utf8");
+      const fileContent = input || fs.readFileSync(Configuration.filePath, "utf8");      
       Configuration.jsonConfiguration = JSON.parse(decrypt(fileContent));
       if (this.validJSONConfig(Configuration.jsonConfiguration)) {
         Object.keys(Configuration.jsonConfiguration).forEach((element: string) => {
@@ -55,6 +59,15 @@ class Configuration {
     }
   }
 
+  // verify if configuration file Exist
+  public configFileExist(): boolean {
+    if (fs.existsSync(Configuration.filePath)) {
+      return true
+    } else {
+      return false;
+    }
+  }
+
   private async createConfigTest() {
     // In tests there a test to create service
     if (isTest()) return;
@@ -63,7 +76,6 @@ class Configuration {
     result.pg.database = TEST;
     result.nb_page = 1000;
     result.extensions = ["base", "multiDatastream", "lora", "logs"];
-    // result.extensions = Object.keys(EnumExtensions);
     result.canDrop = true;
     result.logFile = "";
     result.connection = undefined;
@@ -125,12 +137,12 @@ class Configuration {
   }
 
   // Write an encrypt config file in json file
-  private writeConfig(): boolean {    
+  writeConfig(): boolean {
     const result = {};
     Object.entries(Configuration.configs).forEach(([k, v]) => {        
       result[k] = Object.keys(v).filter(key => key !== 'db' && key[0] != "_").reduce((obj, key) => { obj[key] = v[key]; return obj; }, {} );
     });
-    
+
     fs.writeFile(
       Configuration.filePath,
       isProduction() === true 
@@ -141,7 +153,8 @@ class Configuration {
           log.error(formatLog.error(err));
           return false;
         }
-    });
+      }
+    );
     return true;
   }
 
@@ -267,29 +280,42 @@ class Configuration {
 
   // initialisation serve NOT IN TEST
   async init(): Promise<boolean> {
-    console.log(log.message("configuration", "loaded " + _OK));    
-    let status = true;
-    const errFile = fs.createWriteStream(_ERRORFILE, { flags: "w" });
-    log.booting("active error to file", _ERRORFILE) ;
-    errFile.write(`## Start : ${TIMESTAMP()} \n`);
-    await asyncForEach(
-      // Start connection ALL entries in config file
-      Object.keys(Configuration.configs).filter(e => e.toUpperCase() !== TEST),
-      async (key: string) => {
-        try {
-          await this.addToServer(key);
-        } catch (error) {
-          log.error(error);
-          status = false;
+    if (this.configFileExist()  === true) {
+      this.readConfigFile();
+      console.log(log.message("configuration", "loaded " + _OK));    
+      let status = true;
+      const errFile = fs.createWriteStream(_ERRORFILE, { flags: "w" });
+      log.booting("active error to file", _ERRORFILE) ;
+      errFile.write(`## Start : ${TIMESTAMP()} \n`);
+      await asyncForEach(
+        // Start connection ALL entries in config file
+        Object.keys(Configuration.configs).filter(e => e.toUpperCase() !== TEST),
+        async (key: string) => {
+          try {
+            await this.addToServer(key);
+          } catch (error) {
+            log.error(error);
+            status = false;
+          }
         }
-      }
-    ); 
-    setReady(status);
-    if (status === true) {
-      this.afterAll();
-    }           
-    console.log(log.message(`${APP_NAME} version : ${APP_VERSION}`, `ready ${(status === true ) ? _OK : _NOTOK}`));
-    return status;
+      ); 
+      setReady(status);
+      if (status === true) {
+        this.afterAll();
+      }           
+      console.log(log.message(`${APP_NAME} version : ${APP_VERSION}`, `ready ${(status === true ) ? _OK : _NOTOK}`));
+      return status;
+    } else {
+        console.log(log.message("file", Configuration.filePath + _NOTOK));
+        const port = 8029;
+        if (!Configuration.ports.includes(port))
+          app.listen(port, () => {
+            Configuration.ports.push(port);
+            log.booting(`\x1b[33m[First launch]\x1b[32m ${infos.ListenPort}`, port );
+          });
+        return true;
+        // return "http://localhost:8029/lr";
+    }
   }
 
   // return config name from config name
@@ -509,4 +535,5 @@ class Configuration {
       });
   }
 }
+
 export const serverConfig = new Configuration(__dirname + `/${NODE_ENV}.json`);

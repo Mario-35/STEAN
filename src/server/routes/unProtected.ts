@@ -14,7 +14,6 @@ import { apiAccess } from "../db/dataAccess";
 import { formatLog } from "../logger";
 import { IreturnResult } from "../types";
 import { createQueryHtml } from "../views/";
-import { createIqueryFromContext } from "../views/helpers/";
 import { DefaultState, Context } from "koa";
 import { createOdata } from "../odata";
 import { infos } from "../messages";
@@ -24,7 +23,8 @@ import { executeAdmin, executeSql, exportService } from "../db/helpers";
 import { models } from "../models";
 import { sqlStopDbName } from "./helper";
 import { createService } from "../db/helpers";
-import { HtmlError, Login, Status } from "../views/";
+import { HtmlError, Login, Status, Config } from "../views/";
+import { createQueryParams } from "../views/helpers";
 
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 // ALl others
@@ -153,7 +153,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
     // Return Query HTML Page Tool 
     case "QUERY":
       if (ctx.decodedUrl.service === ADMIN&& isAdmin(ctx) === false) ctx.redirect(`${ctx.decodedUrl.root}/login`);
-      const tempContext = await createIqueryFromContext(ctx);    
+      const tempContext = await createQueryParams(ctx);    
       if (tempContext) {
         ctx.set("script-src", "self");
         ctx.set("Content-Security-Policy", "self");
@@ -161,7 +161,13 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         ctx.body = createQueryHtml(tempContext);
       }
       return;
-  } // END Switch
+    case "OPTIONS":
+      const bodyEditConfig = new Config(ctx, { login: false, config: ctx.config, url: ctx.request.url });
+      ctx.type = returnFormats.html.type;
+      ctx.body = bodyEditConfig.toString();
+      return;
+
+    } // END Switch
 
   // API GET REQUEST  
   if (ctx.decodedUrl.path.includes(`/${ctx.config.apiVersion}`) || ctx.decodedUrl.version) {

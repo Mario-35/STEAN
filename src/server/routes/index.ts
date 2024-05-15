@@ -12,7 +12,7 @@ import { log } from "../log";
 import { formatLog, writeToLog } from "../logger";
 import { EnumExtensions } from "../enums";
 import { createBearerToken, getUserId } from "../helpers";
-import { decodeUrl } from "./helper";
+import { decodeUrl, firstInstall } from "./helper";
 import { errors } from "../messages";
 import { serverConfig } from "../configuration";
 import { models } from "../models";
@@ -23,8 +23,12 @@ import { koaContext } from "../types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const routerHandle = async (ctx: koaContext, next: any) => { 
+  // First Install ?
+  firstInstall(ctx);
+  
   // create token
   createBearerToken(ctx);
+  // decode url
   const decodedUrl = decodeUrl(ctx);
  
   if (!decodedUrl) {
@@ -38,8 +42,8 @@ export const routerHandle = async (ctx: koaContext, next: any) => {
   if (_DEBUG) console.log(formatLog.object("decodedUrl", decodedUrl));
 
   if (!decodedUrl.service) throw new Error(errors.noNameIdentified);
-  if (decodedUrl.service && decodedUrl.config) 
-    ctx.config = serverConfig.getConfig(decodedUrl.config);
+  if (decodedUrl.service && decodedUrl.configName) 
+    ctx.config = serverConfig.getConfig(decodedUrl.configName);
     else return;
 
   // forcing post loras with different version IT'S POSSIBLE BECAUSE COLUMN ARE THE SAME FOR ALL VERSION

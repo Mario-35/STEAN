@@ -22,6 +22,10 @@ export class CoreHtmlView {
       return name.toLowerCase() === "user" ? addCssFile("userForm.css") : addCssFile("query.css");
     }
     
+    title(message: string): string {
+      return `<div class="title">${message}</div>`;
+    }    
+    
     hr(): string {
       return '<div class="hr"></div>';
     }

@@ -7,6 +7,7 @@
  */
 
 import { serverConfig } from "../../configuration";
+import { _NOTOK, _OK } from "../../constants";
 import { Iuser, koaContext } from "../../types";
 import { CoreHtmlView } from "./core";
   
@@ -28,11 +29,10 @@ export class Status extends CoreHtmlView {
             <body>
                 <div class="login-wrap">
                     <div class="login-html">
-                        <h2>You are authenticated.</h2>
-                        ${this.hr()}
+                        ${this.title("Status")}
                         <h3>Username : ${ user.username }</h3> 
                         <h3>Hosting : ${user.database == "all" ? "all" : config ? serverConfig.getConfig(config).pg.host : "Not Found"}</h3>
-                        <h3>Database : ${user.database}</h3> <h3>Status : ${ user.admin }</h3> 
+                        <h3>Database : ${user.database}</h3> <h3>Status : ${ user.id &&  user.id > 0 ? _OK : _NOTOK}</h3> 
                         ${this.foot([
                             { href: `${url}/Logout`, class: "button-logout", name: "Logout" },
                             { href: `${url}/Query`, class: "button-query", name: "Query" }

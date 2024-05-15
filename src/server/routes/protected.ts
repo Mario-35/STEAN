@@ -13,7 +13,6 @@ import fs from "fs";
 import { formatLog } from "../logger";
 import { IKeyString, IreturnResult, Iuser, koaContext } from "../types";
 import { DefaultState, Context } from "koa";
-import { createIqueryFromContext } from "../views/helpers/";
 import { createQueryHtml } from "../views/";
 import { createOdata } from "../odata";
 import { errors, infos, msg } from "../messages";
@@ -24,11 +23,11 @@ import { executeSqlValues } from "../db/helpers";
 import { serverConfig } from "../configuration";
 import { checkPassword, emailIsValid } from "./helper";
 import { Login } from "../views";
+import { createQueryParams } from "../views/helpers";
 
 export const protectedRoutes = new Router<DefaultState, Context>();
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-protectedRoutes.post("/(.*)", async (ctx: koaContext, next) => {
+protectedRoutes.post("/(.*)", async (ctx: koaContext, next) => {  
   switch (ctx.decodedUrl.path.toUpperCase()) {
     // login html page or connection login
     case "LOGIN":      
@@ -99,21 +98,13 @@ protectedRoutes.post("/(.*)", async (ctx: koaContext, next) => {
         ctx.body = createHtml.toString();
       }
       return;
-
-    case "USER":
-      console.log("eee");
-      
-      const user = await userAccess.update(ctx.config.name, ctx.body);
-      if (user) {
-        ctx.login(user);
-        ctx.redirect(`${ctx.decodedUrl.root}/admin`);
-      } else {
-        ctx.status = 400;
-        ctx.redirect(`${ctx.decodedUrl.root}/error`);
-      }
-      return;
   }
 
+  if(!ctx.decodedUrl.version && ctx.decodedUrl.path === "/" &&ctx.decodedUrl.service.toUpperCase() ==="CREATE") {
+    // intercept create
+    return;
+  }
+  
   // Add new lora observation this is a special route without ahtorisatiaon to post (deveui and correct payload limit risks)
   if ((ctx.user && ctx.user.id > 0) || ctx.request.url.includes("/Lora")) {
     if (ctx.request.type.startsWith("application/json") && Object.keys(ctx.body).length > 0) {
@@ -128,7 +119,7 @@ protectedRoutes.post("/(.*)", async (ctx: koaContext, next) => {
           ctx.body = returnValue.body;
         }
       } else ctx.throw(400);
-    } else if (ctx.request.type.startsWith("multipart/form-data")) {
+    } else if (ctx.request.type.startsWith("multipart/")) {      
       // If upload datas
       const getDatas = async (): Promise<object> => {
         console.log(formatLog.head("getDatas ..."));
@@ -138,7 +129,7 @@ protectedRoutes.post("/(.*)", async (ctx: koaContext, next) => {
               resolve(data);
             })
             .catch((data) => {
-              reject(data);
+              reject(data["state"] = "ERROR");
             });
         });
       };
@@ -153,7 +144,7 @@ protectedRoutes.post("/(.*)", async (ctx: koaContext, next) => {
         if (ctx.datas) fs.unlinkSync(ctx.datas["file"]);
         if (returnValue) {
           if (ctx.datas["source"] == "query") {
-            const temp = await createIqueryFromContext(ctx);
+            const temp = await createQueryParams(ctx);
             if (temp) {
               ctx.type = "html";
               ctx.body = createQueryHtml({

@@ -329,13 +329,11 @@ class Models {
       }
   }
 
-  public init() {
+  public init() {    
     if (isTest()) {      
       this.createVersion(serverConfig.getConfig(TEST).apiVersion);
     }
   }
-
-
 }
 
 export const models = new Models();

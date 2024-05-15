@@ -1,12 +1,10 @@
 /**
- * Query Index HTML / JS maker.
+ * createQueryHtmlString
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-
-/* eslint-disable quotes */
 
 import { formatLog } from "../../logger";
 import { cleanUrl, removeAllQuotes, bigIntReplacer } from "../../helpers";
@@ -15,11 +13,11 @@ import { addJsFile, listaddJsFiles } from "../js";
 import { APP_VERSION } from "../../constants";
 import { IqueryOptions } from "../../types";
 
-const fileWithOutMin = (input: string): string => input.replace(".min",'');
-
-export const commonHtml = (input: string, params: IqueryOptions): string => {
+export function createQueryHtmlString(input: string, params: IqueryOptions): string {
     console.log(formatLog.head("commonHtml"));
-    console.log(formatLog.debug("params", params)); 
+    // if js or css .min
+    const fileWithOutMin = (input: string): string => input.replace(".min",'');
+    // Split files for better search and replace
     const result: string[] = input
                             .replace(/<link /g,'\n<link ')
                             .replace(/<script /g,'\n<script ')
@@ -29,7 +27,8 @@ export const commonHtml = (input: string, params: IqueryOptions): string => {
                             .map((e:string) => e.trim())  
                             .filter(e => e.trim() != "");
     
-    const replaceInResult = (searhText: string, content: string) => {
+    // replace in result
+    const replaceInReturnResult = (searhText: string, content: string) => {
         let index = result.indexOf(searhText);
         if (index > 0) result[index] = content;
         else {
@@ -38,17 +37,14 @@ export const commonHtml = (input: string, params: IqueryOptions): string => {
         }
     };
 
-    const action = `${params.decodedUrl.root}/${params.decodedUrl.version}/CreateObservations`;    
-
-    const start = params.results ? "jsonObj = JSON.parse(`" + params.results + "`); jsonViewer.showJSON(jsonObj);" : "";
-
+    // users possibilities
     if (params.user.canPost) {
         params.methods.push("POST");
         params.methods.push("PATCH");
+        if (params.user.canDelete) params.methods.push("DELETE");
     } 
 
-    if (params.user.canDelete) params.methods.push("DELETE");
-
+    // Format params
     if (params.options) {
         let tempOptions = params.options;
         if (params.options.includes("options=")) {
@@ -68,16 +64,22 @@ export const commonHtml = (input: string, params: IqueryOptions): string => {
         });
     }
 
+    // process all css files
     listaddCssFiles().forEach((item: string) => {
-        replaceInResult(`<link rel="stylesheet" href="${fileWithOutMin(item)}">`, `<style>${addCssFile(item)}</style>`);
+        replaceInReturnResult(`<link rel="stylesheet" href="${fileWithOutMin(item)}">`, `<style>${addCssFile(item)}</style>`);
     });
     
+    // process all js files
     listaddJsFiles().forEach((item: string) => {  
-        replaceInResult(`<script src="${fileWithOutMin(item)}"></script>`, `<script>${addJsFile(item)}</script>`);
+        replaceInReturnResult(`<script src="${fileWithOutMin(item)}"></script>`, `<script>${addJsFile(item)}</script>`);
     });
     
+    // return html as a string
     return result.join("").replace("_PARAMS={}", "_PARAMS=" + JSON.stringify(params, bigIntReplacer))
-        .replace("// @start@", start)
+        // execute a start of query
+        .replace("// @start@", params.results ? "jsonObj = JSON.parse(`" + params.results + "`); jsonViewer.showJSON(jsonObj);" : "")
+        // App version on query
         .replace("@version@", APP_VERSION)
-        .replace("@action@", action);
+        // default action form
+        .replace("@action@", `${params.decodedUrl.root}/${params.decodedUrl.version}/CreateObservations`);
 };

@@ -15,5 +15,5 @@ export interface IdecodedUrl {
     idStr:      string | undefined;
     service:    string;
     version:    string;
-    config:     string | undefined;
+    configName: string | undefined;
 }
