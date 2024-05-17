@@ -6,7 +6,13 @@ class instanceST():
     def __init__(self, urlServer):
         self.token = None
         self.urlServer = urlServer     
-        self.session = None     
+        self.session = None 
+
+    def getSession(self):
+        if self.session is None: 
+           print("Get Session")
+           self.session = requests.session()
+
         
     def connexion(self, username, password):
         print("Connexion", username, "à ",self.urlServer)
@@ -24,11 +30,18 @@ class instanceST():
             self.token = None
             self.session = None
 
-    def getInfo(self, objet, options):
-        url = "%s%s?$%s"% (self.urlServer, objet, options)
+    def getInfos(self, objet, options=None):
+        self.getSession()
+        if options is None: 
+            url = "%s%s"% (self.urlServer, objet)
+        else:
+            url = "%s%s?$%s"% (self.urlServer, objet, options)
         print(url)
         req = self.session.get(url=url)
-        objet_json = req.json()['value']
+        return req.json()['value']
+
+    def getOneInfo(self, objet, options=None):
+        objet_json = getInfos(objet, options)
         if len(objet_json) == 1:
             return objet_json
         else:
@@ -38,10 +51,32 @@ class instanceST():
                 print("Aucun objet trouvé selon le filtre ->",options)
             return -1
 
+
+
+
     def postCsvFile(self, fileName, datas):
+        self.getSession()
         files = {
             'json': (None, json.dumps(datas), 'application/json'),
             'file': (os.path.basename(fileName), open(fileName, 'rb'), 'application/octet-stream')
         }
         headers = { 'Authorization': "Bearer {}".format(self.token) }
         return self.session.post(self.urlServer + "CreateObservations", headers=headers, files=files)
+
+    def idList(self, objet, options=None):
+        objet_json = self.getInfos(objet, "select=id")
+        ids = []
+        for item in objet_json:
+            ids.append(item['@iot.id'])
+        return ids
+
+    def getCsv(self, objet, options=None):
+        self.getSession()
+        if options is None: 
+            url = "%s%s"% (self.urlServer, objet)
+        else:
+            url = "%s%s?$%s"% (self.urlServer, objet, options)
+        print(url)
+        req = self.session.get(url=url)
+        return req
+           
