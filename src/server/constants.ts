@@ -7,7 +7,7 @@
  */
 "use strict";
 import util from "util";
-import fs from "fs";
+import { getKey } from "./helpers";
 
 export const _DEL= "🗑️";
 export const _ERRORFILE = "errorFile.md";
@@ -24,7 +24,6 @@ export const _UNLOCK= "🔐";
 export const _WAIT= "⏳";
 export const _WEB= "🌍";
 export const ADMIN = "admin";
-export const APP_KEY = fs.readFileSync(__dirname + "/configuration/.key", "utf8") || "zLwX893Mtt9Rc0TKvlInDXuZTFj9rxDV";
 export const APP_NAME = process.env.npm_package_name || "_STEAN";
 export const APP_VERSION = process.env.version || process.env.npm_package_version || "0";
 export const color = (col: number) => `\x1b[${col}m`;
@@ -55,3 +54,4 @@ export function showAll<T>(input: T, colors?: boolean) { return typeof input ===
 export let _DEBUG = false;
 export let _READY = false;
 export function addToStrings(input: string[], data: string) { if (input) input.push(data); else input = [data]; }
+export const APP_KEY = getKey() ;

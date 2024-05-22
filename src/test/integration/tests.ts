@@ -35,16 +35,14 @@ export function closeLog() {
     fs.writeFile(path.resolve(__dirname, "../../server/apidoc/assets/tests.html"), _HTML.join('\r'), function () {});
 }
 
-// const createJSON = (data: any) => JSON.stringify(data, null, 4).replace(/[\n]+/g, "|\t");
-
 const _SEP = '```';
 export const AddToTestFile = (datas: string): void => {
     _LOG.push(datas);
-    };
+};
 
 export function addStartNewTest(title: string) {
     _LOG.push(`\r\r## <a id="${title.replace(/[ ]+/g, "")}">${title}</a>           [🚧](#start)\r\r`);
-}
+};
 
 export function addTest(infos: Iinfos): Iinfos {    
     const verb = infos.api.split("}")[0].split("{")[1] || "get";
@@ -55,12 +53,11 @@ export function addTest(infos: Iinfos): Iinfos {
     if (infos.apiParamExample) _LOG.push(postDatas(infos.apiParamExample));
     writeLog(false);
     return infos;
-}
-
+};
 
 export function addPostFile(infos: Iinfos) {
     _LOG.push(`  ${nbAdd()}. ${infos.api}\r [POST ${infos.apiExample.url}](${proxy(true)}${encodeURI(infos.apiExample.url)}) ✔️\r\n`);
-}
+};
 
 export const postDatas = (input: any): string =>  `${_SEP}js\r\n${util.inspect(input, { breakLength: Infinity, showHidden: true, depth: Infinity })} \r\n${_SEP}\r\n`;
 
@@ -80,8 +77,5 @@ export const addToTests = (options: {
         str += options.datas;
         str += '```\r';
     } else str += `[${options.verb} ${options.link}](${proxy(true)}${options.link}) ${ options.ok === true ? '✔️' : '❌' }\r`
-
     AddToTestFile(str);
-   };
-
-
+};
