@@ -4,7 +4,7 @@
     "admin": {
         "name": "admin",
         "port": 8029,
-        // postgresSql Connection // with admin rights (create database rights and nser ...)
+        // postgresSql Connection // with admin rights (create database rights and user ...)
         "pg": {
             "host": "localhost",
             "port": 5432,
