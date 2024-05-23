@@ -10,7 +10,7 @@
     or unzip  : <https://github.com/Mario-35/STEAN/archive/refs/heads/main.zip>
 2. Install dependencies : npm install
 3. Fire up Postgres on the default ports
-4. Make configuration/[development or production].json file (see [config.json.example](https://github.com/Mario-35/STEAN/blob/main/src/configuration/config.json.example))
+4. Make configuration/[development or production].json file (see [config.json.example](https://github.com/Mario-35/STEAN/blob/main/src/server/configuration/config.json.example))
 5. npm run dev for dev, npm run build (vs script package.json)
 6. If database not exists the program create it.
 
