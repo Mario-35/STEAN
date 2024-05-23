@@ -48,9 +48,7 @@ protectedRoutes.post("/(.*)", async (ctx: koaContext, next) => {
         }
       });
       return;
-    // register html page or registration new user route
     case "REGISTER":
-      // const isObject = typeof ctx.request.body !== "string";
       const why: IKeyString = {};
       // Username
       if (ctx.body["username"].trim() === "") {
@@ -106,7 +104,7 @@ protectedRoutes.post("/(.*)", async (ctx: koaContext, next) => {
   }
   
   // Add new lora observation this is a special route without ahtorisatiaon to post (deveui and correct payload limit risks)
-  if ((ctx.user && ctx.user.id > 0) || ctx.request.url.includes("/Lora")) {
+  if ((ctx.user && ctx.user.id > 0) || ctx.config.users === false || ctx.request.url.includes("/Lora")) {
     if (ctx.request.type.startsWith("application/json") && Object.keys(ctx.body).length > 0) {
       const odataVisitor = await createOdata(ctx);
       if (odataVisitor) ctx.odata = odataVisitor;

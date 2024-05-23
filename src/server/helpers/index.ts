@@ -40,3 +40,4 @@ export { returnFormats } from "./returnFormats";
 export { removeEmpty } from "./removeEmpty";
 export { upload } from "./upload";
 export { getKey } from "./getKey";
+export { stringToBoolean } from "./stringToBoolean";

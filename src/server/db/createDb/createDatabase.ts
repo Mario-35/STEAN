@@ -35,7 +35,7 @@ export const createDatabase = async (configName: string): Promise<IKeyString> =>
     .then(async () => {
       returnValue[`Create Database`] = `${config.database} ${_OK}`;
       // create USER if not exist
-      await adminConnection.unsafe(`SELECT COUNT(*) FROM pg_user WHERE usename = ${addSimpleQuotes(config.password)};`)
+      await adminConnection.unsafe(`SELECT COUNT(*) FROM pg_user WHERE usename = ${addSimpleQuotes(config.user)};`)
         .then(async (res: object) => {
           if (res[0].count == 0) {            
             returnValue[`CREATE ROLE ${config.user}`] = await adminConnection.unsafe(`CREATE ROLE ${config.user} WITH PASSWORD ${addSimpleQuotes(config.password)} ${_RIGHTS}`)

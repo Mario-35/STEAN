@@ -7,7 +7,7 @@
  */
 
 import { addToStrings, ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_DB, NODE_ENV, setReady, TEST, TIMESTAMP, _DEBUG, _ERRORFILE, _NOTOK, _OK, _WEB, } from "../constants";
-import { asyncForEach, decrypt, encrypt, hidePassword, isProduction, isTest, unikeList, } from "../helpers";
+import { asyncForEach, decrypt, encrypt, hidePassword, isProduction, isTest, stringToBoolean, unikeList, } from "../helpers";
 import { IconfigFile, IdbConnection, IserviceInfos, koaContext } from "../types";
 import { errors, infos, msg } from "../messages";
 import { createDatabase, createService} from "../db/helpers";
@@ -360,7 +360,7 @@ class Configuration {
     if (typeof input === "string") {
       name = input;
       input = Configuration.jsonConfiguration[input];
-    }
+    }    
     const goodDbName = name
       ? name
       : input[`pg`] && input[`pg`]["database"] ? input[`pg`]["database"] : `ERROR` || "ERROR";        
@@ -386,13 +386,14 @@ class Configuration {
       date_format: input["date_format"] || "DD/MM/YYYY hh:mi:ss",
       webSite: input["webSite"] || "no web site",
       nb_page: input["nb_page"] ? +input["nb_page"] : 200,
-      forceHttps: input["forceHttps"] ? input["forceHttps"] : false,
-      stripNull: input["stripNull"] ? input["stripNull"] : false,
+      forceHttps: stringToBoolean(input["forceHttps"]), 
+      stripNull: stringToBoolean(input["stripNull"]),
       alias: input["alias"] ? unikeList(String(input["alias"]).split(",")) : [],
       extensions: extensions,
-      highPrecision: input["highPrecision"] ? input["highPrecision"] : false,
-      canDrop: input["canDrop"] ? input["canDrop"] : false,
-      logFile: input["log"] ? input["log"] : "",
+      highPrecision: stringToBoolean(input["highPrecision"]),
+      canDrop: stringToBoolean(input["canDrop"]),
+      users: stringToBoolean(input["users"], true),
+      logFile: input["log"] || "",
       connection: undefined,
     };    
     if (Object.values(returnValue).includes("ERROR"))
@@ -401,7 +402,7 @@ class Configuration {
           showHidden: false,
           depth: null,
         })}]`
-      );
+      );       
     return returnValue;
   }
 

@@ -25,16 +25,14 @@ const prepareDatas = (dataInput: object, entity: string): object => {
 }
 
 const getConvertedData = async (url: string): Promise<object> => {
-  return fetch(url, { method: 'GET', headers: {}, }) .then((response) => response.json());
+  return fetch(url, { method: 'GET', headers: {}, }).then((response) => response.json());
 }
-
-
 
 const addToServiceFromUrl = async (url: string | undefined, ctx: koaContext): Promise<string> => {
   while(url) {
     console.log(url);    
     try {      
-      const datas = await getConvertedData(url);
+      const datas = await getConvertedData(url) as object;
       await addToService(ctx, datas);
       return datas["@iot.nextLink"];
     } catch (error) {  
@@ -71,6 +69,7 @@ export const createService = async (dataInput: object, ctx?: koaContext): Promis
       console.log(error);        
     }      
   }
+
   await executeAdmin(sqlStopDbName(addSimpleQuotes(serviceName))).then(async () => {
     await executeAdmin(`DROP DATABASE IF EXISTS ${serviceName}`).then(async () => {
       results[`Drop ${mess}`] = _OK;
@@ -87,8 +86,6 @@ export const createService = async (dataInput: object, ctx?: koaContext): Promis
   });
 
     const tmp = models.filteredModelFromConfig(config);
-
-
     
     await asyncForEach( Object.keys(tmp) .filter((elem: string) => tmp[elem].createOrder > 0) .sort((a, b) => (tmp[a].createOrder > tmp[b].createOrder ? 1 : -1)), async (entityName: string) => {
       if (dataInput[entityName]) {
@@ -109,6 +106,7 @@ export const createService = async (dataInput: object, ctx?: koaContext): Promis
         }
       }
     });
+
     if (ctx && dataInput["create"]["imports"]) {
       await asyncForEach(dataInput["create"]["imports"], async (url: string | undefined) => {
         console.log(url);
@@ -119,5 +117,6 @@ export const createService = async (dataInput: object, ctx?: koaContext): Promis
         }
       });
     }
+    
     return results;
 }

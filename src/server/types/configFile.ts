@@ -25,6 +25,7 @@ export interface IconfigFile {
     alias: string[]; // alias name of the service
     highPrecision: boolean; // int8 instead of int4 in postgresSql
     canDrop: boolean; // can drop database (like test db or usefull when build new service)
+    users: boolean; // use users rights
     logFile: string; // name of the log fole
     connection: postgres.Sql<Record<string, unknown>> | undefined; // not in file only when running to store connection
 }

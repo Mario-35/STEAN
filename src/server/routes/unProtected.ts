@@ -152,8 +152,8 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       return;
     // Return Query HTML Page Tool 
     case "QUERY":
-      if (ctx.decodedUrl.service === ADMIN&& isAdmin(ctx) === false) ctx.redirect(`${ctx.decodedUrl.root}/login`);
-      const tempContext = await createQueryParams(ctx);    
+      if (ctx.decodedUrl.service === ADMIN && isAdmin(ctx) === false) ctx.redirect(`${ctx.decodedUrl.root}/login`);
+      const tempContext = await createQueryParams(ctx); 
       if (tempContext) {
         ctx.set("script-src", "self");
         ctx.set("Content-Security-Policy", "self");

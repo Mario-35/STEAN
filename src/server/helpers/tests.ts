@@ -18,7 +18,7 @@ export const isCsvOrArray = (input: RootPgVisitor |PgVisitor) => [returnFormats.
 export const isGraph = (input: RootPgVisitor |PgVisitor) => [returnFormats.graph, returnFormats.graphDatas].includes(input.returnFormat) ? true : undefined;
 export const isObservation = (input: Ientity | string) => typeof input === "string" ? input === "Observations": input.name === "Observations";
 export const isAdmin = (ctx: koaContext): boolean => ctx.config && ctx.config.name === ADMIN;
-export const isAllowedTo = (ctx: koaContext, what: EnumUserRights): boolean => ctx.user && ctx.user.PDCUAS[what];
+export const isAllowedTo = (ctx: koaContext, what: EnumUserRights): boolean => ctx.config.users === false ? true : ctx.user && ctx.user.PDCUAS[what];
 
 export function isString(obj: any) {
     return (typeof obj) === 'string';

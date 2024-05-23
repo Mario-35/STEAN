@@ -11,25 +11,14 @@ import { serverConfig } from "../../configuration";
 import { models } from "../../models";
 import { decodeUrl } from "../../routes/helper/decodeUrl";
 import { Ientities, IqueryOptions, koaContext } from "../../types";
+import { blankUser } from "./blankUser";
 
 export async function createQueryParams(ctx: koaContext): Promise<IqueryOptions| undefined> {
     const model = models.filteredModelFromConfig(ctx.config);
     let user = await getAuthenticatedUser(ctx);
     user = user
             ? user
-            : {
-                id: 0,
-                username: "query",
-                password: "",
-                email: "",
-                database: "",
-                canPost: false,
-                canDelete: false,
-                canCreateUser: false,
-                canCreateDb: false,
-                admin: false,
-                superAdmin: false
-            }
+            : blankUser(ctx)
     const listEntities = user.superAdmin === true
         ? Object.keys(model)
         : user.admin === true
