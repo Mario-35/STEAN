@@ -13,31 +13,7 @@
             // never used
             "database": "postgres",
             "retry": 2
-        },
-        // never used in admin
-        "apiVersion": "1.1",
-        // never used in admin
-        "date_format": "DD/MM/YYYY hh:mi:ss",
-        // never used in admin
-        "webSite": "no web site",
-        // never used in admin
-        "nb_page": 200,
-        // never used in admin
-        "forceHttps": false,
-        // never used in admin
-        "alias": [
-            ""
-        ],
-        // never used in admin
-        "extensions": [
-            "base"
-        ],
-        // never used in admin
-        "highPrecision": false,
-        // never used in admin
-        "canDrop": false,
-        // never used in admin
-        "logFile": ""
+        }
     },
     "myService": {
         // name of the service SAME as key name
