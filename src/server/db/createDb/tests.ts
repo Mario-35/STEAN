@@ -43,6 +43,7 @@ const createObservations = () => {
 						"value": 200 + (i * 10)
 					},
 					"datastream_id": {
+						// @ts-ignore
 						"@iot.name": `${n[type]} Datastream`
 					}
 				});
@@ -53,7 +54,9 @@ const createObservations = () => {
 			const result:object[] = [];
 			for (let i = 0; i < 12; i++) {
 				const values = {};
+				// @ts-ignore
 				values[`${n["unit1"]} ${n[type]}`] = 20 + i;
+				// @ts-ignore
 				values[`${n["unit2"]} ${n[type]}`] = i + (i / 100);		
 				result.push(
 					{
@@ -62,6 +65,7 @@ const createObservations = () => {
 							"value": Object.values(values),
 							"valueskeys": values
 						},
+						// @ts-ignore
 						"multidatastream_id": { "@iot.name": `${n[type]} MultiDatastream` }
 					});
 			  }

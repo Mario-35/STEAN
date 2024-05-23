@@ -106,14 +106,13 @@ const _returnFormats: { [key in EnumResultFormats]: IreturnFormat } = {
         Object.entries(input).forEach((element: object, index: number) => {
           graphNames.push( `<button type="button" id="btngraph${index}" onclick="graph${index}.remove(); btngraph${index}.remove();">X</button>
            <div id="graph${index}" style="width:95%; height:${height}%;"></div>` );
-          
+          // @ts-ignore
           const infos = element[1]["description"]
-            ? `${[
-                element[1]["description"],
-                element[1]["name"],
-                element[1]["symbol"],
-              ].join('","')}`
+          // @ts-ignore
+            ? `${[ element[1]["description"], element[1]["name"], element[1]["symbol"], ].join('","')}`
+            // @ts-ignore
             : `${element[1]["infos"].split("|").join(DOUBLEQUOTEDCOMA)}`;
+            // @ts-ignore
           const formatedData = `const value${index} = [${element[1]["datas"]}]; 
           const infos${index} = ["${infos}"];`;
           formatedDatas.push(` ${formatedData} showGraph("graph${index}", infos${index}, value${index})`);
@@ -152,10 +151,14 @@ const _returnFormats: { [key in EnumResultFormats]: IreturnFormat } = {
         escapedQuote: "",
         header: false,
       };
-      if (input && input[0].dataArray)
+      // @ts-ignore
+      if (input && typeof input === "object" && input[0].dataArray)
         try {
+          // @ts-ignore
           const parser = new Parser(opts);
+          // @ts-ignore
           input[0].dataArray.unshift(input[0].component);
+          // @ts-ignore
           return parser.parse(input[0].dataArray);
         } catch (e) {
           if (e instanceof Error) {

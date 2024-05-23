@@ -35,15 +35,18 @@ const addConfigToExcel = async ( workbook: Excel.Workbook, config: object ) => {
   };
 
   Object.keys(config).forEach((item: string) => {
+    // @ts-ignore
     worksheet.addRow({key: item, value: typeof config[item] === "object" ? Array(config[item]).toString() : config[item]});
   });
   
 };
 
 const addToExcel = async ( workbook: Excel.Workbook, name: string, input: object ) => {
+  // @ts-ignore
   if (input && input[0]) {
     const worksheet = workbook.addWorksheet(name);
-    const cols: Partial<Excel.Column>[] = [];    
+    const cols: Partial<Excel.Column>[] = [];
+    // @ts-ignore
     Object.keys(input[0]).forEach((temp: string) => { cols.push({ key: temp, header: temp }); });
       
     worksheet.columns = cols;
@@ -72,15 +75,18 @@ const createColumnsList = async (ctx: koaContext, entity: string) => {
                 const tempSqlResult = await serverConfig.connection(ctx.config.name).unsafe(createQuery(`jsonb_object_keys("${column}"[0])`)).catch(async (e) => {
                   if (e.code === "42804") {
                     const tempSqlResult = await serverConfig.connection(ctx.config.name).unsafe(createQuery(`jsonb_object_keys(jsonb_array_elements("${column}"))`));
-                    if (tempSqlResult && tempSqlResult.length > 0) 
+                    if (tempSqlResult && tempSqlResult.length > 0)
+                    // @ts-ignore 
                       tempSqlResult.forEach((e: Iterable<postgres.Row> ) => { columnList.push( `jsonb_array_elements("${column}")->>'${e[column]}' AS "${column}-${e[column]}"`); });
                   } else log.errorMsg(e);
                 });    
                 if (tempSqlResult && tempSqlResult.length > 0) 
+                // @ts-ignore
                   tempSqlResult.forEach((e: Iterable<postgres.Row> ) => { columnList.push( `"${column}"[0]->>'${e[column]}' AS "${column}-${e[column]}"`); });
               } else log.errorMsg(e);
             });            
-            if (tempSqlResult && tempSqlResult.length > 0) 
+            if (tempSqlResult && tempSqlResult.length > 0)
+            // @ts-ignore
               tempSqlResult.forEach((e: Iterable<postgres.Row> ) => { columnList.push( `"${column}"->>'${e[column]}' AS "${column}-${e[column]}"`); });
             
         } else columnList.push(`"${column}"`);

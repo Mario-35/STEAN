@@ -23,7 +23,7 @@ export const _TOOLS = "🛠️";
 export const _UNLOCK= "🔐";
 export const _WAIT= "⏳";
 export const _WEB= "🌍";
-export const ADMIN = "admin";
+export const ADMIN:string = "admin";
 export const APP_NAME = process.env.npm_package_name || "_STEAN";
 export const APP_VERSION = process.env.version || process.env.npm_package_version || "0";
 export const color = (col: number) => `\x1b[${col}m`;

@@ -20,7 +20,8 @@ const singular = (input: string) : string => {
 };
 
 export const createEntity = (name: string, datas?: Ientity1) : Ientity => {
-    const entity = allEntities[name];
+  // @ts-ignore  
+  const entity = allEntities[name];
     if (entity) {
       const t = singular(entity);
       return datas ? {

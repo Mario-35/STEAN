@@ -48,11 +48,12 @@ export class Configs extends Common {
   
   async post(dataInput: object | undefined): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
-    
+    // @ts-ignore
     if (dataInput && dataInput["create"] && dataInput["create"]["name"]) {
       return this.formatReturnResult({
         body: await createService(dataInput, this.ctx),
       });
+      // @ts-ignore
     } else if (dataInput && dataInput["add"] && dataInput["add"]["name"]) {
       return this.formatReturnResult({
         body: await addToService(this.ctx, dataInput),

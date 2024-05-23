@@ -19,6 +19,7 @@ export const writeToLog = async ( ctx: koaContext, ...error: any[] ): Promise<vo
   console.log(formatLog.whereIam("LOG"));
   if (error.length > 0) formatLog.writeErrorInFile(ctx, error);  
   if (ctx.log && ctx.log.method != "GET") {
+    // @ts-ignore
     ctx.log.code = error && error["code"] ? +error["code"] : +ctx.response.status;
     ctx.log.error = error;
     ctx.log.datas = hidePassword(ctx.log.datas); 
@@ -32,6 +33,7 @@ export const writeToLog = async ( ctx: koaContext, ...error: any[] ): Promise<vo
     
     // if (ctx.odata && ctx.odata.idLog && BigInt(ctx.odata.idLog) > 0 && code !== 2 ) return;
     await executeSqlValues(ctx.config, `INSERT INTO ${addDoubleQuotes(models.DBFull(ctx.config).Logs.table)} ${createInsertValues(ctx.config, ctx.log, models.DBFull(ctx.config).Logs.name)} returning id`).then((res: object) =>{
+      // @ts-ignore
       if (!isTest()) console.log(formatLog.url(`${ctx.decodedUrl.root}/Logs(${res[0]})`));      
     }).catch((error) => {
       log.errorMsg(error);

@@ -33,8 +33,9 @@ export const createBearerToken = (ctx: koaContext) => {
       token = query[queryKey];
       count += 1;
     }
-  
+  // @ts-ignore
     if (body && body[bodyKey]) {
+      // @ts-ignore
       token = body[bodyKey];
       count += 1;
     }
@@ -69,6 +70,6 @@ export const createBearerToken = (ctx: koaContext) => {
         message: errors.tokenInvalid,
       });
     }
-  
+  // @ts-ignore
     ctx.request["token"] = token;
 };

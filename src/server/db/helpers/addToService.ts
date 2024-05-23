@@ -24,19 +24,17 @@ export const addToService = async (ctx: koaContext, dataInput: object): Promise<
   if (temp) {
     ctx.odata = temp;
     const objectAccess = new apiAccess(ctx);
+    // @ts-ignore
     await asyncForEach(dataInput["value"],  async (line: object) => {
+      // @ts-ignore
       if (line["payload"] != "000000000000000000")  
       try {
+        // @ts-ignore
         const datas = line["value"] 
-        ? {
-          "timestamp": line["phenomenonTime"], 
-          "value": line["value"], 
-          "deveui": line["deveui"].toUpperCase()
-        } : {
-          "timestamp": line["phenomenonTime"], 
-          "frame": line["payload"].toUpperCase(), 
-          "deveui": line["deveui"].toUpperCase()
-        };
+        // @ts-ignore
+        ? { "timestamp": line["phenomenonTime"], "value": line["value"], "deveui": line["deveui"].toUpperCase() }
+        // @ts-ignore
+        : { "timestamp": line["phenomenonTime"], "frame": line["payload"].toUpperCase(), "deveui": line["deveui"].toUpperCase() };
         await objectAccess.post(datas);  
       } catch (error: any) {
         const datas: Ilog = {

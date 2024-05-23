@@ -23,7 +23,8 @@ export class apiAccess implements Icomon {
     console.log(formatLog.whereIam());
     this.ctx = ctx;    
     const entityName = models.getEntityName(this.ctx.config, entity ? entity : this.ctx.odata.entity);
-    if (entityName && entityName in entities) {      
+    if (entityName && entityName in entities) {
+      // @ts-ignore
       this.myEntity = new entities[(this.ctx, entityName)](ctx);
     } 
   }

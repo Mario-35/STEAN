@@ -12,5 +12,6 @@ export function hidePassword(obj: object): object {
           .map(v => (v && typeof v === 'object') ? hidePassword(v) : v);
     else return Object.entries(obj)
           .map(([k, v]) => [k, v && typeof v === 'object' ? hidePassword(v) : v])
+          // @ts-ignore
           .reduce((a, [k, v]) => (k == "password" ? (a[k]="*****", a) : (a[k]=v, a)), {});
 }

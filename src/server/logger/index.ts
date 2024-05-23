@@ -35,7 +35,8 @@ class FormatLog {
   object(title: string, input: object) {
     if (_DEBUG) {
       const res = [this.head(title)];
-      Object.keys(input).forEach((cle: string) => { 
+      Object.keys(input).forEach((cle: string) => {
+        // @ts-ignore
         res.push(this.logCleInfos("  " + cle, input[cle]));
       });
       return res.join("\n");

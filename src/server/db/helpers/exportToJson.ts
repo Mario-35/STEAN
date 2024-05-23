@@ -37,9 +37,11 @@ export const exportToJson = async (ctx: koaContext) => {
         // Execute query        
         const tempResult = await serverConfig.connection(ctx.config.name).unsafe(`select ${columnListWithQuotes}${rels.length > 1 ? rels.join() : ""}\n FROM "${ctx.model[entity].table}" LIMIT ${getUrlKey(ctx.request.url, "limit") || ctx.config.nb_page}`);  
         // remove null and store datas result 
+        // @ts-ignore
         result[entity] = removeEmpty(tempResult);        
       }  
   });
+  // @ts-ignore
   delete result["FeaturesOfInterest"][0];
   return result;
 };
