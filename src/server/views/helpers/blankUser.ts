@@ -10,8 +10,6 @@ import { Iuser, koaContext } from "../../types";
 
 
 export function blankUser(ctx: koaContext):Iuser  {    
-    console.log("========== blankUser =======================");
-    console.log(ctx.config.users);
     return {
         id: 0,
         username: "query",
