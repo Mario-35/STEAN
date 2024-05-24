@@ -1,1 +1,0 @@
-function jsonDatasPasteEvent(t){setTimeout(()=>{try{beautifyDatas(getElement("jsonDatas"),t.explicitOriginalTarget.innerText.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^\x00-\x7F]/g,""),"json")}catch(e){getElement("jsonDatas").innerText=t.explicitOriginalTarget.innerText}},"500")}

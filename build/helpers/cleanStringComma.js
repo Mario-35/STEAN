@@ -1,1 +1,0 @@
-"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.cleanStringComma=void 0;const cleanStringComma=(t,e)=>(t=t.split(",").filter(e=>""!=e.trim()).join(", "),e&&e.forEach(e=>t=t.split(` ${e}"`).join('" '+e)),t);exports.cleanStringComma=cleanStringComma;

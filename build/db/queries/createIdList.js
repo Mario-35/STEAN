@@ -1,1 +1,0 @@
-"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.createIdList=void 0;const createIdList=e=>{let t=[];if(e.includes(":")){var r=e.split(":");for(let e=+r[0];e<=+r[1];e++)t.push(String(e))}else e.includes(",")?t=e.split(","):t.push(String(e));return t.filter(e=>""!=e.trim())};exports.createIdList=createIdList;

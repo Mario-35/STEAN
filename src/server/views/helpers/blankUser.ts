@@ -15,7 +15,7 @@ export function blankUser(ctx: koaContext):Iuser  {
         username: "query",
         password: "",
         email: "",
-        database: "",
+        database: ctx.config.pg.database,
         canPost: !ctx.config.users,
         canDelete: !ctx.config.users,
         canCreateUser: !ctx.config.users,

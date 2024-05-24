@@ -1,1 +1,0 @@
-"use strict";function blankUser(e){return{id:0,username:"query",password:"",email:"",database:e.config.pg.database,canPost:!e.config.users,canDelete:!e.config.users,canCreateUser:!e.config.users,canCreateDb:!e.config.users,admin:!1,superAdmin:!1}}Object.defineProperty(exports,"__esModule",{value:!0}),exports.blankUser=void 0,exports.blankUser=blankUser;

@@ -1,1 +1,0 @@
-"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.cleanUrl=void 0;const cleanUrl=e=>{for(e=e.replace("?&$","?$");["$","&","?"].includes(e[e.length-1]);)e=e.slice(0,-1);for(;["&","?"].includes(e[0]);)e=e.slice(1);return e};exports.cleanUrl=cleanUrl;

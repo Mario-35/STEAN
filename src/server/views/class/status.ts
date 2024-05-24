@@ -13,13 +13,12 @@ import { CoreHtmlView } from "./core";
   
 
 export class Status extends CoreHtmlView {
-
     constructor(ctx: koaContext, datas: Iuser) {
         super(ctx);
-        this.status(datas);
+        this.status(ctx, datas);
     }
     
-    public status(user: Iuser) {  
+    public status(ctx: koaContext, user: Iuser) {        
       const config = serverConfig.getConfigNameFromDatabase(user.database);  
       const url = `${this.ctx.decodedUrl.linkbase}/${this.ctx.config.apiVersion}`;  
       this._HTMLResult = [`
@@ -32,7 +31,7 @@ export class Status extends CoreHtmlView {
                         ${this.title("Status")}
                         <h3>Username : ${ user.username }</h3> 
                         <h3>Hosting : ${user.database == "all" ? "all" : config ? serverConfig.getConfig(config).pg.host : "Not Found"}</h3>
-                        <h3>Database : ${user.database}</h3> <h3>Status : ${ user.id &&  user.id > 0 ? _OK : _NOTOK}</h3> 
+                        <h3>Database : ${user.database}</h3> <h3>Status : ${ user.id && user.id > 0 ? _OK : ctx.config.users === false ? _OK : _NOTOK}</h3> 
                         ${this.foot([
                             { href: `${url}/Logout`, class: "button-logout", name: "Logout" },
                             { href: `${url}/Query`, class: "button-query", name: "Query" }

@@ -1,1 +1,0 @@
-"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.getDBDateNow=void 0;const _1=require("."),getDBDateNow=async e=>(0,_1.executeSqlValues)(e,"SELECT current_timestamp;").then(e=>e[0]);exports.getDBDateNow=getDBDateNow;

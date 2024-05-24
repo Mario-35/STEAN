@@ -1,1 +1,0 @@
-"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.Key=void 0;const _1=require(".");class Key extends _1.Core{constructor(e){super(e)}add(e){super.addKey(e)}}exports.Key=Key;

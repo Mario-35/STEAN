@@ -63,6 +63,7 @@ export class Query  {
                     return result;
                 } else return column;
             } else if (testIn(column) === true) return column;
+            if  (column === "selfLink") return  column; 
         };
 
         function extractColumnName(input: string): string{   
@@ -90,17 +91,24 @@ export class Query  {
         if (element.onlyRef == true) return [selfLink];
         if (element.showRelations == true ) returnValue.push(selfLink);
         // create list of columns
+        console.log(element.query.select);
+        
         const columns:string[] = (element.query.select.toString() === "*" || element.query.select.toString() === "")
             ? Object.keys(tempEntity.columns)
                 .filter((word) => !word.includes("_"))
                 .filter(e => !(e === "result" && element.splitResult))
                 .filter(e => !tempEntity.columns[e].extensions || tempEntity.columns[e].extensions && main.ctx.config.extensions.includes(tempEntity.columns[e].extensions || ""))
             : element.query.select.toString().split(_COLUMNSEPARATOR).filter((word: string) => word.trim() != "").map(e => removeDoubleQuotes(e));
-        // loop on columns
+            // loop on columns
+            console.log(columns);
+        
         columns.map((column: string) => {
             const force = ["id", "result"].includes(column) ? true : false;
             return formatedColumn(main.ctx.config, tempEntity, column, { valueskeys: element.valueskeys, quoted: true, table: true, alias: force, as: isGraph(main) ? false : true } ) || "";
-        }) .filter(e => e != "" ).forEach((e: string) => {    
+        }) .filter(e => e != "" ).forEach((e: string) => {   
+            console.log(`e => ${e}`);
+            if (e === "selfLink") e = selfLink;    
+             
             const testIisCsvOrArray = isCsvOrArray(element);            
             if (testIisCsvOrArray) this.keyNames.add(e);
             returnValue.push(e);

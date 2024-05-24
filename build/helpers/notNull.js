@@ -1,1 +1,0 @@
-"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.isNull=exports.notNull=void 0;const isNullOrNotNull=(l,t)=>{switch(typeof l){case"string":if(l&&""!=l&&null!=l)return t;case"object":if(l&&0<Object.keys(l).length)return t;default:return!t}},notNull=l=>isNullOrNotNull(l,!0),isNull=(exports.notNull=notNull,l=>isNullOrNotNull(l,!1));exports.isNull=isNull;

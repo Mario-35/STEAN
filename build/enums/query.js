@@ -1,1 +1,0 @@
-"use strict";var EnumQuery;Object.defineProperty(exports,"__esModule",{value:!0}),exports.EnumQuery=void 0,function(e){e.Where="where",e.Select="select",e.GroubBy="groubBy",e.OrderBy="orderBy"}(EnumQuery||(exports.EnumQuery=EnumQuery={}));

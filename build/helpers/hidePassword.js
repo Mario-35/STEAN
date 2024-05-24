@@ -1,1 +1,0 @@
-"use strict";function hidePassword(e){return Array.isArray(e)?e.map(e=>e&&"object"==typeof e?hidePassword(e):e):Object.entries(e).map(([e,s])=>[e,s&&"object"==typeof s?hidePassword(s):s]).reduce((e,[s,r])=>(e[s]="password"==s?"*****":r,e),{})}Object.defineProperty(exports,"__esModule",{value:!0}),exports.hidePassword=void 0,exports.hidePassword=hidePassword;

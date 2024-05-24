@@ -1,1 +1,0 @@
-"use strict";var EnumVersion;Object.defineProperty(exports,"__esModule",{value:!0}),exports.EnumVersion=void 0,function(e){e.v1_0="v1.0",e.v1_1="v1.1"}(EnumVersion||(exports.EnumVersion=EnumVersion={}));
