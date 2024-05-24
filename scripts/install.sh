@@ -36,12 +36,21 @@ download_stean() {
 
 # Function to install Node
 install_stean() {
+    stop_stean
+    # remove bak
+    rm -r $APIBak
+    # save actual to bak
+    mv $APIDEST $APIBak
+    # unzip actual
+    unzip $FILEDIST -d $APIDEST/  
+    cd $APIDEST
+    npm install --omit=dev
     # Save config
-    if [ -f "$FILECONFIG" ]; then
-        echo "$FILECONFIG exists."
-        config=$(<$FILECONFIG)
+    if [ -f "./$APIBak/configuration/production.json" ]; then
+        echo "confifuration exist."
+        cp ./$APIBak/configuration/production.json ./$APIDEST/configuration/production.json
     else 
-        echo "$FILECONFIG does not exist"
+        echo "Confuguration not exist"
         echo -n "Postges host : "
         read -r host
         echo -n "Postges port : "
@@ -66,27 +75,17 @@ install_stean() {
                         \"logFile\": \"\",
                     }
                 }"
+        # save config
+        echo "$config" > ./$APIDEST/configuration/production.json
     fi
     # Save key
-    if [ -f "$FILEKEY" ]; then
-        echo "$FILEKEY exists."
-        key=$(<$FILEKEY)
+    if [ -f "./$APIBak/configuration/.key" ]; then
+        echo "Key exists."
+        cp ./$APIBak/configuration/.key ./$APIDEST/configuration/.key
     else 
-        key= "zLwX893Mtt9Rc0TKvlInDXuZTFj9rxDV"
+        # save key
+        echo "$key" > "zLwX893Mtt9Rc0TKvlInDXuZTFj9rxDV"
     fi
-    stop_stean
-    # remove bak
-    rm -r $APIBak
-    # save actual to bak
-    mv $APIDEST $APIBak
-    # unzip actual
-    unzip $FILEDIST -d $APIDEST/  
-    cd $APIDEST
-    npm install --omit=dev
-    # save key
-    echo "$key" > $FILEKEY
-    # save config
-    echo "$config" > $FILECONFIG
 }
 
 stop_stean() {
@@ -97,10 +96,10 @@ stop_stean() {
 start_stean() {
     stop_stean
     if [ -f "$FILEAPP" ]; then      
+        echo "$FILEAPP starting ..."
         NODE_ENV=production pm2 start $FILEAPP
-        pm2 logs --lines 500
     else 
-        echo "$FILECONFIG does not exist can't launch app."
+        echo "$FILEAPP does not exist can't launch app."
     fi
 }
 
