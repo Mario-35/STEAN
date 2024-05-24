@@ -21,7 +21,7 @@ install_node() {
 # Function to install Node
 install_pm2() {
     echo "Installing pm2..."
-    npm install pm2@latest -g
+    sudo npm install pm2@latest -g
 }
 
 # Function to get stean
