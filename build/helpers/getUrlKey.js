@@ -1,0 +1,1 @@
+"use strict";function getUrlKey(e,t){let r=void 0;try{e.split("?")[1].split("$").forEach(e=>{e.toUpperCase().startsWith(t.toUpperCase()+"=")&&(r=e.split("=")[1])})}catch(e){}return r}Object.defineProperty(exports,"__esModule",{value:!0}),exports.getUrlKey=void 0,exports.getUrlKey=getUrlKey;

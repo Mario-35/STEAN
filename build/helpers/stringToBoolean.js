@@ -1,0 +1,1 @@
+"use strict";function stringToBoolean(e,o){switch(o=o||!1,typeof e){case"boolean":return e;case"string":return"TRUE"==e.toUpperCase()||o;default:return o}}Object.defineProperty(exports,"__esModule",{value:!0}),exports.stringToBoolean=void 0,exports.stringToBoolean=stringToBoolean;

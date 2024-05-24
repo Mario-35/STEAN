@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.userAuthenticated=void 0;const _1=require("."),userAuthenticated=e=>{return!0!==e.config.users||!!((e=(0,_1.decodeToken)(e))&&0<+e.id)};exports.userAuthenticated=userAuthenticated;

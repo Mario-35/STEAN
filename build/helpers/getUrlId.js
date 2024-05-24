@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.getUrlId=void 0;const getUrlId=t=>{try{return t.split("(")[1].split(")")[0]}catch(t){}};exports.getUrlId=getUrlId;

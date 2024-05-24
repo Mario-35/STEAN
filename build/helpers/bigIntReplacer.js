@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.bigIntReplacer=void 0;const bigIntReplacer=(e,t)=>"bigint"==typeof t?t.toString():t;exports.bigIntReplacer=bigIntReplacer;

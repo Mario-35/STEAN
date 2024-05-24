@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.deepClone=void 0;const deepClone=r=>{if(null===r)return null;const o={...r};return Object.keys(o).forEach(e=>o[e]="object"==typeof r[e]?(0,exports.deepClone)(r[e]):r[e]),Array.isArray(r)&&r.length?(o.length=r.length)&&Array.from(o):Array.isArray(r)?Array.from(r):o};exports.deepClone=deepClone;

@@ -1,0 +1,1 @@
+"use strict";function _text(t){return"TEXT NOT NULL"+(t?` DEFAULT '${t}'::TEXT`:"")}Object.defineProperty(exports,"__esModule",{value:!0}),exports._text=exports._tz=exports._idRel=exports._id=void 0,exports._id="BIGINT GENERATED ALWAYS AS IDENTITY",exports._idRel="BIGINT NOT NULL",exports._tz="TIMESTAMPTZ NULL",exports._text=_text;

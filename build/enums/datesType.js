@@ -1,0 +1,1 @@
+"use strict";var EnumDatesType;Object.defineProperty(exports,"__esModule",{value:!0}),exports.EnumDatesType=void 0,function(e){e.date='YYYY-MM-DD"T"HH24:MI:SSZ',e.dateWithTimeZone="YYYY-MM-DD HH:MI:SSTZH:TZM",e.dateWithOutTimeZone="YYYY-MM-DDXHH24:MI:SS"}(EnumDatesType||(exports.EnumDatesType=EnumDatesType={}));

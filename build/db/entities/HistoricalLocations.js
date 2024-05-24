@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.HistoricalLocations=void 0;const logger_1=require("../../logger"),common_1=require("./common");class HistoricalLocations extends common_1.Common{constructor(o){super(o)}}exports.HistoricalLocations=HistoricalLocations;

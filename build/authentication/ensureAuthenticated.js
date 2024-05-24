@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.ensureAuthenticated=void 0;const _1=require("."),ensureAuthenticated=e=>(0,_1.userAuthenticated)(e);exports.ensureAuthenticated=ensureAuthenticated;

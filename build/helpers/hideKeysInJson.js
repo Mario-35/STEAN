@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.hideKeysInJson=void 0;const hideKeysInJson=(s,o="")=>{"string"==typeof o&&(o=[o]);for(const[n,t]of Object.entries(s))o.forEach(e=>{n.includes(e)?delete s[n]:n.includes("password")?s[n]="*****":"object"==typeof t&&(0,exports.hideKeysInJson)(t,o)});return s};exports.hideKeysInJson=hideKeysInJson;

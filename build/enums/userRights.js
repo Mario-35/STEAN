@@ -1,0 +1,1 @@
+"use strict";var EnumUserRights;Object.defineProperty(exports,"__esModule",{value:!0}),exports.EnumUserRights=void 0,function(e){e[e.Post=0]="Post",e[e.Delete=1]="Delete",e[e.Create=2]="Create",e[e.UserCreate=3]="UserCreate",e[e.Admin=4]="Admin",e[e.SuperAdmin=5]="SuperAdmin"}(EnumUserRights||(exports.EnumUserRights=EnumUserRights={}));
