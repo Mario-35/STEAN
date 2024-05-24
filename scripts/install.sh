@@ -43,10 +43,8 @@ install_stean() {
     mv $APIDEST $APIBak
     # unzip actual
     unzip $FILEDIST -d $APIDEST/  
-    cd $APIDEST
-    npm install --omit=dev
     # Save config
-    if [ -f "./$APIBak/configuration/production.json" ]; then
+    if [ -f ./$APIBak/configuration/production.json ]; then
         echo "confifuration exist."
         cp ./$APIBak/configuration/production.json ./$APIDEST/configuration/production.json
     else 
@@ -79,13 +77,16 @@ install_stean() {
         echo "$config" > ./$APIDEST/configuration/production.json
     fi
     # Save key
-    if [ -f "./$APIBak/configuration/.key" ]; then
+    if [ -f ./$APIBak/configuration/.key ]; then
         echo "Key exists."
         cp ./$APIBak/configuration/.key ./$APIDEST/configuration/.key
     else 
         # save key
         echo "$key" > "zLwX893Mtt9Rc0TKvlInDXuZTFj9rxDV"
     fi
+    cd $APIDEST
+    npm install --omit=dev
+    cd ..
 }
 
 stop_stean() {
