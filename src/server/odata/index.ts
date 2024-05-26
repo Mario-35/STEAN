@@ -61,6 +61,7 @@ export const createOdata = async (ctx: koaContext): Promise<RootPgVisitor | unde
   };
   
   clean("geography%27", "%27");
+  clean("@iot.");
   
   // clean id in url
   urlSrc = cleanUrl(clean("@iot.id", "id"));

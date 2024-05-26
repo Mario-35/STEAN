@@ -6,10 +6,14 @@
 
 # Installation
 
+## deploy on server use :  [script](https://raw.githubusercontent.com/Mario-35/STEAN/main/scripts/install.sh) as install.sh
+## use on local windows as production (for testing) use :  [script](https://raw.githubusercontent.com/Mario-35/STEAN/main/scripts/install.ps1) as install.ps1
+
+## for developper : 
+
 1. Fork/Clone : <https://github.com/Mario-35/STEAN.git>
-    or unzip  : <https://github.com/Mario-35/STEAN/archive/refs/heads/main.zip>
 2. Install dependencies : npm install
-3. Fire up Postgres on the default ports
+3. Fire up Postgres WITH Postgis on the default ports
 4. Make configuration/[development or production].json file (see [example](https://github.com/Mario-35/STEAN/blob/main/src/server/configuration/example.md))
 or use first install (the file will be automatically create)
 5. npm run dev for dev, npm run build (vs script package.json)
@@ -21,53 +25,14 @@ or use first install (the file will be automatically create)
 
 ![Docker](https://raw.githubusercontent.com/Mario-35/STEAN/main/doc/assets/logo-docker.png "Docker")
 
-docker-compose up --build -d
-
-```yaml
-version: '3.8'
-services:
-    db:
-        container_name: postgis
-        image: postgis/postgis
-        ports:
-            - "5433:5432"
-#        volumes:
-#            - data:/data/db
-        restart: always
-        environment:
-            POSTGRES_USER: sensorthings
-            POSTGRES_DB: postgres
-            POSTGRES_PASSWORD: sensorthings
-            ALLOW_IP_RANGE: 0.0.0.0/0
-    stean:
-        container_name: stean
-        image: mario35/api-stean:latest
-        depends_on:
-            - db
-        ports:
-            - "8029:8029"
-#volumes:
-#     data: {}
-```
-
-## Want to use this project?
-
-1. Fork/Clone
-2. Install dependencies - npm install
-3. Fire up Postgres on the default ports
-4. Make configuration/config.json file (see [example](https://github.com/Mario-35/STEAN/blob/main/src/configuration/example.md))
-5. npm run dev for dev, npm run build (vs script package.json)
-6. If database not exists the program create it.
+# COMMING SOON
 
 The project run under nodeJS.
 
 ![Nodejs](https://raw.githubusercontent.com/Mario-35/STEAN/main/doc/assets/nodejs.png "Nodejs")
 
-Is 100% typescript, the javascript is used for TDD only and apidoc.
-
 ![TypeScript](https://raw.githubusercontent.com/Mario-35/STEAN/main/doc/assets/ts.png "TypeScript") ![Javascript](https://raw.githubusercontent.com/Mario-35/STEAN/main/doc/assets/js.png "Javascript")
 
-For views a little :
 
 ![HTML JS CSS](https://raw.githubusercontent.com/Mario-35/STEAN/main/doc/assets/html.png "HTML JS CSS")
 

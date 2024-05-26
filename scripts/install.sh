@@ -1,4 +1,12 @@
-#!/bin/bash
+ #/
+ # Stean Install Bash.
+ #
+ # @copyright 2024-present Inrae
+ # @author mario.adam@inrae.fr
+ # version 0.1
+ #
+ #/
+
 clear
 APIDEST=api
 APIBak=apiBak
@@ -24,13 +32,17 @@ install_pm2() {
     sudo npm install pm2@latest -g
 }
 
-# Function to get stean
-download_stean() {
-    echo "Downloading stean..."
+save_dist() {
     if [ -f "$FILEDIST" ]; then
         rm $FILEDISTOLD
         mv $FILEDIST $FILEDISTOLD
     fi
+}
+
+# Function to get stean
+download_stean() {
+    echo "Downloading stean..."
+    save_dist
     curl -o $FILEDIST -L https://github.com/Mario-35/STEAN/raw/main/dist.zip
 }
 
@@ -47,43 +59,13 @@ install_stean() {
     if [ -f ./$APIBak/configuration/production.json ]; then
         echo "confifuration exist."
         cp ./$APIBak/configuration/production.json ./$APIDEST/configuration/production.json
-    else 
-        echo "Confuguration not exist"
-        echo -n "Postges host : "
-        read -r host
-        echo -n "Postges port : "
-        read -r port
-        echo -n "Postges user name : "
-        read -r user
-        echo -n "Postges password : "
-        read -r password
-        echo -n "Postges database : "
-        read -r database
-        config = "{
-                    \"admin\": {
-                        \"name\":\"admin\",
-                        \"pg\":{
-                            \"host\": \"$host\",
-                            \"port\": $port,
-                            \"user\": \"$user\",
-                            \"password\": \"$password\",
-                            \"database\": \"$database\",
-                            \"retry\": 2 
-                        }
-                        \"logFile\": \"\",
-                    }
-                }"
-        # save config
-        echo "$config" > ./$APIDEST/configuration/production.json
     fi
     # Save key
     if [ -f ./$APIBak/configuration/.key ]; then
         echo "Key exists."
         cp ./$APIBak/configuration/.key ./$APIDEST/configuration/.key
-    else 
-        # save key
-        echo "$key" > "zLwX893Mtt9Rc0TKvlInDXuZTFj9rxDV"
     fi
+    save_dist
     cd $APIDEST
     npm install --omit=dev
     cd ..
@@ -134,6 +116,21 @@ else
     echo "pm2 is already installed."
 fi
 
-download_stean
+
+if [ -f $FILEDIST ];
+then
+    echo "$FILEDIST is already present."
+    while true; do
+        read -p "Do you wish to use it " yn
+        case $yn in
+            [Yy]* ) break;;
+            [Nn]* ) download_stean; break;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
+else
+    download_stean
+fi
+
 install_stean
 start_stean
