@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- Index Entity. -----------------------------------!");
 import { allEntities } from "../../enums";
 import { errors, msg } from "../../messages";
 import { Ientity } from "../../types";

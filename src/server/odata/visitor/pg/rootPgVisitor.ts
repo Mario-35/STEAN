@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- pgVisitor for odata. -----------------------------------!");
 import { addDoubleQuotes } from "../../../helpers";
 import { IodataContext, koaContext } from "../../../types";
 import { Token } from "../../parser/lexer";
@@ -141,7 +141,7 @@ export class RootPgVisitor extends PgVisitor {
   StartVisitRessources(node: Token) {
     console.log(formatLog.head("INIT PgVisitor"));
     this.limit = this.ctx.config.nb_page || 200;
-    this.numeric = this.ctx.config.extensions.includes(EnumExtensions.numeric);
+    this.numeric = this.ctx.config.extensions.includes(EnumExtensions.resultNumeric);
     const temp = this.VisitRessources(node);
     this.verifyRessources();
     return temp;

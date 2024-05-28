@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- relations Enum. -----------------------------------!");
 export enum EnumRelations {
     belongsTo,
     belongsToMany,

@@ -1,11 +1,11 @@
 /**
- * colors Enum.
+ * colors Enum
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- colors Enum -----------------------------------!");
 export const enum EnumColor {
     Reset = 0,
     Bright = 1,

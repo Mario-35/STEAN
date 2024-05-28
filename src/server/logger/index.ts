@@ -12,7 +12,7 @@ import fs from "fs";
 import { EnumColor } from "../enums";
 import { koaContext } from "../types";
 export { writeToLog } from "./writeToLog";
-
+// console.log("!----------------------------------- Index Logs. -----------------------------------!");
 
 class FormatLog {
   private debugFile = false;

@@ -6,7 +6,7 @@
  *
  *
  */
-
+// console.log("!----------------------------------- upload. -----------------------------------!");
 import Busboy from "busboy";
 import path from "path";
 import util from "util";
@@ -19,7 +19,7 @@ import { koaContext } from "../types";
  * @param ctx Koa context
  * @returns KeyString
  */
-
+// console.log("!----------------------------------- upload. -----------------------------------!");
 export const upload = (ctx: koaContext): Promise<object> => {
   // Init results
   const data:object = {};

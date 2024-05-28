@@ -1,11 +1,11 @@
 /**
- * createBearerToken.
+ * createBearerToken
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- createBearerToken -----------------------------------!");
 import cookieParser from "cookie-parser";
 import { APP_KEY } from "../constants";
 import { errors } from "../messages";

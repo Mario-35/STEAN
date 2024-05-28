@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- FeaturesOfInterest entity. -----------------------------------!");
 import { formatLog } from "../../logger";
 import { koaContext } from "../../types";
 import { Common } from "./common";

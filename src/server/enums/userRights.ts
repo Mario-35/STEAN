@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- userRights Enum. -----------------------------------!");
 export enum EnumUserRights {
     Post = 0,
     Delete = 1,

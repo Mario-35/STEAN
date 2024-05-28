@@ -6,7 +6,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- asDataArray. -----------------------------------!");
 import { asJson } from ".";
 import { ESCAPE_SIMPLE_QUOTE, _COLUMNSEPARATOR, _NEWLINE } from "../../constants";
 import { addDoubleQuotes, addSimpleQuotes, removeAllQuotes } from "../../helpers";

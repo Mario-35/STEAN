@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * isNullOrNotNull.
+ * isNullOrNotNull
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
+// console.log("!----------------------------------- isNullOrNotNull -----------------------------------!");
 
 const isNullOrNotNull = (input: any, ret: boolean): boolean => {
     switch (typeof input) {
@@ -21,3 +21,4 @@ const isNullOrNotNull = (input: any, ret: boolean): boolean => {
   export const notNull = (input: any): boolean => isNullOrNotNull(input, true);
   export const isNull = (input: any): boolean => isNullOrNotNull(input, false);
   
+

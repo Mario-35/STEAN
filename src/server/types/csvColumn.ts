@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- IcsvColumn interface. -----------------------------------!");
 import { IstreamInfos } from "./streamInfos";
 
 export interface IcsvColumn {

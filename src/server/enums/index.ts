@@ -5,6 +5,10 @@
  * @author mario.adam@inrae.fr
  *
  */
+// console.log("!----------------------------------- Index Enums. -----------------------------------!");
+
+import { EnumExtensions } from "./extensions";
+import { EnumOptions } from "./options";
 
 export { EnumColor } from "./colors";
 export { EnumColumnType } from "./colType";
@@ -16,6 +20,9 @@ export { EnumVersion } from "./version";
 export { EnumObservationType } from "./observationType";
 export { EnumOperation } from "./operation";
 export { EnumRelations } from "./relations";
+export { EnumOptions } from "./options";
 export { EnumQuery } from "./query";
 export { EnumUserRights } from "./userRights";
-
+export const enumKeys = (input: any) => Object.keys(input).filter(prop => isNaN(parseInt(prop)));
+export const typeExtensions = Object.keys(EnumExtensions) as Array<keyof typeof EnumExtensions>;
+export const typeOptions = Object.keys(EnumOptions) as Array<keyof typeof EnumOptions>;

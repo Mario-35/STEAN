@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- pgVisitor index. -----------------------------------!");
 import { query, resourcePath } from "./parser/parser";
 import { Token } from "./parser/lexer";
 import { cleanUrl, returnFormats } from "../helpers";

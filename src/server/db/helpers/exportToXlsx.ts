@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- exportToXlsx. -----------------------------------!");
 import Excel from "exceljs";
 import postgres from "postgres";
 import { serverConfig } from "../../configuration";
@@ -106,7 +106,7 @@ export const exportToXlsx = async (ctx: koaContext) => {
   addConfigToExcel(workbook, serverConfig.getConfigForExcelExport(ctx.config.name));
   // Loop on entities
   await asyncForEach(
-    Object.keys(filterEntities(ctx.config)).filter((entity: string) => ctx.model[entity].table !== "" ),
+    Object.keys(filterEntities(ctx.config.extensions)).filter((entity: string) => ctx.model[entity].table !== "" ),
     async (entity: string) => {
       const cols = await createColumnsList(ctx, entity);      
       const temp = await serverConfig.connection(ctx.config.name).unsafe(`select ${cols} from "${ctx.model[entity].table}" LIMIT 200`);  

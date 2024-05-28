@@ -5,8 +5,8 @@
  * @author mario.adam@inrae.fr
  *
  */
-
-import { EnumVersion } from "../../enums";
+// console.log("!----------------------------------- HTML Views First for API. -----------------------------------!");
+import { EnumOptions, EnumVersion } from "../../enums";
 import { IconfigFile, IKeyString, koaContext } from "../../types";
 import { CoreHtmlView } from "./core";
 
@@ -52,17 +52,13 @@ export class Config extends CoreHtmlView {
                     <div class="login-form">
                       <form action="${datas.url}" method="post">
                         <div class="sign-in-htm">
-                        ${this.addTextInput({id: "regapiversion", name: "apiversion", label: "Version", value: datas.body && datas.body.apiversion || this.ctx.config.apiVersion, alert: alert("apiversion"), toolType: Object.values(EnumVersion).join()})}
-                        ${this.addTextInput({id: "regdate_format", name: "date_format", label: "Date format", value: datas.body && datas.body.date_format || this.ctx.config.date_format, alert: alert("date_format"), toolType: "Host must be at least 2 words"})}
-                        ${this.addTextInput({id: "regwebSite", name: "webSite", label: "Web Site", value: datas.body && datas.body.regwebSite || this.ctx.config.webSite, alert: alert("webSite"), toolType: "Name must be at least 2 words"})}
-                        ${this.addTextInput({id: "regnb_page", name: "nb_page", label: "nb page", value: datas.body && datas.body.nb_page || this.ctx.config.nb_page, alert: alert("nb_page"), toolType: "Name must be at least 2 words"})}
-                        ${this.addTextInput({id: "logFile", name: "logFile", label: "log File", value: datas.body && datas.body.logFile || this.ctx.config.logFile, alert: alert("logFile"), toolType: "Name must be at least 2 words"})}
+                        ${this.addTextInput({name: "apiversion", label: "Version", value: datas.body && datas.body.apiversion || this.ctx.config.apiVersion, alert: alert("apiversion"), toolType: Object.values(EnumVersion).join()})}
+                        ${this.addTextInput({name: "date_format", label: "Date format", value: datas.body && datas.body.date_format || this.ctx.config.date_format, alert: alert("date_format"), toolType: "Host must be at least 2 words"})}
+                        ${this.addTextInput({name: "webSite", label: "Web Site", value: datas.body && datas.body.regwebSite || this.ctx.config.webSite, alert: alert("webSite"), toolType: "Name must be at least 2 words"})}
+                        ${this.addTextInput({name: "nb_page", label: "nb page", value: datas.body && datas.body.nb_page || this.ctx.config.nb_page, alert: alert("nb_page"), toolType: "Name must be at least 2 words"})}
                         </div>
                         <div class="sign-up-htm">
-                        ${this.addCheckBox({id: "forceHttps", checked: datas.body && datas.body.forceHttps === true || this.ctx.config.forceHttps , label: " force Https"})}
-                        ${this.addCheckBox({id: "stripNull", checked: datas.body && datas.body.stripNull === true || this.ctx.config.stripNull , label: " strip Null"})}
-                        ${this.addCheckBox({id: "highPrecision", checked: datas.body && datas.body.highPrecision === true || this.ctx.config.highPrecision , label: " high Precision"})}
-                        ${this.addCheckBox({id: "canDrop", checked: datas.body && datas.body.canDrop === true || this.ctx.config.canDrop , label: " can Drop"})}
+                        ${this.addCheckBox({name: "stripNull", checked: datas.body && datas.body.stripNull === true || this.ctx.config.options.includes(EnumOptions.stripNull) , label: " strip Null"})}
                         </div>
                       </form>
                   </div>

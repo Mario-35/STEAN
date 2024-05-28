@@ -6,7 +6,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- createIdList. -----------------------------------!");
 export const createIdList = (input: string): string[] => {
   let result: string[] = [];
       if (input.includes(":")) {

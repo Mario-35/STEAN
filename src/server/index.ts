@@ -6,26 +6,27 @@
  * @author mario.adam@inrae.fr
  *
  */
+// console.log("!----------------------------------- Index of The API. -----------------------------------!");
 
+import path from "path";
 import Koa from "koa";
 import bodyParser from "koa-bodyparser";
 import logger from "koa-logger";
 import helmet from "koa-helmet";
 import compress from "koa-compress";
 import json from "koa-json";
-import { protectedRoutes, routerHandle, unProtectedRoutes } from "./routes/";
 import cors from "@koa/cors";
-import { isTest } from "./helpers";
 import serve from "koa-static";
-import path from "path";
 import { HELMET_CONFIG, APP_KEY, TEST, ADMIN, APP_NAME, APP_VERSION, _OK } from "./constants";
-import { serverConfig } from "./configuration";
 import favicon from 'koa-favicon';
-import { models } from "./models";
-import { log } from "./log";
-import { IconfigFile, IdecodedUrl, Ientities, Ilog, IuserToken, koaContext } from "./types";
-import { RootPgVisitor } from "./odata/visitor";
 import { constants } from "zlib";
+import { log } from "./log";
+import { protectedRoutes, routerHandle, unProtectedRoutes } from "./routes/";
+import { serverConfig } from "./configuration";
+import { models } from "./models";
+import { isTest } from "./helpers";
+import { RootPgVisitor } from "./odata/visitor";
+import { IconfigFile, IdecodedUrl, Ientities, Ilog, IuserToken, koaContext } from "./types";
 
 // Extend koa context 
 declare module "koa" {

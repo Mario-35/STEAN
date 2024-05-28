@@ -6,7 +6,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- Constant for TDD. -----------------------------------!");
 import fs from "fs";
 import path from "path";
 import { TEST } from "../../server/constants";

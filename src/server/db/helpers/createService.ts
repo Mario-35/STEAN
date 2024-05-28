@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- createService. -----------------------------------!");
 import { addToService, createDatabase, executeAdmin, executeSqlValues } from ".";
 import { serverConfig } from "../../configuration";
 import { _NOTOK, _OK } from "../../constants";

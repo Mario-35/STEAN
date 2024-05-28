@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- entity Datastream. -----------------------------------!");
 import { createEntity } from ".";
 import { EnumDatesType, EnumObservationType, EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";

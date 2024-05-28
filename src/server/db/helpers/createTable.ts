@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- createTable. -----------------------------------!");
 import { serverConfig } from "../../configuration";
 import { _OK } from "../../constants";
 import { log } from "../../log";

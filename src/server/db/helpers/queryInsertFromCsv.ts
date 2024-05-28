@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- queryInsertFromCsv. -----------------------------------!");
 import { formatLog } from "../../logger";
 import { IcsvColumn, IcsvFile, koaContext } from "../../types";
 import { columnsNameFromHydrasCsv, streamCsvFile } from ".";

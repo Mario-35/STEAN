@@ -5,9 +5,10 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- HTML Views Status for API. -----------------------------------!");
 import { serverConfig } from "../../configuration";
 import { _NOTOK, _OK } from "../../constants";
+import { EnumExtensions } from "../../enums";
 import { Iuser, koaContext } from "../../types";
 import { CoreHtmlView } from "./core";
   
@@ -31,7 +32,7 @@ export class Status extends CoreHtmlView {
                         ${this.title("Status")}
                         <h3>Username : ${ user.username }</h3> 
                         <h3>Hosting : ${user.database == "all" ? "all" : config ? serverConfig.getConfig(config).pg.host : "Not Found"}</h3>
-                        <h3>Database : ${user.database}</h3> <h3>Status : ${ user.id && user.id > 0 ? _OK : ctx.config.users === false ? _OK : _NOTOK}</h3> 
+                        <h3>Database : ${user.database}</h3> <h3>Status : ${ user.id && user.id > 0 ? _OK : !ctx.config.extensions.includes(EnumExtensions.security) ? _OK : _NOTOK}</h3> 
                         ${this.foot([
                             { href: `${url}/Logout`, class: "button-logout", name: "Logout" },
                             { href: `${url}/Query`, class: "button-query", name: "Query" }

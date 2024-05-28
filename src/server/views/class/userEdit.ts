@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- HTML Views UserEdit for API. -----------------------------------!");
 import { IKeyString, koaContext } from "../../types";
 import { CoreHtmlView } from "./core";
 
@@ -32,22 +32,22 @@ export class UserEdit extends CoreHtmlView {
                       <div class="login-form">
                         <form action="/user" method="post">
                             <input id="id" name="id" type="hidden" class="input"value="${user.id}">
-                            ${this.addTextInput({id: "user", name: "username", label: "Username", value: user.username ? user.username : ""})}
-                            ${this.addTextInput({id: "regmail", name: "email", label: "Email address", value: datas.body && datas.body.email ? datas.body.email : "", alert: alert("email"), toolType: "A valid email address"})}
-                            ${this.addTextInput({id: "database", name: "database", label: "Database", value: user.database ? user.database : ""})}
+                            ${this.addTextInput({name: "username", label: "Username", value: user.username ? user.username : ""})}
+                            ${this.addTextInput({name: "email", label: "Email address", value: datas.body && datas.body.email ? datas.body.email : "", alert: alert("email"), toolType: "A valid email address"})}
+                            ${this.addTextInput({name: "database", label: "Database", value: user.database ? user.database : ""})}
                             <table>
                               <tbody>
                                 <tr>
-                                  <td>${this.addCheckBox({id: "canPost", checked: user.canPost})}</td>
-                                  <td>${this.addCheckBox({id: "canDelete", checked: user.canDelete})}</td>
+                                  <td>${this.addCheckBox({name: "canPost", checked: user.canPost})}</td>
+                                  <td>${this.addCheckBox({name: "canDelete", checked: user.canDelete})}</td>
                                 </tr>
                                 <tr>
-                                  <td>${this.addCheckBox({id: "canCreateUser", checked: user.canCreateUser})}</td>
-                                  <td>${this.addCheckBox({id: "canCreateDb", checked: user.canCreateDb})}</td>
+                                  <td>${this.addCheckBox({name: "canCreateUser", checked: user.canCreateUser})}</td>
+                                  <td>${this.addCheckBox({name: "canCreateDb", checked: user.canCreateDb})}</td>
                                 </tr>
                                 <tr>
-                                  <td>${this.addCheckBox({id: "admin", checked: user.admin})}</td>
-                                  <td>${this.addCheckBox({id: "superAdmin", checked: user.superAdmin})}</td>
+                                  <td>${this.addCheckBox({name: "admin", checked: user.admin})}</td>
+                                  <td>${this.addCheckBox({name: "superAdmin", checked: user.superAdmin})}</td>
                                 </tr>
                               </tbody>
                             </table>

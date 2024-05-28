@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- Loras entity. -----------------------------------!");
 import { Common } from "./common";
 import { getBigIntFromString, notNull, } from "../../helpers/index";
 import { DOUBLEQUOTEDCOMA, ESCAPE_SIMPLE_QUOTE, VOIDTABLE } from "../../constants";

@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- pgVisitor for odata. -----------------------------------!");
 import { addDoubleQuotes, addSimpleQuotes, isGraph, isObservation, isTest, removeAllQuotes, returnFormats } from "../../../helpers";
 import { IodataContext, IKeyString, Ientity, IKeyBoolean, IpgQuery, koaContext } from "../../../types";
 import { Token } from "../../parser/lexer";

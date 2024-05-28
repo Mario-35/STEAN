@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- Observations entity. -----------------------------------!");
 import { Common } from "./common";
 import { executeSqlValues, getDBDateNow } from "../helpers";
 import { formatLog } from "../../logger";
@@ -52,7 +52,7 @@ export class Observations extends Common {
     } 
     else if ((dataInput["Datastream"] && dataInput["Datastream"] != null) || (this.ctx.odata.parentEntity && this.ctx.odata.parentEntity.startsWith("Datastream")) ) {     
       if (dataInput["result"] && typeof dataInput["result"] != "object")
-          dataInput["result"] = this.ctx.config.extensions.includes( EnumExtensions.numeric )
+          dataInput["result"] = this.ctx.config.extensions.includes( EnumExtensions.resultNumeric )
                                 ? dataInput["result"]
                                 : { value: dataInput["result"] };
     } else if (this.ctx.request.method === "POST") {

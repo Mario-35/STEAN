@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- Unprotected Routes for API. -----------------------------------!");
 import Router from "koa-router";
 import { ensureAuthenticated, getAuthenticatedUser, } from "../authentication";
 import { ADMIN, _READY } from "../constants";
@@ -25,6 +25,7 @@ import { sqlStopDbName } from "./helper";
 import { createService } from "../db/helpers";
 import { HtmlError, Login, Status, Config } from "../views/";
 import { createQueryParams } from "../views/helpers";
+import { EnumOptions } from "../enums";
 
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 // ALl others
@@ -108,7 +109,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
     case "DROP":
       // create DB test
       console.log(formatLog.head("drop database"));
-      if (ctx.config.canDrop === true || ctx.decodedUrl.path.toUpperCase() == "REDOAGRHYS") {        
+      if (ctx.config.options.includes(EnumOptions.canDrop) || ctx.decodedUrl.path.toUpperCase() == "REDOAGRHYS") {        
         const dbName = ctx.decodedUrl.path.toUpperCase() == "REDOAGRHYS" ? "agrhys" : ctx.config.pg.database;
         await executeAdmin(sqlStopDbName(addSimpleQuotes(dbName))).then(async () => {
             await executeAdmin(`DROP DATABASE IF EXISTS ${dbName}`);

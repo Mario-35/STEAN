@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- writeToLog. -----------------------------------!");
 import { formatLog } from ".";
 import { addDoubleQuotes, hidePassword, isTest } from "../helpers";
 import { executeSqlValues } from "../db/helpers";

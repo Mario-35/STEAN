@@ -1,10 +1,11 @@
 /**
- * Utils.
+ * Main Helpers.
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
+// console.log("!----------------------------------- Main Helpers -----------------------------------!");
 
 import { koaContext } from "../types";
 export const removeFirstOrEnd = (input: string, char: string) => {    
@@ -25,6 +26,7 @@ export const unikeList = (input: string[]) => [...new Set(input)];
 export { asyncForEach } from "./asyncForEach";
 export { cleanStringComma } from "./cleanStringComma";
 export { cleanUrl } from "./cleanUrl";
+export { containsAll } from "./containsAll";
 export { createBearerToken } from "./createBearerToken";
 export { deepClone } from "./deepClone";
 export { encrypt, decrypt } from "./crypto";
@@ -37,6 +39,7 @@ export  * from "./tests";
 export { notNull, isNull } from "./notNull";
 export { bigIntReplacer } from "./bigIntReplacer";
 export { returnFormats } from "./returnFormats";
+export { unique } from "./unique";
 export { removeEmpty } from "./removeEmpty";
 export { upload } from "./upload";
 export { getKey } from "./getKey";

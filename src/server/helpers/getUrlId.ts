@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- getUrlId. -----------------------------------!");
 /**
  * 
  * @param input url string 
@@ -18,3 +18,4 @@ export const getUrlId = (input: string): string | undefined => {
         return undefined;
     }
 };
+// console.log("!----------------------------------- getUrlId. -----------------------------------!");

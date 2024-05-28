@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- Configs entity. -----------------------------------!");
 import { Common } from "./common";
 import { formatLog } from "../../logger";
 import { IreturnResult, koaContext } from "../../types";

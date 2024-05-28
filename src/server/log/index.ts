@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- Log  class. -----------------------------------!");
 // import { isTest } from "../helpers";
 import fs from "fs";
 import util from "util";

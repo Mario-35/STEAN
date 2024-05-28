@@ -5,7 +5,8 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- blankUser -----------------------------------!");
+import { EnumExtensions } from "../../enums";
 import { Iuser, koaContext } from "../../types";
 
 
@@ -16,10 +17,10 @@ export function blankUser(ctx: koaContext):Iuser  {
         password: "",
         email: "",
         database: ctx.config.pg.database,
-        canPost: !ctx.config.users,
-        canDelete: !ctx.config.users,
-        canCreateUser: !ctx.config.users,
-        canCreateDb: !ctx.config.users,
+        canPost: !!ctx.config.extensions.includes(EnumExtensions.security),
+        canDelete: !!ctx.config.extensions.includes(EnumExtensions.security),
+        canCreateUser: !!ctx.config.extensions.includes(EnumExtensions.security),
+        canCreateDb: !!ctx.config.extensions.includes(EnumExtensions.security),
         admin: false,
         superAdmin: false
     }

@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- decodeToken. -----------------------------------!");
 import jsonwebtoken from "jsonwebtoken";
 import { IuserToken, koaContext } from "../types";
 import { blankUserToken } from "../types/userToken";

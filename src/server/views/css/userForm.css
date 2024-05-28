@@ -82,12 +82,6 @@ a {
     display: none
 }
 
-.login-form .group .button,
-.login-form .group .label,
-.login-html .tab {
-    /* text-transform: uppercase */
-}
-
 .login-html .tab {
     font-size: 22px;
     margin-right: 15px;
@@ -116,7 +110,9 @@ a {
 
 .login-form .group .button,
 .login-form .group .input,
-.login-form .group .label {
+.login-form .group .label,
+.login-form .group .selectBox,
+.login-form .group .select {
     width: 95%;
     color: #fff;
     display: block
@@ -147,6 +143,7 @@ a {
     padding: 15px 20px;
     border-radius: 8px;
     background-color: #4f5c81;
+    color: #fff;
 }
 
 .login-form .group .list {
@@ -164,7 +161,6 @@ a {
 }
 
 .login-form .group input[data-type=password] {
-    text-security: circle;
     -webkit-text-security: circle
 }
 
@@ -446,3 +442,44 @@ a {
     scrollbar-width: thin;
   }
   
+
+.onTop {
+    vertical-align: top;
+}
+  
+  .selectBox {
+    position: relative;
+    display: flex;  
+    flex-direction: row;
+  }
+  
+  .selectBox select {
+    width: 100%;
+    color: #f7f7f7;
+    background: rgba(255, 255, 255, .1);
+  }
+  
+  .overSelect {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+  }
+  
+  .checkboxes {
+    display: none;
+    border: 1px #dadada solid;
+    background: rgba(40, 57, 101, .9);
+  }
+  
+  .checkboxes label {
+    display: block;
+    color: #a1a6ab;
+  }
+  
+  .checkboxes label:hover {
+    background-color: #1e90ff;
+  }
+
+

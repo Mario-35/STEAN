@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- entityRelation interface. -----------------------------------!");
 import { EnumRelations } from "../enums";
 
 export interface IentityRelation {

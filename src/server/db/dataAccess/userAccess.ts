@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- User dataAccess. -----------------------------------!");
 import { Iuser } from "../../types";
 import { encrypt } from "../../helpers";
 import { serverConfig } from "../../configuration";

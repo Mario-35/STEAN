@@ -5,12 +5,12 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- postSqlFromPgVisitor. -----------------------------------!");
 import { VOIDTABLE } from "../../../constants";
 import { addDoubleQuotes, getBigIntFromString } from "../../../helpers";
 import { formatLog } from "../../../logger";
 import { Ientity, IKeyString } from "../../../types";
-import { EnumOperation } from "../../../enums";
+import { EnumOperation, EnumOptions } from "../../../enums";
 import { asJson } from "../../../db/queries";
 import { models } from "../../../models";
 import { log } from "../../../log";
@@ -114,7 +114,7 @@ export function postSqlFromPgVisitor(datas: object, src: PgVisitor): string {
         });
         return returnValue.join("\n").replace(/\'@/g, "").replace(/\@'/g, "");
     };
-    
+// console.log("!----------------------------------- postSqlFromPgVisitor. -----------------------------------!");
     /**
      *
      * @param datas datas
@@ -127,7 +127,7 @@ export function postSqlFromPgVisitor(datas: object, src: PgVisitor): string {
         const returnValue = {};
         entity = entity ? entity : postEntity;
         parentEntity = parentEntity ? parentEntity : postParentEntity ? postParentEntity : postEntity;
-        
+// console.log("!----------------------------------- postSqlFromPgVisitor. -----------------------------------!");
         for (const key in datas) {
             if (entity && !Object.keys(entity.relations).includes(key)) {
                 returnValue[key] = typeof datas[key] === "object" ? JSON.stringify(datas[key]) : datas[key];
@@ -147,7 +147,7 @@ export function postSqlFromPgVisitor(datas: object, src: PgVisitor): string {
             }
             return `${inputNameEntity}${(number + 1).toString()}`;
         };
-        
+// console.log("!----------------------------------- postSqlFromPgVisitor. -----------------------------------!");
         /**
          *  add or make query entry
          * @param name name
@@ -172,7 +172,7 @@ export function postSqlFromPgVisitor(datas: object, src: PgVisitor): string {
                         if (queryMaker[name].type == EnumOperation.Table || queryMaker[name].type == EnumOperation.Relation)
                         queryMaker[name].datas = Object.assign(queryMaker[name].datas, datas);
                         queryMaker[name].keyId = keyId;
-                        
+// console.log("!----------------------------------- postSqlFromPgVisitor. -----------------------------------!");
                         if (queryMaker[name].type == EnumOperation.Association)
                         queryMaker[createName(name)] = {
                             type: queryMaker[name].type,
@@ -206,7 +206,7 @@ export function postSqlFromPgVisitor(datas: object, src: PgVisitor): string {
              */
         const addAssociation = (subEntity: Ientity, subParentEntity: Ientity) => {
             console.log(formatLog.debug(`addAssociation in ${subEntity.name} for parent`, subParentEntity.name));
-
+// console.log("!----------------------------------- postSqlFromPgVisitor. -----------------------------------!");
             const relationName = getRelationNameFromEntity(subEntity, subParentEntity);
             const parentRelationName = getRelationNameFromEntity(subParentEntity, subEntity);
             
@@ -294,7 +294,7 @@ export function postSqlFromPgVisitor(datas: object, src: PgVisitor): string {
                 if (entity) addAssociation(newEntity, entity);
             }
         };
-
+// console.log("!----------------------------------- postSqlFromPgVisitor. -----------------------------------!");
         // Main loop
         if (entity && parentEntity) {
             for (const key in datas) {
@@ -352,7 +352,7 @@ export function postSqlFromPgVisitor(datas: object, src: PgVisitor): string {
     if (temp) sqlResult += asJson({
         query: `SELECT ${temp && temp.select ? temp.select : "*"} FROM ${names[postEntity.table]} ${temp && temp.groupBy ? `GROUP BY ${temp.groupBy}` : ''}`, 
         singular: false, 
-        strip: src.ctx.config.stripNull,
+        strip: src.ctx.config.options.includes(EnumOptions.stripNull),
         count: false
     });
     log.query(`${sqlResult}`);

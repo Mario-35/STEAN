@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- HTML Views Login for API. -----------------------------------!");
 import { IKeyString, koaContext } from "../../types";
 import { CoreHtmlView } from "./core";
 
@@ -50,9 +50,9 @@ export class Login extends CoreHtmlView {
                     <div class="login-form">
                       <form action="${url}/login" method="post">
                         <div class="sign-in-htm">
-                          ${this.addTextInput({id: "user", name: "username", label: "Username", value: ""})}
-                          ${this.addTextInput({id: "pass", name: "password", label: "Password", value: "", password: true})}
-                          ${this.addCheckBox({id: "check", checked: true, label: " Keep me Signed in"})}
+                          ${this.addTextInput({name: "username", label: "Username", value: ""})}
+                          ${this.addTextInput({name: "password", label: "Password", value: "", password: true})}
+                          ${this.addCheckBox({name: "check", checked: true, label: " Keep me Signed in"})}
                           ${this.addSubmitButton("Sign In")}
                           ${this.hr()}
                           ${this.addButton(`${url}/Query`, "Return to Query")}
@@ -64,10 +64,10 @@ export class Login extends CoreHtmlView {
             
                       <form action="${url}/register" method="post">
                         <div class="sign-up-htm">
-                          ${this.addTextInput({id: "regusername", name: "username", label: "Username", value: datas.body && datas.body.username ? datas.body.username : "", alert: alert("username"), toolType: "Name must be at least 2 words"})}
-                          ${this.addTextInput({id: "regpass", name: "password", label: "Password", password: true, value: datas.body && datas.body.password ? datas.body.password : "", alert: alert("password"), toolType: "At least one number, one lowercase and one uppercase letter, at least six characters that are letters, numbers or the underscore"})}
-                          ${this.addTextInput({id: "regrepeat", name: "repeat", label: "Repeat password", password: true, value: "", alert: alert("repeat"), toolType: "Same as password"})}
-                          ${this.addTextInput({id: "regmail", name: "email", label: "Email address", value: datas.body && datas.body.email ? datas.body.email : "", alert: alert("email"), toolType: "A valid email address"})}
+                          ${this.addTextInput({name: "username", label: "Username", value: datas.body && datas.body.username ? datas.body.username : "", alert: alert("username"), toolType: "Name must be at least 2 words"})}
+                          ${this.addTextInput({name: "pass", label: "Password", password: true, value: datas.body && datas.body.password ? datas.body.password : "", alert: alert("password"), toolType: "At least one number, one lowercase and one uppercase letter, at least six characters that are letters, numbers or the underscore"})}
+                          ${this.addTextInput({name: "repeat", label: "Repeat password", password: true, value: "", alert: alert("repeat"), toolType: "Same as password"})}
+                          ${this.addTextInput({name: "mail", label: "Email address", value: datas.body && datas.body.email ? datas.body.email : "", alert: alert("email"), toolType: "A valid email address"})}
                           ${this.addSubmitButton("Sign UP")}
                           ${this.hr()}                                
                           <div class="foot-lnk">

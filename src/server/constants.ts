@@ -8,7 +8,7 @@
 "use strict";
 import util from "util";
 import { getKey } from "./helpers";
-
+// console.log("!----------------------------------- Constants of API. -----------------------------------!");
 export const _DEL= "🗑️";
 export const _ERRORFILE = "errorFile.md";
 export const _FORBIDDEN = "⛔️";

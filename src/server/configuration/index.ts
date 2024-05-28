@@ -5,14 +5,14 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- Configuration class. -----------------------------------!");
 import { addToStrings, ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_DB, NODE_ENV, setReady, TEST, TIMESTAMP, _DEBUG, _ERRORFILE, _NOTOK, _OK, _WEB, } from "../constants";
-import { asyncForEach, decrypt, encrypt, hidePassword, isProduction, isTest, stringToBoolean, unikeList, } from "../helpers";
+import { asyncForEach, decrypt, encrypt, hidePassword, isProduction, isTest, stringToBoolean, unikeList, unique, } from "../helpers";
 import { IconfigFile, IdbConnection, IserviceInfos, koaContext } from "../types";
 import { errors, infos, msg } from "../messages";
 import { createDatabase, createService} from "../db/helpers";
 import { app } from "..";
-import { EnumColor, EnumExtensions, EnumVersion } from "../enums";
+import { EnumColor, EnumExtensions, EnumOptions, EnumVersion, typeExtensions, typeOptions } from "../enums";
 import fs from "fs";
 import util from "util";
 import update from "./update.json";
@@ -76,16 +76,17 @@ class Configuration {
     result.pg.database = TEST;
     result.nb_page = 1000;
     result.extensions = ["base", "multiDatastream", "lora", "logs"];
-    result.canDrop = true;
-    result.logFile = "";
+    result.options = [EnumOptions.canDrop];
     result.connection = undefined;
     Configuration.configs[TEST] = this.formatConfig(result);
 	}
 
   getInfos = (ctx: koaContext, name: string): IserviceInfos  => {
+    console.log(Configuration.configs);
+    
     const protocol:string = ctx.request.headers["x-forwarded-proto"]
           ? ctx.request.headers["x-forwarded-proto"].toString()
-          : Configuration.configs[name].forceHttps && Configuration.configs[name].forceHttps === true
+          : Configuration.configs[name].options.includes(EnumOptions.forceHttps)
             ? "https"
             : ctx.protocol;
         
@@ -364,29 +365,46 @@ class Configuration {
         return EnumVersion.v1_0
     }
   }
-
+  
   // return IconfigFile Formated for IconfigFile object or name found in json file
-  private formatConfig(input: object | string, name?: string): IconfigFile {
+  private formatConfig(input: object | string, name?: string): IconfigFile {   
     if (typeof input === "string") {
       name = input;
-      // @ts-ignore
       input = Configuration.jsonConfiguration[input];
     }    
+    const options: typeof typeOptions = input["options"]
+    ? unique([... String(input["options"]).split(",")]) as typeof typeOptions 
+    : [];
+
+    const extensions: typeof typeExtensions = input["extensions"]
+      ? unique(["base", ... String(input["extensions"]).split(",")]) as typeof typeExtensions 
+      : ["base"];
+
+    // TO REMOVE AFTER ALL SERVICES CLEAN
+    const formatOldConfig = () => {
+      if (stringToBoolean(input["stripNull"])) {
+        options.push(EnumOptions.stripNull)
+        delete input["stripNull"]
+      }
+      if (stringToBoolean(input["canDrop"])) {
+        options.push(EnumOptions.canDrop)
+        delete input["canDrop"]
+      }
+      if (stringToBoolean(input["forceHttps"])) {
+        options.push(EnumOptions.forceHttps)
+        delete input["forceHttps"]
+      }
+    }
+
+    formatOldConfig();
     const goodDbName = name
       ? name
       // @ts-ignore
       : input[`pg`] && input[`pg`]["database"] ? input[`pg`]["database"] : `ERROR` || "ERROR";
-      // @ts-ignore
-    let extensions = input["extensions"]
-        // @ts-ignore
-      ? ["base", ... String(input["extensions"]).split(",")]
-      : ["base"];
-      // @ts-ignore
     const version = goodDbName === ADMIN ? EnumVersion.v1_1  : String(input["apiVersion"]).trim();
     const returnValue: IconfigFile = {
       name: goodDbName,
-      port:
-        goodDbName === ADMIN
+      port: goodDbName === ADMIN
         // @ts-ignore
           ? input["port"] || 8029
           // @ts-ignore
@@ -413,20 +431,9 @@ class Configuration {
       // @ts-ignore
       nb_page: input["nb_page"] ? +input["nb_page"] : 200,
       // @ts-ignore
-      forceHttps: stringToBoolean(input["forceHttps"]), 
-      // @ts-ignore
-      stripNull: stringToBoolean(input["stripNull"]),
-      // @ts-ignore
       alias: input["alias"] ? unikeList(String(input["alias"]).split(",")) : [],
       extensions: extensions,
-      // @ts-ignore
-      highPrecision: stringToBoolean(input["highPrecision"]),
-      // @ts-ignore
-      canDrop: stringToBoolean(input["canDrop"]),
-      // @ts-ignore
-      users: stringToBoolean(input["users"], true),
-      // @ts-ignore
-      logFile: input["log"] || "",
+      options: options,
       connection: undefined,
     };    
     if (Object.values(returnValue).includes("ERROR"))
@@ -435,7 +442,7 @@ class Configuration {
           showHidden: false,
           depth: null,
         })}]`
-      );       
+      );
     return returnValue;
   }
 

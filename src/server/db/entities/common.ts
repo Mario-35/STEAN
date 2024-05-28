@@ -6,7 +6,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- Common class entity. -----------------------------------!");
  import { addDoubleQuotes, returnFormats } from "../../helpers/index";
  import { formatLog } from "../../logger";
  import { IreturnResult, koaContext } from "../../types";

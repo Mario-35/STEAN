@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- testNotNull. -----------------------------------!");
 /**
  *
  * @param input thing to test
@@ -21,3 +21,4 @@ export const isNull = <T>(input: T): boolean => {
             return false;
     } 
 };
+// console.log("!----------------------------------- testNotNull. -----------------------------------!");

@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- createSTDB. -----------------------------------!");
 import { createTable, createUser } from "../helpers";
 import { serverConfig } from "../../configuration";
 import { addDoubleQuotes, addSimpleQuotes, asyncForEach } from "../../helpers";
@@ -99,7 +99,7 @@ export const createDatabase = async (configName: string): Promise<IKeyString> =>
   );
 
   // If only numeric extension
-  if ( serverConfig.getConfig(configName).extensions.includes( EnumExtensions.numeric ) ) {
+  if ( serverConfig.getConfig(configName).extensions.includes( EnumExtensions.highPrecision ) ) {
     await dbConnection.unsafe(`ALTER TABLE ${addDoubleQuotes(DB.Observations.table)} ALTER COLUMN 'result' TYPE float4 USING null;`)
       .catch((error: Error) => {
         log.errorMsg(error);

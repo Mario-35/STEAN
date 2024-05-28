@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- log interface. -----------------------------------!");
 export interface Ilog{ // Log save Interface
     method: string; // verb method
     returnid?: string; // id return in result

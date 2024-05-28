@@ -1,10 +1,11 @@
 /**
- * removeEmpty.
+ * removeEmpty
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
+// console.log("!----------------------------------- removeEmpty -----------------------------------!");
 
   export function removeEmpty(obj: object): object {
       if (Array.isArray(obj))  

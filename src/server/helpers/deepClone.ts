@@ -1,10 +1,11 @@
 /**
- * deepClone.
+ * deepClone
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
+// console.log("!----------------------------------- deepClone -----------------------------------!");
 
 export const deepClone = (obj: any) => {
     if (obj === null) return null;

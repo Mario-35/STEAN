@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- exportToJson. -----------------------------------!");
 import { serverConfig } from "../../configuration";
 import { addDoubleQuotes, asyncForEach, getUrlKey, hidePassword, removeEmpty } from "../../helpers";
 import { koaContext } from "../../types";

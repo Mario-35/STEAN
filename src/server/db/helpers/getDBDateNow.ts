@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- getDBDateNow. -----------------------------------!");
 import { executeSqlValues } from ".";
 import { IconfigFile } from "../../types";
 

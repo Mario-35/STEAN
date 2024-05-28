@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- Entity interface. -----------------------------------!");
 import { IentityColumn, IentityRelation, IKeyString } from ".";
 
 export interface Ientity1 {

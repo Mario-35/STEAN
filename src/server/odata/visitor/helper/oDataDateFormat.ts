@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- oDataDateFormat. -----------------------------------!");
 import { Token } from "../../parser";
 
 export function oDataDateFormat(node: Token, test: string): string | undefined {

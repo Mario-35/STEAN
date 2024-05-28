@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- columnsNameFromHydrasCsv. -----------------------------------!");
 import fs from "fs";
 import { formatLog } from "../../logger";
 import { IcsvFile, IcsvImport } from "../../types";

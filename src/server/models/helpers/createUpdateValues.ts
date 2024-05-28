@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- createUpdateValues. -----------------------------------!");
 import { ESCAPE_SIMPLE_QUOTE } from "../../constants";
 import { addDoubleQuotes, addSimpleQuotes } from "../../helpers";
 import { formatLog } from "../../logger";

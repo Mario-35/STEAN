@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- createToken. -----------------------------------!");
 import { Iuser } from "../types";
 import jsonwebtoken from "jsonwebtoken";
 import { APP_KEY } from "../constants";

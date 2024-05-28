@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- CreateObservations entity. -----------------------------------!");
 import { Common } from "./common";
 import { formatLog } from "../../logger";
 import { IcsvColumn, IcsvFile, IreturnResult, IstreamInfos, koaContext } from "../../types";
@@ -47,7 +47,7 @@ export class CreateObservations extends Common {
               : `${separateur}${elem}${separateur}`
             : `${separateur}{${elem}}${separateur}`
           : index === this.indexResult && type === "VALUES"
-          ? this.ctx.config.extensions.includes(EnumExtensions.numeric)
+          ? this.ctx.config.extensions.includes(EnumExtensions.resultNumeric)
             ? elem
             : `'{"value": ${elem}}'`
           : elem

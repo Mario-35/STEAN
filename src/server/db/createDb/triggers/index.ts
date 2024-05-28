@@ -1,10 +1,11 @@
 /**
- * Index triggers.
+ * Index triggers
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
+// console.log("!----------------------------------- Index triggers -----------------------------------!");
 
 import fs from "fs";
 import path from "path";

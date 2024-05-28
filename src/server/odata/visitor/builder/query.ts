@@ -5,15 +5,15 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- Query builder -----------------------------------!");
 import { _COLUMNSEPARATOR } from "../../../constants";
 import { formatLog } from "../../../logger";
-import { addDoubleQuotes, cleanStringComma, isCsvOrArray, isGraph, isObservation, removeAllQuotes, removeDoubleQuotes } from "../../../helpers";
+import { addDoubleQuotes, cleanStringComma, containsAll, isCsvOrArray, isGraph, isObservation, removeAllQuotes, removeDoubleQuotes } from "../../../helpers";
 import { asJson } from "../../../db/queries";
 import { IconfigFile, Ientity, IKeyBoolean, IpgQuery } from "../../../types";
 import { PgVisitor, RootPgVisitor } from "..";
 import { models } from "../../../models";
-import { allEntities } from "../../../enums";
+import { allEntities, EnumOptions } from "../../../enums";
 import { GroupBy, Key, OrderBy, Select, Where } from ".";
 import { errors } from "../../../messages";
 
@@ -47,7 +47,7 @@ export class Query  {
          * @param options options
          * @returns formated column or 
          */
-
+// console.log("!----------------------------------- Query builder -----------------------------------!");
         function formatedColumn(config: IconfigFile, entity : Ientity, column: string, options?: IKeyBoolean): string | undefined {   
             console.log(formatLog.whereIam(column));
             if (entity.columns[column]) {
@@ -95,7 +95,7 @@ export class Query  {
             ? Object.keys(tempEntity.columns)
                 .filter((word) => !word.includes("_"))
                 .filter(e => !(e === "result" && element.splitResult))
-                .filter(e => !tempEntity.columns[e].extensions || tempEntity.columns[e].extensions && main.ctx.config.extensions.includes(tempEntity.columns[e].extensions || ""))
+                .filter(e => !tempEntity.columns[e].extensions || tempEntity.columns[e].extensions && containsAll(main.ctx.config.extensions, tempEntity.columns[e].extensions) === true || "")
             : element.query.select.toString().split(_COLUMNSEPARATOR).filter((word: string) => word.trim() != "").map(e => removeDoubleQuotes(e));
             // loop on columns
         columns.map((column: string) => {
@@ -155,7 +155,7 @@ export class Query  {
                             if (query) relations[index] = `(${asJson({ 
                                 query: query, 
                                 singular : models.isSingular(main.ctx.config, name),
-                                strip: main.ctx.config.stripNull,
+                                strip: main.ctx.config.options.includes(EnumOptions.stripNull),
                                 count: false })}) AS ${addDoubleQuotes(name)}`;
                             else throw new Error(errors.invalidQuery);
                         }
@@ -169,7 +169,7 @@ export class Query  {
                                 const tempTable = models.getEntityName(main.ctx.config, rel);
                                 let stream: string | undefined = undefined;
                                 if (tempTable && !main.ctx.model[realEntityName].relations[rel].relationKey.startsWith("_"))
-                                    if ( main.ctx.config.stripNull === true && realEntityName === main.ctx.model[allEntities.Observations].name &&  tempTable.endsWith(main.ctx.model[allEntities.Datastreams].name)) stream = `CASE WHEN ${main.ctx.model[tempTable].table}_id NOTNULL THEN`;
+                                    if ( main.ctx.config.options.includes(EnumOptions.stripNull) && realEntityName === main.ctx.model[allEntities.Observations].name &&  tempTable.endsWith(main.ctx.model[allEntities.Datastreams].name)) stream = `CASE WHEN ${main.ctx.model[tempTable].table}_id NOTNULL THEN`;
                                         select.push(`${stream ? stream : ""} CONCAT('${main.ctx.decodedUrl.root}/${main.ctx.model[realEntityName].name}(', ${addDoubleQuotes(main.ctx.model[realEntityName].table)}."id", ')/${rel}') ${stream ? "END ": ""}AS "${rel}@iot.navigationLink"`);                            
                                         main.addToIntervalColumns(`'${main.ctx.decodedUrl.root}/${main.ctx.model[realEntityName].name}(0)/${rel}' AS "${rel}@iot.navigationLink"`);
                             }

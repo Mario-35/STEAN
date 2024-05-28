@@ -5,14 +5,13 @@
  * @author mario.adam@inrae.fr
  *
  */
-
-import { IKeyString, IKeyBoolean, IconfigFile } from ".";
-import { EnumExtensions } from "../enums";
+// console.log("!----------------------------------- entityColumn interface. -----------------------------------!");
+import { IKeyString, IKeyBoolean, IconfigFile, typeExtensions } from ".";
 
 export interface IentityColumn {
     [key: string]: {
         readonly create: string;
-        extensions?: EnumExtensions;
+        extensions?: typeof typeExtensions;
         alias(config: IconfigFile, test?: IKeyBoolean): string | undefined | void;
         readonly unique?: boolean;
         readonly test?: string;

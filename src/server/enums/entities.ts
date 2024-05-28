@@ -1,14 +1,12 @@
 /**
- * entities Enum.
+ * entities Enum
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- entities Enum -----------------------------------!");
 import { EnumExtensions } from ".";
-import { serverConfig } from "../configuration";
-import { IconfigFile } from "../types";
 
 enum EnumBaseEntities {    
     Things = 'Things',
@@ -45,8 +43,8 @@ enum EnumLogEntities {
     Logs = 'Logs'
 }
 
-export const filterEntities = (input: IconfigFile | string, name?: string) => {    
-    const exts = (typeof input === "string") ? input === "ALL" ? Object.keys(EnumExtensions) : serverConfig.getConfig(input).extensions : input.extensions;
+export const filterEntities = (exts: string[], name?: string) => {    
+    // const exts = (typeof input === "string") ? input === "ALL" ? Object.keys(EnumExtensions) : serverConfig.getConfig(input).extensions : input.extensions;
     let res = EnumBaseEntities;
     if (exts.includes(EnumExtensions.logs)) res = {... res, ... EnumLogEntities};
     if (exts.includes(EnumExtensions.multiDatastream)) res = {... res, ... EnumMultiDatastreamEntities};

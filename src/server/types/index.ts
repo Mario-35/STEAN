@@ -5,9 +5,9 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- Index Types. -----------------------------------!");
 import Koa from "koa";
-import { allEntitiesType } from "../enums";
+import { allEntitiesType, EnumExtensions, EnumOptions } from "../enums";
 import { Ientity } from "./entity";
 export { Icomon } from "./comon";
 export { IconfigFile } from "./configFile";
@@ -34,6 +34,8 @@ export { IdecodedUrl } from "./decodedUrl";
 export interface IKeyBoolean { [key: string]: boolean; }
 export interface IKeyString { [key: string]: string; }
 export type Ientities = { [key in allEntitiesType as string]: Ientity }
-// export type koaContext = Koa.Context;
-// export type koaContext = Koa.DefaultContext
 export type koaContext = Koa.ParameterizedContext<Koa.DefaultState,  Koa.DefaultContext>
+
+export const typeOptions = Object.keys(EnumOptions) as Array<keyof typeof EnumOptions>;
+export const typeExtensions= Object.keys(EnumExtensions) as Array<keyof typeof EnumExtensions>;
+

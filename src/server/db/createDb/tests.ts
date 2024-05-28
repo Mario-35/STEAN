@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- tests datas. -----------------------------------!");
 // Shortcuts for space
 const n = {
 	types: ["classic","apostrophe","accent","special","hack"],

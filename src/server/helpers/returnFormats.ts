@@ -1,18 +1,18 @@
 /**
- * returnFormats.
+ * returnFormats
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- returnFormats -----------------------------------!");
 import { asDataArray, asJson, graphDatastream, graphMultiDatastream, interval, } from "../db/queries";
 import { Parser } from "json2csv";
 import { IreturnFormat, koaContext } from "../types";
 import { addCssFile } from "../views/css";
 import { addJsFile } from "../views/js";
 import util from "util";
-import { EnumResultFormats } from "../enums";
+import { EnumOptions, EnumResultFormats } from "../enums";
 import { isGraph } from ".";
 import { DOUBLEQUOTEDCOMA } from "../constants";
 import { log } from "../log";
@@ -41,7 +41,7 @@ const generateFields = (input: PgVisitor): string[] => {
  * @param input PgVisitor
  * @returns sSQL Query for graph
  */
-
+// console.log("!----------------------------------- returnFormats. -----------------------------------!");
 const generateGrahSql = (input: PgVisitor): string => {
   input.intervalColumns = ["id", "step as date", "result"];
   if (isGraph(input)) input.intervalColumns.push("concat"); 
@@ -79,7 +79,7 @@ const _returnFormats: { [key in EnumResultFormats]: IreturnFormat } = {
             query: input.toString(),
             singular: false,
             count: true,
-            strip: input.ctx.config.stripNull,
+            strip: input.ctx.config.options.includes(EnumOptions.stripNull),
             fullCount: input.count === true ? input.toPgQuery()?.count : undefined,
             fields: generateFields(input),
           });

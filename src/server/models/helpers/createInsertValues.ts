@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- createInsertValues. -----------------------------------!");
 import { formatColumnValue } from ".";
 import { models } from "..";
 import { ESCAPE_SIMPLE_QUOTE } from "../../constants";

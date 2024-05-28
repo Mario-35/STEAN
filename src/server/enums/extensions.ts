@@ -6,6 +6,9 @@
  * @author mario.adam@inrae.fr
  *
  */
+// console.log("!----------------------------------- extensions Enum. -----------------------------------!");
+// console.log("!----------------------------------- extensions Enums -----------------------------------!");
+
 
 export enum EnumExtensions { 
     base = "base",
@@ -16,5 +19,6 @@ export enum EnumExtensions {
     tasking = "tasking",
     mqtt = "mqtt",
     multiDatastream = "multiDatastream",
-    numeric = "numeric"
+    highPrecision = "highPrecision",
+    resultNumeric = "resultNumeric",
 }

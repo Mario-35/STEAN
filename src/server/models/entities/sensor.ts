@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- entity Sensor. -----------------------------------!");
 import { createEntity } from ".";
 import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";

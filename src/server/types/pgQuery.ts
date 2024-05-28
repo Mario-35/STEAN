@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- pgQuery interface. -----------------------------------!");
 export interface IpgQuery { // postgresSql query simple Interface
     select: string;
     from: string; 

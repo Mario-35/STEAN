@@ -8,7 +8,7 @@
 import { koaContext } from "../../types";
 import { formatLog } from "../../logger";
 import { Common } from "./common";
-
+// console.log("!----------------------------------- MultiObservedProperties entity. -----------------------------------!");
 export class MultiObservedProperties extends Common {
   constructor(ctx: koaContext) {
     console.log(formatLog.whereIam());

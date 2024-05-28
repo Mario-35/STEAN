@@ -6,6 +6,6 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- Index of PgVisitor. -----------------------------------!");
 export { PgVisitor } from "./pg/pgVisitor";
 export { RootPgVisitor } from "./pg/rootPgVisitor";

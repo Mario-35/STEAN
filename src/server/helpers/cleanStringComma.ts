@@ -1,11 +1,11 @@
 /**
- * cleanList.
+ * cleanStringComma
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- cleanStringComma -----------------------------------!");
 /**
  *
  * @param input: string

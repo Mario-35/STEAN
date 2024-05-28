@@ -6,7 +6,7 @@
  *
  */
 import { Core } from ".";
-
+// console.log("!----------------------------------- select for query builder. -----------------------------------!");
 export class Select extends Core{  
   constructor(input?: string | string[]) {
     super(input);

@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- executeSql. -----------------------------------!");
 import { serverConfig } from "../../configuration";
 import { log } from "../../log";
 import { isTest } from "../../helpers";

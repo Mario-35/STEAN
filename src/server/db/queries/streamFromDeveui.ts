@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- streamFromDeveui. -----------------------------------!");
 export const streamFromDeveui = ( input: string ): string => 
 `WITH multidatastream as (
   SELECT 

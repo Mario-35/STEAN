@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- HTML Views Index for API. -----------------------------------!");
 import { IqueryOptions } from '../types';
 import fs from "fs";
 import { createQueryHtmlString } from './helpers';

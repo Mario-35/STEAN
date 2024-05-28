@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- Decoders entity. -----------------------------------!");
 import { IreturnResult, koaContext } from "../../types";
 import { Common } from "./common";
 import { formatLog } from "../../logger";

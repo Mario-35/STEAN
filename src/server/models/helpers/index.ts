@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- Index Models Helpers. -----------------------------------!");
 export { formatColumnValue } from "./formatColumnValue";
 export { createUpdateValues } from "./createUpdateValues";
 export { createInsertValues } from "./createInsertValues";

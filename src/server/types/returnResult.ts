@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- returnResult interface. -----------------------------------!");
 export interface IreturnResult { // return format api
     id: bigint | undefined; // id for single
     nextLink: string | undefined; // pagination next link

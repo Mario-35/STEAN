@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- entity User. -----------------------------------!");
 import { Ientity } from "../../types";
 import { createEntity } from ".";
 import { _id, _text } from "./constants";

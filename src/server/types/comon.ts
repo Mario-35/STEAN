@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- Comon interface. -----------------------------------!");
 import { IreturnResult } from "./returnResult";
 import { Iuser } from "./user";
 

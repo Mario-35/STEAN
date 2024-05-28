@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- Users entity. -----------------------------------!");
 import { koaContext } from "../../types";
 import { Common } from "./common";
 import { formatLog } from "../../logger";

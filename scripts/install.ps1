@@ -128,7 +128,7 @@ if (Test-Path $POSTGRES) {
 if (Test-Path $NODEJS) {
     Write-Host "Node is already installed."
 } else {
-    Write-Host "PostgreSQL is Not installed."
+    Write-Host "Node is Not installed."
     install_node
     exit
 }

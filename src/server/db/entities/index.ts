@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-
+// console.log("!----------------------------------- Index entities. -----------------------------------!");
 export { Configs } from "./Configs";
 export { Datastreams } from "./Datastreams";
 export { FeaturesOfInterest } from "./FeaturesOfInterest";

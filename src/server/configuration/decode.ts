@@ -7,7 +7,7 @@
  * NOT Use in API use to decode in command line
  *
  */
-
+// console.log("!----------------------------------- decode Tool. -----------------------------------!");
 import fs from "fs";
 import crypto from "crypto";
 import { isString } from "../helpers/tests";
