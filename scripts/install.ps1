@@ -58,6 +58,7 @@ function install_stean {
     }
     # unzip actual
     # Expand-Archive -Path $FILEDIST -DestinationPath $APIDEST
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
     [System.IO.Compression.ZipFile]::ExtractToDirectory($FILEDIST, $APIDEST)
     # Save config
     if (Test-Path .\$APIBak\configuration\production.json) {
@@ -72,6 +73,7 @@ function install_stean {
     save_dist
     Set-Location $APIDEST
     npm install --omit=dev
+    npm install -g nodemon
     Set-Location ..
 }
 
@@ -117,7 +119,11 @@ if (Test-Path $POSTGRES) {
             Write-Host "Postgis is Not installed."
             exit
         }
+    } else {
+        Write-Host "Postgis is Not installed."
+        exit
     }
+
 } else {
     Write-Host "PostgreSQL is Not installed."
     exit
