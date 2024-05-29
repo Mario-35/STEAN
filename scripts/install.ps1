@@ -14,8 +14,6 @@ $NODEJS = "C:\Program Files\nodejs" # nodeJS windows install path
 $FILEAPP = ".\$APIDEST\index.js" # app path
 $FILEDIST = ".\dist.zip" # name ditrib file path
 $FILEDISTOLD = ".\distBak.zip" # name saved ditrib file
-$FILEKEY = ".\$APIDEST\configuration\.key" # encrypt key file
-$FILECONFIG = ".\$APIDEST\configuration\production.json" # configuration file
 
 Write-Host "Installing Stean..."
 
@@ -83,6 +81,7 @@ function stop_stean {
 }
 
 # Function to run stean
+function start_stean {
     stop_stean
     if (Test-Path $FILEAPP) {
         Write-Host "$FILEAPP starting ..."
