@@ -6,6 +6,7 @@
  *
  */
 // console.log("!----------------------------------- createQueryHtmlString -----------------------------------!");
+
 import { formatLog } from "../../logger";
 import { cleanUrl, removeAllQuotes, bigIntReplacer } from "../../helpers";
 import { addCssFile, listaddCssFiles } from "../css";
@@ -57,9 +58,11 @@ export function createQueryHtmlString(input: string, params: IqueryOptions): str
         splitOptions.forEach((element: string) => {
             if (element.includes("=")) {
                 const temp = element.split("=");
-                if (temp[0] && temp[1])
+                if (temp[0] && temp[1]) {
+                    // @ts-ignore
                     if (valid.includes(temp[0])) params[temp[0]] = cleanUrl(temp[1]);
                     else if (temp[0] == "datas") params.datas = JSON.parse(unescape(temp[1]));
+                }
             }
         });
     }

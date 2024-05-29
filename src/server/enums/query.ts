@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- EnumQuery Enum. -----------------------------------!");
+// onsole.log("!----------------------------------- EnumQuery Enum. -----------------------------------!");
 export enum EnumQuery { 
     Where = "where",
     Select = "select",

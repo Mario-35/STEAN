@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- HTML Views First Install for API. -----------------------------------!");
+// onsole.log("!----------------------------------- HTML Views First Install for API. -----------------------------------!");
 
 import { EnumExtensions, enumKeys, EnumOptions, EnumVersion } from "../../enums";
 import { IKeyString, koaContext } from "../../types";

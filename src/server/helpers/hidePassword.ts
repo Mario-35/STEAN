@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- hidePassword. -----------------------------------!");
+// onsole.log("!----------------------------------- hidePassword. -----------------------------------!");
 export function hidePassword(obj: object): object {
     if (Array.isArray(obj))  
       return obj

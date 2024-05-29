@@ -6,7 +6,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Index of PgVisitor. -----------------------------------!");
+// onsole.log("!----------------------------------- Index of PgVisitor. -----------------------------------!");
 export { Core } from "./core";
 export { GroupBy } from "./groupBy";
 export { OrderBy } from "./orderBy";

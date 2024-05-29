@@ -397,7 +397,7 @@ describe("endpoint : Locations [8.2.2]", () => {
 					res.status.should.equal(201);
 					res.type.should.equal("application/json");
 					res.body.should.include.keys(testsKeys);
-					executeQuery(`SELECT * FROM "thinglocation" WHERE "thing_id" = 1 AND "location_id" = ${res.body["@iot.id"]}`).then((tempSearch) => {
+					executeQuery(`SELECT * FROM "thinglocation" WHERE "thing_id" = 1 AND "location_id" = ${res.body["@iot.id"]}`).then((tempSearch: Record<string, any>) => {
 						tempSearch.should.include.keys("location_id", "thing_id");
 						tempSearch["thing_id"].should.eql(1);
 						tempSearch["location_id"].should.eql(+res.body["@iot.id"]);
@@ -415,7 +415,7 @@ describe("endpoint : Locations [8.2.2]", () => {
 	describe(`{patch} ${entity.name} ${nbColorTitle}[10.3]`, () => {
 		afterEach(() => { writeLog(true); });
 		it(`Return updated ${entity.name} ${nbColor}[10.3.1]`, (done) => {
-			executeQuery(last(entity.table)).then((locations) => {
+			executeQuery(last(entity.table)).then((locations: Record<string, any>) => {
 				const datas = {
 					name: "My Location has changed",
 					description: "Inrae - Site De Saint-Gilles",
@@ -494,7 +494,7 @@ describe("endpoint : Locations [8.2.2]", () => {
 	describe(`{delete} ${entity.name} ${nbColorTitle}[10.4]`, () => {
 		afterEach(() => { writeLog(true); });
 		it(`Delete ${entity.name} return no content with code 204 ${nbColor}[10.4.1]`, (done) => {
-			executeQuery(`SELECT (SELECT count(id) FROM "${entity.table}")::int as count, (${last(entity.table)})::int as id `).then((beforeDelete) => {
+			executeQuery(`SELECT (SELECT count(id) FROM "${entity.table}")::int as count, (${last(entity.table)})::int as id `).then((beforeDelete: Record<string, any>)  => {
 				const infos = addTest({
 					api : `{delete} ${entity.name} Delete one`,
 					apiName: `Delete${entity.name}`,
@@ -513,7 +513,7 @@ describe("endpoint : Locations [8.2.2]", () => {
 					.end((err: Error, res: any) => {
 						should.not.exist(err);
 						res.status.should.equal(204);
-						executeQuery(`SELECT count(id)::int FROM "${entity.table}"`).then((afterDelete) => {
+						executeQuery(`SELECT count(id)::int FROM "${entity.table}"`).then((afterDelete: Record<string, any>) => {
 							afterDelete["count"].should.eql(beforeDelete["count"] - 1);
 							addToApiDoc({
 								...infos,

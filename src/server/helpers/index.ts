@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Main Helpers -----------------------------------!");
+// onsole.log("!----------------------------------- Main Helpers -----------------------------------!");
 
 import { koaContext } from "../types";
 export const removeFirstOrEnd = (input: string, char: string) => {    

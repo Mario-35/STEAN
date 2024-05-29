@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- createQueryParams. -----------------------------------!");
+// onsole.log("!----------------------------------- createQueryParams. -----------------------------------!");
 import { getAuthenticatedUser } from "../../authentication";
 import { serverConfig } from "../../configuration";
 import { models } from "../../models";
@@ -28,7 +28,6 @@ export async function createQueryParams(ctx: koaContext): Promise<IqueryOptions|
                 : Object.keys(model).filter((elem: string) => ctx.model[elem].order > 0 );
 
     const decodedUrl = decodeUrl(ctx);
-
     if (decodedUrl) return {
         methods: ["GET"],
         decodedUrl: decodedUrl,

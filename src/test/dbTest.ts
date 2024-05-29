@@ -5,7 +5,7 @@
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  */
-// console.log("!----------------------------------- Knex.js database sensorthings client and query builder for PostgreSQL. -----------------------------------!");
+// onsole.log("!----------------------------------- Knex.js database sensorthings client and query builder for PostgreSQL. -----------------------------------!");
 import postgres from "postgres";
 import { TEST } from "../server/constants";
 const config = require("../server/configuration/test.json");

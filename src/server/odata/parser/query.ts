@@ -8,6 +8,7 @@ import PrimitiveLiteral from "./primitiveLiteral";
 import NameOrIdentifier from "./nameOrIdentifier";
 import Expressions from "./expressions";
 import { returnFormats } from "../../helpers";
+import { keyobj } from "../../types";
 
 namespace Query {
     const addToIndex = (value: Utils.SourceArray, index: number, name: string): number | undefined => {
@@ -809,7 +810,7 @@ namespace Query {
 
     export function selectItem(value: Utils.SourceArray, index: number): Lexer.Token | undefined {
         const start = index;
-        let item;
+        let item: Record<string, any> = {};
         const op = Query.allOperationsInSchema(value, index);
         const star = Lexer.STAR(value, index);
         if (op > index) {
@@ -825,7 +826,7 @@ namespace Query {
             if (name && value[name.next] !== 0x2f) return;
             else if (name && value[name.next] === 0x2f) {
                 index++;
-                item["name"] = name;
+                item["name" as keyobj] = name;
             }
 
             const select = Query.selectProperty(value, index) || Query.qualifiedActionName(value, index) || Query.qualifiedFunctionName(value, index);

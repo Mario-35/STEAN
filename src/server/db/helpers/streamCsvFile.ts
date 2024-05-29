@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- streamCsvFile. -----------------------------------!");
+// onsole.log("!----------------------------------- streamCsvFile. -----------------------------------!");
 import { formatLog } from "../../logger";
 import { IcsvFile, IcsvImport, koaContext } from "../../types";
 import { createReadStream } from 'fs';
@@ -30,7 +30,7 @@ export async function streamCsvFile( ctx: koaContext, paramsFile: IcsvFile, sqlR
     .on('finish', async (e: any) => {
       await executeSqlValues(ctx.config, `SELECT count(id) FROM "${paramsFile.tempTable}"`)
       .then((e) => {
-        resolve(+e[0]);
+        resolve(+e[0 as keyof object]);
       }).catch((error) => {
         log.error(error);      
         resolve(-1);

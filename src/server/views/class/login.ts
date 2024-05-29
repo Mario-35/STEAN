@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- HTML Views Login for API. -----------------------------------!");
+// onsole.log("!----------------------------------- HTML Views Login for API. -----------------------------------!");
 import { IKeyString, koaContext } from "../../types";
 import { CoreHtmlView } from "./core";
 

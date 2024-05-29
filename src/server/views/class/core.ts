@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- HTML Views Core for API. -----------------------------------!");
+// onsole.log("!----------------------------------- HTML Views Core for API. -----------------------------------!");
 import { koaContext } from "../../types";
 import { addCssFile } from "../css";
 

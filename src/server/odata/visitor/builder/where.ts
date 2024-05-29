@@ -6,7 +6,7 @@
  *
  */
 import { Core } from ".";
-// console.log("!----------------------------------- Where builder -----------------------------------!");
+// onsole.log("!----------------------------------- Where builder -----------------------------------!");
 export class Where extends Core {  
   constructor(input?: string | string[]) {
     super(input);

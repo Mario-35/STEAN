@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Index Css. -----------------------------------!");
+// onsole.log("!----------------------------------- Index Css. -----------------------------------!");
 import fs from "fs";
 import path from "path";
   export const addCssFile = (name: string):string => (fs.existsSync(__dirname + `/${name}`)) ? fs.readFileSync(__dirname + `/${name}`, "utf-8") : fs.readFileSync(__dirname + `/${name.replace(".css",".min.css")}`, "utf-8");

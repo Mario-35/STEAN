@@ -6,7 +6,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Index of The API. -----------------------------------!");
+// onsole.log("!----------------------------------- Index of The API. -----------------------------------!");
 
 import path from "path";
 import Koa from "koa";
@@ -34,7 +34,7 @@ declare module "koa" {
     decodedUrl: IdecodedUrl;
     config: IconfigFile;
     odata: RootPgVisitor;
-    datas: object;
+    datas: Record<string, any>;
     user: IuserToken;
     log: Ilog | undefined;
     model: Ientities;

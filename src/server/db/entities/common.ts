@@ -6,10 +6,10 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Common class entity. -----------------------------------!");
+// onsole.log("!----------------------------------- Common class entity. -----------------------------------!");
  import { addDoubleQuotes, returnFormats } from "../../helpers/index";
  import { formatLog } from "../../logger";
- import { IreturnResult, koaContext } from "../../types";
+ import { IreturnResult, keyobj, koaContext } from "../../types";
  import { executeSqlValues, removeKeyFromUrl } from "../helpers";
  import { getErrorCode, infos } from "../../messages";
  import { log } from "../../log";
@@ -28,20 +28,17 @@
    }
  
    // Get a key value
-   private getKeyValue(input: object, key: string): string | undefined {
+   private getKeyValue(input: Record<string, any>, key: string): string | undefined {
      let result: string | undefined = undefined;
-     // @ts-ignore
      if (input[key]) {
-      // @ts-ignore
        result = input[key]["@iot.id"] ? input[key]["@iot.id"] : input[key];
-       // @ts-ignore
        delete input[key];
      }
      return result;
    }
    
    // Get a list of key values
-   public getKeysValue(input: object, keys: string[]): string | undefined {
+   public getKeysValue(input: Record<string, any>, keys: string[]): string | undefined {
      keys.forEach((key) => {
        const temp = this.getKeyValue(input, key);
        if (temp) return temp;
@@ -50,12 +47,12 @@
    }
  
    // Only for override
-   formatDataInput(input: object | undefined): object | undefined {    
+   formatDataInput(input: Record<string, any> | undefined ): Record<string, any> | undefined {    
      return input;
    }
  
    // create a blank ReturnResult
-   public formatReturnResult(args: Record<string, unknown>): IreturnResult {
+   public formatReturnResult(args: Record<string, any>): IreturnResult {
      console.log(formatLog.whereIam());
      return {
        ...{
@@ -99,15 +96,12 @@
          return this.formatReturnResult({ body: sql });
  
        case returnFormats.graph:
-         return await executeSqlValues(this.ctx.config, sql).then(async (res: object) => {
-          // @ts-ignore
+         return await executeSqlValues(this.ctx.config, sql).then(async (res: Record<string, any>) => {
            return (res[0].length > 0)  ?  this.formatReturnResult({ body: res[0]}) : this.formatReturnResult({ body: "nothing"});
          });
        default:        
-         return await executeSqlValues(this.ctx.config, sql).then(async (res: object) => {
-          // @ts-ignore
+         return await executeSqlValues(this.ctx.config, sql).then(async (res: Record<string, any>) => {
            return (res[0] > 0) ? 
-           // @ts-ignore
              this.formatReturnResult({ id: isNaN(res[0][0]) ? undefined : +res[0], nextLink: this.nextLink(res[0]), prevLink: this.prevLink(res[0]), body: res[1], }) : this.formatReturnResult({ body: res[0] == 0 ? [] : res[0]});
          }).catch((err: Error) => this.ctx.throw(400, { code: 400, detail: err.message }) );
      }
@@ -123,37 +117,33 @@
        case returnFormats.sql:
          return this.formatReturnResult({ body: sql }); 
        default:
-         return await executeSqlValues(this.ctx.config, sql).then((res: object) => {
-          // @ts-ignore
-           if (this.ctx.odata.query.select && this.ctx.odata.onlyValue  === true) return this.formatReturnResult({ body: String(res[ this.ctx.odata.query.select[0] == "id" ? "@iot.id" : 0 ]), });
-           // @ts-ignore
+         return await executeSqlValues(this.ctx.config, sql).then((res: Record<string, any>) => {
+           if (this.ctx.odata.query.select && this.ctx.odata.onlyValue  === true) return this.formatReturnResult({ body: String(res[ this.ctx.odata.query.select[0 as keyobj] == "id" ? "@iot.id" : 0 ]), });
            if (res[0] > 0) return this.formatReturnResult({ id: +res[0], nextLink: this.nextLink(res[0]), prevLink: this.prevLink(res[0]), body: res[1][0], });
          }).catch((err: Error) => this.ctx.throw(400, { code: 400, detail: err }) );
      }
    }
  
    // Execute multilines SQL in one query
-   async addWultipleLines(dataInput: object | undefined): Promise<IreturnResult | undefined> {
+   async addWultipleLines(dataInput: Record<string, any>  | undefined): Promise<IreturnResult | undefined> {
      console.log(formatLog.whereIam());
      // stop save to log cause if datainput too big 
      if (this.ctx.log) this.ctx.log.datas = {datas: infos.MultilinesNotSaved};
      // create queries
-     const sqls:string[] = Object(dataInput).map((datas: object) => {
+     const sqls:string[] = Object(dataInput).map((datas: Record<string, any> ) => {
        const modifiedDatas = this.formatDataInput(datas);
        if (modifiedDatas) {
         const sql = this.ctx.odata.postSql(modifiedDatas);
          if (sql) return sql;
        }
      });
-     // return results object
-     const results:object[] = [];
+     // return results
+     const results: Record<string, any>[] = [];
      // execute query
-     // @ts-ignore
-     await executeSqlValues(this.ctx.config, sqls.join(";")).then((res: object) => results.push(res[0]) )
+     await executeSqlValues(this.ctx.config, sqls.join(";")).then((res: Record<string, any> ) => results.push(res[0 as keyobj]) )
          .catch((err: Error) => { 
-           log.error(formatLog.error(err)); 
-           // @ts-ignore  
-           this.ctx.throw(400, { code: 400, detail: err["detail"] });
+           log.error(formatLog.error(err));
+           this.ctx.throw(400, { code: 400, detail: err["detail" as keyobj] });
          });
      // Return results
      return this.formatReturnResult({
@@ -162,7 +152,7 @@
    }
  
    // Post an item
-   async post(dataInput: object | undefined): Promise<IreturnResult | undefined | void> {
+   async post(dataInput: Record<string, any> | undefined): Promise<IreturnResult | undefined | void> {
      console.log(formatLog.whereIam());
      // Format datas
      dataInput = this.formatDataInput(dataInput);
@@ -176,19 +166,15 @@
  
        default:
          return await executeSqlValues(this.ctx.config, sql) 
-           .then((res: object) => {
-            // @ts-ignore
+           .then((res: Record<string, any>) => {
              if (res[0]) {
-              // @ts-ignore
                if (res[0].duplicate)
                  this.ctx.throw(409, {
                    code: 409,
                    detail: `${this.constructor.name} already exist`,
-                   // @ts-ignore
                    link: `${this.linkBase}(${[res[0].duplicate]})`,
                  });
                return this.formatReturnResult({
-                // @ts-ignore
                  body: res[0][0],
                  query: sql,
                });
@@ -202,7 +188,7 @@
    }
  
    // Update an item
-   async update( idInput: bigint | string, dataInput: object | undefined ): Promise<IreturnResult | undefined | void> {
+   async update( idInput: bigint | string, dataInput: Record<string, any>  | undefined ): Promise<IreturnResult | undefined | void> {
      console.log(formatLog.whereIam()); 
      // Format datas
      dataInput = this.formatDataInput(dataInput);
@@ -216,11 +202,9 @@
          
        default:
          return await executeSqlValues(this.ctx.config, sql) 
-         .then((res: object) => {
-          // @ts-ignore          
+         .then((res: Record<string, any>) => {  
            if (res[0]) {
              return this.formatReturnResult({
-               // @ts-ignore
                body: res[0][0],
                query: sql,
              });
@@ -243,8 +227,7 @@
        case returnFormats.sql:
          return this.formatReturnResult({ body: sql });          
        default:
-        // @ts-ignore
-         return this.formatReturnResult( { id: await executeSqlValues(this.ctx.config, sql) .then((res) => res[0]) .catch(() => BigInt(0)) } );
+         return this.formatReturnResult( { id: await executeSqlValues(this.ctx.config, sql) .then((res) => res[0 as keyobj]) .catch(() => BigInt(0)) } );
      }
    }
  }

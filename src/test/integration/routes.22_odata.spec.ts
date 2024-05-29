@@ -241,7 +241,7 @@ describe("Odata", () => {
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") }
         });
-        executeQuery(count("thing")).then((result) => {
+        executeQuery(count("thing")).then((result: Record<string, any>) => {
                 chai.request(server)
                     .get(`/test/${infos.apiExample.http}`)
                     .end((err, res) => {
@@ -270,7 +270,7 @@ describe("Odata", () => {
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") }
         });
-        executeQuery(count("thing")).then((result) => {
+        executeQuery(count("thing")).then((result: Record<string, any>) => {
                 chai.request(server)
                     .get(`/test/${infos.apiExample.http}`)
                     .end((err, res) => {
@@ -325,7 +325,7 @@ describe("Odata", () => {
             javascript: defaultGet("javascript", "KEYHTTP"),
             python: defaultGet("python", "KEYHTTP") }
         });
-        executeQuery(count("observation")).then((result) => {
+        executeQuery(count("observation")).then((result: Record<string, any>) => {
                 chai.request(server)
                     .get(`/test/${infos.apiExample.http}`)
                     .end((err, res) => {

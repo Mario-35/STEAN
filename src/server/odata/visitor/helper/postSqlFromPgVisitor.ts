@@ -1,11 +1,12 @@
 /**
- * postSqlFromPgVisitor.
+ * postSqlFromPgVisitor
  *
  * @copyright 2022-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- postSqlFromPgVisitor. -----------------------------------!");
+// onsole.log("!----------------------------------- postSqlFromPgVisitor -----------------------------------!");
+
 import { VOIDTABLE } from "../../../constants";
 import { addDoubleQuotes, getBigIntFromString } from "../../../helpers";
 import { formatLog } from "../../../logger";
@@ -19,8 +20,8 @@ import { apiAccess } from "../../../db/dataAccess";
 import * as entities from "../../../db/entities";
 import { PgVisitor } from "..";
 
-export function postSqlFromPgVisitor(datas: object, src: PgVisitor): string {
-    const formatInsertEntityData = (entity: string, datas: object, main: PgVisitor): object => {
+export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor): string {
+    const formatInsertEntityData = (entity: string, datas: object, main: PgVisitor): Record<string, any> => {
         const goodEntity = models.getEntityName(main.ctx.config, entity);
         if (goodEntity && goodEntity in entities) {
             try {
@@ -96,10 +97,10 @@ export function postSqlFromPgVisitor(datas: object, src: PgVisitor): string {
         // LOOP on sorting
         sorting.forEach((element: string) => {
             if (queryMaker[element].datas.hasOwnProperty("@iot.id")) {
-                const searchId = queryMaker[element].datas["@iot.id"];
+                const searchId = queryMaker[element].datas["@iot.id" as keyof object];
                 returnValue.push( `, ${element} AS (select verifyId('${queryMaker[element].table}', ${searchId}) as id)` );
             } else if (queryMaker[element].datas.hasOwnProperty("@iot.name")) {
-                const searchByName = queryMaker[element].datas["@iot.name"];
+                const searchByName = queryMaker[element].datas["@iot.name" as keyof object];
                 returnValue.push( `, ${element} AS (select "id" from "${queryMaker[element].table}" where "name" = '${searchByName}')` );
             } else {
                 returnValue.push(`, ${element} AS (`);
@@ -114,7 +115,7 @@ export function postSqlFromPgVisitor(datas: object, src: PgVisitor): string {
         });
         return returnValue.join("\n").replace(/\'@/g, "").replace(/\@'/g, "");
     };
-// console.log("!----------------------------------- postSqlFromPgVisitor. -----------------------------------!");
+    
     /**
      *
      * @param datas datas
@@ -124,14 +125,14 @@ export function postSqlFromPgVisitor(datas: object, src: PgVisitor): string {
      */
     const start = (datas: object, entity?: Ientity, parentEntity?: Ientity): object | undefined => {
         console.log(formatLog.head(`start level ${level++}`));        
-        const returnValue = {};
+        const returnValue: Record<string, any> = {};
         entity = entity ? entity : postEntity;
         parentEntity = parentEntity ? parentEntity : postParentEntity ? postParentEntity : postEntity;
-// console.log("!----------------------------------- postSqlFromPgVisitor. -----------------------------------!");
+        
         for (const key in datas) {
             if (entity && !Object.keys(entity.relations).includes(key)) {
-                returnValue[key] = typeof datas[key] === "object" ? JSON.stringify(datas[key]) : datas[key];
-                delete datas[key];
+                returnValue[key] = typeof datas[key as keyof object] === "object" ? JSON.stringify(datas[key as keyof object]) : datas[key as keyof object];
+                delete datas[key as keyof object];
             }
         }
         /**
@@ -147,7 +148,7 @@ export function postSqlFromPgVisitor(datas: object, src: PgVisitor): string {
             }
             return `${inputNameEntity}${(number + 1).toString()}`;
         };
-// console.log("!----------------------------------- postSqlFromPgVisitor. -----------------------------------!");
+        
         /**
          *  add or make query entry
          * @param name name
@@ -159,20 +160,21 @@ export function postSqlFromPgVisitor(datas: object, src: PgVisitor): string {
             type: EnumOperation,
             name: string,
             tableName: string,
-            datas: string | object,
+            datas: string | Record<string, any>,
             keyId: string,
             key: string | undefined
             ): void => {
                 const isTypeString = typeof datas === "string";
                 if (queryMaker.hasOwnProperty(name)) {
                     if (key && isTypeString) {
+                        // @ts-ignore
                         queryMaker[name].datas[key] = datas;
                         queryMaker[name].keyId = keyId;
                     } else if (!isTypeString) {
                         if (queryMaker[name].type == EnumOperation.Table || queryMaker[name].type == EnumOperation.Relation)
                         queryMaker[name].datas = Object.assign(queryMaker[name].datas, datas);
                         queryMaker[name].keyId = keyId;
-// console.log("!----------------------------------- postSqlFromPgVisitor. -----------------------------------!");
+                        
                         if (queryMaker[name].type == EnumOperation.Association)
                         queryMaker[createName(name)] = {
                             type: queryMaker[name].type,
@@ -206,7 +208,7 @@ export function postSqlFromPgVisitor(datas: object, src: PgVisitor): string {
              */
         const addAssociation = (subEntity: Ientity, subParentEntity: Ientity) => {
             console.log(formatLog.debug(`addAssociation in ${subEntity.name} for parent`, subParentEntity.name));
-// console.log("!----------------------------------- postSqlFromPgVisitor. -----------------------------------!");
+// onsole.log("!----------------------------------- postSqlFromPgVisitor. -----------------------------------!");
             const relationName = getRelationNameFromEntity(subEntity, subParentEntity);
             const parentRelationName = getRelationNameFromEntity(subParentEntity, subEntity);
             
@@ -294,27 +296,27 @@ export function postSqlFromPgVisitor(datas: object, src: PgVisitor): string {
                 if (entity) addAssociation(newEntity, entity);
             }
         };
-// console.log("!----------------------------------- postSqlFromPgVisitor. -----------------------------------!");
+        
         // Main loop
         if (entity && parentEntity) {
             for (const key in datas) {
-                if (Array.isArray(datas[key])) {
+                if (Array.isArray(datas[key as keyof object])) {
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    Object.entries(datas[key]).forEach(([_key, value]) => {
+                    Object.entries(datas[key as keyof object]).forEach(([_key, value]) => {
                         if (entity && parentEntity && Object.keys(entity.relations).includes(key)) {
                             console.log(formatLog.debug(`Found a relation for ${entity.name}`, key));
                             subBlock(key, value as object);
                         } else {
-                            console.log(formatLog.debug(`data ${key}`, datas[key]));
-                            returnValue[key] = datas[key];
+                            console.log(formatLog.debug(`data ${key}`, datas[key as keyof object]));
+                            returnValue[key as keyof object] = datas[key as keyof object];
                         }
                     });
-                } else if (typeof datas[key] === "object") {
+                } else if (typeof datas[key as keyof object] === "object") {
                     if (Object.keys(entity.relations).includes(key)) {
                         console.log(formatLog.debug(`Found a object relation for ${entity.name}`, key));
-                        subBlock(key, datas[key]);
+                        subBlock(key, datas[key as keyof object]);
                     }
-                } else returnValue[key] = datas[key];
+                } else returnValue[key as keyof object] = datas[key as keyof object];
             }
         }
         return returnValue;

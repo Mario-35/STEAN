@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- removeKeyFromUrl. -----------------------------------!");
+// onsole.log("!----------------------------------- removeKeyFromUrl. -----------------------------------!");
 import { cleanUrl } from "../../helpers";
 
 /**

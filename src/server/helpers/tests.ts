@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- tests Is. -----------------------------------!");
+// onsole.log("!----------------------------------- tests Is. -----------------------------------!");
 import { ADMIN } from "../constants";
 import { EnumOptions, EnumUserRights } from "../enums";
 import { PgVisitor, RootPgVisitor } from "../odata/visitor";

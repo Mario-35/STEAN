@@ -5,11 +5,11 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Observations entity. -----------------------------------!");
+// onsole.log("!----------------------------------- Observations entity. -----------------------------------!");
 import { Common } from "./common";
 import { executeSqlValues, getDBDateNow } from "../helpers";
 import { formatLog } from "../../logger";
-import { IreturnResult, koaContext } from "../../types";
+import { IreturnResult, keyobj, koaContext } from "../../types";
 import { getBigIntFromString } from "../../helpers";
 import { errors, msg } from "../../messages";
 import { multiDatastreamsUnitsKeys } from "../queries";
@@ -21,20 +21,19 @@ export class Observations extends Common {
     super(ctx);
   }
   // Prepare odservations 
-  async prepareInputResult(dataInput: object): Promise<object> {
+  async prepareInputResult(dataInput: Record<string, any> ): Promise<object> {
     console.log(formatLog.whereIam());
     // IF MultiDatastream
     if ( (dataInput["MultiDatastream"] && dataInput["MultiDatastream"] != null) || (this.ctx.odata.parentEntity && this.ctx.odata.parentEntity.startsWith("MultiDatastream")) ) {
       // get search ID
-      const searchID: bigint | undefined =
-        dataInput["MultiDatastream"] && dataInput["MultiDatastream"] != null
+      const searchID: bigint | undefined = dataInput["MultiDatastream"] && dataInput["MultiDatastream"] != null
           ? BigInt(dataInput["MultiDatastream"]["@iot.id"])
           : getBigIntFromString(this.ctx.odata.parentId);
 
       if (!searchID) this.ctx.throw(404, { code: 404, detail: msg(errors.noFound, "MultiDatastreams"), });
       // Search uint keys
       const tempSql = await executeSqlValues(this.ctx.config, multiDatastreamsUnitsKeys(searchID) );      
-      const multiDatastream = tempSql[0];
+      const multiDatastream: Record<string, any> = tempSql[0 as keyobj];
       if (dataInput["result"] && typeof dataInput["result"] == "object") {
         console.log(formatLog.debug( "result : keys", `${Object.keys(dataInput["result"]).length} : ${ multiDatastream.length }` ));
         if ( Object.keys(dataInput["result"]).length != multiDatastream.length ) {
@@ -50,7 +49,7 @@ export class Observations extends Common {
         dataInput["result"] = { value: Object.values(dataInput["result"]), valueskeys: dataInput["result"], };
       }
     } 
-    else if ((dataInput["Datastream"] && dataInput["Datastream"] != null) || (this.ctx.odata.parentEntity && this.ctx.odata.parentEntity.startsWith("Datastream")) ) {     
+    else if ((dataInput["Datastream"] && dataInput["Datastream"] != null) || (this.ctx.odata.parentEntity && this.ctx.odata.parentEntity.startsWith("Datastream")) ) { 
       if (dataInput["result"] && typeof dataInput["result"] != "object")
           dataInput["result"] = this.ctx.config.extensions.includes( EnumExtensions.resultNumeric )
                                 ? dataInput["result"]
@@ -61,7 +60,7 @@ export class Observations extends Common {
     return dataInput;
   }
 
-  formatDataInput(input: object | undefined): object | undefined {
+  formatDataInput(input: Record<string, any> | undefined): Record<string, any> | undefined {
     console.log(formatLog.whereIam());
     if (input) 
       if (!input["resultTime"] && input["phenomenonTime"]) input["resultTime"] = input["phenomenonTime"];
@@ -69,7 +68,7 @@ export class Observations extends Common {
   }
 
   // Override post to prepare datas before use super class
-  async post(dataInput: object): Promise<IreturnResult | undefined | void> {
+  async post(dataInput: Record<string, any>): Promise<IreturnResult | undefined | void> {
     console.log(formatLog.whereIam());
     if (dataInput) dataInput = await this.prepareInputResult(dataInput);
     if (dataInput["import"]) {
@@ -77,7 +76,7 @@ export class Observations extends Common {
     } else return await super.post(dataInput);
   }
   // Override update to prepare datas before use super class
-  async update( idInput: bigint, dataInput: object | undefined ): Promise<IreturnResult | undefined | void> {
+  async update( idInput: bigint, dataInput: Record<string, any> | undefined ): Promise<IreturnResult | undefined | void> {
     console.log(formatLog.whereIam());
     if (dataInput) dataInput = await this.prepareInputResult(dataInput);
     if (dataInput) dataInput["validTime"] = await getDBDateNow(this.ctx.config);

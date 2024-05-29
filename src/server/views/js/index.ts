@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Index Js. -----------------------------------!");
+// onsole.log("!----------------------------------- Index Js. -----------------------------------!");
 import fs from "fs";
 import path from "path";
 

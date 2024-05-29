@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- exportToXlsx. -----------------------------------!");
+// onsole.log("!----------------------------------- exportToXlsx. -----------------------------------!");
 import Excel from "exceljs";
 import postgres from "postgres";
 import { serverConfig } from "../../configuration";
@@ -13,7 +13,7 @@ import { log } from "../../log";
 import { asyncForEach } from "../../helpers";
 import { models } from "../../models";
 import { filterEntities } from "../../enums";
-import { koaContext } from "../../types";
+import { keyobj, koaContext } from "../../types";
 
 const addConfigToExcel = async ( workbook: Excel.Workbook, config: object ) => {
   const worksheet = workbook.addWorksheet("Config");
@@ -35,18 +35,15 @@ const addConfigToExcel = async ( workbook: Excel.Workbook, config: object ) => {
   };
 
   Object.keys(config).forEach((item: string) => {
-    // @ts-ignore
-    worksheet.addRow({key: item, value: typeof config[item] === "object" ? Array(config[item]).toString() : config[item]});
+    worksheet.addRow({key: item, value: typeof config[item as keyobj] === "object" ? Array(config[item as keyobj]).toString() : config[item as keyobj]});
   });
   
 };
 
-const addToExcel = async ( workbook: Excel.Workbook, name: string, input: object ) => {
-  // @ts-ignore
+const addToExcel = async ( workbook: Excel.Workbook, name: string, input: Record<string, any> ) => {
   if (input && input[0]) {
     const worksheet = workbook.addWorksheet(name);
     const cols: Partial<Excel.Column>[] = [];
-    // @ts-ignore
     Object.keys(input[0]).forEach((temp: string) => { cols.push({ key: temp, header: temp }); });
       
     worksheet.columns = cols;
@@ -76,19 +73,15 @@ const createColumnsList = async (ctx: koaContext, entity: string) => {
                   if (e.code === "42804") {
                     const tempSqlResult = await serverConfig.connection(ctx.config.name).unsafe(createQuery(`jsonb_object_keys(jsonb_array_elements("${column}"))`));
                     if (tempSqlResult && tempSqlResult.length > 0)
-                    // @ts-ignore 
-                      tempSqlResult.forEach((e: Iterable<postgres.Row> ) => { columnList.push( `jsonb_array_elements("${column}")->>'${e[column]}' AS "${column}-${e[column]}"`); });
+                      tempSqlResult.forEach((e: Iterable<postgres.Row> ) => { columnList.push( `jsonb_array_elements("${column}")->>'${e[column as keyobj]}' AS "${column}-${e[column as keyobj]}"`); });
                   } else log.errorMsg(e);
                 });    
                 if (tempSqlResult && tempSqlResult.length > 0) 
-                // @ts-ignore
-                  tempSqlResult.forEach((e: Iterable<postgres.Row> ) => { columnList.push( `"${column}"[0]->>'${e[column]}' AS "${column}-${e[column]}"`); });
+                  tempSqlResult.forEach((e: Iterable<postgres.Row> ) => { columnList.push( `"${column}"[0]->>'${e[column as keyobj]}' AS "${column}-${e[column as keyobj]}"`); });
               } else log.errorMsg(e);
             });            
             if (tempSqlResult && tempSqlResult.length > 0)
-            // @ts-ignore
-              tempSqlResult.forEach((e: Iterable<postgres.Row> ) => { columnList.push( `"${column}"->>'${e[column]}' AS "${column}-${e[column]}"`); });
-            
+              tempSqlResult.forEach((e: Iterable<postgres.Row> ) => { columnList.push( `"${column}"->>'${e[column as keyobj]}' AS "${column}-${e[column as keyobj]}"`); });
         } else columnList.push(`"${column}"`);
       }
     });    

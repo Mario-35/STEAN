@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Visitor for odata. -----------------------------------!");
+// onsole.log("!----------------------------------- Visitor for odata. -----------------------------------!");
 import { SqlOptions } from "../../parser/sqlOptions";
 import { _COLUMNSEPARATOR } from "../../../constants";
 import { IreturnFormat, koaContext } from "../../../types";

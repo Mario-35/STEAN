@@ -6,7 +6,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- EnumOptions Enum. -----------------------------------!");
+// onsole.log("!----------------------------------- EnumOptions Enum. -----------------------------------!");
 export enum EnumOptions { 
     forceHttps = "forceHttps",
     stripNull = "stripNull",

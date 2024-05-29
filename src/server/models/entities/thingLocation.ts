@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- entity ThingLocation. -----------------------------------!");
+// onsole.log("!----------------------------------- entity ThingLocation. -----------------------------------!");
 import { createEntity } from ".";
 import { Ientity } from "../../types";
 import { _idRel } from "./constants";

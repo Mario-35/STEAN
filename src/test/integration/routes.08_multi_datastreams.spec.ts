@@ -855,7 +855,7 @@ describe("endpoint : MultiDatastream", () => {
 		afterEach(() => { writeLog(true); });
 
         it(`Return updated ${entity.name} ${nbColor}[10.3.1]`, (done) => {
-            executeQuery(last(entity.table,true)).then((items) => {
+            executeQuery(last(entity.table,true)).then((items: Record<string, any>) => {
                     const datas = {
                         description: "Modification of the description"
                     };
@@ -922,7 +922,7 @@ describe("endpoint : MultiDatastream", () => {
 		afterEach(() => { writeLog(true); });
         
 		it(`Delete ${entity.name} return no content with code 204 ${nbColor}[10.4.1]`, (done) => {
-			executeQuery(`SELECT (SELECT count(id) FROM "${entity.table}")::int as count, (${last(entity.table)})::int as id `).then((beforeDelete) => {
+			executeQuery(`SELECT (SELECT count(id) FROM "${entity.table}")::int as count, (${last(entity.table)})::int as id `).then((beforeDelete: Record<string, any>)  => {
 				const infos = addTest({
 					api : `{delete} ${entity.name} Delete one`,
 					apiName: `Delete${entity.name}`,
@@ -941,7 +941,7 @@ describe("endpoint : MultiDatastream", () => {
 					.end((err: Error, res: any) => {
 						should.not.exist(err);
 						res.status.should.equal(204);
-						executeQuery(`SELECT count(id)::int FROM "${entity.table}"`).then((afterDelete) => {
+						executeQuery(`SELECT count(id)::int FROM "${entity.table}"`).then((afterDelete: Record<string, any>)  => {
 							afterDelete["count"].should.eql(beforeDelete["count"] - 1);
 							addToApiDoc({
 								...infos,

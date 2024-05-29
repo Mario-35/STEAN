@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Sensors entity. -----------------------------------!");
+// onsole.log("!----------------------------------- Sensors entity. -----------------------------------!");
 import { koaContext } from "../../types";
 import { formatLog } from "../../logger";
 import { Common } from "./common";

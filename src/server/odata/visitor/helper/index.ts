@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Odatas Helpers. -----------------------------------!");
+// onsole.log("!----------------------------------- Odatas Helpers. -----------------------------------!");
 export { postSqlFromPgVisitor } from "./postSqlFromPgVisitor";
 export { oDataDateFormat } from "./oDataDateFormat";
 export { blankRootPgVisitor } from "./blankRootPgVisitor";

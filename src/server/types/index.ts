@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Index Types. -----------------------------------!");
+// onsole.log("!----------------------------------- Index Types. -----------------------------------!");
 import Koa from "koa";
 import { allEntitiesType, EnumExtensions, EnumOptions } from "../enums";
 import { Ientity } from "./entity";
@@ -39,3 +39,4 @@ export type koaContext = Koa.ParameterizedContext<Koa.DefaultState,  Koa.Default
 export const typeOptions = Object.keys(EnumOptions) as Array<keyof typeof EnumOptions>;
 export const typeExtensions= Object.keys(EnumExtensions) as Array<keyof typeof EnumExtensions>;
 
+export type keyobj = keyof object;

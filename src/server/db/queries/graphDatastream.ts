@@ -5,7 +5,7 @@
 * @author results.adam@inrae.fr
 *
 */
-// console.log("!----------------------------------- graphDatastream. -----------------------------------!");
+// onsole.log("!----------------------------------- graphDatastream. -----------------------------------!");
 import { createIdList } from ".";
 
 export const graphDatastream = (table: string, id: string | bigint, query: string): string => {

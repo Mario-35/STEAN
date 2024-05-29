@@ -1,11 +1,11 @@
 /**
- * Protected Routes for API.
+ * Protected Routes for API
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Protected Routes for API. -----------------------------------!");
+// onsole.log("!----------------------------------- Protected Routes for API -----------------------------------!");
 import Router from "koa-router";
 import { apiAccess, userAccess } from "../db/dataAccess";
 import { isAllowedTo, returnFormats, upload } from "../helpers";
@@ -31,7 +31,7 @@ protectedRoutes.post("/(.*)", async (ctx: koaContext, next) => {
   switch (ctx.decodedUrl.path.toUpperCase()) {
     // login html page or connection login
     case "LOGIN":      
-      if (ctx.request["token"]) ctx.redirect(`${ctx.decodedUrl.root}/status`);
+      if (ctx.request["token" as keyof object]) ctx.redirect(`${ctx.decodedUrl.root}/status`);
       await loginUser(ctx).then((user: Iuser | undefined) => {
         if (user) {
           ctx.status = 200;
@@ -139,9 +139,9 @@ protectedRoutes.post("/(.*)", async (ctx: koaContext, next) => {
         console.log(formatLog.head("POST FORM"));
         const objectAccess = new apiAccess(ctx);
         const returnValue = await objectAccess.post();
-        if (ctx.datas) fs.unlinkSync(ctx.datas["file"]);
+        if (ctx.datas) fs.unlinkSync(ctx.datas["file" as keyof object]);
         if (returnValue) {
-          if (ctx.datas["source"] == "query") {
+          if (ctx.datas["source" as keyof object] == "query") {
             const temp = await createQueryParams(ctx);
             if (temp) {
               ctx.type = "html";

@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- columnType Enum -----------------------------------!");
+// onsole.log("!----------------------------------- columnType Enum -----------------------------------!");
 export enum EnumColumnType { 
     Null,
     Column,

@@ -5,7 +5,7 @@
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  */
-// console.log("!----------------------------------- test postgres.js database connection for PostgreSQL. -----------------------------------!");
+// onsole.log("!----------------------------------- test postgres.js database connection for PostgreSQL. -----------------------------------!");
 import postgres from "postgres";
 import config from "../server/configuration/test.json";
 

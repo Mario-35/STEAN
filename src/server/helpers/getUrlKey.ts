@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- getUrlKey. -----------------------------------!");
+// onsole.log("!----------------------------------- getUrlKey. -----------------------------------!");
 /**
  * 
  * @param input url string 
@@ -27,4 +27,4 @@ export function getUrlKey(input: string, key: string): string | undefined {
     }
     return result;
   }
-// console.log("!----------------------------------- getUrlKey. -----------------------------------!");
+// onsole.log("!----------------------------------- getUrlKey. -----------------------------------!");

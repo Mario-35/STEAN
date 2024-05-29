@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- operation Enum. -----------------------------------!");
+// onsole.log("!----------------------------------- operation Enum. -----------------------------------!");
 export enum EnumOperation { 
     Table,
     Relation,

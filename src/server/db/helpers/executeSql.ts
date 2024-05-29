@@ -1,15 +1,16 @@
 /**
- * executeSql.
+ * executeSql
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- executeSql. -----------------------------------!");
+// onsole.log("!----------------------------------- executeSql -----------------------------------!");
+
 import { serverConfig } from "../../configuration";
 import { log } from "../../log";
 import { isTest } from "../../helpers";
-import { IconfigFile } from "../../types";
+import { IconfigFile, keyobj } from "../../types";
 
 const executeSqlOne = async (config: IconfigFile, query: string): Promise<object> => {
     log.query(query);
@@ -17,7 +18,7 @@ const executeSqlOne = async (config: IconfigFile, query: string): Promise<object
         await serverConfig.connection(config.name).unsafe(query).then((res: object) => {                            
             resolve(res);
         }).catch((err: Error) => {
-            if (!isTest() && +err["code"] === 23505) log.queryError(query, err);
+            if (!isTest() && +err["code" as keyobj] === 23505) log.queryError(query, err);
             reject(err);
         });
     });
@@ -30,7 +31,7 @@ const executeSqlMulti = async (config: IconfigFile, query: string[]): Promise<ob
         .then((res: object) => {                            
             resolve(res);
         }).catch((err: Error) => {
-            if (!isTest() && +err["code"] === 23505) log.queryError(query, err);
+            if (!isTest() && +err["code" as keyobj] === 23505) log.queryError(query, err);
             reject(err);
         });
     });

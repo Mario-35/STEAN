@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- entityColumn interface. -----------------------------------!");
+// onsole.log("!----------------------------------- entityColumn interface. -----------------------------------!");
 import { IKeyString, IKeyBoolean, IconfigFile, typeExtensions } from ".";
 
 export interface IentityColumn {

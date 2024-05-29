@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- queryInsertFromCsv. -----------------------------------!");
+// onsole.log("!----------------------------------- queryInsertFromCsv. -----------------------------------!");
 import { formatLog } from "../../logger";
 import { IcsvColumn, IcsvFile, koaContext } from "../../types";
 import { columnsNameFromHydrasCsv, streamCsvFile } from ".";
@@ -25,7 +25,7 @@ export async function queryInsertFromCsv( ctx: koaContext, paramsFile: IcsvFile 
       // make import query
       Object.keys(paramsFile.columns).forEach(
         (myColumn: string, index: number) => {
-          const csvColumn: IcsvColumn = paramsFile.columns[myColumn];
+          const csvColumn: IcsvColumn = paramsFile.columns[myColumn as keyof object];
           scriptSql.push(`INSERT INTO "${ ctx.model.Observations.table }" 
           ("${csvColumn.stream.type?.toLowerCase()}_id", "featureofinterest_id", "phenomenonTime", "resultTime", "result", "resultQuality")
             SELECT 

@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- observationType Enum. -----------------------------------!");
+// onsole.log("!----------------------------------- observationType Enum. -----------------------------------!");
 export enum EnumObservationType {    
     "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_CategoryObservation" = "_resulttext",
     "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_CountObservation" = "number",

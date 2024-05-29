@@ -5,8 +5,8 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Users entity. -----------------------------------!");
-import { koaContext } from "../../types";
+// onsole.log("!----------------------------------- Users entity. -----------------------------------!");
+import { keyobj, koaContext } from "../../types";
 import { Common } from "./common";
 import { formatLog } from "../../logger";
 import { IreturnResult } from "../../types";
@@ -31,7 +31,7 @@ export class Users extends Common {
       return this.formatReturnResult({
         body: hidePassword(temp),
       });
-    } else this.ctx.throw(401, { code: 401, detail: errors[401] });
+    } else this.ctx.throw(401, { code: 401, detail: errors[401 as keyobj] });
   }
   // Override to creste a new config and load it 
   async post(dataInput: object | undefined): Promise<IreturnResult | undefined> {

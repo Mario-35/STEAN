@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- getKey. -----------------------------------!");
+// onsole.log("!----------------------------------- getKey. -----------------------------------!");
 import fs from "fs";
 import path from "path";
 const _APP_KEY = "zLwX893Mtt9Rc0TKvlInDXuZTFj9rxDV";

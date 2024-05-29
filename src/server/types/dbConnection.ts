@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- dbConnection interface. -----------------------------------!");
+// onsole.log("!----------------------------------- dbConnection interface. -----------------------------------!");
 
 export interface IdbConnection { //postgresSqlconnection
     host: string; // host name

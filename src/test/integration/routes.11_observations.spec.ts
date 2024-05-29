@@ -614,7 +614,7 @@ describe("endpoint : Observations", () => {
                     res.type.should.equal("application/json");
                     res.body.should.include.keys(testsKeys);
                     const observationId = res.body["@iot.id"];
-                    executeQuery("select id::int from observation WHERE featureofinterest_id = (SELECT id from featureofinterest order by id desc limit 1);").then((testRes) => {
+                    executeQuery("select id::int from observation WHERE featureofinterest_id = (SELECT id from featureofinterest order by id desc limit 1);").then((testRes: Record<string, any>) => {
                             testRes["id"].should.eql(observationId);
                             addToApiDoc({ ...infos, result: limitResult(res) });
                             done();
@@ -759,7 +759,7 @@ describe("endpoint : Observations", () => {
         afterEach(() => { writeLog(true); });
 
         it(`Return updated ${entity.name} ${nbColor}[10.3.1]`, (done) => {
-            executeQuery(last(entity.table, true)).then((result) => {
+            executeQuery(last(entity.table, true)).then((result: Record<string, any>) => {
                     const datas = {
                         "phenomenonTime": "2016-11-18T11:04:15.790Z",
                         "resultTime": "2016-11-18T11:04:15.790Z"
@@ -823,7 +823,7 @@ describe("endpoint : Observations", () => {
 		});
 
         it("Return updated Observation and Datastream", (done) => {
-            executeQuery(last(entity.table, true)).then((result) => {
+            executeQuery(last(entity.table, true)).then((result: Record<string, any>) => {
                     const datas = {
                         "phenomenonTime": "2016-11-18T11:04:15.790Z",
                         "resultTime": "2016-11-18T11:04:15.790Z",
@@ -865,7 +865,7 @@ describe("endpoint : Observations", () => {
 		afterEach(() => { writeLog(true); });
 
 		it(`Delete ${entity.name} return no content with code 204 ${nbColor}[10.4.1]`, (done) => {
-			executeQuery(`SELECT (SELECT count(id) FROM "${entity.table}")::int as count, (${last(entity.table)})::int as id `).then((beforeDelete) => {
+			executeQuery(`SELECT (SELECT count(id) FROM "${entity.table}")::int as count, (${last(entity.table)})::int as id `).then((beforeDelete: Record<string, any>)  => {
 				const infos = addTest({
 					api : `{delete} ${entity.name} Delete one`,
 					apiName: `Delete${entity.name}`,
@@ -884,7 +884,7 @@ describe("endpoint : Observations", () => {
 					.end((err: Error, res: any) => {
 						should.not.exist(err);
 						res.status.should.equal(204);
-						executeQuery(`SELECT count(id)::int FROM "${entity.table}"`).then((afterDelete) => {
+						executeQuery(`SELECT count(id)::int FROM "${entity.table}"`).then((afterDelete: Record<string, any>)  => {
 							afterDelete["count"].should.eql(beforeDelete["count"] - 1);
 							addToApiDoc({
 								...infos,

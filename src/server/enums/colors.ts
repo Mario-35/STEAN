@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- colors Enum -----------------------------------!");
+// onsole.log("!----------------------------------- colors Enum -----------------------------------!");
 export const enum EnumColor {
     Reset = 0,
     Bright = 1,

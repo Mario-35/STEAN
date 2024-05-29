@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- getBigIntFromString. -----------------------------------!");
+// onsole.log("!----------------------------------- getBigIntFromString. -----------------------------------!");
 import { log } from "../log";
 
 
@@ -29,4 +29,4 @@ export const getBigIntFromString = ( input: string | bigint | number ): bigint |
     }
   }
 };
-// console.log("!----------------------------------- getBigIntFromString. -----------------------------------!");
+// onsole.log("!----------------------------------- getBigIntFromString. -----------------------------------!");

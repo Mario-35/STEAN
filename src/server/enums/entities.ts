@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- entities Enum -----------------------------------!");
+// onsole.log("!----------------------------------- entities Enum -----------------------------------!");
 import { EnumExtensions } from ".";
 
 enum EnumBaseEntities {    
@@ -54,5 +54,5 @@ export const filterEntities = (exts: string[], name?: string) => {
 }
 
 export type allEntitiesType = EnumBaseEntities | EnumMultiDatastreamEntities | EnumAdminEntities |  EnumLoraEntities | EnumLogEntities;
-export const allEntities = { ...EnumBaseEntities, ... EnumMultiDatastreamEntities , ... EnumAdminEntities , ... EnumLoraEntities , ... EnumLogEntities};
+export const allEntities: Record<string, any> = { ...EnumBaseEntities, ... EnumMultiDatastreamEntities , ... EnumAdminEntities , ... EnumLoraEntities , ... EnumLogEntities};
 

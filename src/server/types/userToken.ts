@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- userToken interface. -----------------------------------!");
+// onsole.log("!----------------------------------- userToken interface. -----------------------------------!");
 
 export interface IuserToken {
     id: number;

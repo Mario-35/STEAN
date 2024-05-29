@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Index Enums. -----------------------------------!");
+// onsole.log("!----------------------------------- Index Enums. -----------------------------------!");
 
 import { EnumExtensions } from "./extensions";
 import { EnumOptions } from "./options";

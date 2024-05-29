@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- loginUser. -----------------------------------!");
+// onsole.log("!----------------------------------- loginUser. -----------------------------------!");
 import { createToken } from ".";
 import { serverConfig } from "../configuration";
 import { decrypt } from "../helpers";

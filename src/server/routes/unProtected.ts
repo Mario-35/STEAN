@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Unprotected Routes for API. -----------------------------------!");
+// onsole.log("!----------------------------------- Unprotected Routes for API. -----------------------------------!");
 import Router from "koa-router";
 import { ensureAuthenticated, getAuthenticatedUser, } from "../authentication";
 import { ADMIN, _READY } from "../constants";

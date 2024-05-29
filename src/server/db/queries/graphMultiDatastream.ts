@@ -5,7 +5,7 @@
 * @author results.adam@inrae.fr
 *
 */
-// console.log("!----------------------------------- graphMultiDatastream. -----------------------------------!");
+// onsole.log("!----------------------------------- graphMultiDatastream. -----------------------------------!");
 import { createIdList } from ".";
 import { SIMPLEQUOTEDCOMA } from "../../constants";
 

@@ -1,6 +1,23 @@
 
+# version 3.7.1
+    lots of update after typeScript 5.4 ts(7053) 
+
+# version 3.7
+    new options for configuration and first install ta have html more flexible
+    track import module
+
+# version 3.6.2
+    add easy prod install (NOT DEV)
+
+# version 3.6.1
+   prepare easy prod install
+
+# version 3.6
+    add getKey to perform first Install
+    add stean.py class
+    modfy insert csv suspend trigger
+    correction to hide invisible entity
 # version 3.5
-    write a pseudo object builder for more readable query builder
     re-write exponds to be more efficient with builder
     add models automatic table name for more readability of database
     add tests list in documentation

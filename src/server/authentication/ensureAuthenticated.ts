@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- ensureAuthenticated. -----------------------------------!");
+// onsole.log("!----------------------------------- ensureAuthenticated. -----------------------------------!");
 import { userAuthenticated } from ".";
 import { koaContext } from "../types";
 

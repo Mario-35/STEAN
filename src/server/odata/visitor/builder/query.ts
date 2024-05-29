@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Query builder -----------------------------------!");
+// onsole.log("!----------------------------------- Query builder -----------------------------------!");
 import { _COLUMNSEPARATOR } from "../../../constants";
 import { formatLog } from "../../../logger";
 import { addDoubleQuotes, cleanStringComma, containsAll, isCsvOrArray, isGraph, isObservation, removeAllQuotes, removeDoubleQuotes } from "../../../helpers";
@@ -47,7 +47,7 @@ export class Query  {
          * @param options options
          * @returns formated column or 
          */
-// console.log("!----------------------------------- Query builder -----------------------------------!");
+// onsole.log("!----------------------------------- Query builder -----------------------------------!");
         function formatedColumn(config: IconfigFile, entity : Ientity, column: string, options?: IKeyBoolean): string | undefined {   
             console.log(formatLog.whereIam(column));
             if (entity.columns[column]) {

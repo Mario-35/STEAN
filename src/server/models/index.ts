@@ -7,7 +7,7 @@ import { asJson } from "../db/queries";
 import { EnumColumnType, EnumExtensions, EnumVersion, filterEntities } from "../enums";
 import { addDoubleQuotes, deepClone, isTest } from "../helpers";
 import { errors, msg } from "../messages";
-import { IconfigFile, Ientities, Ientity, IstreamInfos, koaContext } from "../types";
+import { IconfigFile, Ientities, Ientity, IstreamInfos, keyobj, koaContext } from "../types";
 import fs from "fs";
 import { formatLog } from "../logger";
 import conformance from "./conformance.json";
@@ -59,9 +59,8 @@ class Models {
     pattern = '([&"<>\'])'.replace(new RegExp('[' + ignore + ']', 'g'), '');
   
     return input.replace(new RegExp(pattern, 'g'), function(str, item) {
-      // @ts-ignore
-              return map[item];
-            });
+      return map[item as keyobj];
+    });
   }
 
   // create drawIO Model
@@ -90,55 +89,45 @@ class Models {
   
   async getInfos(ctx: koaContext) {
     const temp = serverConfig.getInfos(ctx, ctx.config.name)
-    const result = {
+    const result: Record<string, any> = {
       ... temp,
       ready : ctx.config.connection ? true : false,
       Postgres: {}
     };
-    const extensions = {};
+    const extensions: Record<string, any> = {};
     switch (ctx.config.apiVersion) {
       case EnumVersion.v1_1:
-        // @ts-ignore
-        result["Ogc link"] = "https://docs.ogc.org/is/18-088/18-088.html";
+          result["Ogc link"] = "https://docs.ogc.org/is/18-088/18-088.html";
         break;
-        
         default:
-          // @ts-ignore
-        result["Ogc link"] = "https://docs.ogc.org/is/15-078r6/15-078r6.html";
+          result["Ogc link"] = "https://docs.ogc.org/is/15-078r6/15-078r6.html";
         break;
     }
-    // @ts-ignore
     if (ctx.config.extensions.includes(EnumExtensions.tasking)) extensions["tasking"] = "https://docs.ogc.org/is/17-079r1/17-079r1.html";
-    // @ts-ignore
     if (ctx.config.extensions.includes(EnumExtensions.logs)) extensions["logs"] = `${ctx.decodedUrl.linkbase}/${ctx.config.apiVersion}/Logs`;
     
-    // @ts-ignore
     result["extensions"] = extensions;
+    result["options"] = ctx.config.options;
     await executeSqlValues(ctx.config, `
     select version(), 
     (SELECT ARRAY(SELECT extname||'-'||extversion AS extension FROM pg_extension) AS extension),
     (SELECT c.relname||'.'||a.attname FROM pg_attribute a JOIN pg_class c ON (a.attrelid=c.relfilenode) WHERE a.atttypid = 114)
     ;`
     ).then(res => {
-      // @ts-ignore
-      result["Postgres"]["version"] = res[0];
-      // @ts-ignore
-      result["Postgres"]["extensions"] = res[1];
+      result["Postgres"]["version"] = res[0 as keyobj];
+      result["Postgres"]["extensions"] = res[1 as keyobj];
     });
 
 
     return result;
   }
     // Get multiDatastream or Datastrems infos in one function
-  public async getStreamInfos(config: IconfigFile, input: JSON ): Promise<IstreamInfos | undefined> {
-    // @ts-ignore
+  public async getStreamInfos(config: IconfigFile, input: Record<string, any> ): Promise<IstreamInfos | undefined> {
     const stream: _STREAM = input["Datastream"] ? "Datastream" : input["MultiDatastream"] ? "MultiDatastream" : undefined;
     if (!stream) return undefined;
     const streamEntity = models.getEntityName(config, stream); 
     if (!streamEntity) return undefined;
-    // @ts-ignore
     const foiId: bigint | undefined = input["FeaturesOfInterest"] ? input["FeaturesOfInterest"] : undefined;
-    // @ts-ignore
     const searchKey = input[models.DBFull(config)[streamEntity].name] || input[models.DBFull(config)[streamEntity].singular];
     const streamId: string | undefined = isNaN(searchKey) ? searchKey["@iot.id"] : searchKey;
     if (streamId) {
@@ -147,12 +136,9 @@ class Models {
         .then((res: object) => {        
           return res ? {
             type: stream,
-            // @ts-ignore
-            id: res[0]["id"],
-            // @ts-ignore
-            observationType: res[0]["observationType"],
-            // @ts-ignore
-            FoId: foiId ? foiId : res[0]["_default_foi"],
+            id: res[0 as keyobj]["id"],
+            observationType: res[0 as keyobj]["observationType"],
+            FoId: foiId ? foiId : res[0 as keyobj]["_default_foi"],
           } : undefined;
         })
         .catch((error) => {

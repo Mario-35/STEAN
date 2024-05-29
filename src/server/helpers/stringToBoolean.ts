@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- stringToBoolean. -----------------------------------!");
+// onsole.log("!----------------------------------- stringToBoolean. -----------------------------------!");
 export function stringToBoolean (input: string | undefined, def?: boolean)  {
     def = def || false
     switch (typeof input) {

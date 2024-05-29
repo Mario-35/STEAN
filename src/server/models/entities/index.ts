@@ -1,11 +1,12 @@
 /**
- * Index Entity.
+ * Index Entity
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Index Entity. -----------------------------------!");
+// onsole.log("!----------------------------------- Index Entity -----------------------------------!");
+
 import { allEntities } from "../../enums";
 import { errors, msg } from "../../messages";
 import { Ientity } from "../../types";
@@ -20,8 +21,7 @@ const singular = (input: string) : string => {
 };
 
 export const createEntity = (name: string, datas?: Ientity1) : Ientity => {
-  // @ts-ignore  
-  const entity = allEntities[name];
+  const entity= allEntities[name];
     if (entity) {
       const t = singular(entity);
       return datas ? {

@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- createSTDB. -----------------------------------!");
+// onsole.log("!----------------------------------- createSTDB. -----------------------------------!");
 import { createTable, createUser } from "../helpers";
 import { serverConfig } from "../../configuration";
 import { addDoubleQuotes, addSimpleQuotes, asyncForEach } from "../../helpers";
@@ -36,8 +36,7 @@ export const createDatabase = async (configName: string): Promise<IKeyString> =>
       returnValue[`Create Database`] = `${config.database} ${_OK}`;
       // create USER if not exist
       await adminConnection.unsafe(`SELECT COUNT(*) FROM pg_user WHERE usename = ${addSimpleQuotes(config.user)};`)
-        .then(async (res: object) => {
-          // @ts-ignore
+        .then(async (res: Record<string, any>) => {
           if (res[0].count == 0) {            
             returnValue[`CREATE ROLE ${config.user}`] = await adminConnection.unsafe(`CREATE ROLE ${config.user} WITH PASSWORD ${addSimpleQuotes(config.password)} ${_RIGHTS}`)
               .then(() => _OK)

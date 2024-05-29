@@ -1,11 +1,12 @@
 /**
- * executeSqlValues.
+ * executeSqlValues
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- executeSqlValues. -----------------------------------!");
+// onsole.log("!----------------------------------- executeSqlValues. -----------------------------------!");
+
 import { serverConfig } from "../../configuration";
 import { log } from "../../log";
 import { asyncForEach, isTest } from "../../helpers";
@@ -15,10 +16,10 @@ export const executeSqlValues = async (config: IconfigFile | string, query: stri
     log.query(`${query}`);
     if (typeof query === "string") {
         return new Promise(async function (resolve, reject) {
-            await serverConfig.connection(typeof config === "string" ? config : config.name).unsafe(query).values().then((res: object) => { 
-                resolve(res[0]);
+            await serverConfig.connection(typeof config === "string" ? config : config.name).unsafe(query).values().then((res: Record<string, any>) => {
+      resolve(res[0]);
             }).catch((err: Error) => {
-                if (!isTest() && +err["code"] === 23505) log.queryError(query, err);
+                if (!isTest() && +err["code" as keyof object] === 23505) log.queryError(query, err);
                 reject(err);
             });
         });
@@ -28,10 +29,10 @@ export const executeSqlValues = async (config: IconfigFile | string, query: stri
             await asyncForEach(
                 query,
                 async (sql: string) => {
-                await serverConfig.connection(typeof config === "string" ? config : config.name).unsafe(sql).values().then((res: object) => { 
-                    result = { ... result, ...res[0] };
+                await serverConfig.connection(typeof config === "string" ? config : config.name).unsafe(sql).values().then((res: Record<string, any>) => { 
+      result = { ... result, ...res[0] };
                 }).catch((err: Error) => {
-                    if (!isTest() && +err["code"] === 23505) log.queryError(query, err);
+                    if (!isTest() && +err["code" as keyof object] === 23505) log.queryError(query, err);
                     reject(err);
                 });    
             });

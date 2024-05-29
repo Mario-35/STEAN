@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- context interface. -----------------------------------!");
+// onsole.log("!----------------------------------- context interface. -----------------------------------!");
 import { EnumColumnType } from "../enums";
 
 

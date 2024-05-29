@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Configs entity. -----------------------------------!");
+// onsole.log("!----------------------------------- Configs entity. -----------------------------------!");
 import { Common } from "./common";
 import { formatLog } from "../../logger";
 import { IreturnResult, koaContext } from "../../types";
@@ -46,14 +46,12 @@ export class Configs extends Common {
     });
   }
   
-  async post(dataInput: object | undefined): Promise<IreturnResult | undefined> {
+  async post(dataInput: Record<string, any> | undefined): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
-    // @ts-ignore
     if (dataInput && dataInput["create"] && dataInput["create"]["name"]) {
       return this.formatReturnResult({
         body: await createService(dataInput, this.ctx),
       });
-      // @ts-ignore
     } else if (dataInput && dataInput["add"] && dataInput["add"]["name"]) {
       return this.formatReturnResult({
         body: await addToService(this.ctx, dataInput),

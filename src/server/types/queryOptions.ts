@@ -18,8 +18,8 @@ export interface IqueryOptions {
     options: string;
     services: { [key: string]: IserviceInfos };
     decodedUrl: IdecodedUrl;
-    datas?: JSON;
-    results?: JSON | string;
+    datas?: Record<string, any>;
+    results?: Record<string, any> | string;
     graph: boolean;
     admin: boolean;
     _DATAS : Ientities

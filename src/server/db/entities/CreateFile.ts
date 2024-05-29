@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- CreateFile entity. -----------------------------------!");
+// onsole.log("!----------------------------------- CreateFile entity. -----------------------------------!");
 import { Common } from "./common";
 import { formatLog } from "../../logger";
 import { IcsvColumn, IcsvFile, IreturnResult, koaContext } from "../../types";
@@ -44,6 +44,7 @@ export class CreateFile extends Common {
       ctx.odata.id = "";
       ctx.odata.returnFormat = returnFormats.json;
       ctx.log = undefined;
+      // @ts-ignore
       const objectDatastream = new entities[this.ctx.model.Datastreams.name]( ctx );
       const myDatas = {
         name: `${this.ctx.model.Datastreams.name} import file ${nameOfFile}`,
@@ -136,7 +137,7 @@ export class CreateFile extends Common {
     this.ctx.throw(400, { code: 400 });
   }
     
-  async post(dataInput: object): Promise<IreturnResult | undefined> {
+  async post(dataInput: Record<string, string>): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam(dataInput));
     if (this.ctx.datas) {
       const myColumns: IcsvColumn[] = [];

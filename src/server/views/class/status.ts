@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- HTML Views Status for API. -----------------------------------!");
+// onsole.log("!----------------------------------- HTML Views Status for API. -----------------------------------!");
 import { serverConfig } from "../../configuration";
 import { _NOTOK, _OK } from "../../constants";
 import { EnumExtensions } from "../../enums";

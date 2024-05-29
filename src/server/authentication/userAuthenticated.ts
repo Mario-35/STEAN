@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- userAuthenticated -----------------------------------!");
+// onsole.log("!----------------------------------- userAuthenticated -----------------------------------!");
 import { decodeToken } from ".";
 import { EnumOptions } from "../enums";
 import { koaContext } from "../types";

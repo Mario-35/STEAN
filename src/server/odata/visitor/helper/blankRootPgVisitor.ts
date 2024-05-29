@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- blankRootPgVisitor. -----------------------------------!");
+// onsole.log("!----------------------------------- blankRootPgVisitor. -----------------------------------!");
 import { RootPgVisitor } from "..";
 import { log } from "../../../log";
 import { Ientity, koaContext } from "../../../types";

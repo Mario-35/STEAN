@@ -5,22 +5,21 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- writeToLog. -----------------------------------!");
+// onsole.log("!----------------------------------- writeToLog. -----------------------------------!");
 import { formatLog } from ".";
 import { addDoubleQuotes, hidePassword, isTest } from "../helpers";
 import { executeSqlValues } from "../db/helpers";
 import { models } from "../models";
 import { log } from "../log";
 import { createInsertValues } from "../models/helpers";
-import { koaContext } from "../types";
+import { keyobj, koaContext } from "../types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const writeToLog = async ( ctx: koaContext, ...error: any[] ): Promise<void> => {
   console.log(formatLog.whereIam("LOG"));
   if (error.length > 0) formatLog.writeErrorInFile(ctx, error);  
   if (ctx.log && ctx.log.method != "GET") {
-    // @ts-ignore
-    ctx.log.code = error && error["code"] ? +error["code"] : +ctx.response.status;
+    ctx.log.code = error && error["code" as keyobj] ? +error["code" as keyobj] : +ctx.response.status;
     ctx.log.error = error;
     ctx.log.datas = hidePassword(ctx.log.datas); 
     try {
@@ -33,8 +32,7 @@ export const writeToLog = async ( ctx: koaContext, ...error: any[] ): Promise<vo
     
     // if (ctx.odata && ctx.odata.idLog && BigInt(ctx.odata.idLog) > 0 && code !== 2 ) return;
     await executeSqlValues(ctx.config, `INSERT INTO ${addDoubleQuotes(models.DBFull(ctx.config).Logs.table)} ${createInsertValues(ctx.config, ctx.log, models.DBFull(ctx.config).Logs.name)} returning id`).then((res: object) =>{
-      // @ts-ignore
-      if (!isTest()) console.log(formatLog.url(`${ctx.decodedUrl.root}/Logs(${res[0]})`));      
+      if (!isTest()) console.log(formatLog.url(`${ctx.decodedUrl.root}/Logs(${res[0 as keyobj]})`));      
     }).catch((error) => {
       log.errorMsg(error);
     });

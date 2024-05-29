@@ -5,6 +5,6 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- createDatabase. -----------------------------------!");
+// onsole.log("!----------------------------------- createDatabase. -----------------------------------!");
 export { createDatabase } from "./createDatabase";
 export { testDatas } from "./tests";

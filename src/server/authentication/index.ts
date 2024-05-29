@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Index User. -----------------------------------!");
+// onsole.log("!----------------------------------- Index User. -----------------------------------!");
 export { createToken } from "./createToken";
 export { decodeToken } from "./decodeToken";
 export { ensureAuthenticated } from "./ensureAuthenticated";

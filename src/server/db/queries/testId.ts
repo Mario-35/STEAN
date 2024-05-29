@@ -5,7 +5,7 @@
 * @author mario.adam@inrae.fr
 *
 */
-// console.log("!----------------------------------- testId. -----------------------------------!");
+// onsole.log("!----------------------------------- testId. -----------------------------------!");
 export const testId = (table: string, id: bigint | string): string => 
 `SELECT 
 CASE WHEN EXISTS(

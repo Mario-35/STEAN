@@ -12,7 +12,7 @@ import fs from "fs";
 import { EnumColor } from "../enums";
 import { koaContext } from "../types";
 export { writeToLog } from "./writeToLog";
-// console.log("!----------------------------------- Index Logs. -----------------------------------!");
+// onsole.log("!----------------------------------- Index Logs. -----------------------------------!");
 
 class FormatLog {
   private debugFile = false;
@@ -36,8 +36,7 @@ class FormatLog {
     if (_DEBUG) {
       const res = [this.head(title)];
       Object.keys(input).forEach((cle: string) => {
-        // @ts-ignore
-        res.push(this.logCleInfos("  " + cle, input[cle]));
+        res.push(this.logCleInfos("  " + cle, input[cle as keyof object]));
       });
       return res.join("\n");
     }

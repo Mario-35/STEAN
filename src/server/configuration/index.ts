@@ -5,10 +5,10 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Configuration class. -----------------------------------!");
+// onsole.log("!----------------------------------- Configuration class. -----------------------------------!");
 import { addToStrings, ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_DB, NODE_ENV, setReady, TEST, TIMESTAMP, _DEBUG, _ERRORFILE, _NOTOK, _OK, _WEB, } from "../constants";
-import { asyncForEach, decrypt, encrypt, hidePassword, isProduction, isTest, stringToBoolean, unikeList, unique, } from "../helpers";
-import { IconfigFile, IdbConnection, IserviceInfos, koaContext } from "../types";
+import { asyncForEach, decrypt, encrypt, hidePassword, isProduction, isTest, unikeList, unique, } from "../helpers";
+import { IconfigFile, IdbConnection, IserviceInfos, koaContext, keyobj } from "../types";
 import { errors, infos, msg } from "../messages";
 import { createDatabase, createService} from "../db/helpers";
 import { app } from "..";
@@ -27,7 +27,7 @@ import { userAccess } from "../db/dataAccess";
 class Configuration {
   static configs: { [key: string]: IconfigFile } = {};
   static filePath: string; 
-  static jsonConfiguration: JSON;
+  static jsonConfiguration: Record<string, any> ;
   static ports: number[] = [];
   static queries: { [key: string]: string[] } = {};
 
@@ -50,9 +50,9 @@ class Configuration {
         log.error(errors.configFileError);
         process.exit(112);
       }
+      // this.writeConfig();      
       if (process.env.NODE_ENV?.trim() === "production" && fileContent[32] != ".") this.writeConfig();      
       // rewrite file (to update config modification)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       log.error("Config Not correct", error["message"]);
       process.exit(111);      
@@ -70,20 +70,19 @@ class Configuration {
 
   private async createConfigTest() {
     // In tests there a test to create service
-    if (isTest()) return;
-		const result = Configuration.configs[ADMIN];
-		result.name = TEST;
-    result.pg.database = TEST;
-    result.nb_page = 1000;
-    result.extensions = ["base", "multiDatastream", "lora", "logs"];
-    result.options = [EnumOptions.canDrop];
-    result.connection = undefined;
-    Configuration.configs[TEST] = this.formatConfig(result);
+    if (!isTest()) {      
+      const result = Configuration.configs[ADMIN];
+      result.name = TEST;
+      result.pg.database = TEST;
+      result.nb_page = 1000;
+      result.extensions = ["base", "multiDatastream", "lora", "logs"];
+      result.options = [EnumOptions.canDrop, EnumOptions.users];
+      result.connection = undefined;
+      Configuration.configs[TEST] = this.formatConfig(result);
+    }
 	}
 
   getInfos = (ctx: koaContext, name: string): IserviceInfos  => {
-    console.log(Configuration.configs);
-    
     const protocol:string = ctx.request.headers["x-forwarded-proto"]
           ? ctx.request.headers["x-forwarded-proto"].toString()
           : Configuration.configs[name].options.includes(EnumOptions.forceHttps)
@@ -98,7 +97,7 @@ class Configuration {
           ? `${protocol}://${ctx.request.header.host}`
           : "";
 
-    // make  rootName
+    // make rootName
     if (!linkBase.includes(name)) linkBase +=  "/" + name;
     const version = Configuration.configs[name].apiVersion;
     return {
@@ -111,9 +110,8 @@ class Configuration {
   }
 
   public getAllInfos(ctx: koaContext): { [key: string]: IserviceInfos } {
-    const result = {};    
+    const result:Record<string, any>  = {};    
     this.getConfigs().forEach((conf: string) => {
-      // @ts-ignore
       result[conf] = this.getInfos(ctx, conf)
     });
     return result;
@@ -128,27 +126,22 @@ class Configuration {
   }
 
   // verifi is valid config
-  private validJSONConfig(input : JSON): boolean {    
+  private validJSONConfig(input: Record<string, any> ): boolean {    
     if (!input.hasOwnProperty(ADMIN)) return false;
-    // @ts-ignore
     if (!input[ADMIN].hasOwnProperty("pg")) return false;
-    // @ts-ignore
-    if (!input[ADMIN][["pg"]].hasOwnProperty("host")) return false;
-    // @ts-ignore
-    if (!input[ADMIN][["pg"]].hasOwnProperty("user")) return false;
-    // @ts-ignore
-    if (!input[ADMIN][["pg"]].hasOwnProperty("password")) return false;
-    // @ts-ignore
-    if (!input[ADMIN][["pg"]].hasOwnProperty("database")) return false;
+    const admin = input[ADMIN]["pg" as keyobj] as JSON;
+    if (!admin.hasOwnProperty("host")) return false;
+    if (!admin.hasOwnProperty("user")) return false;
+    if (!admin.hasOwnProperty("password")) return false;
+    if (!admin.hasOwnProperty("database")) return false;
     return true;
   }
 
   // Write an encrypt config file in json file
   writeConfig(): boolean {
-    const result = {};
+    const result: Record<string, any>  = {};
     Object.entries(Configuration.configs).forEach(([k, v]) => {
-      // @ts-ignore
-      result[k] = Object.keys(v).filter(key => key !== 'db' && key[0] != "_").reduce((obj, key) => { obj[key] = v[key]; return obj; }, {} );
+      result[k] = Object.keys(v).filter(key => key !== 'db' && key[0] != "_").reduce((obj, key) => { obj[key as keyobj] = v[key as keyobj]; return obj; }, {} );
     });
 
     fs.writeFile(
@@ -277,10 +270,8 @@ class Configuration {
         .filter( (e) => e != ADMIN && Configuration.configs[e].extensions.includes(EnumExtensions.lora) )
         .forEach((connectName: string) => {
           Object.keys(update["decoders"]).forEach((name: string) => {
-            // @ts-ignore
-            const hash = this.hashCode(update["decoders"][name]);
-            // @ts-ignore
-            this.addToQueries( connectName, `UPDATE decoder SET code='${update["decoders"][name]}', hash = '${hash}' WHERE name = '${name}' AND hash <> '${hash}' ` );
+            const hash = this.hashCode(update["decoders" as keyobj][name]);
+            this.addToQueries( connectName, `UPDATE decoder SET code='${update["decoders" as keyobj][name]}', hash = '${hash}' WHERE name = '${name}' AND hash <> '${hash}' ` );
           });
         });
       }
@@ -338,11 +329,10 @@ class Configuration {
   }
 
   public getConfigForExcelExport = (name: string): object=> {
-    const result = Object.assign({}, Configuration.configs[name].pg);
+    const result: Record<string, any> = Object.assign({}, Configuration.configs[name].pg);
     result["password"] = "*****";
     ["name","apiVersion","port","date_format", "webSite", "nb_page", "forceHttps", "highPrecision", "canDrop", "logFile","alias", "extensions"].forEach(e => {
-      // @ts-ignore
-      result[e]= Configuration.configs[name][e];
+      result[e]= Configuration.configs[name][e as keyobj];
     }); 
     return result;
   };
@@ -372,66 +362,53 @@ class Configuration {
       name = input;
       input = Configuration.jsonConfiguration[input];
     }    
-    const options: typeof typeOptions = input["options"]
-    ? unique([... String(input["options"]).split(",")]) as typeof typeOptions 
+    const options: typeof typeOptions = input["options"as keyobj]
+    ? unique([... String(input["options"as keyobj]).split(",")]) as typeof typeOptions 
     : [];
 
-    const extensions: typeof typeExtensions = input["extensions"]
-      ? unique(["base", ... String(input["extensions"]).split(",")]) as typeof typeExtensions 
+    const extensions: typeof typeExtensions = input["extensions"as keyobj]
+      ? unique(["base", ... String(input["extensions"as keyobj]).split(",")]) as typeof typeExtensions 
       : ["base"];
 
     // TO REMOVE AFTER ALL SERVICES CLEAN
-    const formatOldConfig = () => {
-      if (stringToBoolean(input["stripNull"])) {
-        options.push(EnumOptions.stripNull)
-        delete input["stripNull"]
-      }
-      if (stringToBoolean(input["canDrop"])) {
-        options.push(EnumOptions.canDrop)
-        delete input["canDrop"]
-      }
-      if (stringToBoolean(input["forceHttps"])) {
-        options.push(EnumOptions.forceHttps)
-        delete input["forceHttps"]
-      }
-    }
+    // const formatOldConfig = () => {
+    //   if (stringToBoolean(input["stripNull"])) {
+    //     options.push(EnumOptions.stripNull)
+    //     delete input["stripNull" as keyobj]
+    //   }
+    //   if (stringToBoolean(input["canDrop"])) {
+    //     options.push(EnumOptions.canDrop)
+    //     delete input["canDrop" as keyobj]
+    //   }
+    //   if (stringToBoolean(input["forceHttps"])) {
+    //     options.push(EnumOptions.forceHttps)
+    //     delete input["forceHttps" as keyobj]
+    //   }
+    // }
 
-    formatOldConfig();
+    // formatOldConfig();
     const goodDbName = name
       ? name
-      // @ts-ignore
-      : input[`pg`] && input[`pg`]["database"] ? input[`pg`]["database"] : `ERROR` || "ERROR";
-    const version = goodDbName === ADMIN ? EnumVersion.v1_1  : String(input["apiVersion"]).trim();
+      : input["pg" as keyobj] && input["pg" as keyobj]["database"] ? input["pg" as keyobj]["database"] : `ERROR` || "ERROR";
+    const version = goodDbName === ADMIN ? EnumVersion.v1_1  : String(input["apiVersion" as keyobj]).trim();
     const returnValue: IconfigFile = {
       name: goodDbName,
       port: goodDbName === ADMIN
-        // @ts-ignore
-          ? input["port"] || 8029
-          // @ts-ignore
-          : input["port"] || Configuration.configs[ADMIN].port || 8029,
+          ? input["port" as keyobj] || 8029
+          : input["port" as keyobj] || Configuration.configs[ADMIN].port || 8029,
       pg: {
-        // @ts-ignore
-        host: input[`pg`] && input[`pg`]["host"] ? input[`pg`]["host"] : `ERROR`,
-        // @ts-ignore
-        port: input[`pg`] && input[`pg`]["port"] ? input[`pg`]["port"] : 5432,
-        // @ts-ignore
-        user: input[`pg`] && input[`pg`]["user"] ? input[`pg`]["user"] : `ERROR`,
-        // @ts-ignore
-        password: input[`pg`] && input[`pg`]["password"] ? input[`pg`]["password"] : `ERROR`,
-        // @ts-ignore
-        database: name && name === "test" ? "test" : input[`pg`] && input[`pg`]["database"] ? input[`pg`]["database"] : `ERROR`,
-        // @ts-ignore
-        retry: input["retry"] ? +input["retry"] : 2,
+        host: input["pg" as keyobj] && input["pg" as keyobj]["host" as keyobj] ? String(input["pg" as keyobj]["host" as keyobj]) : `ERROR`,
+        port: input["pg" as keyobj] && input["pg" as keyobj]["port"] ? input["pg" as keyobj]["port"] : 5432,
+        user: input["pg" as keyobj] && input["pg" as keyobj]["user"] ? input["pg" as keyobj]["user"] : `ERROR`,
+        password: input["pg" as keyobj] && input["pg" as keyobj]["password"] ? input["pg" as keyobj]["password"] : `ERROR`,
+        database: name && name === "test" ? "test" : input["pg" as keyobj] && input["pg" as keyobj]["database"] ? input["pg" as keyobj]["database"] : `ERROR`,
+        retry: input["retry" as keyobj] ? +input["retry" as keyobj] : 2,
       },
       apiVersion: this.getModelVersion(version),
-      // @ts-ignore
-      date_format: input["date_format"] || "DD/MM/YYYY hh:mi:ss",
-      // @ts-ignore
-      webSite: input["webSite"] || "no web site",
-      // @ts-ignore
-      nb_page: input["nb_page"] ? +input["nb_page"] : 200,
-      // @ts-ignore
-      alias: input["alias"] ? unikeList(String(input["alias"]).split(",")) : [],
+      date_format: input["date_format" as keyobj] || "DD/MM/YYYY hh:mi:ss",
+      webSite: input["webSite" as keyobj] || "no web site",
+      nb_page: input["nb_page" as keyobj] ? +input["nb_page" as keyobj] : 200,
+      alias: input["alias" as keyobj] ? unikeList(String(input["alias" as keyobj]).split(",")) : [],
       extensions: extensions,
       options: options,
       connection: undefined,
@@ -450,7 +427,6 @@ class Configuration {
   public async addConfig(addJson: object): Promise<IconfigFile | undefined> {
     try {
       const addedConfig = this.formatConfig(addJson);
-      // @ts-ignore
       Configuration.jsonConfiguration[addedConfig.name] = addedConfig;
       fs.writeFile(
         Configuration.filePath,
@@ -463,8 +439,10 @@ class Configuration {
         }
       );
       Configuration.configs[addedConfig.name] = this.formatConfig(addedConfig);
-      await this.addToServer(addedConfig.name);
-      this.writeConfig();
+      if(!isTest()) {
+        await this.addToServer(addedConfig.name);
+        this.writeConfig();
+      }
       hidePassword(addedConfig);
       return addedConfig;
     } catch (error) {
@@ -562,18 +540,15 @@ class Configuration {
       .catch(async (err: Error) => {
         let returnResult = false;
         // Password authentication failed 
-        // @ts-ignore
-        if (err["code"] === "28P01") {
+        if (err["code" as keyobj] === "28P01") {
           returnResult = await this.tryToCreateDB(connectName);
           if (returnResult === false) log.error(formatLog.error(err));
           //database does not exist
-          // @ts-ignore
-        } else if (err["code"] === "3D000" && logCreate == true) {
+        } else if (err["code" as keyobj] === "3D000" && logCreate == true) {
           console.log(formatLog.debug( msg(infos.tryCreate, infos.db), Configuration.configs[connectName].pg.database ));
           // If not in tdd tests create test DB for documentation
-          if (!isTest() && connectName === TEST) {
-            await createService(testDatas);
-          } else returnResult = await this.tryToCreateDB(connectName);
+          if (!isTest()) await createService(testDatas);
+          // else returnResult = await this.tryToCreateDB(connectName);
         } else log.error(formatLog.error(err));
         return returnResult;
       });

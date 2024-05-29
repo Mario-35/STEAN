@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- dbConnection interface. -----------------------------------!");
+// onsole.log("!----------------------------------- dbConnection interface. -----------------------------------!");
 import postgres from "postgres";
 import { typeExtensions, typeOptions } from ".";
 import { EnumVersion } from "../enums";

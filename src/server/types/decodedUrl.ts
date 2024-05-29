@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- decodedUrl interface. -----------------------------------!");
+// onsole.log("!----------------------------------- decodedUrl interface. -----------------------------------!");
 export interface IdecodedUrl {
     linkbase:   string;
     root:       string;

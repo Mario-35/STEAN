@@ -17,7 +17,7 @@ chai.use(chaiHttp);
 
 const should = chai.should();
 
-const tests = {
+const tests: Record<string, any> = {
     "/test/v1.1/Things?$filter=Datastreams/ObservedProperty/description eq 'Description of classic Observed Property'": 1,
     "/test/v1.1/Observations?$filter=phenomenonTime gt 2023-10-13T06:37:13+02:00": 6,
     "/test/v1.1/Things?$filter=Datastreams/unitOfMeasurement/name eq 'Pression'": 1,

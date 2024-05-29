@@ -1,23 +1,21 @@
 /**
- * decodeToken.
+ * decodeToken
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- decodeToken. -----------------------------------!");
+// onsole.log("!----------------------------------- decodeToken -----------------------------------!");
+
 import jsonwebtoken from "jsonwebtoken";
-import { IuserToken, koaContext } from "../types";
+import { IuserToken, keyobj, koaContext } from "../types";
 import { blankUserToken } from "../types/userToken";
 
 export const decodeToken = (ctx: koaContext): IuserToken => {
   if (ctx.request.hasOwnProperty("token")) {
-    // @ts-ignore
-    const token = jsonwebtoken.decode(ctx.request["token"]);
-    // @ts-ignore
-    if (token && token["data"].id > 0)
-    // @ts-ignore
-      return Object.freeze({ id: token["data"].id, username: token["data"].username, password: token["data"].password, PDCUAS: token["data"].PDCUAS, });
+    const token = jsonwebtoken.decode(ctx.request["token" as keyobj]);
+    if (token && token["data" as keyobj]["id"] > 0)
+      return Object.freeze({ id: token["data" as keyobj]["id"], username: token["data" as keyobj]["username"], password: token["data" as keyobj]["password"], PDCUAS: token["data" as keyobj]["PDCUAS"], });
   }
   return blankUserToken;
 };

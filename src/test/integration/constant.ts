@@ -1,12 +1,13 @@
 /**
- * Constant for TDD.
+ * Constant for TDD
  *
  * @copyright 2020-present Inrae
  * @review 29-10-2024
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Constant for TDD. -----------------------------------!");
+// onsole.log("!----------------------------------- Constant for TDD -----------------------------------!");
+
 import fs from "fs";
 import path from "path";
 import { TEST } from "../../server/constants";
@@ -42,7 +43,7 @@ export interface Iinfos {
     apiExample: {[key: string]: string};
     apiSuccess?: string[];
     apiParam?: string[];
-    apiParamExample?: Object;
+    apiParamExample?: Record<string, any>;
 }
 
 export const keyTokenName = "jwt-session";
@@ -56,7 +57,7 @@ export interface IApiInput {
     apiError?: string[];
     apiParam?: string[];
     apiSuccess?: string[];
-    apiParamExample?: Object;
+    apiParamExample?: Record<string, any>;
     result: any;
 }
 
@@ -232,7 +233,7 @@ export const generateApiDoc = (input: IApiDoc[], filename: string): boolean => {
 
 
 
-export const limitResult = (input: object, keyName?: string) => {  
+export const limitResult = (input: Record<string, any>, keyName?: string) => {  
     const key:string = keyName || "value";
     if (input["body"][key]) input["body"][key] = [input["body"][key][0], input["body"][key][1], "..."];
     return input;
@@ -249,7 +250,7 @@ const definitions = {
 const types = {
     id : "BigInt"
 };
-export const infos  = {
+export const infos: Record<string, any>  = {
     Things: {
         definition: "A Thing is an object of the physical world (physical Things) or the information world (virtual Things) that is capable of being identified and integrated into communication networks<br>Thing is a good starting point to start creating the SensorThings model structure.<br><br>A Thing has Locations and one or more Datastreams to collect Observations. A minimal Thing can be created without a Location and Datastream and there are options to create a Things with a nested linked Location and Datastream.",
         reference: "https://docs.ogc.org/is/18-088/18-088.html#thing",
@@ -535,7 +536,7 @@ export const listOfColumns = (inputEntity: Ientity) => {
     
     const success:string[] = [];
     const params:string[] = [];
-    const infosEntity = infos[inputEntity.name];
+    const infosEntity: Record<string, any> = infos[inputEntity.name];
     Object.keys(infosEntity.columns).forEach((elem: string) => {
         const optional = (inputEntity.columns[elem] && inputEntity.columns[elem].create.includes("NOT NULL")) ? elem : `[${elem}]`;
         success.push(`{${inputEntity.columns[elem] && inputEntity.columns[elem].type ? inputEntity.columns[elem].type : "none"}} ${elem} ${infosEntity["columns"][elem] || elem}`);

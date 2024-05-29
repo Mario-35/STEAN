@@ -9,7 +9,7 @@ import { createEntity } from ".";
 import { EnumDatesType, EnumObservationType, EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 import { _id, _idRel, _text, _tz } from "./constants";
-// console.log("!----------------------------------- entity MultiDatastream. -----------------------------------!");
+// onsole.log("!----------------------------------- entity MultiDatastream. -----------------------------------!");
 export const MultiDatastream:Ientity  = createEntity("MultiDatastreams", {
     createOrder: 8,
     order: 2,

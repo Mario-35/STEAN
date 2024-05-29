@@ -6,7 +6,7 @@
  *
  */
 process.env.NODE_ENV = "test";
-// console.log("!----------------------------------- TDD for things API. -----------------------------------!");
+// onsole.log("!----------------------------------- TDD for things API. -----------------------------------!");
 import chai from "chai";
 import chaiHttp from "chai-http";
 import {
@@ -88,7 +88,7 @@ addToApiDoc({
 				},
 				apiSuccess: ["{number} id @iot.id", "{relation} selfLink @iot.selfLink", ...success]
 			});
-            executeQuery(count(entity.table)).then((result) => {
+            executeQuery(count(entity.table)).then((result: Record<string, any>) => {
                     chai.request(server)
                         .get(`/test/${testVersion}/${entity.name}`)
                         .end((err, res) => {
@@ -302,7 +302,7 @@ addToApiDoc({
 	describe(`{patch} ${entity.name} ${nbColorTitle}[10.3]`, () => {
 		afterEach(() => { writeLog(true); });
 		it(`Return updated ${entity.name} ${nbColor}[10.3.1]`, (done) => {
-	            executeQuery(last(entity.table, true)).then((result) => {
+	            executeQuery(last(entity.table, true)).then((result: Record<string, any>) => {
                     const datas = {
                         "name": "My New Name",
                         "feature": {
@@ -380,7 +380,7 @@ addToApiDoc({
 	describe(`{delete} ${entity.name} ${nbColorTitle}[10.4]`, () => {
 		afterEach(() => { writeLog(true); });
 		it(`Delete ${entity.name} return no content with code 204 ${nbColor}[10.4.1]`, (done) => {
-			executeQuery(`SELECT (SELECT count(id) FROM "${entity.table}")::int as count, (${last(entity.table)})::int as id `).then((beforeDelete) => {
+			executeQuery(`SELECT (SELECT count(id) FROM "${entity.table}")::int as count, (${last(entity.table)})::int as id `).then((beforeDelete: Record<string, any>)  => {
 				const infos = addTest({
 					api : `{delete} ${entity.name} Delete one`,
 					apiName: `Delete${entity.name}`,
@@ -399,7 +399,7 @@ addToApiDoc({
 					.end((err: Error, res: any) => {
 						should.not.exist(err);
 						res.status.should.equal(204);
-						executeQuery(`SELECT count(id)::int FROM "${entity.table}"`).then((afterDelete) => {
+						executeQuery(`SELECT count(id)::int FROM "${entity.table}"`).then((afterDelete: Record<string, any>)  => {
 							afterDelete["count"].should.eql(beforeDelete["count"] - 1);
 							addToApiDoc({
 								...infos,

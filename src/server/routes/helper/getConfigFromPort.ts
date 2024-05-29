@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- getConfigFromPort for user admin. -----------------------------------!");
+// onsole.log("!----------------------------------- getConfigFromPort for user admin. -----------------------------------!");
 import { serverConfig } from "../../configuration";
 import { TEST } from "../../constants";
 import { isTest } from "../../helpers";

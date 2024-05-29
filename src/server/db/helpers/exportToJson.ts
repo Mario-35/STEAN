@@ -1,18 +1,19 @@
 /**
- * exportToJson.
+ * exportToJson
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- exportToJson. -----------------------------------!");
+// onsole.log("!----------------------------------- exportToJson -----------------------------------!");
+
 import { serverConfig } from "../../configuration";
 import { addDoubleQuotes, asyncForEach, getUrlKey, hidePassword, removeEmpty } from "../../helpers";
 import { koaContext } from "../../types";
 
 export const exportToJson = async (ctx: koaContext) => {
   // get config with hidden password
-  const result = { "create": hidePassword(serverConfig.getConfig(ctx.config.name))};
+  const result: Record<string, any> = { "create": hidePassword(serverConfig.getConfig(ctx.config.name))};
   // get entites list
   const entities = Object.keys(ctx.model).filter((e: string) => ctx.model[e].createOrder > 0);
   // add ThingsLocations
@@ -37,11 +38,9 @@ export const exportToJson = async (ctx: koaContext) => {
         // Execute query        
         const tempResult = await serverConfig.connection(ctx.config.name).unsafe(`select ${columnListWithQuotes}${rels.length > 1 ? rels.join() : ""}\n FROM "${ctx.model[entity].table}" LIMIT ${getUrlKey(ctx.request.url, "limit") || ctx.config.nb_page}`);  
         // remove null and store datas result 
-        // @ts-ignore
         result[entity] = removeEmpty(tempResult);        
       }  
   });
-  // @ts-ignore
   delete result["FeaturesOfInterest"][0];
   return result;
 };

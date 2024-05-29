@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- returnFormat interface. -----------------------------------!");
+// onsole.log("!----------------------------------- returnFormat interface. -----------------------------------!");
 import { koaContext } from ".";
 import { PgVisitor } from "../odata/visitor";
 

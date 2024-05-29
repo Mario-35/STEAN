@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- returnFormats -----------------------------------!");
+// onsole.log("!----------------------------------- returnFormats -----------------------------------!");
 import { asDataArray, asJson, graphDatastream, graphMultiDatastream, interval, } from "../db/queries";
 import { Parser } from "json2csv";
 import { IreturnFormat, koaContext } from "../types";
@@ -41,7 +41,7 @@ const generateFields = (input: PgVisitor): string[] => {
  * @param input PgVisitor
  * @returns sSQL Query for graph
  */
-// console.log("!----------------------------------- returnFormats. -----------------------------------!");
+// onsole.log("!----------------------------------- returnFormats. -----------------------------------!");
 const generateGrahSql = (input: PgVisitor): string => {
   input.intervalColumns = ["id", "step as date", "result"];
   if (isGraph(input)) input.intervalColumns.push("concat"); 
@@ -97,22 +97,18 @@ const _returnFormats: { [key in EnumResultFormats]: IreturnFormat } = {
   graph: {
     name: "graph",
     type: "text/html;charset=utf8",
-    format(input: string | object, ctx: koaContext): string | object {
+    format(input: string | object, ctx: koaContext): string | Record<string, any> {
       const graphNames: string[] = [];
       const formatedDatas: string[] = [];
       const height = String(100 / Object.entries(input).length).split(".")[0];
       if (typeof input === "object") {
        
-        Object.entries(input).forEach((element: object, index: number) => {
+        Object.entries(input).forEach((element: Record<string, any>, index: number) => {
           graphNames.push( `<button type="button" id="btngraph${index}" onclick="graph${index}.remove(); btngraph${index}.remove();">X</button>
            <div id="graph${index}" style="width:95%; height:${height}%;"></div>` );
-          // @ts-ignore
           const infos = element[1]["description"]
-          // @ts-ignore
             ? `${[ element[1]["description"], element[1]["name"], element[1]["symbol"], ].join('","')}`
-            // @ts-ignore
             : `${element[1]["infos"].split("|").join(DOUBLEQUOTEDCOMA)}`;
-            // @ts-ignore
           const formatedData = `const value${index} = [${element[1]["datas"]}]; 
           const infos${index} = ["${infos}"];`;
           formatedDatas.push(` ${formatedData} showGraph("graph${index}", infos${index}, value${index})`);
@@ -144,21 +140,17 @@ const _returnFormats: { [key in EnumResultFormats]: IreturnFormat } = {
   csv: {
     name: "csv",
     type: "text/csv",
-    format: (input: string | object) => {
+    format: (input: string | Record<string, any>) => {
       const opts = {
         delimiter: ";",
         includeEmptyRows: true,
         escapedQuote: "",
         header: false,
       };
-      // @ts-ignore
       if (input && typeof input === "object" && input[0].dataArray)
         try {
-          // @ts-ignore
           const parser = new Parser(opts);
-          // @ts-ignore
           input[0].dataArray.unshift(input[0].component);
-          // @ts-ignore
           return parser.parse(input[0].dataArray);
         } catch (e) {
           if (e instanceof Error) {

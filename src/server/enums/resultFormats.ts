@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- formats Enum. -----------------------------------!");
+// onsole.log("!----------------------------------- formats Enum. -----------------------------------!");
 export const enum EnumResultFormats {    
     json = "json", 
     csv = "csv",

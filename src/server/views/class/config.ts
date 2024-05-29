@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- HTML Views First for API. -----------------------------------!");
+// onsole.log("!----------------------------------- HTML Views First for API. -----------------------------------!");
 import { EnumOptions, EnumVersion } from "../../enums";
 import { IconfigFile, IKeyString, koaContext } from "../../types";
 import { CoreHtmlView } from "./core";

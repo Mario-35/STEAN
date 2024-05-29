@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- user interface. -----------------------------------!");
+// onsole.log("!----------------------------------- user interface. -----------------------------------!");
 export interface Iuser {
     id?: number; // id in database
     username: string; //user name

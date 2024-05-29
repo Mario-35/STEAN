@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- pgVisitor index. -----------------------------------!");
+// onsole.log("!----------------------------------- pgVisitor index. -----------------------------------!");
 import { query, resourcePath } from "./parser/parser";
 import { Token } from "./parser/lexer";
 import { cleanUrl, returnFormats } from "../helpers";
@@ -29,7 +29,7 @@ const escapesOdata = (input: string) : string => {
   if (input.includes("%27")) {
     const pop:string[] = [];
     input.split("%27").forEach((v: string, i: number) => {
-      if (i === 1) Object.keys(codes).forEach((code: string) => v = v.split(code).join(codes[code]));      
+      if (i === 1) Object.keys(codes).forEach((code: string) => v = v.split(code).join(codes[code as keyof object]));      
       pop.push(v);
     });
     return pop.join("%27");

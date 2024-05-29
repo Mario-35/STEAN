@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- GroupBy builder -----------------------------------!");
+// onsole.log("!----------------------------------- GroupBy builder -----------------------------------!");
 import { Core } from ".";
 
 export class Key extends Core {

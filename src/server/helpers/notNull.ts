@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- isNullOrNotNull -----------------------------------!");
+// onsole.log("!----------------------------------- isNullOrNotNull -----------------------------------!");
 
 const isNullOrNotNull = (input: any, ret: boolean): boolean => {
     switch (typeof input) {

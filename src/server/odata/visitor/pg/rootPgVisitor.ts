@@ -1,13 +1,14 @@
 /**
- * pgVisitor for odata.
+ * pgVisitor for odata
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- pgVisitor for odata. -----------------------------------!");
+// onsole.log("!----------------------------------- pgVisitor for odata -----------------------------------!");
+
 import { addDoubleQuotes } from "../../../helpers";
-import { IodataContext, koaContext } from "../../../types";
+import { IodataContext, keyobj, koaContext } from "../../../types";
 import { Token } from "../../parser/lexer";
 import { SqlOptions } from "../../parser/sqlOptions";
 import { formatLog } from "../../../logger";
@@ -33,8 +34,9 @@ export class RootPgVisitor extends PgVisitor {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected VisitRessources(node: Token, context?: IodataContext) {
-    const ressource = this[`VisitRessources${node.type}`];
+    const ressource = this[`VisitRessources${node.type}` as keyobj];
     if (ressource) {
+      // @ts-ignore
       ressource.call(this, node, context);
       if (this.debugOdata) {
         console.log(formatLog.debug("VisitRessources",`VisitRessources${node.type}`));

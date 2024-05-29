@@ -1,11 +1,11 @@
 /**
- * createService.
+ * createService
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- createService. -----------------------------------!");
+// onsole.log("!----------------------------------- createService -----------------------------------!");
 import { addToService, createDatabase, executeAdmin, executeSqlValues } from ".";
 import { serverConfig } from "../../configuration";
 import { _NOTOK, _OK } from "../../constants";
@@ -14,9 +14,10 @@ import { models } from "../../models";
 import { createInsertValues } from "../../models/helpers";
 import { sqlStopDbName } from "../../routes/helper";
 import { userAccess } from "../dataAccess";
-import { koaContext } from "../../types";
+import { keyobj, koaContext } from "../../types";
+import { log } from "../../log";
 
-const prepareDatas = (dataInput: object, entity: string): object => {
+const prepareDatas = (dataInput: Record<string, string>, entity: string): object => {
   if (entity === "Observations") {
     if (!dataInput["resultTime"] && dataInput["phenomenonTime"] ) dataInput["resultTime"]  = dataInput["phenomenonTime"] 
     if (!dataInput["phenomenonTime"] && dataInput["resultTime"] ) dataInput["phenomenonTime"]  = dataInput["resultTime"] 
@@ -30,11 +31,10 @@ const getConvertedData = async (url: string): Promise<object> => {
 
 const addToServiceFromUrl = async (url: string | undefined, ctx: koaContext): Promise<string> => {
   while(url) {
-    console.log(url);    
     try {      
       const datas = await getConvertedData(url) as object;
       await addToService(ctx, datas);
-      return datas["@iot.nextLink"];
+      return datas["@iot.nextLink" as keyof object];
     } catch (error) {  
       console.log(error) ;
       return "";
@@ -43,14 +43,15 @@ const addToServiceFromUrl = async (url: string | undefined, ctx: koaContext): Pr
   return "";
 }
 
-export const createService = async (dataInput: object, ctx?: koaContext): Promise<object> => {
-  const results = {};
-  const serviceName = dataInput["create"]["name"];
+export const createService = async (dataInput: Record<string, any>, ctx?: koaContext): Promise<Record<string, any>> => {
+  const results: Record<string, string>  = {};
+  const serviceName = dataInput["create" as keyobj]["name"];
   const config = serverConfig.getConfig(serviceName);
   const mess = `Database [${serviceName}]`; 
   const createDB = async () => {
     try {  
       await createDatabase(serviceName);
+
       results[`Create ${mess}`  ] = _OK;
       await userAccess.post(serviceName, {
         username: config.pg.user,
@@ -78,45 +79,42 @@ export const createService = async (dataInput: object, ctx?: koaContext): Promis
       results[`Drop ${mess}`] = _NOTOK;
       console.log(error);        
     });
-    //  else await createDB();
   }).catch(async (err: any) => {
     if (err["code"] === "3D000") {
       await createDB();
     }
   });
 
-    const tmp = models.filteredModelFromConfig(config);
+  const tmp = models.filteredModelFromConfig(config);
     
-    await asyncForEach( Object.keys(tmp) .filter((elem: string) => tmp[elem].createOrder > 0) .sort((a, b) => (tmp[a].createOrder > tmp[b].createOrder ? 1 : -1)), async (entityName: string) => {
-      if (dataInput[entityName]) {
-        const goodEntity = models.getEntity(config, entityName);
-        if (goodEntity) {
-          try {
-            const sqls: string[] =dataInput[entityName].map((element: any) =>`INSERT INTO ${addDoubleQuotes(goodEntity.table)} ${createInsertValues(config, prepareDatas(element, goodEntity.name), goodEntity.name)}`);
-            await executeSqlValues(serverConfig.getConfig(serviceName), sqls.join(";")).then((res: object) =>{
-              results[entityName] = _OK;
-            }).catch((error: any) => {
-              console.log(error);
-              results[entityName] = _NOTOK;
-            });
-          } catch (error) {
-            console.log(error);            
+  await asyncForEach( Object.keys(tmp) .filter((elem: string) => tmp[elem].createOrder > 0) .sort((a, b) => (tmp[a].createOrder > tmp[b].createOrder ? 1 : -1)), async (entityName: string) => {
+    if (dataInput[entityName]) {
+      const goodEntity = models.getEntity(config, entityName);
+      if (goodEntity) {
+        try {
+    const sqls: string[] =dataInput[entityName].map((element: any) =>`INSERT INTO ${addDoubleQuotes(goodEntity.table)} ${createInsertValues(config, prepareDatas(element, goodEntity.name), goodEntity.name)}`);
+          await executeSqlValues(serverConfig.getConfig(serviceName), sqls.join(";")).then((res: Record<string, any>) =>{
+            results[entityName] = _OK;
+          }).catch((error: any) => {
+            log.errorMsg(error);
             results[entityName] = _NOTOK;
-          }
+          });
+        } catch (error) {
+          log.errorMsg(error);           
+          results[entityName] = _NOTOK;
         }
       }
-    });
-
-    if (ctx && dataInput["create"]["imports"]) {
-      await asyncForEach(dataInput["create"]["imports"], async (url: string | undefined) => {
-        console.log(url);
-        url = `${url}&$top=1000`;
-        console.log(url);    
-        while(url !+ "") {
-          url = await addToServiceFromUrl(url, ctx);
-        }
-      });
     }
+  });
     
-    return results;
+  if (ctx && dataInput["create"]["imports"]) {
+    await asyncForEach(dataInput["create"]["imports"], async (url: string | undefined) => {
+      url = `${url}&$top=1000`; 
+      while(url !+ "") {
+        url = await addToServiceFromUrl(url, ctx);
+      }
+    });
+  }
+    
+  return results;
 }

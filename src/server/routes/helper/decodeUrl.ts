@@ -6,7 +6,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Helpers for user admin. -----------------------------------!");
+// onsole.log("!----------------------------------- Helpers for user admin. -----------------------------------!");
 import { getConfigFromPort } from ".";
 import { serverConfig } from "../../configuration";
 import { ADMIN, setDebug } from "../../constants";

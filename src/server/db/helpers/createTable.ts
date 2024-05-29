@@ -1,11 +1,12 @@
 /**
- * createTable.
+ * createTable
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- createTable. -----------------------------------!");
+// onsole.log("!----------------------------------- createTable -----------------------------------!");
+
 import { serverConfig } from "../../configuration";
 import { _OK } from "../../constants";
 import { log } from "../../log";

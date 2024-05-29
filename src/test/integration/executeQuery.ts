@@ -2,7 +2,7 @@ import { dbTest } from "../dbTest";
 
 export const executeQuery = async (sql: string): Promise<object> => {    
     return new Promise(async function (resolve, reject) {
-        await dbTest.unsafe(sql).then((res: object) => {           
+        await dbTest.unsafe(sql).then((res: Record<string, any>) => {           
                 resolve(res[0]);
             }).catch((err: Error) => {                
                 reject(err);

@@ -5,7 +5,10 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- tests datas. -----------------------------------!");
+// onsole.log("!----------------------------------- tests datas. -----------------------------------!");
+
+import { keyobj } from "../../types";
+
 // Shortcuts for space
 const n = {
 	types: ["classic","apostrophe","accent","special","hack"],
@@ -35,7 +38,7 @@ const nb = (hr: number) => hr < 10 ? `0${hr}` : `${hr}`;
 
 const createObservations = () => {
 		const datastream = (type: string, month: number) => {
-			const result:object[] = [];
+			const result: Record<string, any>[] = [];
 			for (let i = 0; i < 12; i++) {
 				result.push({
 					"phenomenonTime": `2023-${nb(month)}-${nb(i+1)}T${i+10}:49:32.198898+01:00`,
@@ -43,8 +46,7 @@ const createObservations = () => {
 						"value": 200 + (i * 10)
 					},
 					"datastream_id": {
-						// @ts-ignore
-						"@iot.name": `${n[type]} Datastream`
+						"@iot.name": `${n[type as keyobj]} Datastream`
 					}
 				});
 			  }
@@ -53,11 +55,9 @@ const createObservations = () => {
 		const multiDatastream = (type: string, month: number) => {
 			const result:object[] = [];
 			for (let i = 0; i < 12; i++) {
-				const values = {};
-				// @ts-ignore
-				values[`${n["unit1"]} ${n[type]}`] = 20 + i;
-				// @ts-ignore
-				values[`${n["unit2"]} ${n[type]}`] = i + (i / 100);		
+				const values: Record<string, any> = {};
+				values[`${n["unit1"]} ${n[type as keyobj]}`] = 20 + i;
+				values[`${n["unit2"]} ${n[type as keyobj]}`] = i + (i / 100);		
 				result.push(
 					{
 						"phenomenonTime": `2023-${nb(month)}-${nb(i+1)}T${i+10}:49:32.198898+01:00`,
@@ -65,8 +65,7 @@ const createObservations = () => {
 							"value": Object.values(values),
 							"valueskeys": values
 						},
-						// @ts-ignore
-						"multidatastream_id": { "@iot.name": `${n[type]} MultiDatastream` }
+						"multidatastream_id": { "@iot.name": `${n[type as keyobj]} MultiDatastream` }
 					});
 			  }
 			  return result;
@@ -79,14 +78,14 @@ const createObservations = () => {
 		  return result;
 }
 
-export const testDatas = {
+export const testDatas:Record<string, any> = {
 	"create": {
 		"name": "test",
 		"port": 8029,
 		"pg": {
 			"host": "localhost",
 			"port": 5432,
-			"user": "postgres",
+			"user": "sensorapi",
 			"password": "mario29",
 			"database": "test",
 			"retry": 2
@@ -95,7 +94,6 @@ export const testDatas = {
 		"date_format": "DD/MM/YYYY HH24:MI:SS",
 		"webSite": "no web site",
 		"nb_page": 1000,
-		"forceHttps": false,
 		"alias": [],
 		"extensions": [
 			"base",
@@ -103,9 +101,10 @@ export const testDatas = {
 			"lora",
 			"logs"
 		],
-		"highPrecision": false,
-		"canDrop": true,
-		"logFile": ""
+		"options": [
+			"canDrop",
+			 "users"
+		]
 	},
 	"Things": [
 		{

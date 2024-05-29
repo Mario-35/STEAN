@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Decoders entity. -----------------------------------!");
+// onsole.log("!----------------------------------- Decoders entity. -----------------------------------!");
 import { IreturnResult, koaContext } from "../../types";
 import { Common } from "./common";
 import { formatLog } from "../../logger";
@@ -21,17 +21,17 @@ export class Decoders extends Common {
   async getAll(): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     if (this.ctx.odata.payload) {
-      const result = {};
+      const result:Record<string, any>  = {};
       const decoders = await executeSql(this.ctx.config, `SELECT "id", "name", "code", "nomenclature", "synonym" FROM ${addDoubleQuotes(this.ctx.model.Decoders.table)}`);
       await asyncForEach(
         // Start connectionsening ALL entries in config file
         Object(decoders),
-        async (decoder: object) => {          
+        async (decoder: Record<string, any> ) => {          
           if (this.ctx.odata.payload) {
-            const temp = decodingPayload( { name: decoder["name"], code: String(decoder["code"]), nomenclature: decoder["nomenclature"], },
+      const temp = decodingPayload( { name: decoder["name"], code: String(decoder["code"]), nomenclature: decoder["nomenclature"], },
               this.ctx.odata.payload
             );
-            result[decoder["id"]] = temp;
+      result[decoder["id"]] = temp;
           }
         }
       );
@@ -42,12 +42,12 @@ export class Decoders extends Common {
   async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     if (this.ctx.odata.payload) {
-      const decoder = await executeSqlValues(this.ctx.config, `SELECT "id", "name", "code", "nomenclature", "synonym" FROM "${this.ctx.model.Decoders.table}" WHERE id = ${this.ctx.odata.id}`);
+      const decoder: Record<string, any>  = await executeSqlValues(this.ctx.config, `SELECT "id", "name", "code", "nomenclature", "synonym" FROM "${this.ctx.model.Decoders.table}" WHERE id = ${this.ctx.odata.id}`);
       return decoder[0]
         ? this.formatReturnResult({
-            body: decodingPayload( { name: decoder[0]["name"], 
-            code: String(decoder[0]["code"]), 
-            nomenclature: decoder[0]["nomenclature"], },
+          body: decodingPayload( { name: decoder[0]["name"],
+          code: String(decoder[0]["code"]), 
+          nomenclature: decoder[0]["nomenclature"], },
             this.ctx.odata.payload
             ),
           })

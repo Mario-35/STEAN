@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- Index Helpers. -----------------------------------!");
+// onsole.log("!----------------------------------- Index Helpers. -----------------------------------!");
 export { createQueryHtmlString } from "./createQueryHtmlString";
 export { createQueryParams } from "./createQueryParams";
 export { blankUser } from "./blankUser";

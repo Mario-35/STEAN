@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- datesType Enum -----------------------------------!");
+// onsole.log("!----------------------------------- datesType Enum -----------------------------------!");
 export enum EnumDatesType {    
     date = 'YYYY-MM-DD"T"HH24:MI:SSZ',
     dateWithTimeZone = 'YYYY-MM-DD HH:MI:SSTZH:TZM',

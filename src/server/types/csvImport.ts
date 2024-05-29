@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- csvImport interface. -----------------------------------!");
+// onsole.log("!----------------------------------- csvImport interface. -----------------------------------!");
 export interface IcsvImport {
     header: boolean;
     dateSql: string;

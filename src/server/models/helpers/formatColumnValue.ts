@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- formatColumnValue. -----------------------------------!");
+// onsole.log("!----------------------------------- formatColumnValue. -----------------------------------!");
 import { ESCAPE_ARRAY_JSON, ESCAPE_SIMPLE_QUOTE } from "../../constants";
 import { addDoubleQuotes, addSimpleQuotes, removeSimpleQuotes } from "../../helpers";
 import { formatLog } from "../../logger";

@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- pgVisitor for odata. -----------------------------------!");
+// onsole.log("!----------------------------------- pgVisitor for odata. -----------------------------------!");
 import { addDoubleQuotes, addSimpleQuotes, isGraph, isObservation, isTest, removeAllQuotes, returnFormats } from "../../../helpers";
 import { IodataContext, IKeyString, Ientity, IKeyBoolean, IpgQuery, koaContext } from "../../../types";
 import { Token } from "../../parser/lexer";
@@ -174,9 +174,10 @@ export class PgVisitor extends Visitor {
     context = context || { target: EnumQuery.Where };
 
     if (node) {
-      const visitor = this[`Visit${node.type}`];
+      const visitor = this[`Visit${node.type}` as keyof Object];
       if (visitor) {
-        visitor.call(this, node, context);
+      // @ts-ignore
+      visitor.call(this, node, context);
         if (this.debugOdata) {
           console.log(formatLog.debug("Visit",`Visit${node.type}`, ));
           console.log(formatLog.result("node.raw", node.raw));
@@ -252,7 +253,7 @@ export class PgVisitor extends Visitor {
  
   protected VisitResultFormat(node: Token, context: IodataContext) {
     if (node.value.format) 
-      this.returnFormat = returnFormats[node.value.format];
+      this.returnFormat = returnFormats[node.value.format as keyof object];
     if ( [ returnFormats.dataArray, returnFormats.graph, returnFormats.graphDatas, returnFormats.csv ].includes(this.returnFormat) ) 
       this.noLimit();
       this.showRelations = false;
@@ -320,6 +321,7 @@ export class PgVisitor extends Visitor {
     const tempColumn = this.getColumn(node.raw, "", context); 
     context.identifier = tempColumn ? tempColumn : node.raw;
     if (context.target)
+      // @ts-ignore
       this.query[context.target].add(tempColumn ? `${tempColumn}${_COLUMNSEPARATOR}` : `${addDoubleQuotes(node.raw)}${_COLUMNSEPARATOR}`); 
       this.showRelations = false;
   }
@@ -460,6 +462,8 @@ export class PgVisitor extends Visitor {
           if ( Object.keys(tempEntity.relations).includes(context.relation) ) {
             if (!context.key) {
               context.key = tempEntity.relations[context.relation].entityColumn; 
+      // @ts-ignore
+
               this.query[context.target].add(context.key);
               // this[context.target] += addDoubleQuotes(context.key);
             }
@@ -473,6 +477,8 @@ export class PgVisitor extends Visitor {
           } else context.relation = node.value.name;
           if (!context.key && context.relation) {
             context.key = this.ctx.model[entity].relations[context.relation].entityColumn; 
+      // @ts-ignore
+
             this.query[context.target].add(addDoubleQuotes(this.ctx.model[entity].relations[context.relation].entityColumn));
           }
           return;
@@ -489,12 +495,16 @@ export class PgVisitor extends Visitor {
     } else {
       if (context.target ===  EnumQuery.Where) this.createComplexWhere(context.identifier ? context.identifier.split(".")[0] : this.entity, node, context);
       if (!context.relation && !context.identifier && alias && context.target) {
+      // @ts-ignore
+
         this.query[context.target].add(alias);  
       } else {
         context.identifier = node.value.name;
         if (context.target && !context.key) {
           let alias = this.getColumnNameOrAlias(this.ctx.model[this.entity], node.value.name, this.createDefaultOptions());
           alias = context.target ===  EnumQuery.Where ? alias?.split(" AS ")[0]: alias;
+      // @ts-ignore
+
           this.query[context.target].add(node.value.name.includes("->>") ||node.value.name.includes("->") || node.value.name.includes("::")
             ? node.value.name
             : this.entity && this.ctx.model[this.entity] 

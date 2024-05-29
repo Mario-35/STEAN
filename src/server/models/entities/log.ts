@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- entity Log. -----------------------------------!");
+// onsole.log("!----------------------------------- entity Log. -----------------------------------!");
 import { createEntity } from ".";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 import { _id, _text } from "./constants";

@@ -6,7 +6,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- firstInstall -----------------------------------!");
+// onsole.log("!----------------------------------- firstInstall -----------------------------------!");
 
 import { serverConfig } from "../../configuration";
 import { returnFormats, unique } from "../../helpers";
