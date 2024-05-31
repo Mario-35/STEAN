@@ -4,7 +4,7 @@ import chai from "chai";
 import chaiHttp from "chai-http";
 import fs from "fs";
 import path from "path";
-import { IApiDoc, prepareToApiDoc, IApiInput, identification, generateApiDoc, testVersion, _RAWDB } from "./constant";
+import { IApiDoc, prepareToApiDoc, IApiInput, identification, generateApiDoc, testVersion, _RAWDB, testLog } from "./constant";
 
 chai.use(chaiHttp);
 
@@ -54,6 +54,7 @@ addToApiDoc({
                 .type("form")
                 .send(identification)
                 .end((err: Error, res: any) => {
+                    testLog(res.body);
                     should.not.exist(err);
                     res.body.should.include.keys("token");
                     res.body.should.include.keys("message");

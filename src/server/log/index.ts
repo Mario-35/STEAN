@@ -1,12 +1,12 @@
 /**
- * Log  class.
+ * Log class
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- Log  class. -----------------------------------!");
-// import { isTest } from "../helpers";
+// onsole.log("!----------------------------------- Log class -----------------------------------!");
+
 import fs from "fs";
 import util from "util";
 import { EnumColor } from "../enums";
@@ -53,7 +53,7 @@ class Log {
       ${color(EnumColor.FgCyan)} ${showAll(query, false ) }${color(EnumColor.Reset)}`);
   }
 
-      // Usefull for id not used ;)
+  // Usefull for id not used ;)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   oData(infos: Lexer.Token | undefined) {  
     if (infos && _DEBUG)  {

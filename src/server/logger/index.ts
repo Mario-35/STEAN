@@ -1,5 +1,5 @@
 /**
- * Index Logs.
+ * Index Logs
  *
  * @copyright 2020-present Inrae
  * @review 29-01-2024
@@ -12,7 +12,7 @@ import fs from "fs";
 import { EnumColor } from "../enums";
 import { koaContext } from "../types";
 export { writeToLog } from "./writeToLog";
-// onsole.log("!----------------------------------- Index Logs. -----------------------------------!");
+// onsole.log("!----------------------------------- Index Logs -----------------------------------!");
 
 class FormatLog {
   private debugFile = false;

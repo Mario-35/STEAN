@@ -18,7 +18,7 @@ import apidocJson from "../apidoc.json";
 import { models } from "../../server/models";
 let NB = 0;
 export const nbAdd = () => {return `${++NB}`};
-export const identification = { "username": conf[TEST].pg.user, "password": conf[TEST].pg.password };
+export const identification = { "username": conf[TEST as keyof object]["pg"]["user"], "password": conf[TEST as keyof object]["pg"]["password"] };
 export const testVersion = "v1.1";
 let nb = 0;
 export function getNB(message: string): string {nb +=1; return `${message} ${String(nb)}`;} 

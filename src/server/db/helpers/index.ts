@@ -1,11 +1,12 @@
 /**
- * Index Helpers.
+ * Index Helpers
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- Index Helpers. -----------------------------------!");
+// onsole.log("!----------------------------------- Index Helpers -----------------------------------!");
+
 import { koaContext } from "../../types";
 import { exportToJson } from "./exportToJson";
 import { exportToXlsx } from "./exportToXlsx";
@@ -25,7 +26,4 @@ export { queryInsertFromCsv } from "./queryInsertFromCsv";
 export { columnsNameFromCsv } from "./columnsNameFromCsv";
 export { streamCsvFile } from "./streamCsvFile";
 export { columnsNameFromHydrasCsv } from "./columnsNameFromHydrasCsv";
-
-export const exportService = async (ctx: koaContext) => {
-    return (ctx.url.includes("xls")) ? exportToXlsx(ctx) : exportToJson(ctx);
-};
+export const exportService = async (ctx: koaContext) => { return (ctx.url.includes("xls")) ? exportToXlsx(ctx) : exportToJson(ctx); };

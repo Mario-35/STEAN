@@ -16,7 +16,7 @@ import { DefaultState, Context } from "koa";
 import { createQueryHtml } from "../views/";
 import { createOdata } from "../odata";
 import { errors, infos, msg } from "../messages";
-import { EnumOptions, EnumUserRights } from "../enums";
+import { EnumExtensions, EnumUserRights } from "../enums";
 import { loginUser } from "../authentication";
 import { ADMIN } from "../constants";
 import { executeSqlValues } from "../db/helpers";
@@ -104,7 +104,7 @@ protectedRoutes.post("/(.*)", async (ctx: koaContext, next) => {
   }
   
   // Add new lora observation this is a special route without ahtorisatiaon to post (deveui and correct payload limit risks)
-  if ((ctx.user && ctx.user.id > 0) || !ctx.config.options.includes(EnumOptions.users) || ctx.request.url.includes("/Lora")) {
+  if ((ctx.user && ctx.user.id > 0) || !ctx.config.extensions.includes(EnumExtensions.users) || ctx.request.url.includes("/Lora")) {
     if (ctx.request.type.startsWith("application/json") && Object.keys(ctx.body).length > 0) {
       const odataVisitor = await createOdata(ctx);
       if (odataVisitor) ctx.odata = odataVisitor;

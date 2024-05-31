@@ -1,11 +1,12 @@
 /**
- * getConfigFromPort for user admin.
+ * getConfigFromPort for user admin
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- getConfigFromPort for user admin. -----------------------------------!");
+// onsole.log("!----------------------------------- getConfigFromPort for user admin -----------------------------------!");
+
 import { serverConfig } from "../../configuration";
 import { TEST } from "../../constants";
 import { isTest } from "../../helpers";

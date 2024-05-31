@@ -1,11 +1,12 @@
 /**
- * streamCsvFile.
+ * streamCsvFile
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- streamCsvFile. -----------------------------------!");
+// onsole.log("!----------------------------------- streamCsvFile -----------------------------------!");
+
 import { formatLog } from "../../logger";
 import { IcsvFile, IcsvImport, koaContext } from "../../types";
 import { createReadStream } from 'fs';

@@ -1,11 +1,12 @@
 /**
- * createSTDB.
+ * createSTDB
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- createSTDB. -----------------------------------!");
+// onsole.log("!----------------------------------- createSTDB -----------------------------------!");
+
 import { createTable, createUser } from "../helpers";
 import { serverConfig } from "../../configuration";
 import { addDoubleQuotes, addSimpleQuotes, asyncForEach } from "../../helpers";
@@ -17,6 +18,7 @@ import { _NOTOK, _OK } from "../../constants";
 import { triggers } from "./triggers";
 import { models } from "../../models";
 import { log } from "../../log";
+import { createRole } from "../helpers/createRole";
 
 export const createDatabase = async (configName: string): Promise<IKeyString> => {
   console.log(formatLog.head("createDatabase", configName));
@@ -50,7 +52,6 @@ export const createDatabase = async (configName: string): Promise<IKeyString> =>
                 log.errorMsg(err);
               });
           }
-
         });
     }).catch((err: Error) => {
       log.errorMsg(err);
@@ -104,19 +105,24 @@ export const createDatabase = async (configName: string): Promise<IKeyString> =>
         log.errorMsg(error);
         return error;
       });
-    await dbConnection.unsafe(`ALTER TABLE ${addDoubleQuotes(DB.HistoricalLocations.table)}  ALTER COLUMN '_result' TYPE float4 USING null;`)
+    await dbConnection.unsafe(`ALTER TABLE ${addDoubleQuotes(DB.HistoricalLocations.table)} ALTER COLUMN '_result' TYPE float4 USING null;`)
       .catch((error) => {
         log.errorMsg(error);
         return error;
       });
   }
 
+  returnValue[`Create Role`] = await createRole(serverConfig.getConfig(configName))
+    .then(() => _OK)
+    .catch((err: Error) => err.message);
+
   returnValue[`Create user`] = await createUser(serverConfig.getConfig(configName))
     .then(() => _OK)
     .catch((err: Error) => err.message);
 
   await dbConnection.unsafe(`SELECT COUNT(*) FROM pg_user WHERE usename = ${addSimpleQuotes(config.user)};`)
-    .then(() => { returnValue["ALL finished ..."] = _OK; });
+    .then(() => { returnValue["ALL finished ..."] = _OK; })
+    .catch((err: Error) => err.message);
     
   return returnValue;
 };

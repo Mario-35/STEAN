@@ -487,7 +487,7 @@ export class PgVisitor extends Visitor {
     }
   }
 
-  protected VisitODataIdentifier(node: Token, context: IodataContext) {
+  protected VisitODataIdentifier(node: Token, context: IodataContext) {    
     const alias = this.getColumn(node.value.name, "", context);
     node.value.name = alias ? alias : node.value.name;
     if (context.relation && context.identifier && models.isColumnType(this.ctx.config, this.ctx.model[context.relation], removeAllQuotes(context.identifier).split(".")[0], "json")) {
@@ -495,16 +495,14 @@ export class PgVisitor extends Visitor {
     } else {
       if (context.target ===  EnumQuery.Where) this.createComplexWhere(context.identifier ? context.identifier.split(".")[0] : this.entity, node, context);
       if (!context.relation && !context.identifier && alias && context.target) {
-      // @ts-ignore
-
+        // @ts-ignore
         this.query[context.target].add(alias);  
       } else {
         context.identifier = node.value.name;
         if (context.target && !context.key) {
           let alias = this.getColumnNameOrAlias(this.ctx.model[this.entity], node.value.name, this.createDefaultOptions());
-          alias = context.target ===  EnumQuery.Where ? alias?.split(" AS ")[0]: alias;
-      // @ts-ignore
-
+          alias = context.target ===  EnumQuery.Where ? alias?.split(" AS ")[0]: EnumQuery.OrderBy ? addDoubleQuotes(node.value.name ) : alias;
+          // @ts-ignore
           this.query[context.target].add(node.value.name.includes("->>") ||node.value.name.includes("->") || node.value.name.includes("::")
             ? node.value.name
             : this.entity && this.ctx.model[this.entity] 

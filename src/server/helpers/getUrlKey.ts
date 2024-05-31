@@ -1,11 +1,12 @@
 /**
- * getUrlKey.
+ * getUrlKey
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- getUrlKey. -----------------------------------!");
+// onsole.log("!----------------------------------- getUrlKey -----------------------------------!");
+
 /**
  * 
  * @param input url string 
@@ -27,4 +28,3 @@ export function getUrlKey(input: string, key: string): string | undefined {
     }
     return result;
   }
-// onsole.log("!----------------------------------- getUrlKey. -----------------------------------!");

@@ -7,7 +7,7 @@
  */
 import { Core } from ".";
 // onsole.log("!----------------------------------- Where builder -----------------------------------!");
-export class Where extends Core {  
+export class Where extends Core {
   constructor(input?: string | string[]) {
     super(input);
   }

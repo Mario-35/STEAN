@@ -6,6 +6,7 @@
  *
  */
 // onsole.log("!----------------------------------- createService -----------------------------------!");
+
 import { addToService, createDatabase, executeAdmin, executeSqlValues } from ".";
 import { serverConfig } from "../../configuration";
 import { _NOTOK, _OK } from "../../constants";
@@ -16,6 +17,7 @@ import { sqlStopDbName } from "../../routes/helper";
 import { userAccess } from "../dataAccess";
 import { keyobj, koaContext } from "../../types";
 import { log } from "../../log";
+import { formatLog } from "../../logger";
 
 const prepareDatas = (dataInput: Record<string, string>, entity: string): object => {
   if (entity === "Observations") {
@@ -44,6 +46,10 @@ const addToServiceFromUrl = async (url: string | undefined, ctx: koaContext): Pr
 }
 
 export const createService = async (dataInput: Record<string, any>, ctx?: koaContext): Promise<Record<string, any>> => {
+  console.log(formatLog.whereIam());
+  if(dataInput && dataInput["create"]) {
+    serverConfig.addConfig(dataInput["create"]);
+  }
   const results: Record<string, string>  = {};
   const serviceName = dataInput["create" as keyobj]["name"];
   const config = serverConfig.getConfig(serviceName);

@@ -1,11 +1,12 @@
 /**
- * entity Datastream.
+ * entity Datastream
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- entity Datastream. -----------------------------------!");
+// onsole.log("!----------------------------------- entity Datastream -----------------------------------!");
+
 import { createEntity } from ".";
 import { EnumDatesType, EnumObservationType, EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";

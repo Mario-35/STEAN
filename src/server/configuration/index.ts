@@ -38,6 +38,8 @@ class Configuration {
   }
     
   public readConfigFile(input?: string) {
+    log.booting("Read config", input ? "content" : Configuration.filePath) ;
+
     try {
       const fileContent = input || fs.readFileSync(Configuration.filePath, "utf8");      
       Configuration.jsonConfiguration = JSON.parse(decrypt(fileContent));
@@ -50,9 +52,8 @@ class Configuration {
         log.error(errors.configFileError);
         process.exit(112);
       }
-      // this.writeConfig();      
-      if (process.env.NODE_ENV?.trim() === "production" && fileContent[32] != ".") this.writeConfig();      
       // rewrite file (to update config modification)
+      if (!isTest()) this.writeConfig();    
     } catch (error: any) {
       log.error("Config Not correct", error["message"]);
       process.exit(111);      
@@ -69,21 +70,21 @@ class Configuration {
   }
 
   private async createConfigTest() {
-    // In tests there a test to create service
+        // In tests there a test to create service
     if (!isTest()) {      
       const result = Configuration.configs[ADMIN];
       result.name = TEST;
       result.pg.database = TEST;
       result.nb_page = 1000;
-      result.extensions = ["base", "multiDatastream", "lora", "logs"];
-      result.options = [EnumOptions.canDrop, EnumOptions.users];
+      result.extensions = [EnumExtensions.base, EnumExtensions.multiDatastream, EnumExtensions.lora, EnumExtensions.logs, EnumExtensions.users];
+      result.options = [EnumOptions.canDrop];
       result.connection = undefined;
       Configuration.configs[TEST] = this.formatConfig(result);
     }
 	}
 
   getInfos = (ctx: koaContext, name: string): IserviceInfos  => {
-    const protocol:string = ctx.request.headers["x-forwarded-proto"]
+        const protocol:string = ctx.request.headers["x-forwarded-proto"]
           ? ctx.request.headers["x-forwarded-proto"].toString()
           : Configuration.configs[name].options.includes(EnumOptions.forceHttps)
             ? "https"
@@ -110,11 +111,15 @@ class Configuration {
   }
 
   public getAllInfos(ctx: koaContext): { [key: string]: IserviceInfos } {
-    const result:Record<string, any>  = {};    
+        const result:Record<string, any>  = {};    
     this.getConfigs().forEach((conf: string) => {
       result[conf] = this.getInfos(ctx, conf)
     });
     return result;
+  }
+
+  public isConfig(name: string) {
+    return Configuration.configs.hasOwnProperty(name)
   }
 
   public getConfig(name: string) {
@@ -138,12 +143,14 @@ class Configuration {
   }
 
   // Write an encrypt config file in json file
-  writeConfig(): boolean {
+  writeConfig(): boolean {    
+    log.booting("Write config", Configuration.filePath);
     const result: Record<string, any>  = {};
     Object.entries(Configuration.configs).forEach(([k, v]) => {
-      result[k] = Object.keys(v).filter(key => key !== 'db' && key[0] != "_").reduce((obj, key) => { obj[key as keyobj] = v[key as keyobj]; return obj; }, {} );
+      result[k] = Object.keys(v)
+                        .filter(key => key !== 'test' && key[0] != "_")
+                        .reduce((obj, key) => { obj[key as keyobj] = v[key as keyobj]; return obj; }, {} );
     });
-
     fs.writeFile(
       Configuration.filePath,
       isProduction() === true 
@@ -160,7 +167,7 @@ class Configuration {
   }
 
   async executeMultipleQueries(configName: string, queries: string[], infos: string):Promise<boolean> {
-    await asyncForEach( queries, async (query: string) => {
+        await asyncForEach( queries, async (query: string) => {
       await serverConfig
         .connection(configName)
         .unsafe(query)
@@ -174,7 +181,7 @@ class Configuration {
   }
 
   async executeQueries(title: string): Promise<boolean> {
-    try {
+        try {
       await asyncForEach(
         Object.keys(Configuration.queries),
         async (connectName: string) => {
@@ -281,7 +288,7 @@ class Configuration {
 
   // initialisation serve NOT IN TEST
   async init(): Promise<boolean> {
-    if (this.configFileExist()  === true) {
+        if (this.configFileExist()  === true) {
       this.readConfigFile();
       console.log(log.message("configuration", "loaded " + _OK));    
       let status = true;
@@ -357,11 +364,11 @@ class Configuration {
   }
   
   // return IconfigFile Formated for IconfigFile object or name found in json file
-  private formatConfig(input: object | string, name?: string): IconfigFile {   
+  private formatConfig(input: object | string, name?: string): IconfigFile {
     if (typeof input === "string") {
       name = input;
       input = Configuration.jsonConfiguration[input];
-    }    
+    }
     const options: typeof typeOptions = input["options"as keyobj]
     ? unique([... String(input["options"as keyobj]).split(",")]) as typeof typeOptions 
     : [];
@@ -369,7 +376,8 @@ class Configuration {
     const extensions: typeof typeExtensions = input["extensions"as keyobj]
       ? unique(["base", ... String(input["extensions"as keyobj]).split(",")]) as typeof typeExtensions 
       : ["base"];
-
+      
+    if (input["extensions"as keyobj]["users"]) extensions.includes("users")
     // TO REMOVE AFTER ALL SERVICES CLEAN
     // const formatOldConfig = () => {
     //   if (stringToBoolean(input["stripNull"])) {
@@ -425,11 +433,10 @@ class Configuration {
 
   // Add config to configuration file
   public async addConfig(addJson: object): Promise<IconfigFile | undefined> {
-    try {
-      const addedConfig = this.formatConfig(addJson);
+        try {
+      const addedConfig = this.formatConfig(addJson);      
       Configuration.jsonConfiguration[addedConfig.name] = addedConfig;
-      fs.writeFile(
-        Configuration.filePath,
+      fs.writeFile( Configuration.filePath,
         encrypt(JSON.stringify(Configuration.jsonConfiguration, null, 4)),
         (err) => {
           if (err) {

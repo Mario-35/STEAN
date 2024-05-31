@@ -1,11 +1,12 @@
 /**
- * Visitor for odata.
+ * Visitor for odata
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- Visitor for odata. -----------------------------------!");
+// onsole.log("!----------------------------------- Visitor for odata -----------------------------------!");
+
 import { SqlOptions } from "../../parser/sqlOptions";
 import { _COLUMNSEPARATOR } from "../../../constants";
 import { IreturnFormat, koaContext } from "../../../types";

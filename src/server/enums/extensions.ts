@@ -14,7 +14,7 @@ export enum EnumExtensions {
     base = "base",
     security = "security",
     logs = "logs",
-    admin = "admin",
+    users = "users",
     lora = "lora",
     tasking = "tasking",
     mqtt = "mqtt",

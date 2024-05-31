@@ -11,5 +11,4 @@ export enum EnumOptions {
     forceHttps = "forceHttps",
     stripNull = "stripNull",
     canDrop = "canDrop",
-    users = "users",
 }

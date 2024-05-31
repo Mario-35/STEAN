@@ -6,6 +6,7 @@
  *
  */
 // onsole.log("!----------------------------------- Query builder -----------------------------------!");
+
 import { _COLUMNSEPARATOR } from "../../../constants";
 import { formatLog } from "../../../logger";
 import { addDoubleQuotes, cleanStringComma, containsAll, isCsvOrArray, isGraph, isObservation, removeAllQuotes, removeDoubleQuotes } from "../../../helpers";
@@ -35,9 +36,9 @@ export class Query  {
       this.keyNames = new Key([]);
     }
 
-    private columnList(tableName: string, main: PgVisitor, element: PgVisitor): string[] | undefined  {   
-        console.log(formatLog.whereIam(tableName));
+    private columnList(tableName: string, main: PgVisitor, element: PgVisitor): string[] | undefined  {
         const testIn = (input: string): boolean => ["CONCAT", "CASE", "COALESCE"].map(e => input.includes(e) ? true : false).filter(e => e === true).length > 0;
+
 
         /**
          * 
@@ -47,7 +48,7 @@ export class Query  {
          * @param options options
          * @returns formated column or 
          */
-// onsole.log("!----------------------------------- Query builder -----------------------------------!");
+        
         function formatedColumn(config: IconfigFile, entity : Ientity, column: string, options?: IKeyBoolean): string | undefined {   
             console.log(formatLog.whereIam(column));
             if (entity.columns[column]) {
@@ -129,7 +130,7 @@ export class Query  {
     }
 
     // Create SQL Query
-    private create(main: RootPgVisitor | PgVisitor, _element?: PgVisitor): IpgQuery | undefined { 
+    private create(main: RootPgVisitor | PgVisitor, _element?: PgVisitor): IpgQuery | undefined {        
         const element = _element ? _element : main;
         console.log(formatLog.whereIam(element.entity || "blank"));
         if (element.entity.trim() !== "") {

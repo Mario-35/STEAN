@@ -6,13 +6,13 @@
  *
  */
 // onsole.log("!----------------------------------- GroupBy builder -----------------------------------!");
+
 import { Core } from ".";
 
 export class Key extends Core {
   constructor(input?: string | string[]) {
     super(input);
   }
-
   add(input: string) {
     super.addKey(input);
   }

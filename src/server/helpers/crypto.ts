@@ -1,11 +1,11 @@
 /**
- * crypto.
+ * crypto
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- crypto. -----------------------------------!");
+// onsole.log("!----------------------------------- crypto -----------------------------------!");
 import crypto from "crypto";
 import { APP_KEY } from "../constants";
 import { log } from "../log";
@@ -21,7 +21,7 @@ export const encrypt = (input: string): string => {
   const encrypted = Buffer.concat([cipher.update(input), cipher.final()]);
   return `${iv.toString("hex")}.${encrypted.toString("hex")}`;
 };
-// onsole.log("!----------------------------------- crypto. -----------------------------------!");
+
 /**
  * 
  * @param input string 

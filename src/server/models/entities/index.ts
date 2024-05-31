@@ -20,11 +20,11 @@ const singular = (input: string) : string => {
   }).join("").trim();
 };
 
-export const createEntity = (name: string, datas?: Ientity1) : Ientity => {
+export const createEntity = (name: string, datas: Ientity1 | number) : Ientity => {
   const entity= allEntities[name];
     if (entity) {
       const t = singular(entity);
-      return datas ? {
+      return (typeof datas !== "number") ? {
         name: name,
         singular: t,
         table: t.toLowerCase(),
@@ -34,7 +34,7 @@ export const createEntity = (name: string, datas?: Ientity1) : Ientity => {
         singular: t,
         table: "",
         createOrder: 99,
-        order: 0,
+        order: datas,
         orderBy: "",
         columns: {},
         relations: {},
@@ -43,11 +43,11 @@ export const createEntity = (name: string, datas?: Ientity1) : Ientity => {
       };
     }
     throw new Error(msg( errors.noValidEntity, name));
-  };
+};
   
-export const Config: Ientity = createEntity("Configs");
-export const CreateFile: Ientity = createEntity("CreateFile");
-export const CreateObservation:Ientity = createEntity("CreateObservations");
+export const Config: Ientity = createEntity("Configs", 98);
+export const CreateFile: Ientity = createEntity("CreateFile", 0);
+export const CreateObservation:Ientity = createEntity("CreateObservations", 0);
 export { Datastream } from "./datastream";
 export { Decoder } from "./decoder";
 export { FeatureOfInterest } from "./featureOfInterest";

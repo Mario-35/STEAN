@@ -7,11 +7,11 @@
  */
 // onsole.log("!----------------------------------- userAuthenticated -----------------------------------!");
 import { decodeToken } from ".";
-import { EnumOptions } from "../enums";
+import { EnumExtensions } from "../enums";
 import { koaContext } from "../types";
 
 export const userAuthenticated = (ctx: koaContext): boolean => {  
-  if (ctx.config.options.includes(EnumOptions.users)) {
+  if (ctx.config.extensions.includes(EnumExtensions.users)) {
     const token = decodeToken(ctx);
     return (token && +token.id > 0) ? true : false;
   } else return true;

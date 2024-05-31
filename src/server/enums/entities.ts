@@ -6,6 +6,7 @@
  *
  */
 // onsole.log("!----------------------------------- entities Enum -----------------------------------!");
+
 import { EnumExtensions } from ".";
 
 enum EnumBaseEntities {    
@@ -22,6 +23,7 @@ enum EnumBaseEntities {
     ThingsLocations = 'ThingsLocations',
     CreateObservations = 'CreateObservations',
     CreateFile = 'CreateFile',
+    Configs = 'Configs' 
 }
 
 enum EnumMultiDatastreamEntities {
@@ -29,9 +31,8 @@ enum EnumMultiDatastreamEntities {
     MultiDatastreamObservedProperties = 'MultiDatastreamObservedProperties'
 }
 
-enum EnumAdminEntities {
+enum EnumUsersEntities {
     Users = 'Users',
-    Configs = 'Configs' 
 }
 
 enum EnumLoraEntities {
@@ -49,10 +50,10 @@ export const filterEntities = (exts: string[], name?: string) => {
     if (exts.includes(EnumExtensions.logs)) res = {... res, ... EnumLogEntities};
     if (exts.includes(EnumExtensions.multiDatastream)) res = {... res, ... EnumMultiDatastreamEntities};
     if (exts.includes(EnumExtensions.lora)) res = {... res, ... EnumLoraEntities};
-    if (exts.includes(EnumExtensions.admin)) res = {... res, ... EnumAdminEntities};
+    if (exts.includes(EnumExtensions.users)) res = {... res, ... EnumUsersEntities};
     return res;
 }
 
-export type allEntitiesType = EnumBaseEntities | EnumMultiDatastreamEntities | EnumAdminEntities |  EnumLoraEntities | EnumLogEntities;
-export const allEntities: Record<string, any> = { ...EnumBaseEntities, ... EnumMultiDatastreamEntities , ... EnumAdminEntities , ... EnumLoraEntities , ... EnumLogEntities};
+export type allEntitiesType = EnumBaseEntities | EnumMultiDatastreamEntities | EnumUsersEntities |  EnumLoraEntities | EnumLogEntities;
+export const allEntities: Record<string, any> = { ...EnumBaseEntities, ... EnumMultiDatastreamEntities , ... EnumUsersEntities , ... EnumLoraEntities , ... EnumLogEntities};
 

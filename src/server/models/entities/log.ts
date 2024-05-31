@@ -1,11 +1,12 @@
 /**
- * entity Log.
+ * entity Log
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- entity Log. -----------------------------------!");
+// onsole.log("!----------------------------------- entity Log -----------------------------------!");
+
 import { createEntity } from ".";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 import { _id, _text } from "./constants";

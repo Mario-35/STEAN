@@ -44,5 +44,5 @@ export const addToService = async (ctx: koaContext, dataInput: Record<string, an
       }
     });
   }
-    return results;
+  return results;
 }

@@ -13,7 +13,7 @@ import { _id, _text } from "./constants";
 
 
 export const Thing: Ientity = createEntity("Things", {
-      createOrder: 1,
+    createOrder: 1,
     order: 10,
     orderBy: `"id"`,
     columns: {

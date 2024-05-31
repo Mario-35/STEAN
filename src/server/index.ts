@@ -96,7 +96,7 @@ log.init();
 
 // Start server initialisaion
 export const server = isTest()
-  ? app.listen(serverConfig.getConfig(TEST).port, async () => {
+  ? app.listen(serverConfig.getConfig(TEST)?.port, async () => {
       await serverConfig.addToServer(ADMIN);
       serverConfig.createDbConnectionFromConfigName(TEST);
       console.log(log.message(`${APP_NAME} version : ${APP_VERSION}`, "ready " + _OK));

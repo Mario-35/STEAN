@@ -1,11 +1,12 @@
 /**
- * entity Lora.
+ * entity Lora
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- entity Lora. -----------------------------------!");
+// onsole.log("!----------------------------------- entity Lora -----------------------------------!");
+
 import { createEntity } from ".";
 import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";

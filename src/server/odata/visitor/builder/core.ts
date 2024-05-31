@@ -6,14 +6,13 @@
  *
  */
 // onsole.log("!----------------------------------- core builder -----------------------------------!");
+
 import { removeAllQuotes } from "../../../helpers";
-
-
 
 export class Core {
   private _src: string[];
   
-  constructor(input?: string | string[]) {
+  constructor(input?: string | string[]) {    
     this._src = input ? typeof input === "string" ? [input]  : input : [] ;
   }
   
@@ -28,7 +27,7 @@ export class Core {
     addTo((typeof input === "string") ? [input] : input);    
 }
   
-  add(input: string) {
+  add(input: string) {    
     this._src.push(input);
   }
 

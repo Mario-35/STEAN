@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- createQueryHtmlString -----------------------------------!");
+// onsole.log("!----------------------------------- createQueryHtmlString -----------------------------------!");
 
 import { formatLog } from "../../logger";
 import { cleanUrl, removeAllQuotes, bigIntReplacer } from "../../helpers";

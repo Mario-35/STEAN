@@ -30,7 +30,8 @@ import {
     nbColorTitle,
     nbColor,
     testVersion,
-    _RAWDB
+    _RAWDB,
+    testLog
 } from "./constant";
 import { server } from "../../server/index";
 import { Ientity } from "../../server/types";
@@ -236,7 +237,6 @@ describe("endpoint : MultiDatastream", () => {
                     done();
                 });
         });
-
 
         it(`Return ${entity.name} phenomenonTime search`, (done) => {
             const infos = addTest({
@@ -511,6 +511,34 @@ describe("endpoint : MultiDatastream", () => {
                     done();
                 });
         });
+
+        it(`Return ${entity.name} phenomenonTime select & order`, (done) => {
+            const infos = addTest({
+                api : `{get} ${entity.name} Get From phenomenonTime select & order`,
+                apiName: `Get${entity.name}SelectAndOrderPhenomenonTime`,
+                apiDescription: `Get ${entity.name} phenomenonTime order by phenomenonTime.`,
+                apiExample: {
+                    http: `${testVersion}/${entity.name}?$select=phenomenonTime&$orderby=phenomenonTime%20desc`,                    
+                    curl: defaultGet("curl", "KEYHTTP"),
+                    javascript: defaultGet("javascript", "KEYHTTP"),
+                    python: defaultGet("python", "KEYHTTP")
+                }
+            });
+            chai.request(server)
+                .get(`/test/${infos.apiExample.http}`)
+                .end((err: Error, res: any) => {
+                    testLog(res.body)
+                    should.not.exist(err);
+                    res.status.should.equal(200);
+                    res.type.should.equal("application/json");
+                    res.body["@iot.count"].should.eql(9);
+                    res.body.value[0]["phenomenonTime"].should.eql('2023-10-13T01:01:03Z/2023-10-18T13:27:16Z');
+                    addToApiDoc({ ...infos, result: res });
+                    
+                    done();
+                });
+        });
+
     });
 
     describe(`{post} ${entity.name} ${nbColorTitle}[10.2]`, () => {
@@ -536,7 +564,6 @@ describe("endpoint : MultiDatastream", () => {
                     {
                         "name": `${getNB("Temperature")}`,
                         "symbol": "°",
-
                         "definition": "http://unitsofmeasure.org/blank.html"
                     }
                 ],

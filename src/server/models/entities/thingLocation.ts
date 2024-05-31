@@ -30,15 +30,11 @@ import { _idRel } from "./constants";
     relations: {},
     constraints: {
       thinglocation_pkey: 'PRIMARY KEY ("thing_id", "location_id")',
-      thinglocation_location_id_fkey:
-        'FOREIGN KEY ("location_id") REFERENCES "location"("id") ON UPDATE CASCADE ON DELETE CASCADE',
-      thinglocation_thing_id_fkey:
-        'FOREIGN KEY ("thing_id") REFERENCES "thing"("id") ON UPDATE CASCADE ON DELETE CASCADE',
+      thinglocation_location_id_fkey: 'FOREIGN KEY ("location_id") REFERENCES "location"("id") ON UPDATE CASCADE ON DELETE CASCADE',
+      thinglocation_thing_id_fkey: 'FOREIGN KEY ("thing_id") REFERENCES "thing"("id") ON UPDATE CASCADE ON DELETE CASCADE',
     },
     indexes: {
-      thinglocation_location_id:
-        'ON public."thinglocation" USING btree ("location_id")',
-      thinglocation_thing_id:
-        'ON public."thinglocation" USING btree ("thing_id")',
+      thinglocation_location_id: 'ON public."thinglocation" USING btree ("location_id")',
+      thinglocation_thing_id: 'ON public."thinglocation" USING btree ("thing_id")',
     },
   });

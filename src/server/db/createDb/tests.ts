@@ -90,7 +90,7 @@ export const testDatas:Record<string, any> = {
 			"database": "test",
 			"retry": 2
 		},
-		"apiVersion": "1.1",
+		"apiVersion": "v1.1",
 		"date_format": "DD/MM/YYYY HH24:MI:SS",
 		"webSite": "no web site",
 		"nb_page": 1000,
@@ -99,11 +99,11 @@ export const testDatas:Record<string, any> = {
 			"base",
 			"multiDatastream",
 			"lora",
+			"users",
 			"logs"
 		],
 		"options": [
-			"canDrop",
-			 "users"
+			"canDrop"
 		]
 	},
 	"Things": [

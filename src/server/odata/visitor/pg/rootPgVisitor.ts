@@ -19,7 +19,6 @@ import { log } from "../../../log";
 import { _COLUMNSEPARATOR } from "../../../constants";
 import { PgVisitor } from "../.";
 
-
 export class RootPgVisitor extends PgVisitor {
   static root = true;
   constructor(ctx: koaContext, options = <SqlOptions>{}, node?: Token) {

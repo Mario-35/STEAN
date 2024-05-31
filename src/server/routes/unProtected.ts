@@ -1,11 +1,12 @@
 /**
- * Unprotected Routes for API.
+ * Unprotected Routes for API
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- Unprotected Routes for API. -----------------------------------!");
+// onsole.log("!----------------------------------- Unprotected Routes for API -----------------------------------!");
+
 import Router from "koa-router";
 import { ensureAuthenticated, getAuthenticatedUser, } from "../authentication";
 import { ADMIN, _READY } from "../constants";
@@ -154,7 +155,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
     // Return Query HTML Page Tool 
     case "QUERY":
       if (ctx.decodedUrl.service === ADMIN && isAdmin(ctx) === false) ctx.redirect(`${ctx.decodedUrl.root}/login`);
-      const tempContext = await createQueryParams(ctx); 
+      const tempContext = await createQueryParams(ctx);       
       if (tempContext) {
         ctx.set("script-src", "self");
         ctx.set("Content-Security-Policy", "self");

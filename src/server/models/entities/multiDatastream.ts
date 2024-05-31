@@ -141,8 +141,8 @@ export const MultiDatastream:Ientity  = createEntity("MultiDatastreams", {
       },
       ObservedProperties: {
         type: EnumRelations.belongsTo,
-        expand: `"observedproperty"."id" in (SELECT "multidatastreamobservedproperty"."observedproperty_id" FROM "multidatastreamobservedproperty" WHERE "multidatastreamobservedproperty"."multidatastream_id" = "multidatastream"."id")`,
-        link: `"observedproperty"."id" in (SELECT "multidatastreamobservedproperty"."observedproperty_id" FROM "multidatastreamobservedproperty" WHERE "multidatastreamobservedproperty"."multidatastream_id" = $ID)`,
+        expand: `"observedproperty"."id" in (SELECT "multidatastreamobservedproperty"."observedproperty_id" FROM "multidatastreamobservedproperty" WHERE "multidatastreamobservedproperty"."multidatastream_id" = "multidatastream"."id" ORDER BY "observedproperty_id")`,
+        link: `"observedproperty"."id" in (SELECT "multidatastreamobservedproperty"."observedproperty_id" FROM "multidatastreamobservedproperty" WHERE "multidatastreamobservedproperty"."multidatastream_id" = $ID ORDER BY "observedproperty_id")`,
         entityName: "ObservedProperties",
         tableName: "multidatastreamobservedproperty",
         relationKey: "observedproperty_id",

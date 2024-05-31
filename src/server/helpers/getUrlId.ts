@@ -1,11 +1,12 @@
 /**
- * getUrlId.
+ * getUrlId
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- getUrlId. -----------------------------------!");
+// onsole.log("!----------------------------------- getUrlId -----------------------------------!");
+
 /**
  * 
  * @param input url string 
@@ -18,4 +19,3 @@ export const getUrlId = (input: string): string | undefined => {
         return undefined;
     }
 };
-// onsole.log("!----------------------------------- getUrlId. -----------------------------------!");

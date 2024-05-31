@@ -1,11 +1,12 @@
 /**
- * entity Thing.
+ * entity Thing
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- entity Thing. -----------------------------------!");
+// onsole.log("!----------------------------------- entity Thing -----------------------------------!");
+
 export const _id = "BIGINT GENERATED ALWAYS AS IDENTITY";
 export const _idRel = "BIGINT NOT NULL";
 export const _tz = "TIMESTAMPTZ NULL";

@@ -12,6 +12,7 @@ import { serverConfig } from "../../configuration";
 import { ADMIN, setDebug } from "../../constants";
 import { EnumVersion } from "../../enums";
 import { cleanUrl } from "../../helpers";
+import { formatLog } from "../../logger";
 import { errors } from "../../messages";
 import { IdecodedUrl, koaContext  } from "../../types";
 
@@ -25,13 +26,13 @@ import { IdecodedUrl, koaContext  } from "../../types";
 // protocol     host    version        pathname          search
 
 export const decodeUrl = (ctx: koaContext, input?: string): IdecodedUrl | undefined => {
-  
-
+  console.log(formatLog.whereIam());
   // get input
   input = input || ctx.href; 
   input = input;
   // debug mode
   setDebug(input.includes("?$debug=true") || input.includes("&$debug=true"));
+
   // decode url
   const url = new URL(cleanUrl(input.replace("$debug=true", "").normalize("NFD") .replace(/[\u0300-\u036f]/g, ""))); 
   // get configName from port    
