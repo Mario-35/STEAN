@@ -15,7 +15,7 @@ import { koaContext } from "../types";
 
 const getCookie = (serializedCookies: string, key: string) => cookieModule.parse(serializedCookies)[key] ?? false;
 
-export const createBearerToken = (ctx: koaContext) => {
+export const createBearerToken = (ctx: koaContext) => {  
     const queryKey = "access_token";
     const bodyKey = "access_token";
     const headerKey = "Bearer";
@@ -28,7 +28,7 @@ export const createBearerToken = (ctx: koaContext) => {
     const { body, header, query } = ctx.request;
   
     let count = 0;
-    let token;
+    let token:string | string[] | undefined = undefined;    
   
     if (query && query[queryKey]) {
       token = query[queryKey];
@@ -54,8 +54,9 @@ export const createBearerToken = (ctx: koaContext) => {
       if (cookie && header.cookie) {
         const plainCookie = getCookie(header.cookie, "jwt-session"); // seeks the key
         if (plainCookie) {
+          
           const cookieToken = cookieParser.signedCookie(plainCookie, APP_KEY);
-  
+          
           if (cookieToken) {
             token = cookieToken;
             count += 1;
@@ -63,7 +64,7 @@ export const createBearerToken = (ctx: koaContext) => {
         }
       }
     }
-  
+    
     // RFC6750 states the access_token MUST NOT be provided
     // in more than one place in a single request.
     if (count > 1) {
@@ -72,5 +73,5 @@ export const createBearerToken = (ctx: koaContext) => {
       });
     }
   // @ts-ignore
-    ctx.request["token"] = token;
+  if (token) ctx.request["token"] = token;
 };

@@ -8,7 +8,7 @@
 // onsole.log("!----------------------------------- Unprotected Routes for API -----------------------------------!");
 
 import Router from "koa-router";
-import { ensureAuthenticated, getAuthenticatedUser, } from "../authentication";
+import { userAuthenticated, getAuthenticatedUser, } from "../authentication";
 import { ADMIN, _READY } from "../constants";
 import { addSimpleQuotes, getUrlKey, isAdmin, returnFormats } from "../helpers";
 import { apiAccess } from "../db/dataAccess";
@@ -50,7 +50,8 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       return;
     // User login
     case "LOGIN":
-      if (ensureAuthenticated(ctx)) ctx.redirect(`${ctx.decodedUrl.root}/status`);
+
+      if (userAuthenticated(ctx)) ctx.redirect(`${ctx.decodedUrl.root}/status`);
       else {
         const bodyLogin = new Login(ctx,{ login: true });
         ctx.type = returnFormats.html.type;
@@ -58,8 +59,8 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       }
       return;
     // Status user 
-    case "STATUS":
-      if (ensureAuthenticated(ctx)) {
+    case "STATUS":      
+      if (userAuthenticated(ctx)) {
         const user = await getAuthenticatedUser(ctx);
         if (user) {
           const bodyStatus = new Status(ctx, user);
@@ -68,6 +69,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
           return;
         }
       }
+      ctx.cookies.set("jwt-session");
       ctx.redirect(`${ctx.decodedUrl.root}/login`);
       return;
     // Create user 

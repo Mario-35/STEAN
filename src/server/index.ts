@@ -17,7 +17,7 @@ import compress from "koa-compress";
 import json from "koa-json";
 import cors from "@koa/cors";
 import serve from "koa-static";
-import { HELMET_CONFIG, APP_KEY, TEST, ADMIN, APP_NAME, APP_VERSION, _OK } from "./constants";
+import { HELMET_CONFIG, APP_KEY, TEST, APP_NAME, APP_VERSION, _OK, ADMIN } from "./constants";
 import favicon from 'koa-favicon';
 import { constants } from "zlib";
 import { log } from "./log";
@@ -27,6 +27,7 @@ import { models } from "./models";
 import { isTest } from "./helpers";
 import { RootPgVisitor } from "./odata/visitor";
 import { IconfigFile, IdecodedUrl, Ientities, Ilog, IuserToken, koaContext } from "./types";
+import { sqlStopDbName } from "./routes/helper";
 
 // Extend koa context 
 declare module "koa" {
@@ -96,9 +97,15 @@ log.init();
 
 // Start server initialisaion
 export const server = isTest()
-  ? app.listen(serverConfig.getConfig(TEST)?.port, async () => {
-      await serverConfig.addToServer(ADMIN);
-      serverConfig.createDbConnectionFromConfigName(TEST);
+  ? app.listen(serverConfig.getConfig(TEST).port, async () => {
+    // await serverConfig.addToServer(ADMIN);
+    await serverConfig
+          .connection(ADMIN)`${sqlStopDbName('test')}`
+          .then(async () => {
+            await serverConfig.connection(ADMIN)`DROP DATABASE IF EXISTS test`;
+            process.stdout.write(`DROP DATABASE IF EXISTS test\n`);
+          });
+      // serverConfig.createDbConnectionFromConfigName(TEST);
       console.log(log.message(`${APP_NAME} version : ${APP_VERSION}`, "ready " + _OK));
     })
   : serverConfig.init();

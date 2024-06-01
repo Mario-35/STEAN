@@ -30,7 +30,7 @@ export const protectedRoutes = new Router<DefaultState, Context>();
 protectedRoutes.post("/(.*)", async (ctx: koaContext, next) => {  
   switch (ctx.decodedUrl.path.toUpperCase()) {
     // login html page or connection login
-    case "LOGIN":      
+    case "LOGIN":
       if (ctx.request["token" as keyof object]) ctx.redirect(`${ctx.decodedUrl.root}/status`);
       await loginUser(ctx).then((user: Iuser | undefined) => {
         if (user) {

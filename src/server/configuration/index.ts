@@ -10,7 +10,7 @@ import { addToStrings, ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_DB, NODE_ENV
 import { asyncForEach, decrypt, encrypt, hidePassword, isProduction, isTest, unikeList, unique, } from "../helpers";
 import { IconfigFile, IdbConnection, IserviceInfos, koaContext, keyobj } from "../types";
 import { errors, infos, msg } from "../messages";
-import { createDatabase, createService} from "../db/helpers";
+import { createService} from "../db/helpers";
 import { app } from "..";
 import { EnumColor, EnumExtensions, EnumOptions, EnumVersion, typeExtensions, typeOptions } from "../enums";
 import fs from "fs";
@@ -31,28 +31,33 @@ class Configuration {
   static ports: number[] = [];
   static queries: { [key: string]: string[] } = {};
 
-  constructor(file: fs.PathOrFileDescriptor) {
+  constructor() {
     process.stdout.write(`${color(EnumColor.FgRed)} ${"=".repeat(24)} ${color( EnumColor.FgCyan )} ${`START ${APP_NAME} version : ${APP_VERSION} [${NODE_ENV}]`} ${color( EnumColor.FgWhite )} ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()} ${color( EnumColor.FgRed )} ${"=".repeat(24)}${color(EnumColor.Reset)}\n`);
+    const file: fs.PathOrFileDescriptor = __dirname + `/configuration.json`;
     Configuration.filePath = file.toString();
     if (isTest()) this.readConfigFile();
   }
     
   public readConfigFile(input?: string) {
     log.booting("Read config", input ? "content" : Configuration.filePath) ;
-
     try {
+      // load File
       const fileContent = input || fs.readFileSync(Configuration.filePath, "utf8");      
       Configuration.jsonConfiguration = JSON.parse(decrypt(fileContent));
       if (this.validJSONConfig(Configuration.jsonConfiguration)) {
-        Object.keys(Configuration.jsonConfiguration).forEach((element: string) => {
-          Configuration.configs[element] = this.formatConfig(element);
-        });
-        this.createConfigTest();
-      }else {
+        if (isTest()) {
+          Configuration.configs[ADMIN] = this.formatConfig(ADMIN);
+        } else {
+          Object.keys(Configuration.jsonConfiguration).forEach((element: string) => {
+            Configuration.configs[element] = this.formatConfig(element);
+          });
+        }
+        Configuration.configs[TEST] = this.createConfigFileTest();
+      } else {
         log.error(errors.configFileError);
         process.exit(112);
       }
-      // rewrite file (to update config modification)
+      // rewrite file (to update config modification except in test mode)
       if (!isTest()) this.writeConfig();    
     } catch (error: any) {
       log.error("Config Not correct", error["message"]);
@@ -69,18 +74,23 @@ class Configuration {
     }
   }
 
-  private async createConfigTest() {
-        // In tests there a test to create service
-    if (!isTest()) {      
-      const result = Configuration.configs[ADMIN];
-      result.name = TEST;
-      result.pg.database = TEST;
-      result.nb_page = 1000;
-      result.extensions = [EnumExtensions.base, EnumExtensions.multiDatastream, EnumExtensions.lora, EnumExtensions.logs, EnumExtensions.users];
-      result.options = [EnumOptions.canDrop];
-      result.connection = undefined;
-      Configuration.configs[TEST] = this.formatConfig(result);
-    }
+  private createConfigFileTest(): IconfigFile {  
+    return this.formatConfig (
+    { name: "test",
+      port: Configuration.configs[ADMIN].port,
+      "pg": {
+        "host": Configuration.configs[ADMIN].pg.host,
+        "port": Configuration.configs[ADMIN].pg.port,
+        "user": "stean",
+        "password": "stean",
+        "database": "test",
+        "retry": 2
+      },
+      "apiVersion": EnumVersion.v1_1,
+      "nb_page" : 1000,
+      "extensions" : [EnumExtensions.base, EnumExtensions.multiDatastream, EnumExtensions.lora, EnumExtensions.logs, EnumExtensions.users],
+      "options" : [EnumOptions.canDrop]
+    });
 	}
 
   getInfos = (ctx: koaContext, name: string): IserviceInfos  => {
@@ -143,15 +153,14 @@ class Configuration {
   }
 
   // Write an encrypt config file in json file
-  writeConfig(): boolean {    
+  writeConfig(): boolean {
     log.booting("Write config", Configuration.filePath);
     const result: Record<string, any>  = {};
     Object.entries(Configuration.configs).forEach(([k, v]) => {
-      result[k] = Object.keys(v)
-                        .filter(key => key !== 'test' && key[0] != "_")
-                        .reduce((obj, key) => { obj[key as keyobj] = v[key as keyobj]; return obj; }, {} );
+      if (k !== TEST )result[k] = Object.keys(v).reduce((obj, key) => { obj[key as keyobj] = v[key as keyobj]; return obj; }, {} );
     });
     fs.writeFile(
+      // encrypt only in production mode
       Configuration.filePath,
       isProduction() === true 
         ? encrypt(JSON.stringify(result, null, 4))
@@ -288,16 +297,16 @@ class Configuration {
 
   // initialisation serve NOT IN TEST
   async init(): Promise<boolean> {
-        if (this.configFileExist()  === true) {
+    if (this.configFileExist()  === true) {
       this.readConfigFile();
-      console.log(log.message("configuration", "loaded " + _OK));    
+      console.log(log.message(infos.configuration, infos.loaded + _OK));    
       let status = true;
       const errFile = fs.createWriteStream(_ERRORFILE, { flags: "w" });
-      log.booting("active error to file", _ERRORFILE) ;
+      log.booting(infos.logFile, _ERRORFILE) ;
       errFile.write(`## Start : ${TIMESTAMP()} \n`);
       await asyncForEach(
         // Start connection ALL entries in config file
-        Object.keys(Configuration.configs).filter(e => e.toUpperCase() !== TEST),
+        Object.keys(Configuration.configs).filter(e => e.toUpperCase() !== TEST.toUpperCase()),
         async (key: string) => {
           try {
             await this.addToServer(key);
@@ -322,7 +331,6 @@ class Configuration {
             log.booting(`\x1b[33m[First launch]\x1b[32m ${infos.ListenPort}`, port );
           });
         return true;
-        // return "http://localhost:8029/lr";
     }
   }
 
@@ -436,16 +444,6 @@ class Configuration {
         try {
       const addedConfig = this.formatConfig(addJson);      
       Configuration.jsonConfiguration[addedConfig.name] = addedConfig;
-      fs.writeFile( Configuration.filePath,
-        encrypt(JSON.stringify(Configuration.jsonConfiguration, null, 4)),
-        (err) => {
-          if (err) {
-            log.error(formatLog.error(err));
-            return false;
-          }
-        }
-      );
-      Configuration.configs[addedConfig.name] = this.formatConfig(addedConfig);
       if(!isTest()) {
         await this.addToServer(addedConfig.name);
         this.writeConfig();
@@ -459,11 +457,12 @@ class Configuration {
 
   // process to add an entry in server
   public async addToServer(key: string): Promise<boolean> {
-    await this.isDbExist(key, true)
+    return await this.isDbExist(key, true)
       .then(async (res: boolean) => {
+        if (res === true) {
           await userAccess.post(key, {
             username: Configuration.configs[key].pg.user,
-            email: "default@email.com",
+            email: "THREEdefault@email.com",
             password: Configuration.configs[key].pg.password,
             database: Configuration.configs[key].pg.database,
             canPost: true,
@@ -473,16 +472,17 @@ class Configuration {
             superAdmin: false,
             admin: false
           });
-        log.booting(`\x1b[37mDatabase => ${key}\x1b[39m on line`, res ? _WEB : _NOTOK);
-        const port = Configuration.configs[key].port;
-        if (port > 0) {
-          if (Configuration.ports.includes(port))
-            log.booting(`\x1b[35m[${key}]\x1b[32m ${infos.addPort}`, port );
-          else
-            app.listen(port, () => {
-              Configuration.ports.push(port);
-              log.booting(`\x1b[33m[${key}]\x1b[32m ${infos.ListenPort}`, port );
-            });
+          log.booting(`\x1b[37mDatabase => ${key}\x1b[39m on line`, res ? _WEB : _NOTOK);
+          const port = Configuration.configs[key].port;
+          if (port > 0) {
+            if (Configuration.ports.includes(port))
+              log.booting(`\x1b[35m[${key}]\x1b[32m ${infos.addPort}`, port );
+            else
+              app.listen(port, () => {
+                Configuration.ports.push(port);
+                log.booting(`\x1b[33m[${key}]\x1b[32m ${infos.ListenPort}`, port );
+              });
+          }
         }
         return res;
       })
@@ -491,23 +491,22 @@ class Configuration {
         log.error(error);
         process.exit(111);
       });
-    return false;
   }
 
   // test in boolean exist if not and logCreate is true then logCreate DB
-  private async tryToCreateDB(connectName: string): Promise<boolean> {
-    log.booting("Try create Database", Configuration.configs[connectName].pg.database);
-    return await createDatabase(connectName)
-      .then(async () => {
-        log.booting(`${infos.db} ${infos.create} [${Configuration.configs[connectName].pg.database}]`, _OK );
-        this.createDbConnectionFromConfigName(connectName);
-        return true;
-      })
-      .catch((err: Error) => {;        
-        log.error(msg(infos.create, infos.db), err.message);
-        return false;
-      });
-  }
+  // private async tryToCreateDB(connectName: string): Promise<boolean> {
+  //   log.booting("Try create Database", Configuration.configs[connectName].pg.database);
+  //   return await createDatabase(connectName)
+  //     .then(async () => {
+  //       log.booting(`${infos.db} ${infos.create} [${Configuration.configs[connectName].pg.database}]`, _OK );
+  //       this.createDbConnectionFromConfigName(connectName);
+  //       return true;
+  //     })
+  //     .catch((err: Error) => {;        
+  //       log.error(msg(infos.create, infos.db), err.message);
+  //       return false;
+  //     });
+  // }
 
   private async isDbExist(connectName: string, logCreate: boolean): Promise<boolean> {
     log.booting(infos.dbExist, Configuration.configs[connectName].pg.database);
@@ -516,16 +515,15 @@ class Configuration {
         const listTempTables = await this.connection(connectName)`SELECT array_agg(table_name) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'temp%';`;
         const tables = listTempTables[0]["array_agg"];
         if (tables != null)        
-          log.booting(
-            `delete temp tables ==> \x1b[33m${connectName}\x1b[32m`,
+          log.booting( `delete temp tables ==> \x1b[33m${connectName}\x1b[32m`,
             await this.connection(connectName).begin(sql => {
               tables.forEach(async (table: string) => {await sql.unsafe(`DROP TABLE ${table}`);});
             }).then(() => _OK)
               .catch((err: Error) => err.message)
           );
         if (update["triggers"] && update["triggers"] === true && connectName !== ADMIN) await this.relogCreateTrigger(connectName);
-        if ( update && update["beforeAll"] && Object.entries(update["beforeAll"]).length > 0 ) {
-          if ( update && update["beforeAll"] && Object.entries(update["beforeAll"]).length > 0 ) {
+        if (update && update["beforeAll"] && Object.entries(update["beforeAll"]).length > 0 ) {
+          if (update && update["beforeAll"] && Object.entries(update["beforeAll"]).length > 0 ) {
             console.log(formatLog.head("beforeAll"));
             try {              
               Object.keys(Configuration.configs)
@@ -548,8 +546,9 @@ class Configuration {
         let returnResult = false;
         // Password authentication failed 
         if (err["code" as keyobj] === "28P01") {
-          returnResult = await this.tryToCreateDB(connectName);
-          if (returnResult === false) log.error(formatLog.error(err));
+          // returnResult = await this.tryToCreateDB(connectName);
+          // if (returnResult === false) log.error(formatLog.error(err));
+          log.error(formatLog.error(err));
           //database does not exist
         } else if (err["code" as keyobj] === "3D000" && logCreate == true) {
           console.log(formatLog.debug( msg(infos.tryCreate, infos.db), Configuration.configs[connectName].pg.database ));
@@ -562,4 +561,4 @@ class Configuration {
   }
 }
 
-export const serverConfig = new Configuration(__dirname + `/${NODE_ENV}.json`);
+export const serverConfig = new Configuration();

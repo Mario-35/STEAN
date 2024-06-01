@@ -30,8 +30,7 @@ import {
     nbColorTitle,
     nbColor,
     testVersion,
-    _RAWDB,
-    testLog
+    _RAWDB
 } from "./constant";
 import { server } from "../../server/index";
 import { Ientity } from "../../server/types";
@@ -527,7 +526,6 @@ describe("endpoint : MultiDatastream", () => {
             chai.request(server)
                 .get(`/test/${infos.apiExample.http}`)
                 .end((err: Error, res: any) => {
-                    testLog(res.body)
                     should.not.exist(err);
                     res.status.should.equal(200);
                     res.type.should.equal("application/json");

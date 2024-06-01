@@ -4,7 +4,7 @@ import chai from "chai";
 import chaiHttp from "chai-http";
 import fs from "fs";
 import path from "path";
-import { IApiDoc, prepareToApiDoc, IApiInput, identification, generateApiDoc, testVersion, _RAWDB, testLog } from "./constant";
+import { IApiDoc, prepareToApiDoc, IApiInput, identification, generateApiDoc, testVersion, _RAWDB } from "./constant";
 
 chai.use(chaiHttp);
 
@@ -45,16 +45,15 @@ addToApiDoc({
                 apiDescription: "Get a new token.",
                 apiExample: {
                     http: `${testVersion}/login`,
-                    curl: `curl -X POST KEYHTTP/login -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' -d 'username=sensorapi&password=mario29'`
+                    curl: `curl -X POST KEYHTTP/login -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' -d 'username=stean&password=stean'`
                 },
-                apiParamExample: { "username": "myUserName", "password": "*************" }
+                apiParamExample: { "username": identification.username, "password": identification.password }
             });
             chai.request(server)
                 .post(`/test/${infos.apiExample.http}`)
                 .type("form")
                 .send(identification)
                 .end((err: Error, res: any) => {
-                    testLog(res.body);
                     should.not.exist(err);
                     res.body.should.include.keys("token");
                     res.body.should.include.keys("message");
@@ -71,7 +70,7 @@ addToApiDoc({
                 apiDescription: "Identification failed.",
                 apiExample: {
                     http: `${testVersion}/login`,                    
-                    curl: `curl -X POST KEYHTTP/login -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' -d 'username=sensorapi&password=mario9'`
+                    curl: `curl -X POST KEYHTTP/login -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' -d 'username=test&password=test'`
                 },
                 apiParamExample: { "username": identification.username, "password": "nowhere" }
             });

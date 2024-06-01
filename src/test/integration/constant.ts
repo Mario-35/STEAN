@@ -12,13 +12,12 @@ import fs from "fs";
 import path from "path";
 import { TEST } from "../../server/constants";
 import { Ientity } from "../../server/types";
-import conf from "../../server/configuration/test.json";
 import util from "util";
 import apidocJson from "../apidoc.json";
 import { models } from "../../server/models";
 let NB = 0;
 export const nbAdd = () => {return `${++NB}`};
-export const identification = { "username": conf[TEST as keyof object]["pg"]["user"], "password": conf[TEST as keyof object]["pg"]["password"] };
+export const identification = { "username": "stean", "password": "stean" };
 export const testVersion = "v1.1";
 let nb = 0;
 export function getNB(message: string): string {nb +=1; return `${message} ${String(nb)}`;} 

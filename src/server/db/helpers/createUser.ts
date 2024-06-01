@@ -17,7 +17,7 @@ export const createUser = async (config: IconfigFile): Promise<string> => {
   return new Promise(async function (resolve, reject) {
     await userAccess.post(config.name, {
       username: config.pg.user,
-      email: "default@email.com",
+      email: "TWOdefault@email.com",
       password: config.pg.password,
       database: config.pg.database,
       canPost: true,

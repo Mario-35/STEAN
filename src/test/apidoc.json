@@ -79,6 +79,7 @@
     "GetAllFromThingMultiDatastreams",
     "GetAllFromInfosMultiDatastreams",
     "GetPhenomenonTimeMultiDatastreams",
+    "GetMultiDatastreamsSelectAndOrderPhenomenonTime",
     "PostExistingThingMultiDatastreams",
     "PostThingSensorMultiDatastreams",
     "PostMultiDatastreamsFOI",

@@ -17,5 +17,8 @@
     "tryCreateUser" : "Try to create user => ",
     "createAdminUser" : "create user => ",
     "updateUser" : "update user => ",
-    "MultilinesNotSaved" : "Multilines not saved in logs"
+    "MultilinesNotSaved" : "Multilines not saved in logs",
+    "configuration" : "configuration",
+    "loaded" : "loaded",
+	"logFile": "active error to file"
 }

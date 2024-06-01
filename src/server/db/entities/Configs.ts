@@ -11,9 +11,9 @@ import { formatLog } from "../../logger";
 import { IreturnResult, koaContext } from "../../types";
 import { serverConfig } from "../../configuration";
 import { hideKeysInJson, hidePassword } from "../../helpers";
-import { ensureAuthenticated } from "../../authentication";
 import { addToService, createService } from "../helpers";
 import { _NOTOK, _OK } from "../../constants";
+import { userAuthenticated } from "../../authentication";
 
 export class Configs extends Common {
   constructor(ctx: koaContext) {
@@ -24,7 +24,7 @@ export class Configs extends Common {
   async getAll(): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     // Return result If not authorised
-    if (!ensureAuthenticated(this.ctx)) return this.formatReturnResult({
+    if (!userAuthenticated(this.ctx)) return this.formatReturnResult({
       body: hidePassword(serverConfig.getConfig(this.ctx.config.name))
     });    
     // Return result
@@ -38,7 +38,7 @@ export class Configs extends Common {
   async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     // Return result If not authorised
-    if (!ensureAuthenticated(this.ctx)) this.ctx.throw(401);
+    if (!userAuthenticated(this.ctx)) this.ctx.throw(401);
     // Return result
     return this.formatReturnResult({
       body: hideKeysInJson(
@@ -57,7 +57,7 @@ export class Configs extends Common {
         body: await addToService(this.ctx, dataInput),
       });
     }
-    if (!ensureAuthenticated(this.ctx)) this.ctx.throw(401);    
+    if (!userAuthenticated(this.ctx)) this.ctx.throw(401);    
     if (dataInput)
       return this.formatReturnResult({
         body: await serverConfig.addConfig(dataInput),

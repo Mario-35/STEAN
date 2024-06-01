@@ -13,9 +13,14 @@ import { blankUserToken } from "../types/userToken";
 
 export const decodeToken = (ctx: koaContext): IuserToken => {
   if (ctx.request.hasOwnProperty("token")) {
-    const token = jsonwebtoken.decode(ctx.request["token" as keyobj]);
+    // @ts-ignore
+    const token = jsonwebtoken.decode(ctx.request["token"]);    
     if (token && token["data" as keyobj]["id"] > 0)
-      return Object.freeze({ id: token["data" as keyobj]["id"], username: token["data" as keyobj]["username"], password: token["data" as keyobj]["password"], PDCUAS: token["data" as keyobj]["PDCUAS"], });
+      return Object.freeze({
+         id: +token["data" as keyobj]["id"], 
+         username: token["data" as keyobj]["username"], 
+         password: token["data" as keyobj]["password"], 
+         PDCUAS: token["data" as keyobj]["PDCUAS"], });
   }
   return blankUserToken;
 };
