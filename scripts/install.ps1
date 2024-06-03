@@ -3,7 +3,7 @@
  #
  # @copyright 2024-present Inrae
  # @author mario.adam@inrae.fr
- # version 0.4
+ # version 0.5
  #
  #/
 
@@ -109,10 +109,11 @@ if (Test-Path $POSTGRES) {
     }
 
     # Check if Postgis is installed
-    $POSTGIS = $POSTGRES + "\" + $latest + "\share\contrib"
+    $POSTGIS = "$latest\share\contrib"
     if (Test-Path $POSTGIS) {
         $filter = "postgis*"
         $first = Get-ChildItem -Path $POSTGIS -Filter $filter | Sort-Object LastAccessTime -Descending | Select-Object -First 1
+        Write-Host "Postgis installed. ($first)"
         if (-not ([string]::IsNullOrEmpty($first)))
         {
             Write-Host "Postgis installed. ($first)"
