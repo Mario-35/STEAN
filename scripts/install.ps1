@@ -3,11 +3,12 @@
  #
  # @copyright 2024-present Inrae
  # @author mario.adam@inrae.fr
- # version 0.3
+ # version 0.4
  #
  #/
 
 $APIDEST = "api" # api folder name
+$CONFIGFILE = "configuration.json" # api folder name
 $APIBak = "apiBak" # api saved folder name
 $POSTGRES = "C:\Program Files\PostgreSQL" # postgres windows install path
 $NODEJS = "C:\Program Files\nodejs" # nodeJS windows install path
@@ -60,9 +61,9 @@ function install_stean {
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     [System.IO.Compression.ZipFile]::ExtractToDirectory($FILEDIST, $APIDEST)
     # Save config
-    if (Test-Path .\$APIBak\configuration\production.json) {
+    if (Test-Path .\$APIBak\configuration\$CONFIGFILE) {
         Write-Host "configuration exists."
-        Copy-Item .\$APIBak\configuration\production.json .\$APIDEST\configuration\production.json
+        Copy-Item .\$APIBak\configuration\$CONFIGFILE .\$APIDEST\configuration\$CONFIGFILE
     }
     # Save key
     if (Test-Path .\$APIBak\configuration\.key) {
