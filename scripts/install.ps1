@@ -3,7 +3,7 @@
  #
  # @copyright 2024-present Inrae
  # @author mario.adam@inrae.fr
- # version 0.2
+ # version 0.3
  #
  #/
 
@@ -39,7 +39,6 @@ function download_stean {
     save_dist
     Invoke-WebRequest -Uri "https://github.com/Mario-35/STEAN/raw/main/dist.zip" -OutFile $FILEDIST
 }
-
 
 # Function to install stean
 function install_stean {
@@ -109,9 +108,10 @@ if (Test-Path $POSTGRES) {
     }
 
     # Check if Postgis is installed
-    if (Test-Path $latest"\share\contrib") {
+    $POSTGIS = $POSTGRES + "\" + $latest + "\share\contrib"
+    if (Test-Path $POSTGIS) {
         $filter = "postgis*"
-        $first = Get-ChildItem -Path $latest"\share\contrib" -Filter $filter | Sort-Object LastAccessTime -Descending | Select-Object -First 1
+        $first = Get-ChildItem -Path $POSTGIS -Filter $filter | Sort-Object LastAccessTime -Descending | Select-Object -First 1
         if (-not ([string]::IsNullOrEmpty($first)))
         {
             Write-Host "Postgis installed. ($first)"
