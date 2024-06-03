@@ -1,5 +1,5 @@
 /**
- * decode Tool.
+ * decode Tool
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
@@ -7,7 +7,8 @@
  * NOT Use in API use to decode in command line
  *
  */
-// onsole.log("!----------------------------------- decode Tool. -----------------------------------!");
+// onsole.log("!----------------------------------- decode Tool -----------------------------------!");
+
 import fs from "fs";
 import crypto from "crypto";
 import { isString } from "../helpers/tests";
@@ -33,4 +34,4 @@ function decode(file: fs.PathOrFileDescriptor) {
   return decrypt(fileTemp, APP_KEY); 
 }
 
-process.stdout.write(decode(__dirname + `/production.json`) + "\n");
+process.stdout.write(decode(__dirname + `/configuration.json`) + "\n");
