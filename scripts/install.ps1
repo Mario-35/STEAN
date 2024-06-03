@@ -3,7 +3,7 @@
  #
  # @copyright 2024-present Inrae
  # @author mario.adam@inrae.fr
- # version 0.1
+ # version 0.2
  #
  #/
 
