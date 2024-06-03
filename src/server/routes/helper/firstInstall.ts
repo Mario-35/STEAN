@@ -13,7 +13,7 @@ import { returnFormats, unique } from "../../helpers";
 import { koaContext, IdecodedUrl } from "../../types";
 import { First } from "../../views";
 
-export function firstInstall(ctx: koaContext): IdecodedUrl | undefined  {
+export async function firstInstall(ctx: koaContext): Promise<IdecodedUrl | undefined>  {
   // If Configuration file Not exist first Install
   if (serverConfig.configFileExist() === false) {    
     // trap create post
@@ -37,7 +37,7 @@ export function firstInstall(ctx: koaContext): IdecodedUrl | undefined  {
       src["options"] = src["options"] ? unique([ ...src["options"], ...opt ]) : unique(opt);   
       src["serviceversion"] = src["serviceversion"].startsWith("v") ? src["serviceversion"].replace("v","") : src["serviceversion"];
 
-      serverConfig.readConfigFile(JSON.stringify({
+      const confJson: Record<string, any> = {
         "admin": {
             "name": "admin",
             "port": 8029,
@@ -57,10 +57,8 @@ export function firstInstall(ctx: koaContext): IdecodedUrl | undefined  {
             "extensions": src["extensions"],
             "options": src["options"]
         }
-      }, null, 2));
-      serverConfig.init();
-      serverConfig.writeConfig();
-      serverConfig.addConfig({
+      };
+      confJson[src["servicename"]] = {
         "name": src["servicename"],
         "port": 8029,
         "pg": {
@@ -77,7 +75,8 @@ export function firstInstall(ctx: koaContext): IdecodedUrl | undefined  {
         "nb_page": 200,
         "options": src["options"],
         "extensions": [ "base"]
-      });    
+      }
+      await serverConfig.init(JSON.stringify(confJson, null, 2)); 
     }
     // show first install screen
     else {

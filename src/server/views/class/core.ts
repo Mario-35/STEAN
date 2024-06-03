@@ -17,6 +17,7 @@ export class CoreHtmlView {
       this.ctx = ctx;
       this._HTMLResult = datas ? typeof datas === 'string' ? [datas] : datas : [];
     }
+
     makeIdName(name: string): string {
       return `reg${name}`;
     }
@@ -42,15 +43,15 @@ export class CoreHtmlView {
     };
 
     foot( links: { href: string; class: string; name: string; }[] ): string  {
-        const returnValue: string[] = [this.hr()];
-        links.forEach((element: { href: string; class: string; name: string }) => {
-            returnValue.push(`
-            <div class="inner">
-              <a  href="${element.href}" 
-                  class="${element.class}">${element.name}</a>
-            </div>`);
-        });
-        return returnValue.join();
+      const returnValue: string[] = [this.hr()];
+      links.forEach((element: { href: string; class: string; name: string }) => {
+          returnValue.push(`
+          <div class="inner">
+            <a  href="${element.href}" 
+                class="${element.class}">${element.name}</a>
+          </div>`);
+      });
+      return returnValue.join();
     };
     
     addSubmitButton(label: string ) {
@@ -76,13 +77,13 @@ export class CoreHtmlView {
               </div>`;
     }
 
-
     multiSelectItemCheck(name: string, list: string[]): string {
       const res: string[] = [];
       list.forEach((e: string) => {
         res.push(`<label for="${e}"> <input type="checkbox" name="${name}${e}" />${e}</label>`)});
       return res.join("");
     }
+
     multiSelectItem(list: string[]): string {
       const res: string[] = [];
       list.forEach((e: string, n: number) => {
@@ -93,7 +94,7 @@ export class CoreHtmlView {
     addSelect(input: { name: string, message: string, list: string[] , value: any, alert?: string, toolType?: string, password?: boolean }) {
       const idName = this.makeIdName(input.name);
       return `<div class="group">
-                 <label  for="${idName}" class="label">
+                <label  for="${idName}" class="label">
                  ${input.message}
                 </label>
                 <select class="select" id="${idName}" name="${input.name}">

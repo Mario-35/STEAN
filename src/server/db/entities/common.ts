@@ -1,12 +1,13 @@
 /**
- * Common class entity.
+ * Common class entity
  *f
  * @copyright 2020-present Inrae
  * @review 29-01-2024
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- Common class entity. -----------------------------------!");
+// onsole.log("!----------------------------------- Common class entity -----------------------------------!");
+
  import { addDoubleQuotes, returnFormats } from "../../helpers/index";
  import { formatLog } from "../../logger";
  import { IreturnResult, keyobj, koaContext } from "../../types";
@@ -73,7 +74,8 @@
        this.ctx.odata.limit > 0
          ? +this.ctx.odata.limit
          : +this.ctx.config.nb_page;
-     if (resLength >= max) return `${encodeURI(this.nextLinkBase)}${ this.nextLinkBase.includes("?") ? "&" : "?" }$top=${this.ctx.odata.limit}&$skip=${ this.ctx.odata.skip + this.ctx.odata.limit }`;
+     if (resLength >= max) 
+      return `${encodeURI(this.nextLinkBase)}${ this.nextLinkBase.includes("?") ? "&" : "?" }$top=${this.ctx.odata.limit}&$skip=${ this.ctx.odata.skip + this.ctx.odata.limit }`;
    };
  
    // Create the prevLink

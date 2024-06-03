@@ -43,7 +43,8 @@
         "extensions": [
             "base",
             "multiDatastream",
-            "logs"
+            "logs",
+            "users"
         ],
         "options": []
     },
@@ -98,33 +99,6 @@
             "logs",
             "users"
         ],
-        "options": []
-    },
-    "test": {
-        "name": "test",
-        "port": 8029,
-        "pg": {
-            "host": "localhost",
-            "port": 5432,
-            "user": "test",
-            "password": "test",
-            "database": "test",
-            "retry": 2
-        },
-        "apiVersion": "v1.1",
-        "date_format": "DD/MM/YYYY hh:mi:ss",
-        "webSite": "no web site",
-        "nb_page": 1000,
-        "alias": [],
-        "extensions": [
-            "base",
-            "multiDatastream",
-            "lora",
-            "logs",
-            "users"
-        ],
-        "options": [
-            "canDrop"
-        ]
+        "options": ["canDrop"]
     }
 }

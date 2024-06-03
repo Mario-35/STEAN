@@ -20,7 +20,7 @@ import postgres from "postgres";
 import { triggers } from "../db/createDb/triggers";
 import { formatLog } from "../logger";
 import { log } from "../log";
-import { testDatas } from "../db/createDb";
+import { createDatabase, testDatas } from "../db/createDb";
 import { userAccess } from "../db/dataAccess";
 
 // class to logCreate configs environements
@@ -296,9 +296,9 @@ class Configuration {
   }
 
   // initialisation serve NOT IN TEST
-  async init(): Promise<boolean> {
-    if (this.configFileExist()  === true) {
-      this.readConfigFile();
+  async init(input?: string): Promise<boolean> {
+    if (this.configFileExist()  === true || input) {
+      this.readConfigFile(input);
       console.log(log.message(infos.configuration, infos.loaded + _OK));    
       let status = true;
       const errFile = fs.createWriteStream(_ERRORFILE, { flags: "w" });
@@ -322,6 +322,7 @@ class Configuration {
       }           
       console.log(log.message(`${APP_NAME} version : ${APP_VERSION}`, `ready ${(status === true ) ? _OK : _NOTOK}`));
       return status;
+    // no configuration file so First install    
     } else {
         console.log(log.message("file", Configuration.filePath + _NOTOK));
         const port = 8029;
@@ -494,19 +495,19 @@ class Configuration {
   }
 
   // test in boolean exist if not and logCreate is true then logCreate DB
-  // private async tryToCreateDB(connectName: string): Promise<boolean> {
-  //   log.booting("Try create Database", Configuration.configs[connectName].pg.database);
-  //   return await createDatabase(connectName)
-  //     .then(async () => {
-  //       log.booting(`${infos.db} ${infos.create} [${Configuration.configs[connectName].pg.database}]`, _OK );
-  //       this.createDbConnectionFromConfigName(connectName);
-  //       return true;
-  //     })
-  //     .catch((err: Error) => {;        
-  //       log.error(msg(infos.create, infos.db), err.message);
-  //       return false;
-  //     });
-  // }
+  private async tryToCreateDB(connectName: string): Promise<boolean> {
+    log.booting("Try create Database", Configuration.configs[connectName].pg.database);
+    return await createDatabase(connectName)
+      .then(async () => {
+        log.booting(`${infos.db} ${infos.create} [${Configuration.configs[connectName].pg.database}]`, _OK );
+        this.createDbConnectionFromConfigName(connectName);
+        return true;
+      })
+      .catch((err: Error) => {;        
+        log.error(msg(infos.create, infos.db), err.message);
+        return false;
+      });
+  }
 
   private async isDbExist(connectName: string, logCreate: boolean): Promise<boolean> {
     log.booting(infos.dbExist, Configuration.configs[connectName].pg.database);
@@ -546,9 +547,7 @@ class Configuration {
         let returnResult = false;
         // Password authentication failed 
         if (err["code" as keyobj] === "28P01") {
-          // returnResult = await this.tryToCreateDB(connectName);
-          // if (returnResult === false) log.error(formatLog.error(err));
-          log.error(formatLog.error(err));
+          await this.tryToCreateDB(connectName);
           //database does not exist
         } else if (err["code" as keyobj] === "3D000" && logCreate == true) {
           console.log(formatLog.debug( msg(infos.tryCreate, infos.db), Configuration.configs[connectName].pg.database ));

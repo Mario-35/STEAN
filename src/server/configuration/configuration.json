@@ -43,7 +43,8 @@
         "extensions": [
             "base",
             "multiDatastream",
-            "logs"
+            "logs",
+            "users"
         ],
         "options": []
     },
@@ -98,6 +99,8 @@
             "logs",
             "users"
         ],
-        "options": []
+        "options": [
+            "canDrop"
+        ]
     }
 }

@@ -1,17 +1,17 @@
 /**
- * HTML Views Status for API.
+ * HTML Views Status for API
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- HTML Views Status for API. -----------------------------------!");
+// onsole.log("!----------------------------------- HTML Views Status for API -----------------------------------!");
+
 import { serverConfig } from "../../configuration";
 import { _NOTOK, _OK } from "../../constants";
 import { EnumExtensions } from "../../enums";
 import { Iuser, koaContext } from "../../types";
 import { CoreHtmlView } from "./core";
-  
 
 export class Status extends CoreHtmlView {
     constructor(ctx: koaContext, datas: Iuser) {
@@ -23,8 +23,7 @@ export class Status extends CoreHtmlView {
       const config = serverConfig.getConfigNameFromDatabase(user.database);  
       const url = `${this.ctx.decodedUrl.linkbase}/${this.ctx.config.apiVersion}`;  
       const sec = ctx.config.extensions.includes(EnumExtensions.users);     
-      this._HTMLResult = [`
-      <!DOCTYPE html>
+      this._HTMLResult = [`<!DOCTYPE html>
         <html> 
             ${this.head( "Status", "user" )}
             <body>
@@ -38,7 +37,7 @@ export class Status extends CoreHtmlView {
                         <h3>Post : ${ user.canPost === true ? _OK : !sec ? _OK : _NOTOK}</h3>
                         <h3>Delete : ${ user.canDelete === true ? _OK : !sec ? _OK : _NOTOK}</h3>
                         <h3>Create User: ${ user.canCreateUser === true ? _OK : !sec ? _OK : _NOTOK}</h3>
-                        <h3>Create Db : ${ user.canCreateDb === true ? _OK : !sec ? _OK : _NOTOK}</h3>
+                        <h3>Create Service : ${ user.canCreateDb === true ? _OK : !sec ? _OK : _NOTOK}</h3>
                         <h3>Admin : ${ user.admin === true ? _OK : !sec ? _OK : _NOTOK}</h3>
                         <h3>Super admin : ${ user.superAdmin === true ? _OK : !sec ? _OK : _NOTOK}</h3>
                         ${this.foot([
@@ -50,5 +49,4 @@ export class Status extends CoreHtmlView {
             </body>
         </html>`];
     };
-
   }

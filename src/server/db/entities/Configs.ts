@@ -1,11 +1,12 @@
 /**
- * Configs entity.
+ * Configs entity
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- Configs entity. -----------------------------------!");
+// onsole.log("!----------------------------------- Configs entity -----------------------------------!");
+
 import { Common } from "./common";
 import { formatLog } from "../../logger";
 import { IreturnResult, koaContext } from "../../types";
@@ -24,9 +25,10 @@ export class Configs extends Common {
   async getAll(): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
     // Return result If not authorised
-    if (!userAuthenticated(this.ctx)) return this.formatReturnResult({
-      body: hidePassword(serverConfig.getConfig(this.ctx.config.name))
-    });    
+    if (!userAuthenticated(this.ctx)) 
+        return this.formatReturnResult({
+          body: hidePassword(serverConfig.getConfig(this.ctx.config.name))
+        });    
     // Return result
     return this.formatReturnResult({
       body: hidePassword(serverConfig.getConfigs().map((elem: string) => ({ 
@@ -67,6 +69,7 @@ export class Configs extends Common {
   // Delete an item
   async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam(idInput));
+    // This function not exists
     return;
   }
 }

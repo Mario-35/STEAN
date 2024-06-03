@@ -1,11 +1,12 @@
 /**
- * HTML Views UserEdit for API.
+ * HTML Views UserEdit for API
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- HTML Views UserEdit for API. -----------------------------------!");
+// onsole.log("!----------------------------------- HTML Views UserEdit for API -----------------------------------!");
+
 import { IKeyString, koaContext } from "../../types";
 import { CoreHtmlView } from "./core";
 

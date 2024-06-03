@@ -6,6 +6,7 @@
     position: relative;
     width: 100%;
   }
+
   [class*=collapsible]::after {
     clear: both;
     content: "";
@@ -19,12 +20,15 @@
     padding: 5px;
     width: 100%;
   }
+
   .collapsible-title.is-active, .collapsible-title:hover {
     background: var(--background-highlight);
   }
+
   .collapsible-title.is-active + .collapsible-content {
     display: block;
   }
+
   @media screen and (min-width: 960px) {
     .collapsible-tabs-horizontal .collapsible-title, .collapsible-tabs-vertical .collapsible-title {
       height: 7px;
@@ -90,6 +94,7 @@
     padding: 5px;
     width: 100%;
   }
+  
   @media screen and (min-width: 960px) {
     .collapsible-tabs-horizontal .collapsible-content {
       float: right;
