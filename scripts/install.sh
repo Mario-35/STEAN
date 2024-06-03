@@ -14,7 +14,7 @@ FILEAPP=./$APIDEST/index.js
 FILEDIST=./dist.zip
 FILEDISTOLD=./distOld.zip
 FILEKEY=./$APIDEST/configuration/.key
-FILECONFIG=./$APIDEST/configuration/production.json
+FILECONFIG=./$APIDEST/configuration/configuration.json
 
 # Script to install Node.js using Node on Ubuntu without sudo
 
@@ -56,9 +56,9 @@ install_stean() {
     # unzip actual
     unzip $FILEDIST -d $APIDEST/  
     # Save config
-    if [ -f ./$APIBak/configuration/production.json ]; then
+    if [ -f ./$APIBak/configuration/configuration.json ]; then
         echo "confifuration exist."
-        cp ./$APIBak/configuration/production.json ./$APIDEST/configuration/production.json
+        cp ./$APIBak/configuration/configuration.json ./$APIDEST/configuration/configuration.json
     fi
     # Save key
     if [ -f ./$APIBak/configuration/.key ]; then
