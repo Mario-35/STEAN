@@ -547,12 +547,20 @@ class Configuration {
         let returnResult = false;
         // Password authentication failed 
         if (err["code" as keyobj] === "28P01") {
-          await this.tryToCreateDB(connectName);
+          if (!isTest()) {
+            if(connectName === TEST)
+            await createService(testDatas);
+            else await this.tryToCreateDB(connectName);
+          }
           //database does not exist
         } else if (err["code" as keyobj] === "3D000" && logCreate == true) {
           console.log(formatLog.debug( msg(infos.tryCreate, infos.db), Configuration.configs[connectName].pg.database ));
           // If not in tdd tests create test DB for documentation
-          if (!isTest()) await createService(testDatas);
+          if (!isTest()) {
+            if(connectName === TEST)
+            await createService(testDatas);
+            else await this.tryToCreateDB(connectName);
+          }
           // else returnResult = await this.tryToCreateDB(connectName);
         } else log.error(formatLog.error(err));
         return returnResult;

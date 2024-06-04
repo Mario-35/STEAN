@@ -62,6 +62,7 @@ export const createService = async (dataInput: Record<string, any>, ctx?: koaCon
       console.log(error);        
     }      
   }
+  
 
   await executeAdmin(sqlStopDbName(addSimpleQuotes(serviceName))).then(async () => {
     await executeAdmin(`DROP DATABASE IF EXISTS ${serviceName}`).then(async () => {
@@ -69,7 +70,7 @@ export const createService = async (dataInput: Record<string, any>, ctx?: koaCon
       await createDB();
     }).catch((error: any) => {
       results[`Drop ${mess}`] = _NOTOK;
-      console.log(error);        
+      log.error(error);        
     });
   }).catch(async (err: any) => {
     if (err["code"] === "3D000") {

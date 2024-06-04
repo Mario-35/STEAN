@@ -85,8 +85,8 @@ export const testDatas:Record<string, any> = {
 		"pg": {
 			"host": "localhost",
 			"port": 5432,
-			"user": "sensorapi",
-			"password": "mario29",
+			"user": "stean",
+			"password": "stean",
 			"database": "test",
 			"retry": 2
 		},

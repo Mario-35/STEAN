@@ -8,7 +8,7 @@
  #/
 
 $APIDEST = "api" # api folder name
-$CONFIGFILE = "configuration.json" # api folder name
+$CONFIGFILE = "configuration.json" 
 $APIBak = "apiBak" # api saved folder name
 $POSTGRES = "C:\Program Files\PostgreSQL" # postgres windows install path
 $NODEJS = "C:\Program Files\nodejs" # nodeJS windows install path
@@ -88,7 +88,7 @@ function start_stean {
     if (Test-Path $FILEAPP) {
         Write-Host "$FILEAPP starting ..."
         $env:NODE_ENV = "production"
-        nodemon -x "node $FILEAPP || copy /b $FILEAPP +,,"
+        nodemon -x "node $FILEAPP || copy /b $FILEAPP +,," --ignore configuration.json
     } else {
         Write-Host "$FILEAPP does not exist, can't launch app."
     }
