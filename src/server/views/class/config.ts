@@ -6,6 +6,7 @@
  *
  */
 // onsole.log("!----------------------------------- HTML Views First for API. -----------------------------------!");
+
 import { EnumOptions, EnumVersion } from "../../enums";
 import { IconfigFile, IKeyString, koaContext } from "../../types";
 import { CoreHtmlView } from "./core";
@@ -26,8 +27,7 @@ export class Config extends CoreHtmlView {
     }
 
     private first(datas: Idatas) {
-      datas.url = '/create';
-      
+      datas.url = '/Configs';      
         const alert = (name: string): string => {
             return datas.why && datas.why[name] ? `<div class="alert">${datas.why[name]}</div>` : "";
         };
@@ -37,8 +37,7 @@ export class Config extends CoreHtmlView {
               ${this.head("Login", "user")}    
             <body>
             <div class="login-wrap">
-            <div class="login-html">
-            ${this.title(this.ctx.config.name)}
+            <div class="login-html"> ${this.title(this.ctx.config.name)}
                     <input  id="tab-1" 
                             type="radio" 
                             name="tab" 
@@ -50,7 +49,7 @@ export class Config extends CoreHtmlView {
                             class="sign-up">
                     <label for="tab-2" class="tab">Options</label>
                     <div class="login-form">
-                      <form action="${datas.url}" method="post">
+                      <form action="${datas.url}" method="patch">
                         <div class="sign-in-htm">
                         ${this.addTextInput({name: "apiversion", label: "Version", value: datas.body && datas.body.apiversion || this.ctx.config.apiVersion, alert: alert("apiversion"), toolType: Object.values(EnumVersion).join()})}
                         ${this.addTextInput({name: "date_format", label: "Date format", value: datas.body && datas.body.date_format || this.ctx.config.date_format, alert: alert("date_format"), toolType: "Host must be at least 2 words"})}
@@ -59,6 +58,9 @@ export class Config extends CoreHtmlView {
                         </div>
                         <div class="sign-up-htm">
                         ${this.addCheckBox({name: "stripNull", checked: datas.body && datas.body.stripNull === true || this.ctx.config.options.includes(EnumOptions.stripNull) , label: " strip Null"})}
+                        ${this.addCheckBox({name: "forceHttps", checked: datas.body && datas.body.forceHttps === true || this.ctx.config.options.includes(EnumOptions.forceHttps) , label: " force Https"})}
+                        ${this.addCheckBox({name: "canDrop", checked: datas.body && datas.body.canDrop === true || this.ctx.config.options.includes(EnumOptions.canDrop) , label: " can Drop Database"})}
+                        ${this.addSubmitButton("Save options")}
                         </div>
                       </form>
                   </div>

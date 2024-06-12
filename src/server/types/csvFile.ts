@@ -9,9 +9,9 @@
 import { IcsvColumn, IstreamInfos } from ".";
 
 export interface IcsvFile {
-    filename: string;
-    tempTable: string;
-    stream: IstreamInfos[];
-    columns: IcsvColumn[];
-    header: string;
+    filename:   string;
+    tempTable:  string;
+    stream:     IstreamInfos[];
+    columns:    IcsvColumn[];
+    header:     string;
 }

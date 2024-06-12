@@ -7,7 +7,7 @@
  */
 // onsole.log("!----------------------------------- csvImport interface. -----------------------------------!");
 export interface IcsvImport {
-    header: boolean;
-    dateSql: string;
-    columns: string[];
+    header:   boolean;
+    dateSql:  string;
+    columns:  string[];
   }

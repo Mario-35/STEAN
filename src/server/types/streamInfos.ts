@@ -9,8 +9,8 @@ import { EnumObservationType } from "../enums";
  *
  */
 export interface IstreamInfos {
-    type: _STREAM, 
-    id: BigInt , 
+    type:            _STREAM, 
+    id:              BigInt, 
     observationType: EnumObservationType, 
-    FoId: BigInt
+    FoId:            BigInt
 }

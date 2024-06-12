@@ -108,12 +108,12 @@ export class CoreHtmlView {
       return `
                 <div class="group selectBox" onclick="showCheckboxes(${idName})">
                 <select>
-                  <option>${input.message}</option>
+                  <option >${input.message}</option>
                 </select>
                 <div class="overSelect"></div>
               </div>
-              <div id="${idName}" class="checkboxes">
-                ${this.multiSelectItemCheck(input.name, input.list)}
+              <div id="${idName}" class="checkboxes" checked="checked">
+                ${this.multiSelectItemCheck(input.name, input.list)} 
             </div>`;
     }
     

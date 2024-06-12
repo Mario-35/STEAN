@@ -75,7 +75,7 @@
          ? +this.ctx.odata.limit
          : +this.ctx.config.nb_page;
      if (resLength >= max) 
-      return `${encodeURI(this.nextLinkBase)}${ this.nextLinkBase.includes("?") ? "&" : "?" }$top=${this.ctx.odata.limit}&$skip=${ this.ctx.odata.skip + this.ctx.odata.limit }`;
+      return `${encodeURI(this.nextLinkBase)}${this.nextLinkBase.includes("?") ? "&" : "?" }$top=${this.ctx.odata.limit}&$skip=${this.ctx.odata.skip + this.ctx.odata.limit }`;
    };
  
    // Create the prevLink

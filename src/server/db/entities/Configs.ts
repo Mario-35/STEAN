@@ -13,7 +13,7 @@ import { IreturnResult, koaContext } from "../../types";
 import { serverConfig } from "../../configuration";
 import { hideKeysInJson, hidePassword } from "../../helpers";
 import { addToService, createService } from "../helpers";
-import { _NOTOK, _OK } from "../../constants";
+import { setDebug, _NOTOK, _OK } from "../../constants";
 import { userAuthenticated } from "../../authentication";
 
 export class Configs extends Common {
@@ -66,6 +66,14 @@ export class Configs extends Common {
       });
   }
 
+    // Update an item
+    async update( idInput: bigint | string, dataInput: Record<string, any>  | undefined ): Promise<IreturnResult | undefined | void> {
+      setDebug(true);
+      console.log(formatLog.whereIam()); 
+      console.log(idInput);
+      console.log(dataInput);
+      
+    }
   // Delete an item
   async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam(idInput));

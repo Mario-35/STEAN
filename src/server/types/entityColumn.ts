@@ -10,13 +10,13 @@ import { IKeyString, IKeyBoolean, IconfigFile, typeExtensions } from ".";
 
 export interface IentityColumn {
     [key: string]: {
-        readonly create: string;
-        extensions?: typeof typeExtensions;
-        alias(config: IconfigFile, test?: IKeyBoolean): string | undefined | void;
-        readonly unique?: boolean;
-        readonly test?: string;
+        readonly create:    string;
+        extensions?:        typeof typeExtensions;
+        alias(config:       IconfigFile, test?: IKeyBoolean): string | undefined | void;
+        readonly unique?:   boolean;
+        readonly test?:     string;
         readonly dataList?: IKeyString;
-        readonly type: string;
+        readonly type:      string;
         readonly verify?: {
             list: string[];
             default: string;

@@ -1,11 +1,12 @@
 /**
- * Index Routes.
+ * Index Routes
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- Index Routes. -----------------------------------!");
+// onsole.log("!----------------------------------- Index Routes -----------------------------------!");
+
 import { decodeToken } from "../authentication";
 import { _DEBUG } from "../constants";
 import { log } from "../log";

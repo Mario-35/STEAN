@@ -99,8 +99,10 @@ btnRoot.onclick = async () => {
 	updateWinJsonResult(jsonObj, `[GET]:${url}`);
 };
 
-btnClear.onclick = () => {
-	datas.innerText = "";
+btnClear.onclick = async () => {
+	const url = `${optHost.value}/${optVersion.value}/createDBTEST`;
+	const jsonObj = await getFetchDatas(url, "GET");
+	updateWinJsonResult(jsonObj, `[GET]:${url}`);
 	buttonGo();
 };
 

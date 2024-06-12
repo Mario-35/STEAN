@@ -108,17 +108,14 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       ctx.type = returnFormats.json.type;
       ctx.body = await models.getInfos(ctx);
       return;
-    case "REDOAGRHYS": // TODO REMOVE
     case "DROP":
-      // create DB test
       console.log(formatLog.head("drop database"));
-      if (ctx.config.options.includes(EnumOptions.canDrop) || ctx.decodedUrl.path.toUpperCase() == "REDOAGRHYS") {        
-        const dbName = ctx.decodedUrl.path.toUpperCase() == "REDOAGRHYS" ? "agrhys" : ctx.config.pg.database;
-        await executeAdmin(sqlStopDbName(addSimpleQuotes(dbName))).then(async () => {
-            await executeAdmin(`DROP DATABASE IF EXISTS ${dbName}`);
+      if (ctx.config.options.includes(EnumOptions.canDrop)) {        
+        await executeAdmin(sqlStopDbName(addSimpleQuotes(ctx.config.pg.database))).then(async () => {
+            await executeAdmin(`DROP DATABASE IF EXISTS ${ctx.config.pg.database}`);
             try {
               ctx.status = 201;
-              ctx.body = await createDatabase(dbName);              
+              ctx.body = await createDatabase(ctx.config.pg.database);              
             } catch (error) {
               ctx.status = 400;
               ctx.redirect(`${ctx.decodedUrl.root}/error`);
@@ -129,7 +126,8 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
     // Create DB test
     case "CREATEDBTEST":
       console.log(formatLog.head("GET createDB"));
-      try {        
+      try {
+        await serverConfig.connection(ADMIN)`DROP DATABASE IF EXISTS test`;
         ctx.body = await createService(testDatas),    
         ctx.status = 201;
       } catch (error) {

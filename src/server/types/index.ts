@@ -1,11 +1,12 @@
 /**
- * Index Types.
+ * Index Types
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- Index Types. -----------------------------------!");
+// onsole.log("!----------------------------------- Index Types -----------------------------------!");
+
 import Koa from "koa";
 import { allEntitiesType, EnumExtensions, EnumOptions } from "../enums";
 import { Ientity } from "./entity";
@@ -30,13 +31,10 @@ export { IstreamInfos } from "./streamInfos";
 export { Iuser } from "./user";
 export { IuserToken } from "./userToken";
 export { IdecodedUrl } from "./decodedUrl";
-
 export interface IKeyBoolean { [key: string]: boolean; }
 export interface IKeyString { [key: string]: string; }
 export type Ientities = { [key in allEntitiesType as string]: Ientity }
 export type koaContext = Koa.ParameterizedContext<Koa.DefaultState,  Koa.DefaultContext>
-
 export const typeOptions = Object.keys(EnumOptions) as Array<keyof typeof EnumOptions>;
 export const typeExtensions= Object.keys(EnumExtensions) as Array<keyof typeof EnumExtensions>;
-
 export type keyobj = keyof object;
