@@ -204,14 +204,14 @@ export const getMetrics = async (ctx: koaContext): Promise<string[] | { [key: st
   };
 
   // if (name.trim() === "keys") return Object.keys(metrics);
-  const res: { [key: string]: any } = {};
+  let res: Record<string, any> = {};
   await asyncForEach(
     Object.keys(metrics),
     async (operation: string) => {
       if (metrics[operation])
         await serverConfig.connection(ctx.config.name).unsafe(`${metrics[operation]}`)
-          .then((result) => {
-            res[operation] = result;
+          .then((result) => {            
+            res[operation] = result.length === 1 ? Object.values(result[0])[0] : result;
           })
           .catch((err) => {
             console.log(formatLog.error(err));
