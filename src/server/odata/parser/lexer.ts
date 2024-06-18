@@ -1,5 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-namespace */
+/**
+ * oData Lexer
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+// console.log("!----------------------------------- oData Lexer -----------------------------------!")
 
 import Utils from "./utils";
 

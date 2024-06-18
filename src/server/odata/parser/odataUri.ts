@@ -1,10 +1,14 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-/* eslint-disable @typescript-eslint/no-namespace */
+/**
+ * oData ODataUri
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+// console.log("!----------------------------------- oData ODataUri -----------------------------------!");
 
 import Utils from "./utils";
 import Lexer from "./lexer";
-// import PrimitiveLiteral from "./primitiveLiteral";
-// import Expressions from "./expressions";
 import Query from "./query";
 import ResourcePath from "./resourcePath";
 

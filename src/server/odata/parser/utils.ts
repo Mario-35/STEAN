@@ -1,5 +1,12 @@
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-namespace */
+/**
+ * oData Utils
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+// console.log("!----------------------------------- oData Utils -----------------------------------!")
+
 namespace Utils {
     export type SourceArray = number[] | Uint16Array;
 
@@ -7,15 +14,13 @@ namespace Utils {
         return Array.prototype.map
             .call(value.slice(index, next), function (ch) {
                 return String.fromCharCode(ch);
-            })
-            .join("");
+            }).join("");
     }
 
     export function is(value: number, compare: string) {
         for (let i = 0; i < compare.length; i++) {
             if (value === compare.charCodeAt(i)) return true;
         }
-
         return false;
     }
 
@@ -29,7 +34,6 @@ namespace Utils {
     
     export function required(value: SourceArray, index: number, comparer: Function, min?: number, max?: number) {
         let i = 0;
-
         max = max || value.length - index;
         while (i < max && comparer(value[index + i])) {
             i++;

@@ -1,4 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * oData Literal
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+// console.log("!----------------------------------- oData Literal -----------------------------------!")
+
 function integer(value: string): number {
     return +value;
 }

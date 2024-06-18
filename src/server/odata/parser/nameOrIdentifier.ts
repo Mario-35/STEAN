@@ -1,6 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-/* eslint-disable @typescript-eslint/no-namespace */
+/**
+ * oData NameOrIdentifier
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+// console.log("!----------------------------------- oData NameOrIdentifier -----------------------------------!")
 
 import Utils from "./utils";
 import Lexer from "./lexer";

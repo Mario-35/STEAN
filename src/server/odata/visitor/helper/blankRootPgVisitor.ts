@@ -1,11 +1,12 @@
 /**
- * blankRootPgVisitor.
+ * blankRootPgVisitor
  *
  * @copyright 2022-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- blankRootPgVisitor. -----------------------------------!");
+// onsole.log("!----------------------------------- blankRootPgVisitor -----------------------------------!");
+
 import { RootPgVisitor } from "..";
 import { log } from "../../../log";
 import { Ientity, koaContext } from "../../../types";

@@ -1,4 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * oData SQLLiteral
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+// console.log("!----------------------------------- oData SQLLiteral -----------------------------------!")
+
 import { Literal } from "./literal";
 
 export class SQLLiteral extends Literal {

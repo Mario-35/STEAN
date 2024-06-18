@@ -27,6 +27,7 @@ import { createService } from "../db/helpers";
 import { HtmlError, Login, Status, Config } from "../views/";
 import { createQueryParams } from "../views/helpers";
 import { EnumOptions } from "../enums";
+import { getMetrics } from "../db/monitoring";
 
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 // ALl others
@@ -37,6 +38,14 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       ctx.body = models.getRoot(ctx);
       ctx.type = returnFormats.json.type;
       return;
+
+
+      case "METRICS":
+          ctx.type = returnFormats.json.type;
+          ctx.body = await getMetrics(ctx);
+        return;
+
+
     // error show in html if query call
     case "ERROR":
       const bodyError = new HtmlError(ctx, "what ?");

@@ -1,6 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-/* eslint-disable @typescript-eslint/no-namespace */
+/**
+ * oData Expressions
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+// console.log("!----------------------------------- oData Expressions -----------------------------------!");
 
 import Utils from "./utils";
 import Lexer from "./lexer";

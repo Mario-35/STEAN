@@ -15,4 +15,3 @@ import { PgVisitor } from "../odata/visitor";
     format(input: string | object, ctx?: koaContext):   string | object; // formating datas
     generateSql(input: PgVisitor):                      string; // generate postgresSql query
 }
-

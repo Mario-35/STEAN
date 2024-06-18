@@ -1,11 +1,11 @@
 /**
- * oDataDateFormat.
+ * oDataDateFormat
  *
  * @copyright 2022-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- oDataDateFormat. -----------------------------------!");
+// onsole.log("!----------------------------------- oDataDateFormat -----------------------------------!");
 import { Token } from "../../parser";
 
 export function oDataDateFormat(node: Token, test: string): string | undefined {

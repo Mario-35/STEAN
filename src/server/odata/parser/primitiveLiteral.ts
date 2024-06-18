@@ -1,6 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-namespace */
+/**
+ * oData PrimitiveLiteral
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+// console.log("!----------------------------------- oData PrimitiveLiteral -----------------------------------!")
+
 import Utils from "./utils";
 import Lexer from "./lexer";
 import NameOrIdentifier from "./nameOrIdentifier";

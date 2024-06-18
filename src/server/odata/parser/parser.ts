@@ -1,12 +1,23 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * oData parser
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+// console.log("!----------------------------------- oData parser -----------------------------------!");
+
 import Lexer from "./lexer";
 import PrimitiveLiteral from "./primitiveLiteral";
 import Expressions from "./expressions";
 import Query from "./query";
 import ResourcePath from "./resourcePath";
 import ODataUri from "./odataUri";
+import { formatLog } from "../../logger";
 
+// Odata Main parser
 export const parserFactory = function(fn: any) {
+    console.log(formatLog.whereIam());
     return function (source: any, options: any) {
         options = options || {};
         const raw = new Uint16Array(source.length);
@@ -20,27 +31,6 @@ export const parserFactory = function(fn: any) {
         return result;
     };
 };
-
-export class Parser {
-    odataUri(source: string, options?: any): Lexer.Token {
-        return parserFactory(ODataUri.odataUri)(source, options);
-    }
-    resourcePath(source: string, options?: any): Lexer.Token {
-        return parserFactory(ResourcePath.resourcePath)(source, options);
-    }
-    query(source: string, options?: any): Lexer.Token {
-        return parserFactory(Query.queryOptions)(source, options);
-    }
-    filter(source: string, options?: any): Lexer.Token {
-        return parserFactory(Expressions.boolCommonExpr)(source, options);
-    }
-    keys(source: string, options?: any): Lexer.Token {
-        return parserFactory(Expressions.keyPredicate)(source, options);
-    }
-    literal(source: string, options?: any): Lexer.Token {
-        return parserFactory(PrimitiveLiteral.primitiveLiteral)(source, options);
-    }
-}
 
 export function odataUri(source: string, options?: any): Lexer.Token {
     return parserFactory(ODataUri.odataUri)(source, options);

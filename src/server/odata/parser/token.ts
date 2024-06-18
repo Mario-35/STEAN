@@ -1,5 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// import { PrimitiveTypeEnum } from '@odata/metadata';
+/**
+ * oData Token
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+// console.log("!----------------------------------- oData Token -----------------------------------!")
+
 import { Token, TokenType } from './lexer';
 
 export interface QueryOptionsToken extends Token {
