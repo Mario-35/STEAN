@@ -28,6 +28,7 @@ import { HtmlError, Login, Status, Config } from "../views/";
 import { createQueryParams } from "../views/helpers";
 import { EnumOptions } from "../enums";
 import { getMetrics } from "../db/monitoring";
+import { HtmlLogs } from "../views/class/logs";
 
 export const unProtectedRoutes = new Router<DefaultState, Context>();
 // ALl others
@@ -47,6 +48,12 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       const bodyError = new HtmlError(ctx, "what ?");
       ctx.type = returnFormats.html.type;
       ctx.body = bodyError.toString();
+      return;
+    // export service
+    case "LOGS":
+      const bodyLogs = new HtmlLogs(ctx, "what ?");
+      ctx.type = returnFormats.html.type;
+      ctx.body = bodyLogs.toString();
       return;
     // export service
     case "EXPORT":

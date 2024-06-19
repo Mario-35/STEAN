@@ -1,0 +1,144 @@
+[31m ======================== [36m START _STEAN version : 0 [production] [37m 19/06/2024 : 15:29:07 [31m ========================[0m
+[36m Read config [37m /home/madam/api/configuration/configuration.json[0m
+[36m Write config [37m /home/madam/api/configuration/configuration.json[0m
+[36m active error to file [37m errorFile.md[0m
+[36m Test database exist [37m postgres[0m
+[36m [37mDatabase => admin[39m on line [37m 🌍[0m
+[36m Test database exist [37m agrhys[0m
+[36m [33m[admin][32m Listening on port [37m 8029[0m
+[36m [37mDatabase => agrhys[39m on line [37m 🌍[0m
+[36m Test database exist [37m batelev[0m
+[36m [33m[agrhys][32m Listening on port [37m 8030[0m
+[36m [37mDatabase => batelev[39m on line [37m 🌍[0m
+[36m Test database exist [37m agri4cast[0m
+[36m [33m[batelev][32m Listening on port [37m 8031[0m
+[31m [31m Error [34m : [33m PostgresError: la relation « multidatastream » n'existe pas
+    at ErrorResponse (/home/madam/api/node_modules/postgres/cjs/src/connection.js:788:26)
+    at handle (/home/madam/api/node_modules/postgres/cjs/src/connection.js:474:6)
+    at Socket.data (/home/madam/api/node_modules/postgres/cjs/src/connection.js:315:9)
+    at Socket.emit (node:events:513:28)
+    at addChunk (node:internal/streams/readable:315:12)
+    at readableAddChunk (node:internal/streams/readable:289:9)
+    at Socket.Readable.push (node:internal/streams/readable:228:10)
+    at TCP.onStreamRead (node:internal/stream_base_commons:190:23) {
+  severity_local: 'ERREUR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '525',
+  file: 'parse_relation.c',
+  line: '1180',
+  routine: 'parserOpenTable'
+}[0m [34m : [33m undefined[0m
+[37m -->[36m Indexes : [batelev] [37m ✔️️[0m
+[36m [37mDatabase => agri4cast[39m on line [37m 🌍[0m
+[36m Test database exist [37m safran[0m
+[36m [33m[agri4cast][32m Listening on port [37m 8033[0m
+[31m [31m Error [34m : [33m PostgresError: la relation « multidatastream » n'existe pas
+    at ErrorResponse (/home/madam/api/node_modules/postgres/cjs/src/connection.js:788:26)
+    at handle (/home/madam/api/node_modules/postgres/cjs/src/connection.js:474:6)
+    at Socket.data (/home/madam/api/node_modules/postgres/cjs/src/connection.js:315:9)
+    at Socket.emit (node:events:513:28)
+    at addChunk (node:internal/streams/readable:315:12)
+    at readableAddChunk (node:internal/streams/readable:289:9)
+    at Socket.Readable.push (node:internal/streams/readable:228:10)
+    at TCP.onStreamRead (node:internal/stream_base_commons:190:23) {
+  severity_local: 'ERREUR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '525',
+  file: 'parse_relation.c',
+  line: '1180',
+  routine: 'parserOpenTable'
+}[0m [34m : [33m undefined[0m
+[37m -->[36m Indexes : [agri4cast] [37m ✔️️[0m
+[36m [37mDatabase => safran[39m on line [37m 🌍[0m
+[36m Test database exist [37m selune[0m
+[36m [33m[safran][32m Listening on port [37m 8034[0m
+[31m [31m Error [34m : [33m PostgresError: la relation « multidatastream » n'existe pas
+    at ErrorResponse (/home/madam/api/node_modules/postgres/cjs/src/connection.js:788:26)
+    at handle (/home/madam/api/node_modules/postgres/cjs/src/connection.js:474:6)
+    at Socket.data (/home/madam/api/node_modules/postgres/cjs/src/connection.js:315:9)
+    at Socket.emit (node:events:513:28)
+    at addChunk (node:internal/streams/readable:315:12)
+    at readableAddChunk (node:internal/streams/readable:289:9)
+    at Socket.Readable.push (node:internal/streams/readable:228:10)
+    at TCP.onStreamRead (node:internal/stream_base_commons:190:23) {
+  severity_local: 'ERREUR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '525',
+  file: 'parse_relation.c',
+  line: '1180',
+  routine: 'parserOpenTable'
+}[0m [34m : [33m undefined[0m
+[37m -->[36m Indexes : [safran] [37m ✔️️[0m
+[36m [37mDatabase => selune[39m on line [37m 🌍[0m
+[36m Test database exist [37m wsci[0m
+[36m [33m[selune][32m Listening on port [37m 8035[0m
+[31m [31m Error [34m : [33m PostgresError: la relation « multidatastream » n'existe pas
+    at ErrorResponse (/home/madam/api/node_modules/postgres/cjs/src/connection.js:788:26)
+    at handle (/home/madam/api/node_modules/postgres/cjs/src/connection.js:474:6)
+    at Socket.data (/home/madam/api/node_modules/postgres/cjs/src/connection.js:315:9)
+    at Socket.emit (node:events:513:28)
+    at addChunk (node:internal/streams/readable:315:12)
+    at readableAddChunk (node:internal/streams/readable:289:9)
+    at Socket.Readable.push (node:internal/streams/readable:228:10)
+    at TCP.onStreamRead (node:internal/stream_base_commons:190:23) {
+  severity_local: 'ERREUR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '525',
+  file: 'parse_relation.c',
+  line: '1180',
+  routine: 'parserOpenTable'
+}[0m [34m : [33m undefined[0m
+[37m -->[36m Indexes : [selune] [37m ✔️️[0m
+[36m [37mDatabase => wsci[39m on line [37m 🌍[0m
+[36m Test database exist [37m rennesmetro[0m
+[36m [33m[wsci][32m Listening on port [37m 8036[0m
+[37m -->[36m Indexes : [wsci] [37m ✔️️[0m
+[36m [37mDatabase => rennesmetro[39m on line [37m 🌍[0m
+[36m Test database exist [37m efele[0m
+[36m [33m[rennesmetro][32m Listening on port [37m 8037[0m
+[36m [37mDatabase => efele[39m on line [37m 🌍[0m
+[36m Test database exist [37m bosco[0m
+[36m [33m[efele][32m Listening on port [37m 8038[0m
+[36m [37mDatabase => bosco[39m on line [37m 🌍[0m
+[36m Test database exist [37m bosco2[0m
+[36m [33m[bosco][32m Listening on port [37m 8040[0m
+[36m [37mDatabase => bosco2[39m on line [37m 🌍[0m
+[36m [35m[bosco2][32m Add listening on port [37m 8040[0m
+[36m Test database exist [37m onde[0m
+[31m [31m Error [34m : [33m PostgresError: la relation « multidatastream » n'existe pas
+    at ErrorResponse (/home/madam/api/node_modules/postgres/cjs/src/connection.js:788:26)
+    at handle (/home/madam/api/node_modules/postgres/cjs/src/connection.js:474:6)
+    at Socket.data (/home/madam/api/node_modules/postgres/cjs/src/connection.js:315:9)
+    at Socket.emit (node:events:513:28)
+    at addChunk (node:internal/streams/readable:315:12)
+    at readableAddChunk (node:internal/streams/readable:289:9)
+    at Socket.Readable.push (node:internal/streams/readable:228:10)
+    at TCP.onStreamRead (node:internal/stream_base_commons:190:23) {
+  severity_local: 'ERREUR',
+  severity: 'ERROR',
+  code: '42P01',
+  position: '525',
+  file: 'parse_relation.c',
+  line: '1180',
+  routine: 'parserOpenTable'
+}[0m [34m : [33m undefined[0m
+[37m -->[36m Indexes : [bosco2] [37m ✔️️[0m
+[37m -->[36m Indexes : [efele] [37m ✔️️[0m
+[36m [37mDatabase => onde[39m on line [37m 🌍[0m
+[36m Test database exist [37m monitoringquimper[0m
+[36m [33m[onde][32m Listening on port [37m 8041[0m
+[37m -->[36m Indexes : [onde] [37m ✔️️[0m
+[36m [37mDatabase => monitoringquimper[39m on line [37m 🌍[0m
+[36m Test database exist [37m hubeau[0m
+[36m [33m[monitoringquimper][32m Listening on port [37m 8042[0m
+[37m -->[36m Indexes : [monitoringquimper] [37m ✔️️[0m
+[36m [37mDatabase => hubeau[39m on line [37m 🌍[0m
+[36m [33m[hubeau][32m Listening on port [37m 8044[0m
+[37m -->[36m Indexes : [bosco] [37m ✔️️[0m
+[37m -->[36m Indexes : [rennesmetro] [37m ✔️️[0m
+[37m -->[36m Indexes : [agrhys] [37m ✔️️[0m
+[37m -->[36m Indexes : [hubeau] [37m ✔️️[0m
