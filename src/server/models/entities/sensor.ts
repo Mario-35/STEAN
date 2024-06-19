@@ -1,15 +1,18 @@
 /**
- * entity Sensor.
+ * entity Sensor
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- entity Sensor. -----------------------------------!");
+// onsole.log("!----------------------------------- entity Sensor -----------------------------------!");
+
 import { createEntity } from ".";
 import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
-import { _id, _text } from "./constants";
+import { _idBig, _text } from "./constants";
+import { addDoubleQuotes } from "../../helpers";
+import { _ID } from "../../db/constants";
 
   export const Sensor:Ientity  = createEntity("Sensors", {
     createOrder: 6,
@@ -17,9 +20,9 @@ import { _id, _text } from "./constants";
     orderBy: `"id"`,
     columns: {
       id: {
-        create: _id,
+        create: _idBig,
         alias(config: IconfigFile, test: IKeyBoolean) {
-           return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS "@iot.id"`: ''}` ;
+           return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS ${addDoubleQuotes(_ID)}`: ''}` ;
         },
         type: "number",
       },

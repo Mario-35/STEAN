@@ -39,7 +39,7 @@ export async function createQueryParams(ctx: koaContext): Promise<IqueryOptions|
         user: user,
         graph: ctx.url.includes("$resultFormat=graph"),
         admin: ctx.config.name === 'admin',
-        services: serverConfig.getAllInfos(ctx),
+        services: serverConfig.getInfosForAll(ctx),
         _DATAS:  Object.fromEntries(Object.entries(model).filter( ([k, v]) => listEntities.includes(k) && v.order > 0)) as Ientities,
     };
 };

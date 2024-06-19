@@ -1,11 +1,12 @@
 /**
- * pgVisitor for odata.
+ * pgVisitor for odata
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- pgVisitor for odata. -----------------------------------!");
+// onsole.log("!----------------------------------- pgVisitor for odata -----------------------------------!");
+
 import { addDoubleQuotes, addSimpleQuotes, isGraph, isObservation, isTest, removeAllQuotes, returnFormats } from "../../../helpers";
 import { IodataContext, IKeyString, Ientity, IKeyBoolean, IpgQuery, koaContext } from "../../../types";
 import { Token } from "../../parser/lexer";
@@ -20,6 +21,7 @@ import { models } from "../../../models";
 import { log } from "../../../log";
 import { _COLUMNSEPARATOR } from "../../../constants";
 import { Visitor } from "./visitor";
+import { _ID, _NAVLINK } from "../../../db/constants";
 
 export class PgVisitor extends Visitor {
   public entity = "";
@@ -55,12 +57,10 @@ export class PgVisitor extends Visitor {
     this.skip = 0;
   }
 
-
-
   addToIntervalColumns(input: string) {
     // TODO test with create    
     if (input.endsWith('Time"')) input = `step AS ${input}`;
-      else if (input === '"@iot.id"') input = `coalesce("@iot.id", 0) AS "@iot.id"`;
+      else if (input === addDoubleQuotes(_ID)) input = `coalesce(${addDoubleQuotes(_ID)}, 0) AS ${addDoubleQuotes(_ID)}`;
         else if (input.startsWith("CONCAT")) input = `${input}`;
           else if (input[0] !== "'") input = `${input}`;
     if (this.intervalColumns) this.intervalColumns.push(input); 
@@ -86,7 +86,7 @@ export class PgVisitor extends Visitor {
     if (this.isSelect(context) && tempEntity && tempEntity.relations[input]) {
       const entityName = models.getEntityName(this.ctx.config ,input);       
       return tempEntity && entityName 
-        ? `CONCAT('${this.ctx.decodedUrl.root}/${tempEntity.name}(', "${tempEntity.table}"."id", ')/${entityName}') AS "${entityName}@iot.navigationLink"` 
+        ? `CONCAT('${this.ctx.decodedUrl.root}/${tempEntity.name}(', "${tempEntity.table}"."id", ')/${entityName}') AS "${entityName}${_NAVLINK}"` 
         : undefined;    
     }   
   }
@@ -602,7 +602,7 @@ export class PgVisitor extends Visitor {
       } else throw new Error(`Invalid column ${column}`);
     } else {      
       // TODO ADD addDoubleQuotes
-      test = `"${tempEntity.columns[column].test}"`;
+      test = addDoubleQuotes(tempEntity.columns[column].test);
       column = addDoubleQuotes(column);
     }
     if (test)
@@ -641,7 +641,7 @@ export class PgVisitor extends Visitor {
     const geoColumnOrData = (index: number, srid: boolean): string => {
       const temp = decodeURIComponent(
         Literal.convert(params[index].value, params[index].raw)
-      ).replace("geography", "");
+     ).replace("geography", "");
       return this.ctx.model[this.entity].columns[temp]
         ? temp
         : `${srid === true ? "SRID=4326;" : ""}${removeAllQuotes(temp)}`;
@@ -656,12 +656,12 @@ export class PgVisitor extends Visitor {
     switch (method) {
       case "contains":
         this.Visit(params[0], context);
-        this.query.where.add(` ~* '${SQLLiteral.convert( params[1].value, params[1].raw ).slice(1, -1)}'`);
+        this.query.where.add(` ~* '${SQLLiteral.convert(params[1].value, params[1].raw).slice(1, -1)}'`);
         break;
       case "containsAny":
         this.query.where.add("array_to_string(");
         this.Visit(params[0], context);
-        this.query.where.add(`, ' ') ~* '${SQLLiteral.convert( params[1].value, params[1].raw ).slice(1, -1)}'`);
+        this.query.where.add(`, ' ') ~* '${SQLLiteral.convert(params[1].value, params[1].raw).slice(1, -1)}'`);
         break;
       case "endswith":
         this.query.where.add(`${columnOrData(0, "", true)}  ILIKE '%${cleanData(1)}'`);

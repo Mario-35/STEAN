@@ -10,7 +10,10 @@
 import { createEntity } from ".";
 import { EnumDatesType, EnumObservationType, EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
-import { _id, _idRel, _text, _tz } from "./constants";
+import { _idBig, _idRel, _text, _tz } from "./constants";
+import { addDoubleQuotes } from "../../helpers";
+import { _ID } from "../../db/constants";
+
 
 export const Datastream:Ientity  = createEntity("Datastreams", {
   createOrder: 7,
@@ -18,9 +21,9 @@ export const Datastream:Ientity  = createEntity("Datastreams", {
     orderBy: `"id"`,
     columns: {
       id: {
-        create: _id,
+        create: _idBig,
         alias(config: IconfigFile, test: IKeyBoolean) {
-           return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS "@iot.id"`: ''}` ;
+           return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS ${addDoubleQuotes(_ID)}`: ''}` ;
         },
         type: "number",
       },

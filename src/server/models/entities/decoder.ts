@@ -9,7 +9,9 @@
 import { createEntity } from ".";
 import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
-import { _id, _text } from "./constants";
+import { _idBig, _text } from "./constants";
+import { addDoubleQuotes } from "../../helpers";
+import { _ID } from "../../db/constants";
 
 export const Decoder:Ientity  = createEntity("Decoders", {
     createOrder: 10,
@@ -17,9 +19,9 @@ export const Decoder:Ientity  = createEntity("Decoders", {
     orderBy: `"id"`,
     columns: {
       id: {
-        create: _id,
+        create: _idBig,
         alias(config: IconfigFile, test: IKeyBoolean) {
-           return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS "@iot.id"`: ''}` ;
+           return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS ${addDoubleQuotes(_ID)}`: ''}` ;
         },
         type: "number",
       },

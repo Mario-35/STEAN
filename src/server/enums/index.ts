@@ -21,6 +21,7 @@ export { EnumObservationType } from "./observationType";
 export { EnumOperation } from "./operation";
 export { EnumRelations } from "./relations";
 export { EnumOptions } from "./options";
+export { EnumUpdate } from "./update";
 export { EnumQuery } from "./query";
 export { EnumUserRights } from "./userRights";
 export const enumKeys = (input: any) => Object.keys(input).filter(prop => isNaN(parseInt(prop)));

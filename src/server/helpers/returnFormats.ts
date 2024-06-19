@@ -6,6 +6,7 @@
  *
  */
 // onsole.log("!----------------------------------- returnFormats -----------------------------------!");
+
 import { asDataArray, asJson, graphDatastream, graphMultiDatastream, interval, } from "../db/queries";
 import { Parser } from "json2csv";
 import { IreturnFormat, koaContext } from "../types";
@@ -41,7 +42,7 @@ const generateFields = (input: PgVisitor): string[] => {
  * @param input PgVisitor
  * @returns sSQL Query for graph
  */
-// onsole.log("!----------------------------------- returnFormats. -----------------------------------!");
+
 const generateGrahSql = (input: PgVisitor): string => {
   input.intervalColumns = ["id", "step as date", "result"];
   if (isGraph(input)) input.intervalColumns.push("concat"); 

@@ -25,7 +25,7 @@ export const createDatabase = async (configName: string): Promise<IKeyString> =>
   // init result
   const config = serverConfig.getConfig(configName).pg;
   const returnValue: IKeyString = { "Start create Database": config.database };
-  const adminConnection = serverConfig.connectionAdminFor(configName);
+  const adminConnection = serverConfig.adminConnection();
   // Test connection Admin
   if (!adminConnection) {
     returnValue["DROP Error"] = "No Admin connection";

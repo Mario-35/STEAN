@@ -5,11 +5,14 @@
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- entity HistoricalObservation. -----------------------------------!");
+// onsole.log("!----------------------------------- entity HistoricalObservation -----------------------------------!");
+
 import { createEntity } from ".";
 import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
-import { _id } from "./constants";
+import { _idBig } from "./constants";
+import { addDoubleQuotes } from "../../helpers";
+import { _ID } from "../../db/constants";
 
   export const HistoricalObservation:Ientity  = createEntity("HistoricalObservations", {
     createOrder: -1,
@@ -17,9 +20,9 @@ import { _id } from "./constants";
     orderBy: `"id"`,
     columns: {
       id: {
-        create: _id,
+        create: _idBig,
         alias(config: IconfigFile, test: IKeyBoolean) {
-           return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS "@iot.id"`: ''}` ;
+           return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS ${addDoubleQuotes(_ID)}`: ''}` ;
         },
         type: "bigint"
       },

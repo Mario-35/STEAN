@@ -17,6 +17,7 @@ import { models } from "../../../models";
 import { allEntities, EnumOptions } from "../../../enums";
 import { GroupBy, Key, OrderBy, Select, Where } from ".";
 import { errors } from "../../../messages";
+import { _NAVLINK, _SELFLINK } from "../../../db/constants";
 
 export class Query  {
     where: Where;
@@ -87,7 +88,7 @@ export class Query  {
         // If array result add id 
         const returnValue: string[] = isCsvOrArray(main) && !element.query.select.toString().includes(`"id"${_COLUMNSEPARATOR}`) ? ["id"] : []; 
         // create selfLink                                   
-        const selfLink = `CONCAT('${main.ctx.decodedUrl.root}/${tempEntity.name}(', "${tempEntity.table}"."id", ')') AS "@iot.selfLink"`; 
+        const selfLink = `CONCAT('${main.ctx.decodedUrl.root}/${tempEntity.name}(', "${tempEntity.table}"."id", ')') AS ${addDoubleQuotes(_SELFLINK)}`; 
         // if $ref return only selfLink
         if (element.onlyRef == true) return [selfLink];
         if (element.showRelations == true ) returnValue.push(selfLink);
@@ -115,7 +116,7 @@ export class Query  {
              if (testIisCsvOrArray && ["payload", "deveui", "phenomenonTime"].includes(removeAllQuotes(e))) this.keyNames.add(e);
         });
         // add interval if requested
-        if (main.interval) main.addToIntervalColumns(`CONCAT('${main.ctx.decodedUrl.root}/${tempEntity.name}(', COALESCE("@iot.id", '0')::text, ')') AS "@iot.selfLink"`);
+        if (main.interval) main.addToIntervalColumns(`CONCAT('${main.ctx.decodedUrl.root}/${tempEntity.name}(', COALESCE("@iot.id", '0')::text, ')') AS ${addDoubleQuotes(_SELFLINK)}`);
         // If observation entity
         if (isObservation(tempEntity) === true && element.onlyRef === false ) {
             if (main.interval && !isGraph(main)) returnValue.push(`timestamp_ceil("resultTime", interval '${main.interval}') AS srcdate`);
@@ -171,8 +172,8 @@ export class Query  {
                                 let stream: string | undefined = undefined;
                                 if (tempTable && !main.ctx.model[realEntityName].relations[rel].relationKey.startsWith("_"))
                                     if ( main.ctx.config.options.includes(EnumOptions.stripNull) && realEntityName === main.ctx.model[allEntities.Observations].name &&  tempTable.endsWith(main.ctx.model[allEntities.Datastreams].name)) stream = `CASE WHEN ${main.ctx.model[tempTable].table}_id NOTNULL THEN`;
-                                        select.push(`${stream ? stream : ""} CONCAT('${main.ctx.decodedUrl.root}/${main.ctx.model[realEntityName].name}(', ${addDoubleQuotes(main.ctx.model[realEntityName].table)}."id", ')/${rel}') ${stream ? "END ": ""}AS "${rel}@iot.navigationLink"`);                            
-                                        main.addToIntervalColumns(`'${main.ctx.decodedUrl.root}/${main.ctx.model[realEntityName].name}(0)/${rel}' AS "${rel}@iot.navigationLink"`);
+                                        select.push(`${stream ? stream : ""} CONCAT('${main.ctx.decodedUrl.root}/${main.ctx.model[realEntityName].name}(', ${addDoubleQuotes(main.ctx.model[realEntityName].table)}."id", ')/${rel}') ${stream ? "END ": ""}AS "${rel}${_NAVLINK}"`);                            
+                                        main.addToIntervalColumns(`'${main.ctx.decodedUrl.root}/${main.ctx.model[realEntityName].name}(0)/${rel}' AS "${rel}${_NAVLINK}"`);
                             }
                         });
 

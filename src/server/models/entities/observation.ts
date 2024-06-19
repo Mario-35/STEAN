@@ -1,15 +1,18 @@
 /**
- * entity Observation.
+ * entity Observation
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- entity Observation. -----------------------------------!");
+// onsole.log("!----------------------------------- entity Observation -----------------------------------!");
+
 import { createEntity } from ".";
 import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
-import { _id } from "./constants";
+import { addDoubleQuotes } from "../../helpers";
+import { _idBig } from "./constants";
+import { _ID } from "../../db/constants";
 
   export const Observation:Ientity  = createEntity("Observations", {
     createOrder: 12,
@@ -17,9 +20,9 @@ import { _id } from "./constants";
     orderBy: `"phenomenonTime"`,
     columns: {
       id: {
-        create: _id,
+        create: _idBig,
         alias(config: IconfigFile, test: IKeyBoolean) {
-           return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS "@iot.id"`: ''}` ;
+           return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS ${addDoubleQuotes(_ID)}`: ''}` ;
         },
         type: "number",
       },

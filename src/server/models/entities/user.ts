@@ -8,7 +8,7 @@
 // onsole.log("!----------------------------------- entity User. -----------------------------------!");
 import { Ientity } from "../../types";
 import { createEntity } from ".";
-import { _id, _text } from "./constants";
+import { _idBig, _text } from "./constants";
 
   export const User:Ientity  = createEntity("Users", {
     createOrder: -1,
@@ -16,7 +16,7 @@ import { _id, _text } from "./constants";
     orderBy: `"name"`,
     columns: {
       id: {
-        create: _id,
+        create: _idBig,
         alias() {},
         type: "bigint"
       },

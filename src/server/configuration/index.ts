@@ -10,9 +10,9 @@ import { addToStrings, ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_DB, NODE_ENV
 import { asyncForEach, decrypt, encrypt, hidePassword, isProduction, isTest, unikeList, unique, } from "../helpers";
 import { IconfigFile, IdbConnection, IserviceInfos, koaContext, keyobj } from "../types";
 import { errors, infos, msg } from "../messages";
-import { createService} from "../db/helpers";
+import { createIndexes, createService} from "../db/helpers";
 import { app } from "..";
-import { EnumColor, EnumExtensions, EnumOptions, EnumVersion, typeExtensions, typeOptions } from "../enums";
+import { EnumColor, EnumExtensions, EnumOptions, EnumUpdate, EnumVersion, typeExtensions, typeOptions } from "../enums";
 import fs from "fs";
 import util from "util";
 import update from "./update.json";
@@ -38,11 +38,13 @@ class Configuration {
     if (isTest()) this.readConfigFile();
   }
     
+  // Read string (or default configuration file) as configuration file
   public readConfigFile(input?: string) {
     log.booting("Read config", input ? "content" : Configuration.filePath) ;
     try {
       // load File
-      const fileContent = input || fs.readFileSync(Configuration.filePath, "utf8");      
+      const fileContent = input || fs.readFileSync(Configuration.filePath, "utf8");
+      // decrypt file
       Configuration.jsonConfiguration = JSON.parse(decrypt(fileContent));
       if (this.validJSONConfig(Configuration.jsonConfiguration)) {
         if (isTest()) {
@@ -60,20 +62,17 @@ class Configuration {
       // rewrite file (to update config modification except in test mode)
       if (!isTest()) this.writeConfig();    
     } catch (error: any) {
-      log.error("Config Not correct", error["message"]);
+      log.error("Config is not correct", error["message"]);
       process.exit(111);      
     }
   }
 
   // verify if configuration file Exist
   public configFileExist(): boolean {
-    if (fs.existsSync(Configuration.filePath)) {
-      return true
-    } else {
-      return false;
-    }
+    return fs.existsSync(Configuration.filePath);
   }
 
+  // create config tests entry
   private createConfigFileTest(): IconfigFile {  
     return this.formatConfig (
     { name: "test",
@@ -93,12 +92,13 @@ class Configuration {
     });
 	}
 
+  // return infos routes
   getInfos = (ctx: koaContext, name: string): IserviceInfos  => {
-        const protocol:string = ctx.request.headers["x-forwarded-proto"]
-          ? ctx.request.headers["x-forwarded-proto"].toString()
-          : Configuration.configs[name].options.includes(EnumOptions.forceHttps)
-            ? "https"
-            : ctx.protocol;
+    const protocol:string = ctx.request.headers["x-forwarded-proto"]
+      ? ctx.request.headers["x-forwarded-proto"].toString()
+      : Configuration.configs[name].options.includes(EnumOptions.forceHttps)
+        ? "https"
+        : ctx.protocol;
         
     // make linkbase
     let linkBase = 
@@ -120,7 +120,8 @@ class Configuration {
     };
   }
 
-  public getAllInfos(ctx: koaContext): { [key: string]: IserviceInfos } {
+  // return infos routes for all services
+  public getInfosForAll(ctx: koaContext): { [key: string]: IserviceInfos } {
         const result:Record<string, any>  = {};    
     this.getConfigs().forEach((conf: string) => {
       result[conf] = this.getInfos(ctx, conf)
@@ -140,7 +141,7 @@ class Configuration {
     return Object.keys(Configuration.configs).filter(e => e !== ADMIN);
   }
 
-  // verifi is valid config
+  // verify is valid config
   private validJSONConfig(input: Record<string, any> ): boolean {    
     if (!input.hasOwnProperty(ADMIN)) return false;
     if (!input[ADMIN].hasOwnProperty("pg")) return false;
@@ -157,7 +158,7 @@ class Configuration {
     log.booting("Write config", Configuration.filePath);
     const result: Record<string, any>  = {};
     Object.entries(Configuration.configs).forEach(([k, v]) => {
-      if (k !== TEST )result[k] = Object.keys(v).reduce((obj, key) => { obj[key as keyobj] = v[key as keyobj]; return obj; }, {} );
+      if (k !== TEST) result[k] = Object.keys(v).reduce((obj, key) => { obj[key as keyobj] = v[key as keyobj]; return obj; }, {} );
     });
     fs.writeFile(
       // encrypt only in production mode
@@ -176,7 +177,7 @@ class Configuration {
   }
 
   async executeMultipleQueries(configName: string, queries: string[], infos: string):Promise<boolean> {
-        await asyncForEach( queries, async (query: string) => {
+    await asyncForEach( queries, async (query: string) => {
       await serverConfig
         .connection(configName)
         .unsafe(query)
@@ -190,7 +191,7 @@ class Configuration {
   }
 
   async executeQueries(title: string): Promise<boolean> {
-        try {
+    try {
       await asyncForEach(
         Object.keys(Configuration.queries),
         async (connectName: string) => {
@@ -217,13 +218,15 @@ class Configuration {
   }
   
   // return postgres.js connection with ADMIN rights
-  public connectionAdminFor(name: string): postgres.Sql<Record<string, unknown>> {
+  public adminConnection(): postgres.Sql<Record<string, unknown>> {
     const input = Configuration.configs[ADMIN].pg;
     return postgres(
       `postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${DEFAULT_DB}`,
       {
         debug: _DEBUG,          
-        connection: { application_name   : `${APP_NAME} ${APP_VERSION}`, }
+        connection: { 
+          application_name : `${APP_NAME} ${APP_VERSION}`
+        }
       }
     );
   }
@@ -235,7 +238,9 @@ class Configuration {
       {
         debug: _DEBUG,
         max : 2000,            
-        connection : { application_name : `${APP_NAME} ${APP_VERSION}` },
+        connection : { 
+          application_name : `${APP_NAME} ${APP_VERSION}`
+        },
       }
     );
   }
@@ -270,28 +275,28 @@ class Configuration {
   // initialisation serve NOT IN TEST
   async afterAll(): Promise<boolean> {
     // Updates database after init
-    if ( update && update["afterAll"] && Object.entries(update["afterAll"]).length > 0 ) {
+    if ( update && update[EnumUpdate.afterAll] && Object.entries(update[EnumUpdate.afterAll]).length > 0 ) {
       this.clearQueries();
       Object.keys(Configuration.configs)
         .filter((e) => e != ADMIN)
         .forEach(async (connectName: string) => {
-          update["afterAll"].forEach((operation: string) => { this.addToQueries(connectName, operation); });
+          update[EnumUpdate.afterAll].forEach((operation: string) => { this.addToQueries(connectName, operation); });
         });
-      await this.executeQueries("afterAll");
+      await this.executeQueries(EnumUpdate.afterAll);
     }
-
-    if ( update && update["decoders"] && Object.entries(update["decoders"]).length > 0 ) {
+    
+    if (update && update[EnumUpdate.decoders] && Object.entries(update[EnumUpdate.decoders]).length > 0) {
       this.clearQueries();
       Object.keys(Configuration.configs)
         .filter( (e) => e != ADMIN && Configuration.configs[e].extensions.includes(EnumExtensions.lora) )
         .forEach((connectName: string) => {
-          Object.keys(update["decoders"]).forEach((name: string) => {
-            const hash = this.hashCode(update["decoders" as keyobj][name]);
-            this.addToQueries( connectName, `UPDATE decoder SET code='${update["decoders" as keyobj][name]}', hash = '${hash}' WHERE name = '${name}' AND hash <> '${hash}' ` );
+          Object.keys(update[EnumUpdate.decoders]).forEach((name: string) => {
+            const hash = this.hashCode(update[EnumUpdate.decoders as keyobj][name]);
+            this.addToQueries( connectName, `UPDATE decoder SET code='${update[EnumUpdate.decoders as keyobj][name]}', hash = '${hash}' WHERE name = '${name}' AND hash <> '${hash}' ` );
           });
         });
       }
-     await this.executeQueries("decoders");
+     await this.executeQueries(EnumUpdate.decoders);
      return true;
   }
 
@@ -347,7 +352,7 @@ class Configuration {
   public getConfigForExcelExport = (name: string): object=> {
     const result: Record<string, any> = Object.assign({}, Configuration.configs[name].pg);
     result["password"] = "*****";
-    ["name","apiVersion","port","date_format", "webSite", "nb_page", "forceHttps", "highPrecision", "canDrop", "logFile","alias", "extensions"].forEach(e => {
+    ["name", "apiVersion", "port", "date_format", "webSite", "nb_page", "forceHttps", "highPrecision", "canDrop", "logFile", "alias", "extensions"].forEach(e => {
       result[e]= Configuration.configs[name][e as keyobj];
     }); 
     return result;
@@ -463,7 +468,7 @@ class Configuration {
         if (res === true) {
           await userAccess.post(key, {
             username: Configuration.configs[key].pg.user,
-            email: "THREEdefault@email.com",
+            email: "steandefault@email.com",
             password: Configuration.configs[key].pg.password,
             database: Configuration.configs[key].pg.database,
             canPost: true,
@@ -473,6 +478,7 @@ class Configuration {
             superAdmin: false,
             admin: false
           });
+          if(![ADMIN, TEST].includes(key)) createIndexes(key);
           log.booting(`\x1b[37mDatabase => ${key}\x1b[39m on line`, res ? _WEB : _NOTOK);
           const port = Configuration.configs[key].port;
           if (port > 0) {
@@ -509,32 +515,34 @@ class Configuration {
       });
   }
 
-  private async isDbExist(connectName: string, logCreate: boolean): Promise<boolean> {
+  // verify if database exist and if create is true create database if not exist.
+  private async isDbExist(connectName: string, create: boolean): Promise<boolean> {
     log.booting(infos.dbExist, Configuration.configs[connectName].pg.database);
-    return await this.connection(connectName)`select 1+1 AS result`
-      .then(async () => {
-        const listTempTables = await this.connection(connectName)`SELECT array_agg(table_name) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'temp%';`;
-        const tables = listTempTables[0]["array_agg"];
-        if (tables != null)        
-          log.booting( `delete temp tables ==> \x1b[33m${connectName}\x1b[32m`,
-            await this.connection(connectName).begin(sql => {
-              tables.forEach(async (table: string) => {await sql.unsafe(`DROP TABLE ${table}`);});
-            }).then(() => _OK)
-              .catch((err: Error) => err.message)
-          );
-        if (update["triggers"] && update["triggers"] === true && connectName !== ADMIN) await this.relogCreateTrigger(connectName);
-        if (update && update["beforeAll"] && Object.entries(update["beforeAll"]).length > 0 ) {
-          if (update && update["beforeAll"] && Object.entries(update["beforeAll"]).length > 0 ) {
-            console.log(formatLog.head("beforeAll"));
+    return await this.connection(connectName)`select 1+1 AS result`.then(async () => {
+      const listTempTables = await this.connection(connectName)`SELECT array_agg(table_name) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'temp%';`;
+      const tables = listTempTables[0]["array_agg"];
+      if (tables != null)        
+        log.booting( `DELETE temp table(s) ==> \x1b[33m${connectName}\x1b[32m`,
+          await this.connection(connectName).begin(sql => {
+            tables.forEach(async (table: string) => {
+              await sql.unsafe(`DROP TABLE ${table}`);
+            });
+          }).then(() => _OK)
+            .catch((err: Error) => err.message)
+        );
+        if (update[EnumUpdate.triggers] && update[EnumUpdate.triggers] === true && connectName !== ADMIN) await this.relogCreateTrigger(connectName);
+        if (update[EnumUpdate.beforeAll] && Object.entries(update[EnumUpdate.beforeAll]).length > 0 ) {
+          if (update[EnumUpdate.beforeAll] && Object.entries(update[EnumUpdate.beforeAll]).length > 0 ) {
+            console.log(formatLog.head(EnumUpdate.beforeAll));
             try {              
               Object.keys(Configuration.configs)
                 .filter((e) => e != ADMIN)
                 .forEach((connectName: string) => {
-                  update["beforeAll"].forEach((operation: string) => {
+                  update[EnumUpdate.beforeAll].forEach((operation: string) => {
                     this.addToQueries(connectName, operation);
                   });
                 });
-              await this.executeQueries("beforeAll");
+              await this.executeQueries(EnumUpdate.beforeAll);
             // RelogCreate triggers for this service
             } catch (error) {
               log.error(formatLog.error(error));
@@ -553,7 +561,7 @@ class Configuration {
             else await this.tryToCreateDB(connectName);
           }
           //database does not exist
-        } else if (err["code" as keyobj] === "3D000" && logCreate == true) {
+        } else if (err["code" as keyobj] === "3D000" && create == true) {
           console.log(formatLog.debug( msg(infos.tryCreate, infos.db), Configuration.configs[connectName].pg.database ));
           // If not in tdd tests create test DB for documentation
           if (!isTest()) {
@@ -561,7 +569,6 @@ class Configuration {
             await createService(testDatas);
             else await this.tryToCreateDB(connectName);
           }
-          // else returnResult = await this.tryToCreateDB(connectName);
         } else log.error(formatLog.error(err));
         return returnResult;
       });

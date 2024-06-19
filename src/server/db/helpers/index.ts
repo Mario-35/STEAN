@@ -25,5 +25,6 @@ export { removeKeyFromUrl } from "./removeKeyFromUrl";
 export { queryInsertFromCsv } from "./queryInsertFromCsv";
 export { columnsNameFromCsv } from "./columnsNameFromCsv";
 export { streamCsvFile } from "./streamCsvFile";
+export { createIndexes } from "./createIndexes";
 export { columnsNameFromHydrasCsv } from "./columnsNameFromHydrasCsv";
 export const exportService = async (ctx: koaContext) => { return (ctx.url.includes("xls")) ? exportToXlsx(ctx) : exportToJson(ctx); };

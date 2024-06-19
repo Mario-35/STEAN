@@ -1,11 +1,12 @@
 /**
- * tests Is.
+ * tests Is
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- tests Is. -----------------------------------!");
+// onsole.log("!----------------------------------- tests Is -----------------------------------!");
+
 import { ADMIN } from "../constants";
 import { EnumExtensions, EnumUserRights } from "../enums";
 import { PgVisitor, RootPgVisitor } from "../odata/visitor";

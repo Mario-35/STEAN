@@ -10,7 +10,9 @@
 import { createEntity } from ".";
 import {  EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
-import { _id, _idRel, _tz } from "./constants";
+import { _idBig, _idRel, _tz } from "./constants";
+import { addDoubleQuotes } from "../../helpers";
+import { _ID } from "../../db/constants";
 
 export const HistoricalLocation:Ientity  = createEntity("HistoricalLocations", {
   createOrder: -1,
@@ -18,9 +20,9 @@ export const HistoricalLocation:Ientity  = createEntity("HistoricalLocations", {
   orderBy: `"id"`,
   columns: {
     id: {
-      create: _id,
+      create: _idBig,
       alias(config: IconfigFile, test: IKeyBoolean) {
-          return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS "@iot.id"`: ''}` ;
+          return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS ${addDoubleQuotes(_ID)}`: ''}` ;
       },
       type: "bigint"
     },

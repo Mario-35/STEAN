@@ -27,7 +27,6 @@ const decrypt = (input: string, key: string): string => {
   return input;
 };
 
-
 function decode(file: fs.PathOrFileDescriptor) {
   const APP_KEY = fs.readFileSync(__dirname + "/.key", "utf8") || "zLwX893Mtt9Rc0TKvlInDXuZTFj9rxDV";
   const fileTemp = fs.readFileSync(file, "utf8");  

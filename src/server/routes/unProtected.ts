@@ -9,7 +9,7 @@
 
 import Router from "koa-router";
 import { userAuthenticated, getAuthenticatedUser, } from "../authentication";
-import { ADMIN, _READY } from "../constants";
+import { ADMIN, _OK, _READY } from "../constants";
 import { addSimpleQuotes, getUrlKey, isAdmin, returnFormats } from "../helpers";
 import { apiAccess } from "../db/dataAccess";
 import { formatLog } from "../logger";
@@ -38,14 +38,10 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       ctx.body = models.getRoot(ctx);
       ctx.type = returnFormats.json.type;
       return;
-
-
       case "METRICS":
           ctx.type = returnFormats.json.type;
           ctx.body = await getMetrics(ctx);
         return;
-
-
     // error show in html if query call
     case "ERROR":
       const bodyError = new HtmlError(ctx, "what ?");
@@ -59,7 +55,6 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       return;
     // User login
     case "LOGIN":
-
       if (userAuthenticated(ctx)) ctx.redirect(`${ctx.decodedUrl.root}/status`);
       else {
         const bodyLogin = new Login(ctx,{ login: true });
@@ -117,6 +112,8 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       ctx.type = returnFormats.json.type;
       ctx.body = await models.getInfos(ctx);
       return;
+    case "INDEXES":
+      process.exit(110);
     case "DROP":
       console.log(formatLog.head("drop database"));
       if (ctx.config.options.includes(EnumOptions.canDrop)) {        

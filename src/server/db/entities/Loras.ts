@@ -16,6 +16,7 @@ import { EnumDatesType } from "../../enums";
 import { multiDatastreamFromDeveui, streamFromDeveui } from "../queries";
 import { decodeloraDeveuiPayload } from "../../lora";
 import { executeSql, executeSqlValues } from "../helpers";
+import { _ID, _NAVLINK, _SELFLINK } from "../constants";
 
 export class Loras extends Common {
   synonym: Record<string, any>  = {};
@@ -230,15 +231,14 @@ export class Loras extends Common {
       const tempResult: Record<string, any>  = res[0 as keyobj][0];
         if (tempResult.id != null) {          
           const result: Record<string, any>  = {
-            "@iot.id": tempResult.id,
-            "@iot.selfLink": `${this.ctx.decodedUrl.root}/Observations(${tempResult.id})`,
             phenomenonTime: `"${tempResult.phenomenonTime}"`,
             resultTime: `"${tempResult.resultTime}"`,
             result: tempResult["result"]["value"],
           };
-
+          result[_ID] = tempResult.id;
+          result[_SELFLINK] = `${this.ctx.decodedUrl.root}/Observations(${tempResult.id})`;
           Object.keys(this.ctx.model["Observations"].relations).forEach((word) => {
-      result[ `${word}@iot.navigationLink` ] = `${this.ctx.decodedUrl.root}/Observations(${tempResult.id})/${word}`;
+      result[ `${word}${_NAVLINK}` ] = `${this.ctx.decodedUrl.root}/Observations(${tempResult.id})/${word}`;
           });
 
           return this.formatReturnResult({ body: result, query: sql, });
@@ -331,15 +331,15 @@ export class Loras extends Common {
       const tempResult: Record<string, any>  = res[0 as keyobj]["result"][0];
         if (tempResult.id != null) {
           const result: Record<string, any>  = {
-            "@iot.id": tempResult.id,
-            "@iot.selfLink": `${this.ctx.decodedUrl.root}/Observations(${tempResult.id})`,
             phenomenonTime: `"${tempResult.phenomenonTime}"`,
             resultTime: `"${tempResult.resultTime}"`,
             result: tempResult["result"]["value"],
           };
+          result[_ID] = tempResult.id;
+          result[_SELFLINK] = `${this.ctx.decodedUrl.root}/Observations(${tempResult.id})`;
 
           Object.keys(this.ctx.model["Observations"].relations).forEach((word) => {
-      result[ `${word}@iot.navigationLink` ] = `${this.ctx.decodedUrl.root}/Observations(${tempResult.id})/${word}`;
+      result[ `${word}${_NAVLINK}` ] = `${this.ctx.decodedUrl.root}/Observations(${tempResult.id})/${word}`;
           });
 
           return this.formatReturnResult({

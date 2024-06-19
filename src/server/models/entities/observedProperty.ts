@@ -1,24 +1,27 @@
 /**
- * entity ObservedProperty.
+ * entity ObservedProperty
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- entity ObservedProperty. -----------------------------------!");
+// onsole.log("!----------------------------------- entity ObservedProperty -----------------------------------!");
 import { createEntity } from ".";
 import { EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
-import { _id, _text } from "./constants";
+import { _idBig, _text } from "./constants";
+import { addDoubleQuotes } from "../../helpers";
+import { _ID } from "../../db/constants";
+
 export const ObservedProperty:Ientity  = createEntity("ObservedProperties", {
     createOrder: 5,
     order: 8,
     orderBy: `"id"`,
     columns: {
         id: {
-            create: _id,
+            create: _idBig,
             alias(config: IconfigFile, test: IKeyBoolean) {
-                return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS "@iot.id"`: ''}` ;
+                return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS ${addDoubleQuotes(_ID)}`: ''}` ;
             },
             type: "number",
         },

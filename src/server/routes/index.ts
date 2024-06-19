@@ -34,7 +34,7 @@ export const routerHandle = async (ctx: koaContext, next: any) => {
  
   if (!decodedUrl) {
     // Get all infos services
-    if (ctx.path.toLocaleUpperCase() === "/INFOS") ctx.body = serverConfig.getAllInfos(ctx);
+    if (ctx.path.toLocaleUpperCase() === "/INFOS") ctx.body = serverConfig.getInfosForAll(ctx);
     return;
   };
   

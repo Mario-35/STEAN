@@ -1,24 +1,28 @@
 /**
- * entity MultiDatastream.
+ * entity MultiDatastream
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
+// onsole.log("!----------------------------------- entity MultiDatastream -----------------------------------!");
+
 import { createEntity } from ".";
 import { EnumDatesType, EnumObservationType, EnumRelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
-import { _id, _idRel, _text, _tz } from "./constants";
-// onsole.log("!----------------------------------- entity MultiDatastream. -----------------------------------!");
+import { _idBig, _idRel, _text, _tz } from "./constants";
+import { addDoubleQuotes } from "../../helpers";
+import { _ID } from "../../db/constants";
+
 export const MultiDatastream:Ientity  = createEntity("MultiDatastreams", {
     createOrder: 8,
     order: 2,
     orderBy: `"id"`,
     columns: {
       id: {
-        create: _id,
+        create: _idBig,
         alias(config: IconfigFile, test: IKeyBoolean) {
-           return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS "@iot.id"`: ''}` ;
+           return `"id"${test["alias"] && test["alias"] === true  === true ? ` AS ${addDoubleQuotes(_ID)}`: ''}` ;
         },
         type: "number",
       },
