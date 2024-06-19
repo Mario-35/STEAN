@@ -1,4 +1,4 @@
-[31m ======================== [36m START _STEAN version : 0 [production] [37m 19/06/2024 : 15:29:07 [31m ========================[0m
+[31m ======================== [36m START _STEAN version : 0 [production] [37m 19/06/2024 : 17:56:28 [31m ========================[0m
 [36m Read config [37m /home/madam/api/configuration/configuration.json[0m
 [36m Write config [37m /home/madam/api/configuration/configuration.json[0m
 [36m active error to file [37m errorFile.md[0m
@@ -127,11 +127,11 @@
   routine: 'parserOpenTable'
 }[0m [34m : [33m undefined[0m
 [37m -->[36m Indexes : [bosco2] [37m ✔️️[0m
-[37m -->[36m Indexes : [efele] [37m ✔️️[0m
 [36m [37mDatabase => onde[39m on line [37m 🌍[0m
 [36m Test database exist [37m monitoringquimper[0m
 [36m [33m[onde][32m Listening on port [37m 8041[0m
 [37m -->[36m Indexes : [onde] [37m ✔️️[0m
+[37m -->[36m Indexes : [efele] [37m ✔️️[0m
 [36m [37mDatabase => monitoringquimper[39m on line [37m 🌍[0m
 [36m Test database exist [37m hubeau[0m
 [36m [33m[monitoringquimper][32m Listening on port [37m 8042[0m
@@ -142,3 +142,23 @@
 [37m -->[36m Indexes : [rennesmetro] [37m ✔️️[0m
 [37m -->[36m Indexes : [agrhys] [37m ✔️️[0m
 [37m -->[36m Indexes : [hubeau] [37m ✔️️[0m
+19/06/2024 17:57:14  <-- GET /rennesmetro/v1.1/logs
+19/06/2024 17:57:14  --> GET /rennesmetro/v1.1/logs 200 27ms 13.64kb
+19/06/2024 17:57:24  <-- GET /rennesmetro/v1.1/Query
+19/06/2024 17:57:24  --> GET /rennesmetro/v1.1/Query 200 36ms 200.46kb
+19/06/2024 17:57:27  <-- GET /rennesmetro/v1.1/Things
+19/06/2024 17:57:27  --> GET /rennesmetro/v1.1/Things 200 11ms 750b
+19/06/2024 17:57:36  <-- GET /rennesmetro/v1.1/logs
+19/06/2024 17:57:36  --> GET /rennesmetro/v1.1/logs 200 16ms 13.97kb
+19/06/2024 17:57:39  <-- GET /rennesmetro/v1.1/logs
+19/06/2024 17:57:39  --> GET /rennesmetro/v1.1/logs 200 15ms 14.09kb
+19/06/2024 17:57:40  <-- GET /rennesmetro/v1.1/logs
+19/06/2024 17:57:40  --> GET /rennesmetro/v1.1/logs 200 13ms 14.22kb
+19/06/2024 17:57:52  <-- GET /rennesmetro/v1.1/logs
+19/06/2024 17:57:52  --> GET /rennesmetro/v1.1/logs 200 12ms 14.35kb
+19/06/2024 17:57:54  <-- GET /rennesmetro/v1.1/logs
+19/06/2024 17:57:54  --> GET /rennesmetro/v1.1/logs 200 13ms 14.47kb
+19/06/2024 17:57:58  <-- GET /rennesmetro/v1.1/logs
+19/06/2024 17:57:58  --> GET /rennesmetro/v1.1/logs 200 12ms 14.6kb
+19/06/2024 17:58:39  <-- GET /rennesmetro/v1.1/Query
+19/06/2024 17:58:39  --> GET /rennesmetro/v1.1/Query 200 31ms 200.46kb

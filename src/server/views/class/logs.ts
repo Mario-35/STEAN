@@ -31,7 +31,7 @@ var Convert = require('ansi-to-html');
         this._HTMLResult = [`
         <!DOCTYPE html>
             <html>
-            <body style="background-color:black;">
+            <body style="background-color:Silver;">
                 ${convert.toHtml(message)}
 
                     </body>
