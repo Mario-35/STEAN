@@ -14,7 +14,7 @@ var Convert = require('ansi-to-html');
     export class HtmlLogs extends CoreHtmlView {
         
     constructor(ctx: koaContext, datas: string) {
-        const fileContent = fs.readFileSync(path.resolve(__dirname, "../../../logs.txt"), "utf8");
+        const fileContent = fs.readFileSync(path.resolve(__dirname, "../../logs.txt"), "utf8");
         super(ctx);
         this.logs(fileContent);
     }
