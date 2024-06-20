@@ -41,6 +41,8 @@ export const createIndexes = (name: string): void => {
             "_resultTimeEnd" = datas.rmax
         FROM datas where "datastream".id = datas.id`
     ]
+    console.log(serverConfig.getConfig(name).extensions);
+    
     if (serverConfig.getConfig(name).extensions.includes(EExtensions.multiDatastream))
         sqls.push(`WITH multidatastreams AS (
                 select distinct "multidatastream_id" AS id from observation
