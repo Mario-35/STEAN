@@ -1,5 +1,6 @@
 import { serverConfig } from "../../configuration";
 import { _OK } from "../../constants";
+import { EExtensions } from "../../enums";
 import { asyncForEach } from "../../helpers";
 import { log } from "../../log";
 import { formatLog } from "../../logger";
@@ -38,26 +39,26 @@ export const createIndexes = (name: string): void => {
             "_phenomenonTimeEnd" = datas.pmax,
             "_resultTimeStart" = datas.rmin,
             "_resultTimeEnd" = datas.rmax
-        FROM datas where "datastream".id = datas.id`,
-        `WITH multidatastreams AS (
-            select distinct "multidatastream_id" AS id from observation
-        ),
-        datas AS (
-            SELECT 
-                "multidatastream_id" AS id,
-                min("phenomenonTime") AS pmin ,
-                max("phenomenonTime") AS pmax,
-                min("resultTime") AS rmin,
-                max("resultTime") AS rmax
-            FROM observation, multidatastreams where "multidatastream_id" = multidatastreams.id group by "multidatastream_id"
-        )
-        UPDATE "multidatastream" SET 
-            "_phenomenonTimeStart" =  datas.pmin ,
-            "_phenomenonTimeEnd" = datas.pmax,
-            "_resultTimeStart" = datas.rmin,
-            "_resultTimeEnd" = datas.rmax
-        FROM datas where "multidatastream".id = datas.id
-        `
+        FROM datas where "datastream".id = datas.id`
     ]
+    if (serverConfig.getConfig(name).extensions.includes(EExtensions.multiDatastream))
+        sqls.push(`WITH multidatastreams AS (
+                select distinct "multidatastream_id" AS id from observation
+            ),
+            datas AS (
+                SELECT 
+                    "multidatastream_id" AS id,
+                    min("phenomenonTime") AS pmin ,
+                    max("phenomenonTime") AS pmax,
+                    min("resultTime") AS rmin,
+                    max("resultTime") AS rmax
+                FROM observation, multidatastreams where "multidatastream_id" = multidatastreams.id group by "multidatastream_id"
+            )
+            UPDATE "multidatastream" SET 
+                "_phenomenonTimeStart" =  datas.pmin ,
+                "_phenomenonTimeEnd" = datas.pmax,
+                "_resultTimeStart" = datas.rmin,
+                "_resultTimeEnd" = datas.rmax
+            FROM datas where "multidatastream".id = datas.id`);
     exe(name, sqls);
   }
