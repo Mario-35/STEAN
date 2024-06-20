@@ -60,7 +60,7 @@ install_stean() {
     # save actual to bak
     mv $APIDEST $APIBak
     # unzip actual
-    unzip $FILEDIST -d $APIDEST/  
+    unzip -qq $FILEDIST -d $APIDEST/  
     # Save config
     if [ -f ./$APIBak/configuration/configuration.json ]; then
         echo "confifuration exist."
@@ -73,7 +73,7 @@ install_stean() {
     fi
     save_dist
     cd $APIDEST
-    npm install --omit=dev
+    npm install --silent --omit=dev
     cd ..
 }
 
