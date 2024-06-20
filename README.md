@@ -6,11 +6,12 @@
 
 
 
-curl -fsSL https://raw.githubusercontent.com/Mario-35/STEAN/main/scripts/install.sh | sudo -E bash -
+
 
 # Installation
 
-## deploy on server use :  [script](https://raw.githubusercontent.com/Mario-35/STEAN/main/scripts/install.sh) as install.sh
+## deploy on server run in install folder:
+```curl -fsSL https://raw.githubusercontent.com/Mario-35/STEAN/main/scripts/install.sh | sudo -E bash```
 ## use on local windows as production (for testing) use :  [script](https://raw.githubusercontent.com/Mario-35/STEAN/main/scripts/install.ps1) as install.ps1
 
 ## for developper : 
