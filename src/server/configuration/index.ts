@@ -334,7 +334,7 @@ class Configuration {
         if (!Configuration.ports.includes(port))
           app.listen(port, () => {
             Configuration.ports.push(port);
-            log.booting(`\x1b[33m[First launch]\x1b[32m ${infos.ListenPort}`, port );
+            log.booting(`${color(EnumColor.FgYellow)}First launch]${color(EnumColor.FgGreen)}${infos.ListenPort}`, port );
           });
         return true;
     }
@@ -479,15 +479,15 @@ class Configuration {
             admin: false
           });
           if(![ADMIN, TEST].includes(key)) createIndexes(key);
-          log.booting(`\x1b[37mDatabase => ${key}\x1b[39m on line`, res ? _WEB : _NOTOK);
+          log.booting(`${color(EnumColor.FgMagenta)}Database => ${color(EnumColor.FgYellow)}[${key}] ${color(EnumColor.FgFadeWhite)} on line`, res ? _WEB : _NOTOK);
           const port = Configuration.configs[key].port;
           if (port > 0) {
             if (Configuration.ports.includes(port))
-              log.booting(`\x1b[35m[${key}]\x1b[32m ${infos.addPort}`, port );
+              log.booting(`${color(EnumColor.FgMagenta)}[${key}] ${color(EnumColor.FgGreen)}${infos.addPort}`, port );
             else
               app.listen(port, () => {
                 Configuration.ports.push(port);
-                log.booting(`\x1b[33m[${key}]\x1b[32m ${infos.ListenPort}`, port );
+                log.booting(`${color(EnumColor.FgYellow)}[${key}] ${color(EnumColor.FgGreen)}${infos.ListenPort}`, port );
               });
           }
         }

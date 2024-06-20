@@ -14,4 +14,3 @@ export const sqlStopDbName = (dbName: string): string => `SELECT pg_terminate_ba
 export { decodeUrl } from "./decodeUrl";
 export { getConfigFromPort } from "./getConfigFromPort";
 export { firstInstall } from "./firstInstall";
-export { loga } from "./logFile";

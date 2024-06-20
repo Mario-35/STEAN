@@ -10,7 +10,7 @@ import { koaContext } from "../../types";
 import { CoreHtmlView } from "./core";
 import fs from "fs";
 import path from "path";
-var Convert = require('ansi-to-html');
+import { logToHtml } from "../helpers";
     export class HtmlLogs extends CoreHtmlView {
         
     constructor(ctx: koaContext, datas: string) {
@@ -20,19 +20,11 @@ var Convert = require('ansi-to-html');
     }
 
     private logs(message: string) {
-        var convert = new Convert({
-            fg: '#FFF',
-            bg: '#000',
-            newline: true,
-            escapeXML: false,
-            stream: false
-        });
-
         this._HTMLResult = [`
         <!DOCTYPE html>
             <html>
-            <body style="background-color:Silver;">
-                ${convert.toHtml(message)}
+            <body style="background-color:#A49C9C;">
+                ${logToHtml(message)}
 
                     </body>
                 </html>`];

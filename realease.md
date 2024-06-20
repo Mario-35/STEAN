@@ -1,4 +1,10 @@
 
+# version 3.7.3
+    add Indexes at startup to create datastream date afte
+
+# version 3.7.2
+    revisions code
+
 # version 3.7.1
     lots of update after typeScript 5.4 ts(7053) 
 
