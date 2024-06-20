@@ -4,6 +4,10 @@
 
 ![Inrae](https://raw.githubusercontent.com/Mario-35/STEAN/main/doc/assets/inrae.png "Inrae")
 
+
+
+curl -fsSL https://github.com/Mario-35/STEAN/blob/main/scripts/install.sh | sudo -E bash -
+
 # Installation
 
 ## deploy on server use :  [script](https://raw.githubusercontent.com/Mario-35/STEAN/main/scripts/install.sh) as install.sh
