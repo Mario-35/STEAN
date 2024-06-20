@@ -4,7 +4,7 @@ import { log } from "../log";
 import { _STREAM } from "../db/constants";
 import { executeSqlValues } from "../db/helpers";
 import { asJson } from "../db/queries";
-import { EnumColumnType, EnumExtensions, EnumVersion, filterEntities } from "../enums";
+import { EColumnType, EExtensions, EVersion, filterEntities } from "../enums";
 import { addDoubleQuotes, deepClone, isTest } from "../helpers";
 import { errors, msg } from "../messages";
 import { IconfigFile, Ientities, Ientity, IstreamInfos, keyobj, koaContext } from "../types";
@@ -19,7 +19,7 @@ class Models {
   static models : { [key: string]: Ientities; } = {};
   // Create Object FOR v1.0
   constructor() { 
-      Models.models[EnumVersion.v1_0] = {
+      Models.models[EVersion.v1_0] = {
           Things: Thing,        
           FeaturesOfInterest: FeatureOfInterest,        
           Locations: Location,        
@@ -73,8 +73,8 @@ class Models {
     const entities = Models.models[ctx.config.apiVersion];
     let fileContent = fs.readFileSync(__dirname + `/model.drawio`, "utf8");
     fileContent = fileContent.replace('&gt;Version&lt;', `&gt;version : ${ctx.config.apiVersion}&lt;`);
-    if (!ctx.config.extensions.includes(EnumExtensions.logs)) deleteId("124");
-    if (!ctx.config.extensions.includes(EnumExtensions.multiDatastream)) {
+    if (!ctx.config.extensions.includes(EExtensions.logs)) deleteId("124");
+    if (!ctx.config.extensions.includes(EExtensions.multiDatastream)) {
       ["114" ,"115" ,"117" ,"118" ,"119" ,"116" ,"120" ,"121"].forEach(e => deleteId(e));
       fileContent = fileContent.replace(`&lt;hr&gt;COLUMNS.${entities.MultiDatastreams.name}`, "");
       fileContent = fileContent.replace(`&lt;hr&gt;COLUMNS.${entities.MultiDatastreams.name}`, "");
@@ -96,15 +96,15 @@ class Models {
     };
     const extensions: Record<string, any> = {};
     switch (ctx.config.apiVersion) {
-      case EnumVersion.v1_1:
+      case EVersion.v1_1:
           result["Ogc link"] = "https://docs.ogc.org/is/18-088/18-088.html";
         break;
         default:
           result["Ogc link"] = "https://docs.ogc.org/is/15-078r6/15-078r6.html";
         break;
     }
-    if (ctx.config.extensions.includes(EnumExtensions.tasking)) extensions["tasking"] = "https://docs.ogc.org/is/17-079r1/17-079r1.html";
-    if (ctx.config.extensions.includes(EnumExtensions.logs)) extensions["logs"] = `${ctx.decodedUrl.linkbase}/${ctx.config.apiVersion}/Logs`;
+    if (ctx.config.extensions.includes(EExtensions.tasking)) extensions["tasking"] = "https://docs.ogc.org/is/17-079r1/17-079r1.html";
+    if (ctx.config.extensions.includes(EExtensions.logs)) extensions["logs"] = `${ctx.decodedUrl.linkbase}/${ctx.config.apiVersion}/Logs`;
     
     result["extensions"] = extensions;
     result["options"] = ctx.config.options;
@@ -182,8 +182,8 @@ class Models {
     switch (nb) {
       case "1.1":          
       case "v1.1":          
-      case EnumVersion.v1_1:          
-        Models.models[EnumVersion.v1_1] = this.version1_1(deepClone(Models.models[EnumVersion.v1_0]));
+      case EVersion.v1_1:          
+        Models.models[EVersion.v1_1] = this.version1_1(deepClone(Models.models[EVersion.v1_0]));
     } 
     return testVersion(nb);
   }
@@ -214,10 +214,10 @@ class Models {
   }
   
   public DBAdmin(config: IconfigFile):Ientities {
-    const entities = Models.models[EnumVersion.v1_0];
+    const entities = Models.models[EVersion.v1_0];
     return Object.fromEntries(Object.entries(entities)) as Ientities;
 
-    // return Object.fromEntries(Object.entries( Models.models[EnumVersion.v1_0]));
+    // return Object.fromEntries(Object.entries( Models.models[EVersion.v1_0]));
   } 
 
   public isSingular(config: IconfigFile, input: string): boolean { 
@@ -259,14 +259,14 @@ class Models {
     }
   };
   
-  public getRelationColumnTable = (config: IconfigFile, entity: Ientity | string, test: string): EnumColumnType | undefined => {
+  public getRelationColumnTable = (config: IconfigFile, entity: Ientity | string, test: string): EColumnType | undefined => {
     if (config && entity) {
       const tempEntity = this.getEntity(config, entity);
       if (tempEntity)
           return tempEntity.relations.hasOwnProperty(test)
-          ? EnumColumnType.Relation
+          ? EColumnType.Relation
           : tempEntity.columns.hasOwnProperty(test)
-              ? EnumColumnType.Column
+              ? EColumnType.Column
               : undefined;
     }      
   };
@@ -301,11 +301,11 @@ class Models {
       });
     
     switch (ctx.config.apiVersion) {
-      case EnumVersion.v1_0:
+      case EVersion.v1_0:
         return {
           value : expectedResponse.filter((elem) => Object.keys(elem).length)
         };    
-      case EnumVersion.v1_1:
+      case EVersion.v1_1:
         expectedResponse = expectedResponse.filter((elem) => Object.keys(elem).length);    
         const list:string[] = [];
         list.push(conformance["1.1"].root);
@@ -314,8 +314,8 @@ class Models {
         list.push("https://docs.ogc.org/is/18-088/18-088.html#requesting-data");
         list.push("https://docs.ogc.org/is/18-088/18-088.html#create-update-delete");
         // conformance.push("https://docs.ogc.org/is/18-088/18-088.html#batch-requests");
-        if (ctx.config.extensions.includes(EnumExtensions.multiDatastream)) list.push("https://docs.ogc.org/is/18-088/18-088.html#multidatastream-extension");
-        if (ctx.config.extensions.includes(EnumExtensions.mqtt)) list.push("https://docs.ogc.org/is/18-088/18-088.html#create-observation-dataarray");
+        if (ctx.config.extensions.includes(EExtensions.multiDatastream)) list.push("https://docs.ogc.org/is/18-088/18-088.html#multidatastream-extension");
+        if (ctx.config.extensions.includes(EExtensions.mqtt)) list.push("https://docs.ogc.org/is/18-088/18-088.html#create-observation-dataarray");
         // conformance.push("https://docs.ogc.org/is/18-088/18-088.html#mqtt-extension");
         list.push("http://docs.oasis-open.org/odata/odata-json-format/v4.01/odata-json-format-v4.01.html");
         list.push("https://datatracker.ietf.org/doc/html/rfc4180");

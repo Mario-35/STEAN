@@ -7,7 +7,7 @@
  */
 // onsole.log("!----------------------------------- context interface -----------------------------------!");
 
-import { EnumColumnType } from "../enums";
+import { EColumnType } from "../enums";
 
 
 export interface IodataContext { //odata context pass to token
@@ -15,7 +15,7 @@ export interface IodataContext { //odata context pass to token
     entity:         string | undefined;
     target:         string | undefined;
     identifier:     string | undefined;
-    identifierType: EnumColumnType | undefined;
+    identifierType: EColumnType | undefined;
     relation:       string | undefined;
     literal:        string | undefined;
     sign:           string | undefined;

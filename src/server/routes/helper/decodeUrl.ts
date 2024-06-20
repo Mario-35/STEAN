@@ -10,7 +10,7 @@
 import { getConfigFromPort } from ".";
 import { serverConfig } from "../../configuration";
 import { ADMIN, setDebug } from "../../constants";
-import { EnumVersion } from "../../enums";
+import { EVersion } from "../../enums";
 import { cleanUrl } from "../../helpers";
 import { formatLog } from "../../logger";
 import { errors } from "../../messages";
@@ -63,7 +63,7 @@ export const decodeUrl = (ctx: koaContext, input?: string): IdecodedUrl | undefi
     return  {
       search: url.search,
       service: paths[0],
-      version: paths[0] === ADMIN ? EnumVersion.v1_0 : paths[1],
+      version: paths[0] === ADMIN ? EVersion.v1_0 : paths[1],
       path: idStr ? path.replace(String(id), '0') : path,
       id: (isNaN(+id)) ? BigInt(0) : BigInt(id),
       idStr: idStr,

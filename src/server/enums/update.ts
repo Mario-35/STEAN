@@ -1,13 +1,13 @@
 /**
- * EnumUpdate Enum
+ * EUpdate Enum
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- EnumUpdate Enum -----------------------------------!");
+// onsole.log("!----------------------------------- EUpdate Enum -----------------------------------!");
 
-export enum EnumUpdate { 
+export enum EUpdate { 
     beforeAll = "beforeAll",
     afterAll = "afterAll",
     decoders = "decoders",

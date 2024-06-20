@@ -13,7 +13,7 @@ import { IreturnResult, keyobj, koaContext } from "../../types";
 import { getBigIntFromString } from "../../helpers";
 import { errors, msg } from "../../messages";
 import { multiDatastreamsUnitsKeys } from "../queries";
-import { EnumExtensions } from "../../enums";
+import { EExtensions } from "../../enums";
 
 export class Observations extends Common {
   constructor(ctx: koaContext) {
@@ -51,7 +51,7 @@ export class Observations extends Common {
     } 
     else if ((dataInput["Datastream"] && dataInput["Datastream"] != null) || (this.ctx.odata.parentEntity && this.ctx.odata.parentEntity.startsWith("Datastream")) ) { 
       if (dataInput["result"] && typeof dataInput["result"] != "object")
-          dataInput["result"] = this.ctx.config.extensions.includes( EnumExtensions.resultNumeric )
+          dataInput["result"] = this.ctx.config.extensions.includes( EExtensions.resultNumeric )
                                 ? dataInput["result"]
                                 : { value: dataInput["result"] };
     } else if (this.ctx.request.method === "POST") {

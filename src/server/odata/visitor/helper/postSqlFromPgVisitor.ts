@@ -11,7 +11,7 @@ import { VOIDTABLE } from "../../../constants";
 import { addDoubleQuotes, getBigIntFromString } from "../../../helpers";
 import { formatLog } from "../../../logger";
 import { Ientity, IKeyString } from "../../../types";
-import { EnumOperation, EnumOptions } from "../../../enums";
+import { EOperation, EOptions } from "../../../enums";
 import { asJson } from "../../../db/queries";
 import { models } from "../../../models";
 import { log } from "../../../log";
@@ -39,7 +39,7 @@ export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor)
     let sqlResult = "";
     const queryMaker: {
         [key: string]: {
-            type: EnumOperation;
+            type: EOperation;
             table: string;
             datas: object;
             keyId: string;
@@ -105,7 +105,7 @@ export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor)
             } else {
                 returnValue.push(`, ${element} AS (`);
                 if (src.id) {
-                    if (queryMaker[element].type == EnumOperation.Association) 
+                    if (queryMaker[element].type == EOperation.Association) 
                         returnValue.push(`INSERT INTO "${queryMaker[element].table}" ${createInsertValues(src.ctx.config, formatInsertEntityData(queryMaker[element].table, queryMaker[element].datas, src))} on conflict ("${Object.keys(queryMaker[element].datas).join('","')}") do update set ${createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = ${BigInt(src.id).toString()}`);
                     else
                         returnValue.push(`UPDATE "${queryMaker[element].table}" SET ${createUpdateValues(queryMaker[element].datas)} WHERE "${queryMaker[element].table}"."${queryMaker[element].keyId}" = (select verifyId('${queryMaker[element].table}', ${src.id}) as id)`);
@@ -157,7 +157,7 @@ export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor)
          * @param key key of the value
          */
         const addToQueryMaker = (
-            type: EnumOperation,
+            type: EOperation,
             name: string,
             tableName: string,
             datas: string | Record<string, any>,
@@ -171,11 +171,11 @@ export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor)
                         queryMaker[name].datas[key] = datas;
                         queryMaker[name].keyId = keyId;
                     } else if (!isTypeString) {
-                        if (queryMaker[name].type == EnumOperation.Table || queryMaker[name].type == EnumOperation.Relation)
+                        if (queryMaker[name].type == EOperation.Table || queryMaker[name].type == EOperation.Relation)
                         queryMaker[name].datas = Object.assign(queryMaker[name].datas, datas);
                         queryMaker[name].keyId = keyId;
                         
-                        if (queryMaker[name].type == EnumOperation.Association)
+                        if (queryMaker[name].type == EOperation.Association)
                         queryMaker[createName(name)] = {
                             type: queryMaker[name].type,
                             table: queryMaker[name].table,
@@ -223,7 +223,7 @@ export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor)
                     const parentTableName = names[subParentEntity.table];
                     
                     addToQueryMaker(
-                        EnumOperation.Relation,
+                        EOperation.Relation,
                         tableName,
                         subEntity.table,
                         `@(select ${parentTableName}.id from ${parentTableName})@`,
@@ -236,7 +236,7 @@ export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor)
                             const parentTableName = names[subParentEntity.table];
                             console.log(formatLog.debug(`Add parent relation ${tableName} in`, parentTableName));                            
                             addToQueryMaker(
-                                EnumOperation.Relation,
+                                EOperation.Relation,
                                 parentTableName,
                                 subParentEntity.table,
                                 `@(select ${tableName}.id from ${tableName})@`,
@@ -248,7 +248,7 @@ export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor)
                                 const parentTableName = names[subParentEntity.table];
                                 console.log(formatLog.debug(`Add Table association ${tableName} in`, parentTableName));
                                 addToQueryMaker(
-                                    EnumOperation.Association,
+                                    EOperation.Association,
                                     relation.tableName,
                                     relation.tableName,
                                     {
@@ -264,7 +264,7 @@ export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor)
                     const parentTableName = names[subParentEntity.table];
                     console.log(formatLog.debug(`Add Relation ${tableName} in`, parentTableName));
                     addToQueryMaker(
-                        EnumOperation.Table,
+                        EOperation.Table,
                         parentTableName,
                         subParentEntity.table,
                         {
@@ -290,7 +290,7 @@ export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor)
                 names[newEntity.table] = name;
                 const test = start(value, newEntity, entity);
                 if (test) {
-                    addToQueryMaker(EnumOperation.Table, name, newEntity.table, test, "id", undefined);
+                    addToQueryMaker(EOperation.Table, name, newEntity.table, test, "id", undefined);
                     level--;
                 }
                 if (entity) addAssociation(newEntity, entity);
@@ -354,7 +354,7 @@ export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor)
     if (temp) sqlResult += asJson({
         query: `SELECT ${temp && temp.select ? temp.select : "*"} FROM ${names[postEntity.table]} ${temp && temp.groupBy ? `GROUP BY ${temp.groupBy}` : ''}`, 
         singular: false, 
-        strip: src.ctx.config.options.includes(EnumOptions.stripNull),
+        strip: src.ctx.config.options.includes(EOptions.stripNull),
         count: false
     });
     log.query(`${sqlResult}`);

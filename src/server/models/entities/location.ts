@@ -7,7 +7,7 @@
  */
 // onsole.log("!----------------------------------- entity Location. -----------------------------------!");
 import { createEntity } from ".";
-import { EnumRelations } from "../../enums";
+import { ERelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 import { _idBig, _text } from "./constants";
 import { addDoubleQuotes } from "../../helpers";
@@ -57,7 +57,7 @@ export const Location:Ientity  = createEntity("Locations", {
     },
     relations: {
       Things: {
-        type: EnumRelations.belongsToMany,
+        type: ERelations.belongsToMany,
         expand: `"thing"."id" in (SELECT "thinglocation"."thing_id" from "thinglocation" WHERE "thinglocation"."location_id" = "location"."id")`,
         link: `"thing"."id" in (SELECT "thinglocation"."thing_id" from "thinglocation" WHERE "thinglocation"."location_id" = $ID)`,
         entityName: "Things",
@@ -67,7 +67,7 @@ export const Location:Ientity  = createEntity("Locations", {
         tableKey: "thing_id",
       },
       HistoricalLocations: {
-        type: EnumRelations.belongsToMany,
+        type: ERelations.belongsToMany,
         expand: `"historicallocation"."id" in (SELECT "historicallocation"."id" from "historicallocation" WHERE "historicallocation"."thing_id" in (SELECT "thinglocation"."thing_id" from "thinglocation" WHERE "thinglocation"."location_id" = "location"."id"))`,
         link: `"historicallocation"."id" in (SELECT "historicallocation"."id" from "historicallocation" WHERE "historicallocation"."thing_id" in (SELECT "thinglocation"."thing_id" from "thinglocation" WHERE "thinglocation"."location_id" = $ID))`,
         entityName: "HistoricalLocations",

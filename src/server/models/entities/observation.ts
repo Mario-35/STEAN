@@ -8,7 +8,7 @@
 // onsole.log("!----------------------------------- entity Observation -----------------------------------!");
 
 import { createEntity } from ".";
-import { EnumRelations } from "../../enums";
+import { ERelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 import { addDoubleQuotes } from "../../helpers";
 import { _idBig } from "./constants";
@@ -105,7 +105,7 @@ import { _ID } from "../../db/constants";
     },
     relations: {
       Datastream: {
-        type: EnumRelations.belongsTo,
+        type: ERelations.belongsTo,
         expand: `"datastream"."id" = "observation"."datastream_id"`,
         link: `"datastream"."id" = (SELECT "observation"."datastream_id" FROM "observation" WHERE "observation"."id" = $ID)`,
         entityName: "Datastreams",
@@ -115,7 +115,7 @@ import { _ID } from "../../db/constants";
         tableKey: "id",
       },
       MultiDatastream: {
-        type: EnumRelations.belongsTo,
+        type: ERelations.belongsTo,
         expand: `"multidatastream"."id" = "observation"."multidatastream_id"`,
         link: `"multidatastream"."id" = (SELECT "observation"."multidatastream_id" FROM "observation" WHERE "observation"."id" = $ID)`,
         entityName: "MultiDatastreams",
@@ -125,7 +125,7 @@ import { _ID } from "../../db/constants";
         tableKey: "id",
       },
       FeatureOfInterest: {
-        type: EnumRelations.belongsTo,
+        type: ERelations.belongsTo,
         expand: `"featureofinterest"."id" = "observation"."featureofinterest_id"`,
         // link: "err: 501 : Not Implemented.",
         link: `"featureofinterest"."id" = (SELECT "observation"."featureofinterest_id" FROM "observation" WHERE "observation"."id" = $ID)`,        

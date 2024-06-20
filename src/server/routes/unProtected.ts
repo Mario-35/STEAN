@@ -26,7 +26,7 @@ import { sqlStopDbName } from "./helper";
 import { createService } from "../db/helpers";
 import { HtmlError, Login, Status, Config } from "../views/";
 import { createQueryParams } from "../views/helpers";
-import { EnumOptions } from "../enums";
+import { EOptions } from "../enums";
 import { getMetrics } from "../db/monitoring";
 import { HtmlLogs } from "../views/class/logs";
 
@@ -123,7 +123,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       process.exit(110);
     case "DROP":
       console.log(formatLog.head("drop database"));
-      if (ctx.config.options.includes(EnumOptions.canDrop)) {        
+      if (ctx.config.options.includes(EOptions.canDrop)) {        
         await executeAdmin(sqlStopDbName(addSimpleQuotes(ctx.config.pg.database))).then(async () => {
             await executeAdmin(`DROP DATABASE IF EXISTS ${ctx.config.pg.database}`);
             try {

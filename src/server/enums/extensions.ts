@@ -10,7 +10,7 @@
 // onsole.log("!----------------------------------- extensions Enums -----------------------------------!");
 
 
-export enum EnumExtensions { 
+export enum EExtensions { 
     base = "base",
     security = "security",
     logs = "logs",

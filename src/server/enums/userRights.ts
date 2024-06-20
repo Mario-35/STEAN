@@ -6,7 +6,7 @@
  *
  */
 // onsole.log("!----------------------------------- userRights Enum. -----------------------------------!");
-export enum EnumUserRights {
+export enum EUserRights {
     Post = 0,
     Delete = 1,
     Create = 2,

@@ -8,7 +8,7 @@
 // onsole.log("!----------------------------------- dbConnection interface. -----------------------------------!");
 import postgres from "postgres";
 import { typeExtensions, typeOptions } from ".";
-import { EnumVersion } from "../enums";
+import { EVersion } from "../enums";
 import { IdbConnection } from "./dbConnection";
 
 export interface IconfigFile {
@@ -16,12 +16,12 @@ export interface IconfigFile {
     key?:           string; // key for crypto
     pg:             IdbConnection; // postgresSql connection
     port:           number; // server port
-    apiVersion:     EnumVersion; // api version / model
+    apiVersion:     EVersion; // api version / model
     date_format:    string; // formating date
     webSite:        string; // website
     nb_page:        number; // number of items by page
-    options:        typeof typeOptions; // Options see Enum EnumOptions
-    extensions:     typeof typeExtensions; // extensions see Enum EnumExtensions
+    options:        typeof typeOptions; // Options see Enum EOptions
+    extensions:     typeof typeExtensions; // extensions see Enum EExtensions
     alias:          string[]; // alias name of the service
     connection:     postgres.Sql<Record<string, unknown>> | undefined; // not in file only when running to store connection
 }

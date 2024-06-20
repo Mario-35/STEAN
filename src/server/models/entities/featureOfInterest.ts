@@ -7,7 +7,7 @@
  */
 // onsole.log("!----------------------------------- entity FeatureOfInterest. -----------------------------------!");
 import { createEntity } from ".";
-import { EnumRelations } from "../../enums";
+import { ERelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 import { _idBig, _text } from "./constants";
 import { addDoubleQuotes } from "../../helpers";
@@ -49,7 +49,7 @@ export const FeatureOfInterest:Ientity  = createEntity("FeaturesOfInterest", {
             },
             relations: {
               Observations: {
-                type: EnumRelations.hasMany,
+                type: ERelations.hasMany,
                 expand: `"observation"."id" in (SELECT "observation"."id" from "observation" WHERE "observation"."featureofinterest_id" = "featureofinterest"."id")`,
                 link: `"observation"."id" in (SELECT "observation"."id" from "observation" WHERE "observation"."featureofinterest_id" = $ID)`,
                 entityName: "Observations",
@@ -59,7 +59,7 @@ export const FeatureOfInterest:Ientity  = createEntity("FeaturesOfInterest", {
                 tableKey: "id",
               },
               Datastreams: {
-                type: EnumRelations.hasMany,
+                type: ERelations.hasMany,
                 expand: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."_default_foi" = "featureofinterest"."id")`,
                 link: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."_default_foi" = $ID)`,
                 entityName: "Datastreams",

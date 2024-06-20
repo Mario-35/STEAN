@@ -8,7 +8,7 @@
 // onsole.log("!----------------------------------- entity Datastream -----------------------------------!");
 
 import { createEntity } from ".";
-import { EnumDatesType, EnumObservationType, EnumRelations } from "../../enums";
+import { EDatesType, EObservationType, ERelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 import { _idBig, _idRel, _text, _tz } from "./constants";
 import { addDoubleQuotes } from "../../helpers";
@@ -43,7 +43,7 @@ export const Datastream:Ientity  = createEntity("Datastreams", {
         alias() {},
         type: "list",
         verify: {
-          list: Object.keys(EnumObservationType),
+          list: Object.keys(EObservationType),
           default:
             "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
         },
@@ -61,14 +61,14 @@ export const Datastream:Ientity  = createEntity("Datastreams", {
       phenomenonTime: {
         create: "",
         alias(config: IconfigFile, test: IKeyBoolean | undefined) {          
-          return `CONCAT(to_char("_phenomenonTimeStart",'${EnumDatesType.date}'),'/',to_char("_phenomenonTimeEnd",'${EnumDatesType.date}')) AS "phenomenonTime"`;
+          return `CONCAT(to_char("_phenomenonTimeStart",'${EDatesType.date}'),'/',to_char("_phenomenonTimeEnd",'${EDatesType.date}')) AS "phenomenonTime"`;
         },
         type: "text",
       },
       resultTime: {
         create: "",
         alias(config: IconfigFile, test: IKeyBoolean | undefined) {
-          return `CONCAT(to_char("_resultTimeStart",'${EnumDatesType.date}'),'/',to_char("_resultTimeEnd",'${EnumDatesType.date}')) AS "resultTime"`;
+          return `CONCAT(to_char("_resultTimeStart",'${EDatesType.date}'),'/',to_char("_resultTimeEnd",'${EDatesType.date}')) AS "resultTime"`;
         },
         type: "text",
       },
@@ -115,7 +115,7 @@ export const Datastream:Ientity  = createEntity("Datastreams", {
     },
     relations: {
       Thing: {
-        type: EnumRelations.belongsTo,
+        type: ERelations.belongsTo,
         expand: `"thing"."id" = "datastream"."thing_id"`,
         link: `"thing"."id" = (SELECT "datastream"."thing_id" from "datastream" WHERE "datastream"."id" =$ID)`,
         entityName: "Things",
@@ -125,7 +125,7 @@ export const Datastream:Ientity  = createEntity("Datastreams", {
         tableKey: "id",
       },
       Sensor: {
-        type: EnumRelations.belongsTo,
+        type: ERelations.belongsTo,
         expand: `"sensor"."id" = "datastream"."sensor_id"`,
         link: `"sensor"."id" = (SELECT "datastream"."sensor_id" from "datastream" WHERE "datastream"."id" =$ID)`,        
         entityName: "Sensors",
@@ -135,7 +135,7 @@ export const Datastream:Ientity  = createEntity("Datastreams", {
         tableKey: "id",
       },
       ObservedProperty: {
-        type: EnumRelations.belongsTo,
+        type: ERelations.belongsTo,
         expand: `"observedproperty"."id" = "datastream"."observedproperty_id"`,
         link: `"observedproperty"."id" = (SELECT "datastream"."observedproperty_id" from "datastream" WHERE "datastream"."id" =$ID)`,
         entityName: "ObservedProperties",
@@ -145,7 +145,7 @@ export const Datastream:Ientity  = createEntity("Datastreams", {
         tableKey: "id",
       },
       Observations: {
-        type: EnumRelations.hasMany,
+        type: ERelations.hasMany,
         expand: `"observation"."id" in (SELECT "observation"."id" from "observation" WHERE "observation"."datastream_id" = "datastream"."id" ORDER BY "observation"."resultTime" ASC)`,
         link: `"observation"."id" in (SELECT "observation"."id" from "observation" WHERE "observation"."datastream_id" = $ID ORDER BY "observation"."resultTime" ASC)`,
         entityName: "Observations",
@@ -155,7 +155,7 @@ export const Datastream:Ientity  = createEntity("Datastreams", {
         tableKey: "id",
       },
       Lora: {
-        type: EnumRelations.belongsTo,
+        type: ERelations.belongsTo,
         expand: `"lora"."id" = (SELECT "lora"."id" from "lora" WHERE "lora"."datastream_id" = "datastream"."id")`,
         link: `"lora"."id" = (SELECT "lora"."id" from "lora" WHERE "lora"."datastream_id" = $ID)`,
         entityName: "Loras",
@@ -165,7 +165,7 @@ export const Datastream:Ientity  = createEntity("Datastreams", {
         tableKey: "id",
       },
       FeatureOfInterest: {
-        type: EnumRelations.belongsTo,
+        type: ERelations.belongsTo,
         expand: "",
         link: "",
         entityName: "FeaturesOfInterest",

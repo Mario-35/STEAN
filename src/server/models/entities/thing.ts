@@ -8,7 +8,7 @@
 // onsole.log("!----------------------------------- entity Thing -----------------------------------!");
 
 import { createEntity } from ".";
-import { EnumRelations } from "../../enums";
+import { ERelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 import { _idBig, _text } from "./constants";
 import { addDoubleQuotes } from "../../helpers";
@@ -43,7 +43,7 @@ export const Thing: Ientity = createEntity("Things", {
     },
     relations: {
       Locations: {
-        type: EnumRelations.belongsToMany,
+        type: ERelations.belongsToMany,
         expand: `"location"."id" in (SELECT "thinglocation"."location_id" from "thinglocation" WHERE "thinglocation"."thing_id" = "thing"."id")`,
         link: `"location"."id" in (SELECT "thinglocation"."location_id" from "thinglocation" WHERE "thinglocation"."thing_id" = $ID)`,
         entityName: "Locations",
@@ -53,7 +53,7 @@ export const Thing: Ientity = createEntity("Things", {
         tableKey: "thing_id",
       },
       HistoricalLocations: {
-        type: EnumRelations.hasMany,
+        type: ERelations.hasMany,
         expand: `"historicallocation"."id" in (SELECT "historicallocation"."id" from "historicallocation" WHERE "historicallocation"."thing_id" = "thing"."id")`,
         link: `"historicallocation"."id" in (SELECT "historicallocation"."id" from "historicallocation" WHERE "historicallocation"."thing_id" = $ID)`,
         entityName: "HistoricalLocations",
@@ -63,7 +63,7 @@ export const Thing: Ientity = createEntity("Things", {
         tableKey: "id",
       },
       Datastreams: {
-        type: EnumRelations.hasMany,
+        type: ERelations.hasMany,
         expand: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."thing_id" = "thing"."id")`,
         link: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."thing_id" = $ID)`,
         entityName: "Datastreams",
@@ -73,7 +73,7 @@ export const Thing: Ientity = createEntity("Things", {
         tableKey: "id",
       },
       MultiDatastreams: {
-        type: EnumRelations.hasMany,
+        type: ERelations.hasMany,
         expand: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."thing_id" = "thing"."id")`,
         link: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."thing_id" = $ID)`,
         entityName: "MultiDatastreams",

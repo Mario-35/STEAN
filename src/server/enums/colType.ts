@@ -6,7 +6,7 @@
  *
  */
 // onsole.log("!----------------------------------- columnType Enum -----------------------------------!");
-export enum EnumColumnType { 
+export enum EColumnType { 
     Null,
     Column,
     SelfLink,

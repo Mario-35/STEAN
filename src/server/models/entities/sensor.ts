@@ -8,7 +8,7 @@
 // onsole.log("!----------------------------------- entity Sensor -----------------------------------!");
 
 import { createEntity } from ".";
-import { EnumRelations } from "../../enums";
+import { ERelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 import { _idBig, _text } from "./constants";
 import { addDoubleQuotes } from "../../helpers";
@@ -57,7 +57,7 @@ import { _ID } from "../../db/constants";
     },
     relations: {
       Datastreams: {
-        type: EnumRelations.hasMany,
+        type: ERelations.hasMany,
         expand: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."sensor_id" = "sensor"."id")`,
         link: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."sensor_id" = $ID)`,
         entityName: "Datastreams",
@@ -67,7 +67,7 @@ import { _ID } from "../../db/constants";
         tableKey: "id",
       },
       MultiDatastreams: {
-        type: EnumRelations.hasMany,
+        type: ERelations.hasMany,
         expand: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."sensor_id" = "sensor"."id")`,
         link: `"multidatastream"."id" in (SELECT "multidatastream"."id" from "multidatastream" WHERE "multidatastream"."sensor_id" = $ID)`,
         entityName: "MultiDatastreams",

@@ -14,7 +14,7 @@ import { asJson } from "../../../db/queries";
 import { IconfigFile, Ientity, IKeyBoolean, IpgQuery } from "../../../types";
 import { PgVisitor, RootPgVisitor } from "..";
 import { models } from "../../../models";
-import { allEntities, EnumOptions } from "../../../enums";
+import { allEntities, EOptions } from "../../../enums";
 import { GroupBy, Key, OrderBy, Select, Where } from ".";
 import { errors } from "../../../messages";
 import { _NAVLINK, _SELFLINK } from "../../../db/constants";
@@ -157,7 +157,7 @@ export class Query  {
                             if (query) relations[index] = `(${asJson({ 
                                 query: query, 
                                 singular : models.isSingular(main.ctx.config, name),
-                                strip: main.ctx.config.options.includes(EnumOptions.stripNull),
+                                strip: main.ctx.config.options.includes(EOptions.stripNull),
                                 count: false })}) AS ${addDoubleQuotes(name)}`;
                             else throw new Error(errors.invalidQuery);
                         }
@@ -171,7 +171,7 @@ export class Query  {
                                 const tempTable = models.getEntityName(main.ctx.config, rel);
                                 let stream: string | undefined = undefined;
                                 if (tempTable && !main.ctx.model[realEntityName].relations[rel].relationKey.startsWith("_"))
-                                    if ( main.ctx.config.options.includes(EnumOptions.stripNull) && realEntityName === main.ctx.model[allEntities.Observations].name &&  tempTable.endsWith(main.ctx.model[allEntities.Datastreams].name)) stream = `CASE WHEN ${main.ctx.model[tempTable].table}_id NOTNULL THEN`;
+                                    if ( main.ctx.config.options.includes(EOptions.stripNull) && realEntityName === main.ctx.model[allEntities.Observations].name &&  tempTable.endsWith(main.ctx.model[allEntities.Datastreams].name)) stream = `CASE WHEN ${main.ctx.model[tempTable].table}_id NOTNULL THEN`;
                                         select.push(`${stream ? stream : ""} CONCAT('${main.ctx.decodedUrl.root}/${main.ctx.model[realEntityName].name}(', ${addDoubleQuotes(main.ctx.model[realEntityName].table)}."id", ')/${rel}') ${stream ? "END ": ""}AS "${rel}${_NAVLINK}"`);                            
                                         main.addToIntervalColumns(`'${main.ctx.decodedUrl.root}/${main.ctx.model[realEntityName].name}(0)/${rel}' AS "${rel}${_NAVLINK}"`);
                             }

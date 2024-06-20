@@ -559,7 +559,7 @@ namespace NameOrIdentifier {
         if (!token) return;
 
         if (isCollection && typeof metadataContext === "object") {
-            const type = NameOrIdentifier.getEnumOperation("action", metadataContext, token, isCollection, false, false, "entityTypes");
+            const type = NameOrIdentifier.getEOperation("action", metadataContext, token, isCollection, false, false, "entityTypes");
             if (!type) return;
         }
 
@@ -588,7 +588,7 @@ namespace NameOrIdentifier {
         );
     }
 
-    export function getEnumOperation(
+    export function getEOperation(
         operation: string,
         metadataContext: any,
         token: Lexer.Token,
@@ -652,7 +652,7 @@ namespace NameOrIdentifier {
         if (!token) return;
 
         if (isCollection && typeof metadataContext === "object") {
-            const type = NameOrIdentifier.getEnumOperation("function", metadataContext, token, isCollection, false, false, "entityTypes");
+            const type = NameOrIdentifier.getEOperation("function", metadataContext, token, isCollection, false, false, "entityTypes");
             if (!type) return;
             token.metadata = type;
         }
@@ -664,7 +664,7 @@ namespace NameOrIdentifier {
         if (!token) return;
 
         if (isCollection && typeof metadataContext === "object") {
-            const type = NameOrIdentifier.getEnumOperation("function", metadataContext, token, isCollection, true, false, "entityTypes");
+            const type = NameOrIdentifier.getEOperation("function", metadataContext, token, isCollection, true, false, "entityTypes");
             if (!type) return;
             token.metadata = type;
         }
@@ -676,7 +676,7 @@ namespace NameOrIdentifier {
         if (!token) return;
 
         if (isCollection && typeof metadataContext === "object") {
-            const type = NameOrIdentifier.getEnumOperation("function", metadataContext, token, isCollection, false, false, "complexTypes");
+            const type = NameOrIdentifier.getEOperation("function", metadataContext, token, isCollection, false, false, "complexTypes");
             if (!type) return;
             token.metadata = type;
         }
@@ -688,7 +688,7 @@ namespace NameOrIdentifier {
         if (!token) return;
 
         if (isCollection && typeof metadataContext === "object") {
-            const type = NameOrIdentifier.getEnumOperation("function", metadataContext, token, isCollection, true, false, "complexTypes");
+            const type = NameOrIdentifier.getEOperation("function", metadataContext, token, isCollection, true, false, "complexTypes");
             if (!type) return;
             token.metadata = type;
         }
@@ -700,7 +700,7 @@ namespace NameOrIdentifier {
         if (!token) return;
 
         if (isCollection && typeof metadataContext === "object") {
-            const type = NameOrIdentifier.getEnumOperation("function", metadataContext, token, isCollection, false, true);
+            const type = NameOrIdentifier.getEOperation("function", metadataContext, token, isCollection, false, true);
             if (!type) return;
             token.metadata = type;
         }
@@ -712,7 +712,7 @@ namespace NameOrIdentifier {
         if (!token) return;
 
         if (isCollection && typeof metadataContext === "object") {
-            const type = NameOrIdentifier.getEnumOperation("function", metadataContext, token, isCollection, true, true);
+            const type = NameOrIdentifier.getEOperation("function", metadataContext, token, isCollection, true, true);
             if (!type) return;
             token.metadata = type;
         }

@@ -6,7 +6,7 @@
  *
  */
 // onsole.log("!----------------------------------- relations Enum. -----------------------------------!");
-export enum EnumRelations {
+export enum ERelations {
     belongsTo,
     belongsToMany,
     hasMany

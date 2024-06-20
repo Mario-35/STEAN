@@ -9,7 +9,7 @@
 
 import { serverConfig } from "../../configuration";
 import { _NOTOK, _OK } from "../../constants";
-import { EnumExtensions } from "../../enums";
+import { EExtensions } from "../../enums";
 import { Iuser, koaContext } from "../../types";
 import { CoreHtmlView } from "./core";
 
@@ -22,7 +22,7 @@ export class Status extends CoreHtmlView {
     public status(ctx: koaContext, user: Iuser) {        
       const config = serverConfig.getConfigNameFromDatabase(user.database);  
       const url = `${this.ctx.decodedUrl.linkbase}/${this.ctx.config.apiVersion}`;  
-      const sec = ctx.config.extensions.includes(EnumExtensions.users);     
+      const sec = ctx.config.extensions.includes(EExtensions.users);     
       this._HTMLResult = [`<!DOCTYPE html>
         <html> 
             ${this.head( "Status", "user" )}

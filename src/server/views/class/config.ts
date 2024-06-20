@@ -7,7 +7,7 @@
  */
 // onsole.log("!----------------------------------- HTML Views First for API. -----------------------------------!");
 
-import { EnumOptions, EnumVersion } from "../../enums";
+import { EOptions, EVersion } from "../../enums";
 import { IconfigFile, IKeyString, koaContext } from "../../types";
 import { CoreHtmlView } from "./core";
 
@@ -51,15 +51,15 @@ export class Config extends CoreHtmlView {
                     <div class="login-form">
                       <form action="${datas.url}" method="patch">
                         <div class="sign-in-htm">
-                        ${this.addTextInput({name: "apiversion", label: "Version", value: datas.body && datas.body.apiversion || this.ctx.config.apiVersion, alert: alert("apiversion"), toolType: Object.values(EnumVersion).join()})}
+                        ${this.addTextInput({name: "apiversion", label: "Version", value: datas.body && datas.body.apiversion || this.ctx.config.apiVersion, alert: alert("apiversion"), toolType: Object.values(EVersion).join()})}
                         ${this.addTextInput({name: "date_format", label: "Date format", value: datas.body && datas.body.date_format || this.ctx.config.date_format, alert: alert("date_format"), toolType: "Host must be at least 2 words"})}
                         ${this.addTextInput({name: "webSite", label: "Web Site", value: datas.body && datas.body.regwebSite || this.ctx.config.webSite, alert: alert("webSite"), toolType: "Name must be at least 2 words"})}
                         ${this.addTextInput({name: "nb_page", label: "nb page", value: datas.body && datas.body.nb_page || this.ctx.config.nb_page, alert: alert("nb_page"), toolType: "Name must be at least 2 words"})}
                         </div>
                         <div class="sign-up-htm">
-                        ${this.addCheckBox({name: "stripNull", checked: datas.body && datas.body.stripNull === true || this.ctx.config.options.includes(EnumOptions.stripNull) , label: " strip Null"})}
-                        ${this.addCheckBox({name: "forceHttps", checked: datas.body && datas.body.forceHttps === true || this.ctx.config.options.includes(EnumOptions.forceHttps) , label: " force Https"})}
-                        ${this.addCheckBox({name: "canDrop", checked: datas.body && datas.body.canDrop === true || this.ctx.config.options.includes(EnumOptions.canDrop) , label: " can Drop Database"})}
+                        ${this.addCheckBox({name: "stripNull", checked: datas.body && datas.body.stripNull === true || this.ctx.config.options.includes(EOptions.stripNull) , label: " strip Null"})}
+                        ${this.addCheckBox({name: "forceHttps", checked: datas.body && datas.body.forceHttps === true || this.ctx.config.options.includes(EOptions.forceHttps) , label: " force Https"})}
+                        ${this.addCheckBox({name: "canDrop", checked: datas.body && datas.body.canDrop === true || this.ctx.config.options.includes(EOptions.canDrop) , label: " can Drop Database"})}
                         ${this.addSubmitButton("Save options")}
                         </div>
                       </form>

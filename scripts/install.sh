@@ -26,10 +26,16 @@ install_node() {
     sudo apt install nodejs
 }
 
-# Function to install Node
+# Function to install pm2
 install_pm2() {
     echo "Installing pm2..."
     sudo npm install pm2@latest -g
+}
+
+# Function to install unzip
+install_pm2() {
+    echo "Installing unzip..."
+    sudo apt-get install unzip
 }
 
 save_dist() {
@@ -46,7 +52,7 @@ download_stean() {
     curl -o $FILEDIST -L https://github.com/Mario-35/STEAN/raw/main/dist.zip
 }
 
-# Function to install Node
+# Function to install stean
 install_stean() {
     stop_stean
     # remove bak
@@ -80,7 +86,7 @@ start_stean() {
     stop_stean
     if [ -f "$FILEAPP" ]; then      
         echo "$FILEAPP starting ..."
-        NODE_ENV=production pm2 start $FILEAPP
+        NODE_ENV=production pm2 start $FILEAPP --output ./api/logs.txt
     else 
         echo "$FILEAPP does not exist can't launch app."
     fi
@@ -116,6 +122,14 @@ else
     echo "pm2 is already installed."
 fi
 
+# Check if unzip is installed
+if ! command -v unzip &> /dev/null
+then
+    install_unzip
+else
+    echo "unzip is already installed."
+fi
+
 
 if [ -f $FILEDIST ];
 then
@@ -134,3 +148,4 @@ fi
 
 install_stean
 start_stean
+pm2 logs --lines 500

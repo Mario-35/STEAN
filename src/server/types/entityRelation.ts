@@ -6,10 +6,10 @@
  *
  */
 // onsole.log("!----------------------------------- entityRelation interface. -----------------------------------!");
-import { EnumRelations } from "../enums";
+import { ERelations } from "../enums";
 
 export interface IentityRelation {
-    type:           EnumRelations; // relation Type
+    type:           ERelations; // relation Type
     expand:         string; // table name
     link:           string; // link query
     entityName:     string; // table name

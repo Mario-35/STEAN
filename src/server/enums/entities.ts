@@ -7,7 +7,7 @@
  */
 // onsole.log("!----------------------------------- entities Enum -----------------------------------!");
 
-import { EnumExtensions } from ".";
+import { EExtensions } from ".";
 
 enum EnumBaseEntities {    
     Things = 'Things',
@@ -45,12 +45,12 @@ enum EnumLogEntities {
 }
 
 export const filterEntities = (exts: string[], name?: string) => {    
-    // const exts = (typeof input === "string") ? input === "ALL" ? Object.keys(EnumExtensions) : serverConfig.getConfig(input).extensions : input.extensions;
+    // const exts = (typeof input === "string") ? input === "ALL" ? Object.keys(EExtensions) : serverConfig.getConfig(input).extensions : input.extensions;
     let res = EnumBaseEntities;
-    if (exts.includes(EnumExtensions.logs)) res = {... res, ... EnumLogEntities};
-    if (exts.includes(EnumExtensions.multiDatastream)) res = {... res, ... EnumMultiDatastreamEntities};
-    if (exts.includes(EnumExtensions.lora)) res = {... res, ... EnumLoraEntities};
-    if (exts.includes(EnumExtensions.users)) res = {... res, ... EnumUsersEntities};
+    if (exts.includes(EExtensions.logs)) res = {... res, ... EnumLogEntities};
+    if (exts.includes(EExtensions.multiDatastream)) res = {... res, ... EnumMultiDatastreamEntities};
+    if (exts.includes(EExtensions.lora)) res = {... res, ... EnumLoraEntities};
+    if (exts.includes(EExtensions.users)) res = {... res, ... EnumUsersEntities};
     return res;
 }
 

@@ -12,7 +12,7 @@ import { DOUBLEQUOTEDCOMA, ESCAPE_SIMPLE_QUOTE, VOIDTABLE } from "../../constant
 import { formatLog } from "../../logger";
 import { IreturnResult, keyobj, koaContext } from "../../types";
 import { errors, msg } from "../../messages/";
-import { EnumDatesType } from "../../enums";
+import { EDatesType } from "../../enums";
 import { multiDatastreamFromDeveui, streamFromDeveui } from "../queries";
 import { decodeloraDeveuiPayload } from "../../lora";
 import { executeSql, executeSqlValues } from "../helpers";
@@ -192,8 +192,8 @@ export class Loras extends Common {
           ? `SELECT COALESCE((SELECT "id" FROM "featureofinterest" WHERE "id" = ${getFeatureOfInterest}), ${getFeatureOfInterest})`
           : `(SELECT multidatastream1._default_foi FROM multidatastream1)`,
         multidatastream_id: "(SELECT multidatastream1.id FROM multidatastream1)",
-      phenomenonTime: `to_timestamp('${this.stean["timestamp"]}','${EnumDatesType.dateWithOutTimeZone}')::timestamp`,
-      resultTime: `to_timestamp('${this.stean["timestamp"]}','${EnumDatesType.dateWithOutTimeZone}')::timestamp`,
+      phenomenonTime: `to_timestamp('${this.stean["timestamp"]}','${EDatesType.dateWithOutTimeZone}')::timestamp`,
+      resultTime: `to_timestamp('${this.stean["timestamp"]}','${EDatesType.dateWithOutTimeZone}')::timestamp`,
         result: resultCreate,
       };
 
@@ -287,8 +287,8 @@ export class Loras extends Common {
       const insertObject: Record<string, any>  = {
         featureofinterest_id: "(SELECT datastream1._default_foi from datastream1)",
         datastream_id: "(SELECT datastream1.id from datastream1)",
-      phenomenonTime: `to_timestamp('${this.stean["timestamp"]}','${EnumDatesType.dateWithOutTimeZone}')::timestamp`,
-      resultTime: `to_timestamp('${this.stean["timestamp"]}}','${EnumDatesType.dateWithOutTimeZone}')::timestamp`,
+      phenomenonTime: `to_timestamp('${this.stean["timestamp"]}','${EDatesType.dateWithOutTimeZone}')::timestamp`,
+      resultTime: `to_timestamp('${this.stean["timestamp"]}}','${EDatesType.dateWithOutTimeZone}')::timestamp`,
         result: resultCreate,
       };
 

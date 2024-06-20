@@ -6,7 +6,7 @@
  *
  */
 // onsole.log("!----------------------------------- formats Enum. -----------------------------------!");
-export const enum EnumResultFormats {    
+export const enum EReturnFormats {    
     json = "json", 
     csv = "csv",
     txt = "txt", 

@@ -8,7 +8,7 @@
 // onsole.log("!----------------------------------- entity HistoricalObservation -----------------------------------!");
 
 import { createEntity } from ".";
-import { EnumRelations } from "../../enums";
+import { ERelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 import { _idBig } from "./constants";
 import { addDoubleQuotes } from "../../helpers";
@@ -53,7 +53,7 @@ import { _ID } from "../../db/constants";
     },
     relations: {
       Observations: {
-        type: EnumRelations.belongsTo,
+        type: ERelations.belongsTo,
         expand: `"observation"."id" = "historicalobservation"."observation_id"`,
         link: "err: 501 : Not Implemented.",        
         entityName: "Observations",

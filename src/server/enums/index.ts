@@ -7,23 +7,23 @@
  */
 // onsole.log("!----------------------------------- Index Enums. -----------------------------------!");
 
-import { EnumExtensions } from "./extensions";
-import { EnumOptions } from "./options";
+import { EExtensions } from "./extensions";
+import { EOptions } from "./options";
 
-export { EnumColor } from "./colors";
-export { EnumColumnType } from "./colType";
-export { EnumDatesType } from "./datesType";
+export { EColor } from "./colors";
+export { EColumnType } from "./colType";
+export { EDatesType } from "./datesType";
 export { allEntities, allEntitiesType, filterEntities } from "./entities";
-export { EnumExtensions } from "./extensions";
-export { EnumResultFormats } from "./resultFormats";
-export { EnumVersion } from "./version";
-export { EnumObservationType } from "./observationType";
-export { EnumOperation } from "./operation";
-export { EnumRelations } from "./relations";
-export { EnumOptions } from "./options";
-export { EnumUpdate } from "./update";
-export { EnumQuery } from "./query";
-export { EnumUserRights } from "./userRights";
+export { EExtensions } from "./extensions";
+export { EReturnFormats } from "./resultFormats";
+export { EVersion } from "./version";
+export { EObservationType } from "./observationType";
+export { EOperation } from "./operation";
+export { ERelations } from "./relations";
+export { EOptions } from "./options";
+export { EUpdate } from "./update";
+export { EQuery } from "./query";
+export { EUserRights } from "./userRights";
 export const enumKeys = (input: any) => Object.keys(input).filter(prop => isNaN(parseInt(prop)));
-export const typeExtensions = Object.keys(EnumExtensions) as Array<keyof typeof EnumExtensions>;
-export const typeOptions = Object.keys(EnumOptions) as Array<keyof typeof EnumOptions>;
+export const typeExtensions = Object.keys(EExtensions) as Array<keyof typeof EExtensions>;
+export const typeOptions = Object.keys(EOptions) as Array<keyof typeof EOptions>;

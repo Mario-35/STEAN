@@ -1,4 +1,7 @@
 pm2 stop index
-cd api
-pm2 start ./index.js
-
+pm2 flush index
+pm2 delete index
+echo "$FILEAPP starting ..."
+NODE_ENV=production 
+pm2 start ./api/index.js --output ./api/logs.txt
+pm2 logs --lines 500

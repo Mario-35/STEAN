@@ -6,7 +6,7 @@
  *
  */
 // onsole.log("!----------------------------------- operation Enum. -----------------------------------!");
-export enum EnumOperation { 
+export enum EOperation { 
     Table,
     Relation,
     Association

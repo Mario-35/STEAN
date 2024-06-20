@@ -8,7 +8,7 @@
 // onsole.log("!----------------------------------- entity MultiDatastream -----------------------------------!");
 
 import { createEntity } from ".";
-import { EnumDatesType, EnumObservationType, EnumRelations } from "../../enums";
+import { EDatesType, EObservationType, ERelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 import { _idBig, _idRel, _text, _tz } from "./constants";
 import { addDoubleQuotes } from "../../helpers";
@@ -46,7 +46,7 @@ export const MultiDatastream:Ientity  = createEntity("MultiDatastreams", {
         alias() {},
         type: "list",
         verify: {
-          list: Object.keys(EnumObservationType),
+          list: Object.keys(EObservationType),
           default:
             "http://www.opengis.net/def/observation-type/ogc-om/2.0/om_complex-observation",
         },
@@ -64,14 +64,14 @@ export const MultiDatastream:Ientity  = createEntity("MultiDatastreams", {
       phenomenonTime: {
         create: "",
         alias(config: IconfigFile, test: IKeyBoolean | undefined) {  
-          return `CONCAT(to_char("_phenomenonTimeStart",'${EnumDatesType.date}'),'/',to_char("_phenomenonTimeEnd",'${EnumDatesType.date}')) AS "phenomenonTime"`;
+          return `CONCAT(to_char("_phenomenonTimeStart",'${EDatesType.date}'),'/',to_char("_phenomenonTimeEnd",'${EDatesType.date}')) AS "phenomenonTime"`;
         },
         type: "text",
       },
       resultTime: {
         create: "",
         alias(config: IconfigFile, test: IKeyBoolean | undefined) {  
-          return `CONCAT(to_char("_resultTimeStart",'${EnumDatesType.date}'),'/',to_char("_resultTimeEnd",'${EnumDatesType.date}')) AS "resultTime"`;
+          return `CONCAT(to_char("_resultTimeStart",'${EDatesType.date}'),'/',to_char("_resultTimeEnd",'${EDatesType.date}')) AS "resultTime"`;
         },
         type: "text",
       },
@@ -113,7 +113,7 @@ export const MultiDatastream:Ientity  = createEntity("MultiDatastreams", {
     },
     relations: {
       Thing: {
-        type: EnumRelations.belongsTo,
+        type: ERelations.belongsTo,
         expand: `"thing"."id" = "multidatastream"."thing_id"`,
         link: `"thing"."id" = (SELECT "multidatastream"."thing_id" from "multidatastream" WHERE "multidatastream"."id" =$ID)`,        
         entityName: "Things",
@@ -123,7 +123,7 @@ export const MultiDatastream:Ientity  = createEntity("MultiDatastreams", {
         tableKey: "id",
       },
       Sensor: {
-        type: EnumRelations.belongsTo,
+        type: ERelations.belongsTo,
         expand: `"sensor"."id" = "multidatastream"."sensor_id"`,
         link: `"sensor"."id" = (SELECT "multidatastream"."sensor_id" from "multidatastream" WHERE "multidatastream"."id" =$ID)`,
         entityName: "Sensors",
@@ -133,7 +133,7 @@ export const MultiDatastream:Ientity  = createEntity("MultiDatastreams", {
         tableKey: "id",
       },
       Observations: {
-        type: EnumRelations.hasMany,
+        type: ERelations.hasMany,
         expand: `"observation"."id" in (SELECT "observation"."id" from "observation" WHERE "observation"."multidatastream_id" = "multidatastream"."id")`,
         link: `"observation"."id" in (SELECT "observation"."id" from "observation" WHERE "observation"."multidatastream_id" = $ID)`,
 
@@ -144,7 +144,7 @@ export const MultiDatastream:Ientity  = createEntity("MultiDatastreams", {
         tableKey: "id",
       },
       ObservedProperties: {
-        type: EnumRelations.belongsTo,
+        type: ERelations.belongsTo,
         expand: `"observedproperty"."id" in (SELECT "multidatastreamobservedproperty"."observedproperty_id" FROM "multidatastreamobservedproperty" WHERE "multidatastreamobservedproperty"."multidatastream_id" = "multidatastream"."id" ORDER BY "observedproperty_id")`,
         link: `"observedproperty"."id" in (SELECT "multidatastreamobservedproperty"."observedproperty_id" FROM "multidatastreamobservedproperty" WHERE "multidatastreamobservedproperty"."multidatastream_id" = $ID ORDER BY "observedproperty_id")`,
         entityName: "ObservedProperties",
@@ -154,7 +154,7 @@ export const MultiDatastream:Ientity  = createEntity("MultiDatastreams", {
         tableKey: "multidatastream_id",
       },
       Lora: {
-        type: EnumRelations.belongsTo,
+        type: ERelations.belongsTo,
         expand: `"lora"."id" = (SELECT "lora"."id" from "lora" WHERE "lora"."multidatastream_id" = "multidatastream"."id")`,
         link: `"lora"."id" = (SELECT "lora"."id" from "lora" WHERE "lora"."multidatastream_id" = $ID)`,
         entityName: "loras",
@@ -164,7 +164,7 @@ export const MultiDatastream:Ientity  = createEntity("MultiDatastreams", {
         tableKey: "id",
       },
       FeatureOfInterest: {
-        type: EnumRelations.belongsTo,
+        type: ERelations.belongsTo,
         expand: "",
         link: "",
         entityName: "FeaturesOfInterest",

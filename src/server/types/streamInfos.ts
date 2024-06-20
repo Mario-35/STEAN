@@ -1,5 +1,5 @@
 import { _STREAM } from "../db/constants";
-import { EnumObservationType } from "../enums";
+import { EObservationType } from "../enums";
 
 /**
  * streamInfos interface.
@@ -11,6 +11,6 @@ import { EnumObservationType } from "../enums";
 export interface IstreamInfos {
     type:            _STREAM, 
     id:              BigInt, 
-    observationType: EnumObservationType, 
+    observationType: EObservationType, 
     FoId:            BigInt
 }

@@ -7,7 +7,7 @@
  */
 // onsole.log("!----------------------------------- entity Decoder. -----------------------------------!");
 import { createEntity } from ".";
-import { EnumRelations } from "../../enums";
+import { ERelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 import { _idBig, _text } from "./constants";
 import { addDoubleQuotes } from "../../helpers";
@@ -57,7 +57,7 @@ export const Decoder:Ientity  = createEntity("Decoders", {
     },
     relations: {
       Loras: {
-        type: EnumRelations.hasMany,
+        type: ERelations.hasMany,
         expand: `"lora"."id" in (SELECT "lora"."id" from "lora" WHERE "lora"."decoder_id" = "decoder"."id")`,
         link: `"lora"."id" in (SELECT "lora"."id" from "lora" WHERE "lora"."decoder_id" = $ID)`,
         entityName: "Loras",

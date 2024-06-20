@@ -13,7 +13,7 @@ import { Token } from "../../parser/lexer";
 import { SqlOptions } from "../../parser/sqlOptions";
 import { formatLog } from "../../../logger";
 import { postSqlFromPgVisitor } from "../helper";
-import { EnumColumnType, EnumExtensions } from "../../../enums";
+import { EColumnType, EExtensions } from "../../../enums";
 import { models } from "../../../models";
 import { log } from "../../../log";
 import { _COLUMNSEPARATOR } from "../../../constants";
@@ -103,7 +103,7 @@ export class RootPgVisitor extends PgVisitor {
   protected VisitRessourcesPropertyPath(node: Token, context: IodataContext) {
     let tempNode = node;
     if (node.type == "PropertyPath") {
-      if (models.getRelationColumnTable(this.ctx.config, this.entity, node.value.path.raw) === EnumColumnType.Relation) {
+      if (models.getRelationColumnTable(this.ctx.config, this.entity, node.value.path.raw) === EColumnType.Relation) {
         this.parentId = this.id;
         this.id = BigInt(0);
         if ( node.value.navigation && node.value.navigation.type == "CollectionNavigation" ) {
@@ -142,7 +142,7 @@ export class RootPgVisitor extends PgVisitor {
   StartVisitRessources(node: Token) {
     console.log(formatLog.head("INIT PgVisitor"));
     this.limit = this.ctx.config.nb_page || 200;
-    this.numeric = this.ctx.config.extensions.includes(EnumExtensions.resultNumeric);
+    this.numeric = this.ctx.config.extensions.includes(EExtensions.resultNumeric);
     const temp = this.VisitRessources(node);
     this.verifyRessources();
     return temp;

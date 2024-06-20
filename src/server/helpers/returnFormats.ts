@@ -13,7 +13,7 @@ import { IreturnFormat, koaContext } from "../types";
 import { addCssFile } from "../views/css";
 import { addJsFile } from "../views/js";
 import util from "util";
-import { EnumOptions, EnumResultFormats } from "../enums";
+import { EOptions, EReturnFormats } from "../enums";
 import { isGraph } from ".";
 import { DOUBLEQUOTEDCOMA } from "../constants";
 import { log } from "../log";
@@ -60,7 +60,7 @@ const generateGrahSql = (input: PgVisitor): string => {
 };
 
 // all returns format functions
-const _returnFormats: { [key in EnumResultFormats]: IreturnFormat } = {
+const _returnFormats: { [key in EReturnFormats]: IreturnFormat } = {
   xlsx: {
     name: "xlsx",
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -80,7 +80,7 @@ const _returnFormats: { [key in EnumResultFormats]: IreturnFormat } = {
             query: input.toString(),
             singular: false,
             count: true,
-            strip: input.ctx.config.options.includes(EnumOptions.stripNull),
+            strip: input.ctx.config.options.includes(EOptions.stripNull),
             fullCount: input.count === true ? input.toPgQuery()?.count : undefined,
             fields: generateFields(input),
           });

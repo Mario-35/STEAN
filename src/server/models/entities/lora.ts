@@ -8,7 +8,7 @@
 // onsole.log("!----------------------------------- entity Lora -----------------------------------!");
 
 import { createEntity } from ".";
-import { EnumRelations } from "../../enums";
+import { ERelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 import { _idBig, _idRel, _text } from "./constants";
 import { addDoubleQuotes } from "../../helpers";
@@ -92,7 +92,7 @@ export const Lora:Ientity  = createEntity("Loras", {
   },
   relations: {
     Datastream: {
-      type: EnumRelations.belongsTo,
+      type: ERelations.belongsTo,
       expand: `"datastream"."id" = "lora"."datastream_id"`,
       link: `"datastream"."id" = (SELECT "lora"."datastream_id" FROM "lora" WHERE "lora"."id" = $ID)`,
       entityName: "Datastreams",
@@ -102,7 +102,7 @@ export const Lora:Ientity  = createEntity("Loras", {
       tableKey: "id",
     },
     MultiDatastream: {
-      type: EnumRelations.belongsTo,
+      type: ERelations.belongsTo,
       expand: `"multidatastream"."id" = "lora"."multidatastream_id"`,
       link: `"multidatastream"."id" = (SELECT "lora"."multidatastream_id" FROM "lora" WHERE "lora"."id" = $ID)`,
       entityName: "MultiDatastreams",
@@ -112,7 +112,7 @@ export const Lora:Ientity  = createEntity("Loras", {
       tableKey: "id",
     },
     Decoder: {
-      type: EnumRelations.belongsTo,
+      type: ERelations.belongsTo,
       expand: `"decoder"."id" = "lora"."decoder_id"`,
       link: `"decoder"."id" = (SELECT "lora"."decoder_id" FROM "lora" WHERE "lora"."id" = $ID)`,
       entityName: "Decoders",

@@ -9,7 +9,7 @@
 
 import fs from "fs";
 import util from "util";
-import { EnumColor } from "../enums";
+import { EColor } from "../enums";
 import { color, showAll, _DEBUG, _ERRORFILE, _OK } from "../constants";
 import { isTest } from "../helpers";
 import { Lexer } from "../odata/parser";
@@ -28,37 +28,37 @@ class Log {
   }
 
   public booting<T>(cle: string, value: T) { 
-    process.stdout.write(`\x1b[${ EnumColor.FgCyan }m ${cle} \x1b[${EnumColor.FgWhite}m ${value}\x1b[${EnumColor.Reset}m\n`);
+    process.stdout.write(`\x1b[${ EColor.FgCyan }m ${cle} \x1b[${EColor.FgWhite}m ${value}\x1b[${EColor.Reset}m\n`);
   }
   
   public error<T>(cle: unknown, infos?: T) {
-    process.stdout.write(`${color(EnumColor.FgRed)} ${cle} ${color( EnumColor.FgBlue )} : ${color(EnumColor.FgYellow)} ${showAll( infos, true )}${color(EnumColor.Reset)}\n`);
+    process.stdout.write(`${color(EColor.FgRed)} ${cle} ${color( EColor.FgBlue )} : ${color(EColor.FgYellow)} ${showAll( infos, true )}${color(EColor.Reset)}\n`);
   }
 
   public create(cle: string, value: string | number) {
-    process.stdout.write(`${color(EnumColor.FgWhite)} -->${color( EnumColor.FgCyan )} ${cle} ${color(EnumColor.FgWhite)} ${showAll(value)}${color(EnumColor.Reset)}\n`);
+    process.stdout.write(`${color(EColor.FgWhite)} -->${color( EColor.FgCyan )} ${cle} ${color(EColor.FgWhite)} ${showAll(value)}${color(EColor.Reset)}\n`);
   }
 
   public message<T>(cle: string, infos: T) {
-    return `${color(EnumColor.FgYellow)} ${cle} ${color( EnumColor.FgWhite )}:${color(EnumColor.FgCyan)} ${showAll( infos)}${color(EnumColor.Reset)}`;
+    return `${color(EColor.FgYellow)} ${cle} ${color( EColor.FgWhite )}:${color(EColor.FgCyan)} ${showAll( infos)}${color(EColor.Reset)}`;
   }
 
   public query(sql: unknown) {
-    if (_DEBUG) process.stdout.write(`${color(EnumColor.FgYellow)}${"=".repeat(20)}[ Query ]${"=".repeat(20)}\n${color(EnumColor.FgCyan)} ${showAll(sql)}${color( EnumColor.Reset )}\n`);
+    if (_DEBUG) process.stdout.write(`${color(EColor.FgYellow)}${"=".repeat(20)}[ Query ]${"=".repeat(20)}\n${color(EColor.FgCyan)} ${showAll(sql)}${color( EColor.Reset )}\n`);
   }
 
   public queryError<T>(query: unknown, error: T) {  
-    process.stdout.write(`${color(EnumColor.FgGreen)} ${"=".repeat(15)} ${color( EnumColor.FgCyan )} ERROR ${color(EnumColor.FgGreen)} ${"=".repeat(15)}${color( EnumColor.Reset )}
-      ${color(EnumColor.FgRed)} ${error} ${color( EnumColor.FgBlue )}
-      ${color(EnumColor.FgCyan)} ${showAll(query, false ) }${color(EnumColor.Reset)}`);
+    process.stdout.write(`${color(EColor.FgGreen)} ${"=".repeat(15)} ${color( EColor.FgCyan )} ERROR ${color(EColor.FgGreen)} ${"=".repeat(15)}${color( EColor.Reset )}
+      ${color(EColor.FgRed)} ${error} ${color( EColor.FgBlue )}
+      ${color(EColor.FgCyan)} ${showAll(query, false ) }${color(EColor.Reset)}`);
   }
 
   // Usefull for id not used ;)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   oData(infos: Lexer.Token | undefined) {  
     if (infos && _DEBUG)  {
-      const tmp = `${color(EnumColor.FgFadeWhite)} ${infos} ${color(EnumColor.Reset)}`;
-      process.stdout.write(`${color(EnumColor.FgRed)} ${"=".repeat(8)} ${color(EnumColor.FgCyan)} ${ new Error().stack?.split("\n")[2].trim().split("(")[0].split("at ")[1].trim() } ${tmp}${color(EnumColor.FgRed)} ${"=".repeat(8)}${color(EnumColor.Reset)}`);
+      const tmp = `${color(EColor.FgFadeWhite)} ${infos} ${color(EColor.Reset)}`;
+      process.stdout.write(`${color(EColor.FgRed)} ${"=".repeat(8)} ${color(EColor.FgCyan)} ${ new Error().stack?.split("\n")[2].trim().split("(")[0].split("at ")[1].trim() } ${tmp}${color(EColor.FgRed)} ${"=".repeat(8)}${color(EColor.Reset)}`);
     }
     return infos;
   }

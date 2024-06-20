@@ -12,7 +12,7 @@ import { IconfigFile, IdbConnection, IserviceInfos, koaContext, keyobj } from ".
 import { errors, infos, msg } from "../messages";
 import { createIndexes, createService} from "../db/helpers";
 import { app } from "..";
-import { EnumColor, EnumExtensions, EnumOptions, EnumUpdate, EnumVersion, typeExtensions, typeOptions } from "../enums";
+import { EColor, EExtensions, EOptions, EUpdate, EVersion, typeExtensions, typeOptions } from "../enums";
 import fs from "fs";
 import util from "util";
 import update from "./update.json";
@@ -32,7 +32,7 @@ class Configuration {
   static queries: { [key: string]: string[] } = {};
 
   constructor() {
-    process.stdout.write(`${color(EnumColor.FgRed)} ${"=".repeat(24)} ${color( EnumColor.FgCyan )} ${`START ${APP_NAME} version : ${APP_VERSION} [${NODE_ENV}]`} ${color( EnumColor.FgWhite )} ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()} ${color( EnumColor.FgRed )} ${"=".repeat(24)}${color(EnumColor.Reset)}\n`);
+    process.stdout.write(`${color(EColor.FgRed)} ${"=".repeat(24)} ${color( EColor.FgCyan )} ${`START ${APP_NAME} version : ${APP_VERSION} [${NODE_ENV}]`} ${color( EColor.FgWhite )} ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()} ${color( EColor.FgRed )} ${"=".repeat(24)}${color(EColor.Reset)}\n`);
     const file: fs.PathOrFileDescriptor = __dirname + `/configuration.json`;
     Configuration.filePath = file.toString();
     if (isTest()) this.readConfigFile();
@@ -85,10 +85,10 @@ class Configuration {
         "database": "test",
         "retry": 2
       },
-      "apiVersion": EnumVersion.v1_1,
+      "apiVersion": EVersion.v1_1,
       "nb_page" : 1000,
-      "extensions" : [EnumExtensions.base, EnumExtensions.multiDatastream, EnumExtensions.lora, EnumExtensions.logs, EnumExtensions.users],
-      "options" : [EnumOptions.canDrop]
+      "extensions" : [EExtensions.base, EExtensions.multiDatastream, EExtensions.lora, EExtensions.logs, EExtensions.users],
+      "options" : [EOptions.canDrop]
     });
 	}
 
@@ -96,7 +96,7 @@ class Configuration {
   getInfos = (ctx: koaContext, name: string): IserviceInfos  => {
     const protocol:string = ctx.request.headers["x-forwarded-proto"]
       ? ctx.request.headers["x-forwarded-proto"].toString()
-      : Configuration.configs[name].options.includes(EnumOptions.forceHttps)
+      : Configuration.configs[name].options.includes(EOptions.forceHttps)
         ? "https"
         : ctx.protocol;
         
@@ -275,28 +275,28 @@ class Configuration {
   // initialisation serve NOT IN TEST
   async afterAll(): Promise<boolean> {
     // Updates database after init
-    if ( update && update[EnumUpdate.afterAll] && Object.entries(update[EnumUpdate.afterAll]).length > 0 ) {
+    if ( update && update[EUpdate.afterAll] && Object.entries(update[EUpdate.afterAll]).length > 0 ) {
       this.clearQueries();
       Object.keys(Configuration.configs)
         .filter((e) => e != ADMIN)
         .forEach(async (connectName: string) => {
-          update[EnumUpdate.afterAll].forEach((operation: string) => { this.addToQueries(connectName, operation); });
+          update[EUpdate.afterAll].forEach((operation: string) => { this.addToQueries(connectName, operation); });
         });
-      await this.executeQueries(EnumUpdate.afterAll);
+      await this.executeQueries(EUpdate.afterAll);
     }
     
-    if (update && update[EnumUpdate.decoders] && Object.entries(update[EnumUpdate.decoders]).length > 0) {
+    if (update && update[EUpdate.decoders] && Object.entries(update[EUpdate.decoders]).length > 0) {
       this.clearQueries();
       Object.keys(Configuration.configs)
-        .filter( (e) => e != ADMIN && Configuration.configs[e].extensions.includes(EnumExtensions.lora) )
+        .filter( (e) => e != ADMIN && Configuration.configs[e].extensions.includes(EExtensions.lora) )
         .forEach((connectName: string) => {
-          Object.keys(update[EnumUpdate.decoders]).forEach((name: string) => {
-            const hash = this.hashCode(update[EnumUpdate.decoders as keyobj][name]);
-            this.addToQueries( connectName, `UPDATE decoder SET code='${update[EnumUpdate.decoders as keyobj][name]}', hash = '${hash}' WHERE name = '${name}' AND hash <> '${hash}' ` );
+          Object.keys(update[EUpdate.decoders]).forEach((name: string) => {
+            const hash = this.hashCode(update[EUpdate.decoders as keyobj][name]);
+            this.addToQueries( connectName, `UPDATE decoder SET code='${update[EUpdate.decoders as keyobj][name]}', hash = '${hash}' WHERE name = '${name}' AND hash <> '${hash}' ` );
           });
         });
       }
-     await this.executeQueries(EnumUpdate.decoders);
+     await this.executeQueries(EUpdate.decoders);
      return true;
   }
 
@@ -334,7 +334,7 @@ class Configuration {
         if (!Configuration.ports.includes(port))
           app.listen(port, () => {
             Configuration.ports.push(port);
-            log.booting(`${color(EnumColor.FgYellow)}First launch]${color(EnumColor.FgGreen)}${infos.ListenPort}`, port );
+            log.booting(`${color(EColor.FgYellow)}First launch]${color(EColor.FgGreen)}${infos.ListenPort}`, port );
           });
         return true;
     }
@@ -367,13 +367,13 @@ class Configuration {
     }
   };
 
-  public getModelVersion = (name: string): EnumVersion => {
+  public getModelVersion = (name: string): EVersion => {
     switch (name) {
       case "v1.1":
       case "1.1":
-        return EnumVersion.v1_1
+        return EVersion.v1_1
       default:
-        return EnumVersion.v1_0
+        return EVersion.v1_0
     }
   }
   
@@ -395,15 +395,15 @@ class Configuration {
     // TO REMOVE AFTER ALL SERVICES CLEAN
     // const formatOldConfig = () => {
     //   if (stringToBoolean(input["stripNull"])) {
-    //     options.push(EnumOptions.stripNull)
+    //     options.push(EOptions.stripNull)
     //     delete input["stripNull" as keyobj]
     //   }
     //   if (stringToBoolean(input["canDrop"])) {
-    //     options.push(EnumOptions.canDrop)
+    //     options.push(EOptions.canDrop)
     //     delete input["canDrop" as keyobj]
     //   }
     //   if (stringToBoolean(input["forceHttps"])) {
-    //     options.push(EnumOptions.forceHttps)
+    //     options.push(EOptions.forceHttps)
     //     delete input["forceHttps" as keyobj]
     //   }
     // }
@@ -412,7 +412,7 @@ class Configuration {
     const goodDbName = name
       ? name
       : input["pg" as keyobj] && input["pg" as keyobj]["database"] ? input["pg" as keyobj]["database"] : `ERROR` || "ERROR";
-    const version = goodDbName === ADMIN ? EnumVersion.v1_1  : String(input["apiVersion" as keyobj]).trim();
+    const version = goodDbName === ADMIN ? EVersion.v1_1  : String(input["apiVersion" as keyobj]).trim();
     const returnValue: IconfigFile = {
       name: goodDbName,
       port: goodDbName === ADMIN
@@ -479,15 +479,15 @@ class Configuration {
             admin: false
           });
           if(![ADMIN, TEST].includes(key)) createIndexes(key);
-          log.booting(`${color(EnumColor.FgMagenta)}Database => ${color(EnumColor.FgYellow)}[${key}] ${color(EnumColor.FgFadeWhite)} on line`, res ? _WEB : _NOTOK);
+          log.booting(`${color(EColor.FgMagenta)}Database => ${color(EColor.FgYellow)}[${key}] ${color(EColor.FgFadeWhite)} on line`, res ? _WEB : _NOTOK);
           const port = Configuration.configs[key].port;
           if (port > 0) {
             if (Configuration.ports.includes(port))
-              log.booting(`${color(EnumColor.FgMagenta)}[${key}] ${color(EnumColor.FgGreen)}${infos.addPort}`, port );
+              log.booting(`${color(EColor.FgMagenta)}[${key}] ${color(EColor.FgGreen)}${infos.addPort}`, port );
             else
               app.listen(port, () => {
                 Configuration.ports.push(port);
-                log.booting(`${color(EnumColor.FgYellow)}[${key}] ${color(EnumColor.FgGreen)}${infos.ListenPort}`, port );
+                log.booting(`${color(EColor.FgYellow)}[${key}] ${color(EColor.FgGreen)}${infos.ListenPort}`, port );
               });
           }
         }
@@ -530,19 +530,19 @@ class Configuration {
           }).then(() => _OK)
             .catch((err: Error) => err.message)
         );
-        if (update[EnumUpdate.triggers] && update[EnumUpdate.triggers] === true && connectName !== ADMIN) await this.relogCreateTrigger(connectName);
-        if (update[EnumUpdate.beforeAll] && Object.entries(update[EnumUpdate.beforeAll]).length > 0 ) {
-          if (update[EnumUpdate.beforeAll] && Object.entries(update[EnumUpdate.beforeAll]).length > 0 ) {
-            console.log(formatLog.head(EnumUpdate.beforeAll));
+        if (update[EUpdate.triggers] && update[EUpdate.triggers] === true && connectName !== ADMIN) await this.relogCreateTrigger(connectName);
+        if (update[EUpdate.beforeAll] && Object.entries(update[EUpdate.beforeAll]).length > 0 ) {
+          if (update[EUpdate.beforeAll] && Object.entries(update[EUpdate.beforeAll]).length > 0 ) {
+            console.log(formatLog.head(EUpdate.beforeAll));
             try {              
               Object.keys(Configuration.configs)
                 .filter((e) => e != ADMIN)
                 .forEach((connectName: string) => {
-                  update[EnumUpdate.beforeAll].forEach((operation: string) => {
+                  update[EUpdate.beforeAll].forEach((operation: string) => {
                     this.addToQueries(connectName, operation);
                   });
                 });
-              await this.executeQueries(EnumUpdate.beforeAll);
+              await this.executeQueries(EUpdate.beforeAll);
             // RelogCreate triggers for this service
             } catch (error) {
               log.error(formatLog.error(error));

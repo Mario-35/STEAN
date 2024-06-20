@@ -7,7 +7,7 @@
  */
 // onsole.log("!----------------------------------- entity ObservedProperty -----------------------------------!");
 import { createEntity } from ".";
-import { EnumRelations } from "../../enums";
+import { ERelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";
 import { _idBig, _text } from "./constants";
 import { addDoubleQuotes } from "../../helpers";
@@ -47,7 +47,7 @@ export const ObservedProperty:Ientity  = createEntity("ObservedProperties", {
     },
     relations: {
         Datastreams: {
-            type: EnumRelations.hasMany,
+            type: ERelations.hasMany,
             // expand: "err: 501 : Not Implemented.",
             expand: `"datastream"."id" in (SELECT "datastream"."id" from "datastream" WHERE "datastream"."observedproperty_id" = "observedproperty"."id")`,
             link: `"datastream"."id" in (SELECT "datastream"."id" FROM "datastream" WHERE "datastream"."observedproperty_id" = $ID)`,
@@ -58,7 +58,7 @@ export const ObservedProperty:Ientity  = createEntity("ObservedProperties", {
             tableKey: "id",
         },
         MultiDatastreams: {
-            type: EnumRelations.hasMany,
+            type: ERelations.hasMany,
             expand: `"multidatastream"."id" in (SELECT "multidatastreamobservedproperty"."multidatastream_id" FROM "multidatastreamobservedproperty" WHERE "multidatastreamobservedproperty"."observedproperty_id" = "observedproperty"."id")`,
             link: `"multidatastream"."id" in (SELECT "multidatastreamobservedproperty"."multidatastream_id" FROM "multidatastreamobservedproperty" WHERE "multidatastreamobservedproperty"."observedproperty_id" = $ID)`,
             entityName: "MultiDatastreams",

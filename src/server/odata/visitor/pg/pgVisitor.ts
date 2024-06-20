@@ -16,7 +16,7 @@ import { SqlOptions } from "../../parser/sqlOptions";
 import { formatLog } from "../../../logger";
 import { oDataDateFormat } from "../helper";
 import { errors, msg } from "../../../messages";
-import { EnumColumnType, EnumQuery } from "../../../enums";
+import { EColumnType, EQuery } from "../../../enums";
 import { models } from "../../../models";
 import { log } from "../../../log";
 import { _COLUMNSEPARATOR } from "../../../constants";
@@ -70,7 +70,7 @@ export class PgVisitor extends Visitor {
   protected getColumn(input: string, operation: string ,context: IodataContext ) {   
     console.log(formatLog.whereIam(input));
     const tempEntity = 
-      context.target ===  EnumQuery.Where && context.identifier
+      context.target ===  EQuery.Where && context.identifier
         ? models.getEntity(this.ctx.config, context.identifier.split(".")[0])
         : this.isSelect(context) 
           ? models.getEntity(this.ctx.config, this.entity || this.parentEntity || this.navigationProperty) 
@@ -99,7 +99,7 @@ export class PgVisitor extends Visitor {
 
   formatColumnResult(context: IodataContext, operation: string, ForceString?: boolean) {
     switch (context.target) {
-      case EnumQuery.Where:
+      case EQuery.Where:
         const nbs = Array.from({length: 5}, (v, k) => k+1);
         const translate = `TRANSLATE (SUBSTRING ("result"->>'value' FROM '(([0-9]+.*)*[0-9]+)'), '[]','')`;
         const isOperation = operation.trim() != "";
@@ -171,7 +171,7 @@ export class PgVisitor extends Visitor {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Visit(node: Token, context?: any) {
     this.ast = this.ast || node;
-    context = context || { target: EnumQuery.Where };
+    context = context || { target: EQuery.Where };
 
     if (node) {
       const visitor = this[`Visit${node.type}` as keyof Object];
@@ -202,7 +202,7 @@ export class PgVisitor extends Visitor {
     return this;
   }
 
-  isSelect = (context: IodataContext): boolean => (context.target ? context.target === EnumQuery.Select : false);
+  isSelect = (context: IodataContext): boolean => (context.target ? context.target === EQuery.Select : false);
 
  
   protected VisitExpand(node: Token, context: IodataContext) {
@@ -284,13 +284,13 @@ export class PgVisitor extends Visitor {
   }
 
   protected VisitFilter(node: Token, context: IodataContext) {
-    context.target = EnumQuery.Where;
+    context.target = EQuery.Where;
     if (this.query.where.toString().trim() != "") this.query.where.add(" AND ");
     this.Visit(node.value, context);
   }
 
   protected VisitOrderBy(node: Token, context: IodataContext) {    
-    context.target = EnumQuery.OrderBy;
+    context.target = EQuery.OrderBy;
     node.value.items.forEach((item: Token, i: number) => {
       this.Visit(item, context);
       if (i < node.value.items.length - 1) this.query.orderBy.add(", ");
@@ -311,7 +311,7 @@ export class PgVisitor extends Visitor {
   }
 
   protected VisitSelect(node: Token, context: IodataContext) {
-    context.target = EnumQuery.Select;
+    context.target = EQuery.Select;
     node.value.items.forEach((item: Token) => {
       this.Visit(item, context);
     });
@@ -364,7 +364,7 @@ export class PgVisitor extends Visitor {
   protected VisitPropertyPathExpression(node: Token, context: IodataContext) {
     if (node.value.current && node.value.next) {
       // deterwine if its column AND JSON
-      if (models.getRelationColumnTable(this.ctx.config, this.ctx.model[this.entity], node.value.current.raw) === EnumColumnType.Column
+      if (models.getRelationColumnTable(this.ctx.config, this.ctx.model[this.entity], node.value.current.raw) === EColumnType.Column
             && models.isColumnType(this.ctx.config, this.ctx.model[this.entity], node.value.current.raw, "json") 
             && node.value.next.raw[0] == "/" ) {
               this.query.where.add(`${addDoubleQuotes(node.value.current.raw)}->>${addSimpleQuotes(node.value.next.raw.slice(1))}`);
@@ -406,7 +406,7 @@ export class PgVisitor extends Visitor {
   }
 
   protected VisitDateType(node: Token, context: IodataContext):boolean {  
-    if (context.sign && models.getRelationColumnTable(this.ctx.config, this.ctx.model[this.entity], node.value.left.raw) === EnumColumnType.Column && models.isColumnType(this.ctx.config, this.ctx.model[this.entity], node.value.left.raw, "date")) {
+    if (context.sign && models.getRelationColumnTable(this.ctx.config, this.ctx.model[this.entity], node.value.left.raw) === EColumnType.Column && models.isColumnType(this.ctx.config, this.ctx.model[this.entity], node.value.left.raw, "date")) {
       const testIsDate = oDataDateFormat(node, context.sign);
       const columnName = this.getColumnNameOrAlias(this.ctx.model[context.identifier || this.entity], node.value.left.raw, {table: true, as: true, cast: false, ...this.createDefaultOptions()});
       if (testIsDate) {
@@ -457,7 +457,7 @@ export class PgVisitor extends Visitor {
       const tempEntity = models.getEntity(this.ctx.config, entity);
       if (!tempEntity) return;
       const colType = models.getRelationColumnTable(this.ctx.config, tempEntity, node.value.name);
-      if (colType === EnumColumnType.Column) {
+      if (colType === EColumnType.Column) {
         if (context.relation) {
           if ( Object.keys(tempEntity.relations).includes(context.relation) ) {
             if (!context.key) {
@@ -469,7 +469,7 @@ export class PgVisitor extends Visitor {
             }
           }
         }
-      } else if (colType === EnumColumnType.Relation) {
+      } else if (colType === EColumnType.Relation) {
         const tempEntity = models.getEntity(this.ctx.config, node.value.name);
         if (tempEntity) {
           if (context.relation) {
@@ -493,7 +493,7 @@ export class PgVisitor extends Visitor {
     if (context.relation && context.identifier && models.isColumnType(this.ctx.config, this.ctx.model[context.relation], removeAllQuotes(context.identifier).split(".")[0], "json")) {
       context.identifier = `${addDoubleQuotes(context.identifier.split(".")[0])}->>${addSimpleQuotes(node.raw)}`;     
     } else {
-      if (context.target ===  EnumQuery.Where) this.createComplexWhere(context.identifier ? context.identifier.split(".")[0] : this.entity, node, context);
+      if (context.target ===  EQuery.Where) this.createComplexWhere(context.identifier ? context.identifier.split(".")[0] : this.entity, node, context);
       if (!context.relation && !context.identifier && alias && context.target) {
         // @ts-ignore
         this.query[context.target].add(alias);  
@@ -501,7 +501,7 @@ export class PgVisitor extends Visitor {
         context.identifier = node.value.name;
         if (context.target && !context.key) {
           let alias = this.getColumnNameOrAlias(this.ctx.model[this.entity], node.value.name, this.createDefaultOptions());
-          alias = context.target ===  EnumQuery.Where ? alias?.split(" AS ")[0]: EnumQuery.OrderBy ? addDoubleQuotes(node.value.name ) : alias;
+          alias = context.target ===  EQuery.Where ? alias?.split(" AS ")[0]: EQuery.OrderBy ? addDoubleQuotes(node.value.name ) : alias;
           // @ts-ignore
           this.query[context.target].add(node.value.name.includes("->>") ||node.value.name.includes("->") || node.value.name.includes("::")
             ? node.value.name
@@ -536,7 +536,7 @@ export class PgVisitor extends Visitor {
   }
 
   protected VisitLiteral(node: Token, context: IodataContext): void {
-    if (context.relation && context.target === EnumQuery.Where) {
+    if (context.relation && context.target === EQuery.Where) {
       const temp = this.query.where.toString().split(" ").filter(e => e != "");      
       context.sign = temp.pop(); 
       this.query.where.init(temp.join(" "));

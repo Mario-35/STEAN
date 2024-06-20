@@ -13,7 +13,7 @@ import { IcsvColumn, IcsvFile, IreturnResult, IstreamInfos, koaContext } from ".
 import { queryInsertFromCsv, dateToDateWithTimeZone, executeSql, executeSqlValues } from "../helpers";
 import { addDoubleQuotes, asyncForEach } from "../../helpers";
 import { errors, msg } from "../../messages/";
-import { EnumDatesType, EnumExtensions } from "../../enums";
+import { EDatesType, EExtensions } from "../../enums";
 import util from "util";
 import { _NOTOK, _OK } from "../../constants";
 import { models } from "../../models";
@@ -44,11 +44,11 @@ export class CreateObservations extends Common {
             ? `'{"value": [${elem}]}'`
             : typeof elem === "string"
             ? elem.endsWith("Z")
-              ? `TO_TIMESTAMP('${dateToDateWithTimeZone(elem)}', '${ EnumDatesType.dateWithOutTimeZone }')::TIMESTAMP`
+              ? `TO_TIMESTAMP('${dateToDateWithTimeZone(elem)}', '${ EDatesType.dateWithOutTimeZone }')::TIMESTAMP`
               : `${separateur}${elem}${separateur}`
             : `${separateur}{${elem}}${separateur}`
           : index === this.indexResult && type === "VALUES"
-          ? this.ctx.config.extensions.includes(EnumExtensions.resultNumeric)
+          ? this.ctx.config.extensions.includes(EExtensions.resultNumeric)
             ? elem
             : `'{"value": ${elem}}'`
           : elem

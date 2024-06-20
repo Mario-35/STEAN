@@ -7,7 +7,7 @@
  */
 // onsole.log("!----------------------------------- HTML Views First Install for API. -----------------------------------!");
 
-import { EnumExtensions, enumKeys, EnumOptions, EnumVersion } from "../../enums";
+import { EExtensions, enumKeys, EOptions, EVersion } from "../../enums";
 import { infos } from "../../messages";
 import { IKeyString, koaContext } from "../../types";
 import { CoreHtmlView } from "./core";
@@ -80,14 +80,14 @@ export class First extends CoreHtmlView {
                             </tr>
                             <tr>
                             <td> ${this.addTextInput({name: "servicedatabase", label: `${infos.pg} ${infos.db} name`, value: "", alert: alert("database"), toolType: `name of ${infos.pg} ${infos.db}`})} </td>
-                            <td> ${this.addSelect({name: "serviceversion", list: enumKeys(EnumVersion).map(e => e.replace("_", ".")) , message: "Select version", password: true, value: "", alert: alert("repeat"), toolType: "Same as password"})} </td>
+                            <td> ${this.addSelect({name: "serviceversion", list: enumKeys(EVersion).map(e => e.replace("_", ".")) , message: "Select version", password: true, value: "", alert: alert("repeat"), toolType: "Same as password"})} </td>
                           </tr>
                           <tr>
                             <td class="onTop">
-                            ${this.addMultiSelect({name: "serviceextensions", list: enumKeys(EnumExtensions) , message: "Select extensions"})}                            
+                            ${this.addMultiSelect({name: "serviceextensions", list: enumKeys(EExtensions) , message: "Select extensions"})}                            
                             </td>
                             <td class="onTop">
-                            ${this.addMultiSelect({name: "serviceoptions", list: enumKeys(EnumOptions) , message: "Select Options"})}                            
+                            ${this.addMultiSelect({name: "serviceoptions", list: enumKeys(EOptions) , message: "Select Options"})}                            
                             </td>
                           </tr>
                           </table>
