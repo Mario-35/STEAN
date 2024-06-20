@@ -15,10 +15,9 @@ export function logToHtml(input: string): string {
     }
 
     Object.keys(EnumHtmlColor).forEach((key) => {       
-      input = input.split(`[${key}m`).join(`<span style="color:#${EnumHtmlColor[key as keyobj]}"> `);
-    });
-    console.log(input);
-    
+      input = input.split(`[${key}m`).join(`</span><span style="color:#${EnumHtmlColor[key as keyobj]}"> `);
+    });    
+    input = input.split('/r/n').join(`<br />`).split('/r').join(`<br />`);
     return input.split(`[0m`).join(`<br />`);
     
   }
