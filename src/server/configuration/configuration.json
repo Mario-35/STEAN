@@ -102,5 +102,28 @@
         "options": [
             "canDrop"
         ]
+    },
+    "onde": {
+        "name": "onde",
+        "port": 8029,
+        "pg": {
+            "host": "localhost",
+            "port": 5432,
+            "user": "sensorapi",
+            "password": "mario29",
+            "database": "onde",
+            "retry": 2
+        },
+        "apiVersion": "v1.1",
+        "date_format": "DD/MM/YYYY hh:mi:ss",
+        "webSite": "http://sensorthings.geosas.fr/apidoc/",
+        "nb_page": 200,
+        "alias": [
+            ""
+        ],
+        "extensions": [
+            "base"
+        ],
+        "options": []
     }
 }
