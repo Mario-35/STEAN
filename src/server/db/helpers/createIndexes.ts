@@ -40,10 +40,8 @@ export const createIndexes = (name: string): void => {
             "_resultTimeStart" = datas.rmin,
             "_resultTimeEnd" = datas.rmax
         FROM datas where "datastream".id = datas.id`
-    ]
-    console.log(serverConfig.getConfig(name).extensions);
-    
-    if (serverConfig.getConfig(name).extensions.includes(EExtensions.multiDatastream))
+    ] 
+    if (serverConfig.getConfig(name).extensions.includes(EExtensions.multiDatastream)) {
         sqls.push(`WITH multidatastreams AS (
                 select distinct "multidatastream_id" AS id from observation
             ),
@@ -62,5 +60,6 @@ export const createIndexes = (name: string): void => {
                 "_resultTimeStart" = datas.rmin,
                 "_resultTimeEnd" = datas.rmax
             FROM datas where "multidatastream".id = datas.id`);
+    }
     exe(name, sqls);
   }

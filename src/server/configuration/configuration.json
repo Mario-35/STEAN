@@ -105,7 +105,7 @@
     },
     "onde": {
         "name": "onde",
-        "port": 8029,
+        "port": 8030,
         "pg": {
             "host": "localhost",
             "port": 5432,

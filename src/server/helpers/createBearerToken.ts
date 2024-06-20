@@ -11,7 +11,7 @@ import cookieParser from "cookie-parser";
 import { APP_KEY } from "../constants";
 import { errors } from "../messages";
 import cookieModule from "cookie";
-import { koaContext } from "../types";
+import { keyobj, koaContext } from "../types";
 
 const getCookie = (serializedCookies: string, key: string) => cookieModule.parse(serializedCookies)[key] ?? false;
 
@@ -34,10 +34,8 @@ export const createBearerToken = (ctx: koaContext) => {
       token = query[queryKey];
       count += 1;
     }
-  // @ts-ignore
-    if (body && body[bodyKey]) {
-      // @ts-ignore
-      token = body[bodyKey];
+    if (body && body[bodyKey as keyobj]) {
+      token = body[bodyKey as keyobj];
       count += 1;
     }
   

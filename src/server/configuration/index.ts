@@ -552,13 +552,12 @@ class Configuration {
         return true;
       })
       .catch(async (err: Error) => {
-        let returnResult = false;
         // Password authentication failed 
         if (err["code" as keyobj] === "28P01") {
           if (!isTest()) {
             if(connectName === TEST)
             await createService(testDatas);
-            else await this.tryToCreateDB(connectName);
+            else return await this.tryToCreateDB(connectName);
           }
           //database does not exist
         } else if (err["code" as keyobj] === "3D000" && create == true) {
@@ -567,10 +566,10 @@ class Configuration {
           if (!isTest()) {
             if(connectName === TEST)
             await createService(testDatas);
-            else await this.tryToCreateDB(connectName);
+            else return await this.tryToCreateDB(connectName);
           }
         } else log.error(formatLog.error(err));
-        return returnResult;
+        return false;
       });
   }
 }

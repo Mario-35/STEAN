@@ -33,7 +33,7 @@ install_pm2() {
 }
 
 # Function to install unzip
-install_pm2() {
+install_unzip() {
     echo "Installing unzip..."
     sudo apt-get install unzip
 }
