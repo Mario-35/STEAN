@@ -61,6 +61,7 @@ download_stean() {
 # Function to create run.sh
 create_run() {
     echo "Create run.sh"
+    cp ./$APIDEST/scripts/run.sh .
 }
 
 # Function to install stean
