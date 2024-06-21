@@ -6,7 +6,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- oData Index -----------------------------------!");
+// onsole.log("!----------------------------------- oData Index -----------------------------------!");
 
 export * from './lexer';
 export * from './token';

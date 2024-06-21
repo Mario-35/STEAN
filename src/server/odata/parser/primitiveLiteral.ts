@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- oData PrimitiveLiteral -----------------------------------!")
+// onsole.log("!----------------------------------- oData PrimitiveLiteral -----------------------------------!")
 
 import Utils from "./utils";
 import Lexer from "./lexer";

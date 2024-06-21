@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- oData Literal -----------------------------------!")
+// onsole.log("!----------------------------------- oData Literal -----------------------------------!")
 
 function integer(value: string): number {
     return +value;

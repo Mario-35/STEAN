@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- oData Query -----------------------------------!")
+// onsole.log("!----------------------------------- oData Query -----------------------------------!")
 
 import Utils from "./utils";
 import Lexer from "./lexer";

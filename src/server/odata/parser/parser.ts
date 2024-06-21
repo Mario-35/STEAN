@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// console.log("!----------------------------------- oData parser -----------------------------------!");
+// onsole.log("!----------------------------------- oData parser -----------------------------------!");
 
 import Lexer from "./lexer";
 import PrimitiveLiteral from "./primitiveLiteral";
