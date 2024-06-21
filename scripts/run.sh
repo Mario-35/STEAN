@@ -1,5 +1,5 @@
 pm2 stop index
-pm2 flush index
+pm2 flush
 pm2 delete index
 echo "$FILEAPP starting ..."
 NODE_ENV=production 
