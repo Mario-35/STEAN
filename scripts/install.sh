@@ -58,6 +58,13 @@ download_stean() {
     curl -o $FILEDIST -L https://github.com/Mario-35/STEAN/raw/main/dist.zip
 }
 
+# Function to create run.sh
+create_run() {
+    echo "Create run.sh"
+    cp ./$APIDEST/scripts/run.sh .
+    
+}
+
 # Function to install stean
 install_stean() {
     stop_stean
@@ -78,10 +85,7 @@ install_stean() {
         cp ./$APIBak/configuration/.key ./$APIDEST/configuration/.key
     fi
     save_dist
-    cp ./$APIDEST/scripts/run.sh .
-    if [ -f ./run.sh  ]; then
-        echo "run.sh created."
-    fi
+    create_run
     cd $APIDEST
     npm install --silent --omit=dev
     cd ..

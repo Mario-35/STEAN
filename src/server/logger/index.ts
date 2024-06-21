@@ -67,9 +67,7 @@ class FormatLog {
       ? `${color(EColor.FgRed)} ${cle} ${color( EColor.FgBlue )} : ${color(EColor.FgYellow)} ${this.logAll( infos, this.debugFile )}${color(EColor.Reset)}`
       : `${color(EColor.FgRed)} Error ${color( EColor.FgBlue )} : ${color(EColor.FgYellow)} ${this.logAll(cle)}${color( EColor.Reset )}`;
   }
-
-  // Usefull for id not used ;)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  
   whereIam(infos?: unknown) {    
     const tmp = infos ? `${color(EColor.FgFadeWhite)} ${infos} ${color(EColor.Reset)}` : '';
     if (_DEBUG) 
