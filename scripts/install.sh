@@ -62,6 +62,7 @@ download_stean() {
 create_run() {
     echo "Create run.sh"
     cp ./$APIDEST/scripts/run.sh .
+    sudo chmod -R 777 run.sh
 }
 
 # Function to install stean
