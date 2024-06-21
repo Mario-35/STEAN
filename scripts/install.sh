@@ -95,11 +95,6 @@ stop_stean() {
     pm2 kill
 }
 
-start_stean() {
-    stop_stean
-    sh ./run.sh
-}
-
 #------------------------------------------------------------------
 #|                        START                                   |
 #------------------------------------------------------------------
@@ -159,5 +154,4 @@ else
 fi
 
 install_stean
-start_stean
-pm2 logs --lines 500
+sh ./run.sh

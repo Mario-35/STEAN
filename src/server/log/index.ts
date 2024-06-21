@@ -63,6 +63,11 @@ class Log {
     return infos;
   }
 
+  public write(...data: any[]) {
+    Log.logFile = fs.createWriteStream(_ERRORFILE, { flags: "a" });
+    Log.logFile.write( util.format.apply(null, data).replace(/\u001b[^m]*?m/g, "") + "\n" );
+  }
+
   public init() {
     console.log(this.message("Log", "ready " + _OK));    
   }

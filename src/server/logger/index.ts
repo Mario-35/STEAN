@@ -11,6 +11,7 @@ import { TEST, color,  TIMESTAMP, _DEBUG, _ERRORFILE, _WEB } from "../constants"
 import fs from "fs";
 import { EColor } from "../enums";
 import { koaContext } from "../types";
+import { log } from "../log";
 export { writeToLog } from "./writeToLog";
 // onsole.log("!----------------------------------- Index Logs -----------------------------------!");
 
@@ -23,6 +24,7 @@ class FormatLog {
   constructor() {
     // override console log important in production build will remove all console.log
     console.log = (data: any) => {  
+      log.write(data);
       if (data && process.env.NODE_ENV?.trim() !== TEST ) this.write(data);
     };
   }
