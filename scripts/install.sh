@@ -62,7 +62,7 @@ download_stean() {
 create_run() {
     echo "Create run.sh"
     cp ./$APIDEST/scripts/run.sh .
-    
+    wget  https://raw.githubusercontent.com/Mario-35/STEAN/main/scripts/run.sh | ./run.sh
 }
 
 # Function to install stean
