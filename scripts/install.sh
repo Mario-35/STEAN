@@ -61,7 +61,6 @@ download_stean() {
 # Function to create run.sh
 create_run() {
     echo "Create run.sh"
-    cp ./$APIDEST/scripts/run.sh .
     wget  https://raw.githubusercontent.com/Mario-35/STEAN/main/scripts/run.sh | ./run.sh
 }
 
@@ -98,12 +97,7 @@ stop_stean() {
 
 start_stean() {
     stop_stean
-    if [ -f "$FILEAPP" ]; then      
-        echo "$FILEAPP starting ..."
-        NODE_ENV=production pm2 start $FILEAPP --output ./api/logs.txt
-    else 
-        echo "$FILEAPP does not exist can't launch app."
-    fi
+    sh ./run.sh
 }
 
 #------------------------------------------------------------------
