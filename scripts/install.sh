@@ -26,6 +26,12 @@ install_node() {
     sudo apt install nodejs
 }
 
+# Function to install postgresql-postgis
+install_pg() {
+    echo "Installing postgresql-postgis ..."
+    sudo apt install postgis postgresql-14-postgis-3
+}
+
 # Function to install pm2
 install_pm2() {
     echo "Installing pm2..."
@@ -100,7 +106,11 @@ start_stean() {
 if ! command -v psql --version &> /dev/null
 then
     echo "PostgreSQL is Not installed."
-    exit
+    install_pg
+    if ! command -v psql --version &> /dev/null
+    then
+        exit
+    fi
 else
     echo "PostgreSQL is installed."
 fi

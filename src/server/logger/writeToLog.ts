@@ -13,6 +13,7 @@ import { models } from "../models";
 import { log } from "../log";
 import { createInsertValues } from "../models/helpers";
 import { keyobj, koaContext } from "../types";
+import { _ID } from "../db/constants";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const writeToLog = async ( ctx: koaContext, ...error: any[] ): Promise<void> => {
@@ -23,14 +24,13 @@ export const writeToLog = async ( ctx: koaContext, ...error: any[] ): Promise<vo
     ctx.log.error = error;
     ctx.log.datas = hidePassword(ctx.log.datas); 
     try {
-      if (ctx.body && ctx.body && typeof ctx.body === "string") ctx.log.returnid = JSON.parse(ctx.body)["@iot.id"];       
+      if (ctx.body && ctx.body && typeof ctx.body === "string") ctx.log.returnid = JSON.parse(ctx.body)[_ID];       
     } catch (error) {
       ctx.log.returnid = undefined;
     }   
     const code = Math.floor(ctx.log.code / 100);
     if (code == 2 || code == 3 )return;
     
-    // if (ctx.odata && ctx.odata.idLog && BigInt(ctx.odata.idLog) > 0 && code !== 2 ) return;
     await executeSqlValues(ctx.config, `INSERT INTO ${addDoubleQuotes(models.DBFull(ctx.config).Logs.table)} ${createInsertValues(ctx.config, ctx.log, models.DBFull(ctx.config).Logs.name)} returning id`).then((res: object) =>{
       if (!isTest()) console.log(formatLog.url(`${ctx.decodedUrl.root}/Logs(${res[0 as keyobj]})`));      
     }).catch((error) => {

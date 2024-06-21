@@ -92,20 +92,19 @@ app.use(protectedRoutes.routes());
 
 // Initialisation of models
 models.init();
+
 // Initialisation of custom logs
 log.init();
 
 // Start server initialisaion
 export const server = isTest()
   ? app.listen(serverConfig.getConfig(TEST).port, async () => {
-    // await serverConfig.addToServer(ADMIN);
     await serverConfig
           .connection(ADMIN)`${sqlStopDbName('test')}`
           .then(async () => {
             await serverConfig.connection(ADMIN)`DROP DATABASE IF EXISTS test`;
             process.stdout.write(`DROP DATABASE IF EXISTS test\n`);
           });
-      // serverConfig.createDbConnectionFromConfigName(TEST);
       console.log(log.message(`${APP_NAME} version : ${APP_VERSION}`, "ready " + _OK));
     })
   : serverConfig.init();
