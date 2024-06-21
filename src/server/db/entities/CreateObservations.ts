@@ -145,7 +145,6 @@ export class CreateObservations extends Common {
                       total += 1;
                     }).catch((error) => {
                       log.errorMsg(error);                     
-                      formatLog.writeErrorInFile(undefined, error);
                     });
                 }
               } else this.ctx.throw(400, { code: 400, detail: error });

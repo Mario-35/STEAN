@@ -1,16 +1,16 @@
 /**
- * Constants of API.
+ * Constants of API
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
+// onsole.log("!----------------------------------- Constants of API -----------------------------------!");
+
 "use strict";
 import util from "util";
 import { getKey } from "./helpers";
-// onsole.log("!----------------------------------- Constants of API. -----------------------------------!");
 export const _DEL= "🗑️";
-export const _ERRORFILE = "errorFile.md";
 export const _FORBIDDEN = "⛔️";
 export const _KEY= "🔑";
 export const _LOCK= "🔏";

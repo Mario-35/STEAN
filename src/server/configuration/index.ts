@@ -6,7 +6,7 @@
  *
  */
 // onsole.log("!----------------------------------- Configuration class. -----------------------------------!");
-import { addToStrings, ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_DB, NODE_ENV, setReady, TEST, TIMESTAMP, _DEBUG, _ERRORFILE, _NOTOK, _OK, _WEB, } from "../constants";
+import { addToStrings, ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_DB, NODE_ENV, setReady, TEST, _DEBUG, _NOTOK, _OK, _WEB, } from "../constants";
 import { asyncForEach, decrypt, encrypt, hidePassword, isProduction, isTest, unikeList, unique, } from "../helpers";
 import { IconfigFile, IdbConnection, IserviceInfos, koaContext, keyobj } from "../types";
 import { errors, infos, msg } from "../messages";
@@ -32,7 +32,7 @@ class Configuration {
   static queries: { [key: string]: string[] } = {};
 
   constructor() {
-    process.stdout.write(`${color(EColor.FgRed)} ${"=".repeat(24)} ${color( EColor.FgCyan )} ${`START ${APP_NAME} version : ${APP_VERSION} [${NODE_ENV}]`} ${color( EColor.FgWhite )} ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()} ${color( EColor.FgRed )} ${"=".repeat(24)}${color(EColor.Reset)}\n`);
+    process.stdout.write(`${color(EColor.Red)} ${"=".repeat(24)} ${color( EColor.Cyan )} ${`START ${APP_NAME} version : ${APP_VERSION} [${NODE_ENV}]`} ${color( EColor.White )} ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()} ${color( EColor.Red )} ${"=".repeat(24)}${color(EColor.Reset)}\n`);
     const file: fs.PathOrFileDescriptor = __dirname + `/configuration.json`;
     Configuration.filePath = file.toString();
     if (isTest()) this.readConfigFile();
@@ -306,9 +306,6 @@ class Configuration {
       this.readConfigFile(input);
       console.log(log.message(infos.configuration, infos.loaded + _OK));    
       let status = true;
-      const errFile = fs.createWriteStream(_ERRORFILE, { flags: "w" });
-      log.booting(infos.logFile, _ERRORFILE) ;
-      errFile.write(`## Start : ${TIMESTAMP()} \n`);
       await asyncForEach(
         // Start connection ALL entries in config file
         Object.keys(Configuration.configs).filter(e => e.toUpperCase() !== TEST.toUpperCase()),
@@ -334,7 +331,7 @@ class Configuration {
         if (!Configuration.ports.includes(port))
           app.listen(port, () => {
             Configuration.ports.push(port);
-            log.booting(`${color(EColor.FgYellow)}First launch]${color(EColor.FgGreen)}${infos.ListenPort}`, port );
+            log.booting(`${color(EColor.Yellow)}First launch]${color(EColor.Green)}${infos.ListenPort}`, port );
           });
         return true;
     }
@@ -479,15 +476,15 @@ class Configuration {
             admin: false
           });
           if(![ADMIN, TEST].includes(key)) createIndexes(key);
-          log.booting(`${color(EColor.FgMagenta)}Database => ${color(EColor.FgYellow)}[${key}] ${color(EColor.FgFadeWhite)} on line`, res ? _WEB : _NOTOK);
+          log.booting(`${color(EColor.Magenta)}Database => ${color(EColor.Yellow)}[${key}] ${color(EColor.Default)} on line`, res ? _WEB : _NOTOK);
           const port = Configuration.configs[key].port;
           if (port > 0) {
             if (Configuration.ports.includes(port))
-              log.booting(`${color(EColor.FgMagenta)}[${key}] ${color(EColor.FgGreen)}${infos.addPort}`, port );
+              log.booting(`${color(EColor.Magenta)}[${key}] ${color(EColor.Green)}${infos.addPort}`, port );
             else
               app.listen(port, () => {
                 Configuration.ports.push(port);
-                log.booting(`${color(EColor.FgYellow)}[${key}] ${color(EColor.FgGreen)}${infos.ListenPort}`, port );
+                log.booting(`${color(EColor.Yellow)}[${key}] ${color(EColor.Green)}${infos.ListenPort}`, port );
               });
           }
         }

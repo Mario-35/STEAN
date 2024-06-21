@@ -6,25 +6,22 @@
  * @author mario.adam@inrae.fr
  *
  */
-import util from "util";
-import { TEST, color,  TIMESTAMP, _DEBUG, _ERRORFILE, _WEB } from "../constants";
-import fs from "fs";
-import { EColor } from "../enums";
-import { koaContext } from "../types";
-import { log } from "../log";
-export { writeToLog } from "./writeToLog";
 // onsole.log("!----------------------------------- Index Logs -----------------------------------!");
+
+import util from "util";
+import { TEST, color,  _DEBUG, _WEB } from "../constants";
+import { EColor } from "../enums";
+export { writeToLog } from "./writeToLog";
 
 class FormatLog {
   private debugFile = false;
   private line = (nb: number)  => "=".repeat(nb);
   private logAll = (input: any, colors?: boolean) => typeof input === "object" ? util.inspect(input, { showHidden: false, depth: null, colors: colors || false, }) : input;
-  private separator = (title: string, nb: number) => `${color(EColor.FgGreen)} ${this.line(nb)} ${color( EColor.FgYellow )} ${title} ${color(EColor.FgGreen)} ${this.line(nb)}${color( EColor.Reset )}`;
-  private logCleInfos = (cle: string, infos: object) =>  `${color(EColor.FgGreen)} ${cle} ${color( EColor.FgWhite )} : ${color(EColor.FgCyan)} ${this.logAll( infos, this.debugFile )}${color(EColor.Reset)}`;
+  private separator = (title: string, nb: number) => `${color(EColor.Green)} ${this.line(nb)} ${color( EColor.Yellow )} ${title} ${color(EColor.Green)} ${this.line(nb)}${color( EColor.Reset )}`;
+  private logCleInfos = (cle: string, infos: object) =>  `${color(EColor.Green)} ${cle} ${color( EColor.White )} : ${color(EColor.Cyan)} ${this.logAll( infos, this.debugFile )}${color(EColor.Reset)}`;
   constructor() {
     // override console log important in production build will remove all console.log
-    console.log = (data: any) => {  
-      log.write(data);
+    console.log = (data: any) => {
       if (data && process.env.NODE_ENV?.trim() !== TEST ) this.write(data);
     };
   }
@@ -45,49 +42,39 @@ class FormatLog {
   }
 
   url(link: string) {
-    return `${_WEB} ${color(EColor.FgFadeWhite)} : ${color( EColor.FgCyan )} ${link}${color(EColor.Reset)}`;
+    return `${_WEB} ${color(EColor.Default)} : ${color( EColor.Cyan )} ${link}${color(EColor.Reset)}`;
   }
 
   head<T>(cle: string, infos?: T) {
-    if (_DEBUG) return infos ? `${color(EColor.FgGreen)} ${this.line(12)} ${color( EColor.FgCyan )} ${cle} ${color(EColor.FgWhite)} ${this.logAll( infos, this.debugFile )} ${color(EColor.FgGreen)} ${this.line(12)}${color( EColor.Reset )}` : this.separator(cle, 12);
+    if (_DEBUG) return infos ? `${color(EColor.Green)} ${this.line(12)} ${color( EColor.Cyan )} ${cle} ${color(EColor.White)} ${this.logAll( infos, this.debugFile )} ${color(EColor.Green)} ${this.line(12)}${color( EColor.Reset )}` : this.separator(cle, 12);
   }
 
   infos(cle: string, input: unknown) {
-      if (_DEBUG) return `${this.separator(cle, 30)} ${color(EColor.FgYellow)} ${this.logAll(input, true)}${color( EColor.Reset )}`;
+      if (_DEBUG) return `${this.separator(cle, 30)} ${color(EColor.Yellow)} ${this.logAll(input, true)}${color( EColor.Reset )}`;
   }
 
   debug<T>(cle: string, infos: T) {
-    if (_DEBUG) return `${color(EColor.FgGreen)} ${cle} ${color( EColor.FgWhite )} : ${color(EColor.FgCyan)} ${this.logAll( infos, this.debugFile )}${color(EColor.Reset)}`;
+    if (_DEBUG) return `${color(EColor.Green)} ${cle} ${color( EColor.White )} : ${color(EColor.Cyan)} ${this.logAll( infos, this.debugFile )}${color(EColor.Reset)}`;
   }
 
   result<T>(cle: string, infos?: T) {
-    if (_DEBUG) return `${color(EColor.FgGreen)}     >>${color( EColor.FgBlack )} ${cle} ${color(EColor.FgFadeWhite)} : ${color( EColor.FgCyan )} ${this.logAll(infos, this.debugFile)}${color(EColor.Reset)}` ;
+    if (_DEBUG) return `${color(EColor.Green)}     >>${color( EColor.Black )} ${cle} ${color(EColor.Default)} : ${color( EColor.Cyan )} ${this.logAll(infos, this.debugFile)}${color(EColor.Reset)}` ;
   }
 
   error<T>(cle: unknown, infos?: T) {
     return infos
-      ? `${color(EColor.FgRed)} ${cle} ${color( EColor.FgBlue )} : ${color(EColor.FgYellow)} ${this.logAll( infos, this.debugFile )}${color(EColor.Reset)}`
-      : `${color(EColor.FgRed)} Error ${color( EColor.FgBlue )} : ${color(EColor.FgYellow)} ${this.logAll(cle)}${color( EColor.Reset )}`;
+      ? `${color(EColor.Red)} ${cle} ${color( EColor.Blue )} : ${color(EColor.Yellow)} ${this.logAll( infos, this.debugFile )}${color(EColor.Reset)}`
+      : `${color(EColor.Red)} Error ${color( EColor.Blue )} : ${color(EColor.Yellow)} ${this.logAll(cle)}${color( EColor.Reset )}`;
   }
   
   whereIam(infos?: unknown) {    
-    const tmp = infos ? `${color(EColor.FgFadeWhite)} ${infos} ${color(EColor.Reset)}` : '';
+    const tmp = infos ? `${color(EColor.Default)} ${infos} ${color(EColor.Reset)}` : '';
     if (_DEBUG) 
-      return `${color(EColor.FgRed)} ${this.line(4)} ${color(EColor.FgCyan)} ${ new Error().stack?.split("\n")[2].trim().split("(")[0].split("at ")[1].trim() } ${tmp}${color(EColor.FgRed)} ${this.line(4)}${color(EColor.Reset)}`;
+      return `${color(EColor.Red)} ${this.line(4)} ${color(EColor.Cyan)} ${ new Error().stack?.split("\n")[2].trim().split("(")[0].split("at ")[1].trim() } ${tmp}${color(EColor.Red)} ${this.line(4)}${color(EColor.Reset)}`;
   }
 
   test() {
-    return `${color(EColor.FgYellow)} ${this.line(4)} ${color(EColor.FgCyan)} ${ new Error().stack?.split("\n")[2].trim().split(" ")[1] } ${color(EColor.FgYellow)} ${this.line(4)}${color(EColor.Reset)}`;
-  }
-
-  writeErrorInFile<T>(ctx: koaContext | undefined, ...data: T[]) {
-    const errFile = fs.createWriteStream(_ERRORFILE, { flags: "a" });
-    if (ctx) {
-      errFile.write(`# ${TIMESTAMP()} : ${ctx.request.url}\n`);
-      errFile.write( util.inspect(ctx.request.body, { showHidden: false, depth: null, colors: false, }) + "\n" );
-      errFile.write(`${this.line(30)}\n`);
-    } else errFile.write(`# ${this.line(10)} ${TIMESTAMP()} ${this.line(10)}\n`);
-    errFile.write(util.format.apply(null, data) + "\n");
+    return `${color(EColor.Yellow)} ${this.line(4)} ${color(EColor.Cyan)} ${ new Error().stack?.split("\n")[2].trim().split(" ")[1] } ${color(EColor.Yellow)} ${this.line(4)}${color(EColor.Reset)}`;
   }
 
 }

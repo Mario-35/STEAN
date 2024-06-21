@@ -1,6 +1,10 @@
 
+# version 3.7.4
+    remove errorFile.md
+    add /logs route
+
 # version 3.7.3
-    add Indexes at startup to create datastream date afte
+    add Indexes at startup to create datastream date after
 
 # version 3.7.2
     revisions code

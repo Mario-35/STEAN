@@ -3,7 +3,7 @@
     "description": "SensorThings Enhanced API Node",
     "author": "Adam Mario",
     "license": "ISC",
-    "version": "3.7.3",
+    "version": "3.7.4",
     "lockfileVersion": 1,
     "requires": true,
     "repository": {
@@ -22,7 +22,7 @@
         "buildRem": "npm run build-ts && node build.js && scp -r -p dist.zip madam@194.167.76.143:./",
         "buildDocker": "npm run build-ts && node build.js docker && docker-compose up --build -d",
         "build": "npm run build-ts && node build.js",
-        "git": "git add ./src/ ./package.json ./realease.md ./dist.zip ./scripts/",
+        "git": "git add ./src/ ./package.json ./realease.md ./dist.zip ./scripts/ ./scripts/ ./README.md ",
         "build-ts": "rimraf ./build && tsc",
         "serve": "node build/index.js",
         "upProd": "npm run build-ts && node build.js && git add ./src/ ./package.json ./realease.md ./dist.zip ./scripts/ ./README.md && git commit --file .git/COMMIT_EDITMSG && git push",

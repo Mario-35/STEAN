@@ -1,11 +1,12 @@
 /**
- * HTML Views Error for API.
+ * HTML Views Logs for API.
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- HTML Views Error for API. -----------------------------------!");
+// onsole.log("!----------------------------------- HTML Views Logs for API -----------------------------------!");
+
 import { koaContext } from "../../types";
 import { CoreHtmlView } from "./core";
 import fs from "fs";
@@ -23,10 +24,9 @@ import { logToHtml } from "../helpers";
         this._HTMLResult = [`
         <!DOCTYPE html>
             <html>
-            <body style="background-color:#A49C9C;">
-                ${logToHtml(message)}
-
-                    </body>
-                </html>`];
+                <body style="background-color:#353535;">
+                    ${logToHtml(message)}
+                </body>
+            </html>`];
     };
   }

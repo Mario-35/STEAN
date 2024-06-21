@@ -18,7 +18,6 @@ import { _ID } from "../db/constants";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const writeToLog = async ( ctx: koaContext, ...error: any[] ): Promise<void> => {
   console.log(formatLog.whereIam("LOG"));
-  if (error.length > 0) formatLog.writeErrorInFile(ctx, error);  
   if (ctx.log && ctx.log.method != "GET") {
     ctx.log.code = error && error["code" as keyobj] ? +error["code" as keyobj] : +ctx.response.status;
     ctx.log.error = error;
