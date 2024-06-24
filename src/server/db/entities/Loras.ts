@@ -31,7 +31,7 @@ export class Loras extends Common {
     const result:Record<string, any>  = {};
     const listKeys = ["deveui", "DevEUI", "sensor_id", "frame"];
       if (notNull(dataInput["payload_deciphered"]))
-      this.stean["frame"] = dataInput["payload_deciphered"].toUpperCase();
+      this.stean["frame"] = dataInput["payload_deciphered"].toUpperCase();      
       Object.entries(dataInput).forEach( ([k, v]) => (result[listKeys.includes(k) ? k.toLowerCase() : k] = listKeys.includes( k ) ? v.toUpperCase() : v) );
       if (!isNaN(dataInput["timestamp"])) 
       result["timestamp"] = new Date( dataInput["timestamp"] * 1000 ).toISOString();
@@ -48,6 +48,9 @@ export class Loras extends Common {
     console.log(formatLog.whereIam());
       const addToStean = (key: string) => (this.stean[key] = dataInput[key]);
     if (dataInput) this.stean = await this.prepareInputResult(dataInput);
+
+    if (this.stean["frame"] === "000000000000000000") this.ctx.throw(400, { code: 400, detail: errors.frameNotConform });
+
     function gedataInputtDate(): string | undefined {
       if (dataInput["datetime"]) return String(dataInput["datetime"]);
       if (dataInput["phenomenonTime"]) return String(dataInput["phenomenonTime"]);

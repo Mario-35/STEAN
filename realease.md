@@ -4,6 +4,7 @@
     add /logs route
     correction bug resultFormat Graph with specific order
     correction bug rights to see config
+    create new error in lora when frame = "000000000000000000"
 
 # version 3.7.3
     add Indexes at startup to create datastream date after

@@ -25,8 +25,7 @@ import { koaContext } from "../types";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const routerHandle = async (ctx: koaContext, next: any) => { 
   // First Install ?
-  await firstInstall(ctx);
-  
+  await firstInstall(ctx);  
   // create token
   createBearerToken(ctx);
   // decode url

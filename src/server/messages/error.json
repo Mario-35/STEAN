@@ -15,6 +15,7 @@
 	"invalid": "Invalid ($1)",
 	"dataMessage": "Data is missing or Null",
 	"deveuiMessage": "deveui is missing or Null",
+	"frameNotConform": "frame is not conform",
 	"deveuiNotFound": "deveui ($1) not found",
 	"idRequired": "Id is required",
 	"noColumn": "No columns parameters found",
