@@ -18,7 +18,7 @@ export function logToHtml(input: string): string {
     return input
               .split(`[0m`)
               .join(``)
-              .split('\r\n')
+              .split(/\r?\n/)
               .map((e: string) => e.trim().startsWith("</span>") ? e: `<span style="color:#93C572">${e}`)
               .join("</span><br />");
     
