@@ -37,7 +37,7 @@ export const graphDatastream = (table: string, id: string | bigint, query: strin
                     ORDER BY 
                       "resultTime" ASC
                   ) as result${n+1} ${ (n+1) > 1 ? ` ON result${n}.date = result${n+1}.date` : '' }`).join(" ")} 
-              ) As mario
+              ) AS mario
           ) AS nop`
       }`
 };

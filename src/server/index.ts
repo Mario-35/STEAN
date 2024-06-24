@@ -29,9 +29,24 @@ import { RootPgVisitor } from "./odata/visitor";
 import { IconfigFile, IdecodedUrl, Ientities, Ilog, IuserToken, koaContext } from "./types";
 import { sqlStopDbName } from "./routes/helper";
 
+// interface DefaultContext {
+//   decodedUrl: IdecodedUrl;
+//   config: IconfigFile;
+//   odata: RootPgVisitor;
+//   datas: Record<string, any>;
+//   user: IuserToken;
+//   log: Ilog | undefined;
+//   model: Ientities;
+//   body: any;
+// }
+
+// declare module "koa" {
+// typeof DefaultContext
+// }
+
 // Extend koa context 
 declare module "koa" {
-  interface DefaultContext {
+  export interface DefaultContext {
     decodedUrl: IdecodedUrl;
     config: IconfigFile;
     odata: RootPgVisitor;

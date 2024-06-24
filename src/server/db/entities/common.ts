@@ -93,10 +93,9 @@
      const sql = this.ctx.odata.getSql();
      
      // Return results
-     if (sql) switch (this.ctx.odata.returnFormat ) {
+     if (sql) switch (this.ctx.odata.returnFormat) {
        case returnFormats.sql:
-         return this.formatReturnResult({ body: sql });
- 
+         return this.formatReturnResult({ body: sql }); 
        case returnFormats.graph:
          return await executeSqlValues(this.ctx.config, sql).then(async (res: Record<string, any>) => {
            return (res[0].length > 0)  ?  this.formatReturnResult({ body: res[0]}) : this.formatReturnResult({ body: "nothing"});
@@ -115,13 +114,22 @@
      // create query
      const sql = this.ctx.odata.getSql();
      // Return results
-     if (sql) switch (this.ctx.odata.returnFormat ) {
+     switch (this.ctx.odata.returnFormat) {
        case returnFormats.sql:
          return this.formatReturnResult({ body: sql }); 
        default:
          return await executeSqlValues(this.ctx.config, sql).then((res: Record<string, any>) => {
-           if (this.ctx.odata.query.select && this.ctx.odata.onlyValue  === true) return this.formatReturnResult({ body: String(res[ this.ctx.odata.query.select[0 as keyobj] == "id" ? "@iot.id" : 0 ]), });
-           if (res[0] > 0) return this.formatReturnResult({ id: +res[0], nextLink: this.nextLink(res[0]), prevLink: this.prevLink(res[0]), body: res[1][0], });
+           if (this.ctx.odata.query.select && this.ctx.odata.onlyValue  === true)
+            return this.formatReturnResult({ 
+              body: String(res[ this.ctx.odata.query.select[0 as keyobj] == "id" ? "@iot.id" : 0 ]),
+            });
+           if (res[0] > 0) 
+            return this.formatReturnResult({ 
+              id: +res[0], 
+              nextLink: this.nextLink(res[0]), 
+              prevLink: this.prevLink(res[0]), 
+              body: res[1][0],
+            });
          }).catch((err: Error) => this.ctx.throw(400, { code: 400, detail: err }) );
      }
    }
@@ -164,8 +172,7 @@
      // Return results
      if (sql) switch (this.ctx.odata.returnFormat ) {
        case returnFormats.sql:
-         return this.formatReturnResult({ body: sql });
- 
+         return this.formatReturnResult({ body: sql }); 
        default:
          return await executeSqlValues(this.ctx.config, sql) 
            .then((res: Record<string, any>) => {

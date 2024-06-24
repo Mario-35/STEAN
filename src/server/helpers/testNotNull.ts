@@ -1,11 +1,12 @@
 /**
- * testNotNull.
+ * testNotNull
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- testNotNull. -----------------------------------!");
+// onsole.log("!----------------------------------- testNotNull -----------------------------------!");
+
 /**
  *
  * @param input thing to test
@@ -21,4 +22,3 @@ export const isNull = <T>(input: T): boolean => {
             return false;
     } 
 };
-// onsole.log("!----------------------------------- testNotNull. -----------------------------------!");

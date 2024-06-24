@@ -6,7 +6,8 @@
  *
  *
  */
-// onsole.log("!----------------------------------- upload. -----------------------------------!");
+// onsole.log("!----------------------------------- upload -----------------------------------!");
+
 import Busboy from "busboy";
 import path from "path";
 import util from "util";
@@ -19,7 +20,7 @@ import { koaContext } from "../types";
  * @param ctx Koa context
  * @returns KeyString
  */
-// onsole.log("!----------------------------------- upload. -----------------------------------!");
+
 export const upload = (ctx: koaContext): Promise<object> => {
   // Init results
   const data: Record<string, any> = {};

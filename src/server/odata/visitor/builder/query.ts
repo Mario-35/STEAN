@@ -81,9 +81,13 @@ export class Query  {
             return;
         }
         // Add ceil and return if graph
-        if (isGraph(main)) return [ main.interval
-                                    ? `timestamp_ceil("resultTime", interval '${main.interval}') AS srcdate`
-                                    : `@GRAPH@`];
+        if (isGraph(main)) {
+            if (element.query.orderBy.notNull()) element.query.orderBy.add(', ');
+            element.query.orderBy.add('"resultTime" ASC,');
+            return [ main.interval
+                ? `timestamp_ceil("resultTime", interval '${main.interval}') AS srcdate`
+                : `@GRAPH@`];
+        }
         
         // If array result add id 
         const returnValue: string[] = isCsvOrArray(main) && !element.query.select.toString().includes(`"id"${_COLUMNSEPARATOR}`) ? ["id"] : []; 

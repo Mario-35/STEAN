@@ -63,6 +63,8 @@ create_run() {
     echo "Create run.sh"
     cp ./$APIDEST/scripts/run.sh .
     sudo chmod -R 777 run.sh
+    cp ./$APIDEST/scripts/back.sh .
+    sudo chmod -R 777 back.sh
 }
 
 # Function to install stean

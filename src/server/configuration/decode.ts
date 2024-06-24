@@ -12,6 +12,7 @@
 import fs from "fs";
 import crypto from "crypto";
 import { isString } from "../helpers/tests";
+import { APP_KEY } from "../constants";
 
 const decrypt = (input: string, key: string): string => {
   input = input.split("\r\n").join("");     
@@ -28,7 +29,6 @@ const decrypt = (input: string, key: string): string => {
 };
 
 function decode(file: fs.PathOrFileDescriptor) {
-  const APP_KEY = fs.readFileSync(__dirname + "/.key", "utf8") || "zLwX893Mtt9Rc0TKvlInDXuZTFj9rxDV";
   const fileTemp = fs.readFileSync(file, "utf8");  
   return decrypt(fileTemp, APP_KEY); 
 }

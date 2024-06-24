@@ -24,8 +24,13 @@ export class Configs extends Common {
 
   async getAll(): Promise<IreturnResult | undefined> {
     console.log(formatLog.whereIam());
-    // Return result If not authorised
-    if (!userAuthenticated(this.ctx)) 
+    let can = userAuthenticated(this.ctx);
+    if (can) {
+      can = (this.ctx.user.PDCUAS[4] === true);
+      if (this.ctx.user.PDCUAS[5] === true) can = true;
+    }
+    // Return result If not authorised    
+    if (!can) 
         return this.formatReturnResult({
           body: hidePassword(serverConfig.getConfig(this.ctx.config.name))
         });    

@@ -258,8 +258,7 @@ export class PgVisitor extends Visitor {
       this.noLimit();
       this.showRelations = false;
     if (isGraph(this)) { 
-      this.showRelations = false; 
-      this.query.orderBy.add('"resultTime" ASC'); 
+      this.showRelations = false;
     }
   }
 
@@ -633,9 +632,7 @@ export class PgVisitor extends Visitor {
       const test = decodeURIComponent( Literal.convert(params[index].value, params[index].raw) );
       if (test === "result") return this.formatColumnResult(context, operation, ForceString);
       const column = isColumn(test);       
-      // return `${operation.trim() != "" ? `${operation}(` : '' } ${column ? addDoubleQuotes(column) : addSimpleQuotes(geoColumnOrData(index, false))}${operation.trim() != "" ? ")" : "" }`;
       return column ? addDoubleQuotes(column) : addSimpleQuotes(geoColumnOrData(index, false));
-
     };
 
     const geoColumnOrData = (index: number, srid: boolean): string => {

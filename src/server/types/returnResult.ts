@@ -1,11 +1,12 @@
 /**
- * returnResult interface.
+ * returnResult interface
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- returnResult interface. -----------------------------------!");
+// onsole.log("!----------------------------------- returnResult interface -----------------------------------!");
+
 export interface IreturnResult { // return format api
     id:         bigint | undefined; // id for single
     nextLink:   string | undefined; // pagination next link

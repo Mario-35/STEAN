@@ -5,11 +5,11 @@
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- HTML Views Index for API. -----------------------------------!");
+// onsole.log("!----------------------------------- HTML Views Index for API -----------------------------------!");
+
 import { IqueryOptions } from '../types';
 import fs from "fs";
 import { createQueryHtmlString } from './helpers';
-
 
 export { Config } from './class/config';
 export { First } from './class/first';

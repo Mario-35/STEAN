@@ -2,6 +2,8 @@
 # version 3.7.4
     remove errorFile.md
     add /logs route
+    correction bug resultFormat Graph with specific order
+    correction bug rights to see config
 
 # version 3.7.3
     add Indexes at startup to create datastream date after

@@ -13,7 +13,7 @@ import { _idRel } from "./constants";
     export const MultiDatastreamObservedProperty:Ientity  = createEntity("MultiDatastreamObservedProperties", {
     createOrder: 9,
     order: -1,
-    orderBy: `"observedproperty_id"`,
+    orderBy: "",
     columns: {
       multidatastream_id: {
         create: _idRel,
