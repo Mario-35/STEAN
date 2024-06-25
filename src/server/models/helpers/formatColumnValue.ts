@@ -8,11 +8,11 @@
 // onsole.log("!----------------------------------- formatColumnValue. -----------------------------------!");
 import { ESCAPE_ARRAY_JSON, ESCAPE_SIMPLE_QUOTE } from "../../constants";
 import { addDoubleQuotes, addSimpleQuotes, removeSimpleQuotes } from "../../helpers";
-import { formatLog } from "../../logger";
+import { log } from "../../log";
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export function formatColumnValue(columnName: string, value: any, type: string): string | undefined {
-    console.log(formatLog.whereIam(`${columnName} [${type}] ==> ${value}`));
+    console.log(log.whereIam(`${columnName} [${type}] ==> ${value}`));
     switch (typeof value ) {
       case "object" :        
         return value.hasOwnProperty("@iot.name") 

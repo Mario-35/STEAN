@@ -16,5 +16,7 @@ export const enum EColor {
   Magenta = 35,
   Cyan = 36,
   White = 37,
-  Default = 39
+  Default = 39,
+  Sql = 92,
+  Code = 93,
 }

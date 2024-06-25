@@ -8,22 +8,22 @@
 // onsole.log("!----------------------------------- Configs entity -----------------------------------!");
 
 import { Common } from "./common";
-import { formatLog } from "../../logger";
 import { IreturnResult, koaContext } from "../../types";
 import { serverConfig } from "../../configuration";
 import { hideKeysInJson, hidePassword } from "../../helpers";
 import { addToService, createService } from "../helpers";
 import { setDebug, _NOTOK, _OK } from "../../constants";
 import { userAuthenticated } from "../../authentication";
+import { log } from "../../log";
 
 export class Configs extends Common {
   constructor(ctx: koaContext) {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     super(ctx);
   }
 
   async getAll(): Promise<IreturnResult | undefined> {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     let can = userAuthenticated(this.ctx);
     if (can) {
       can = (this.ctx.user.PDCUAS[4] === true);
@@ -43,7 +43,7 @@ export class Configs extends Common {
   }
 
   async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     // Return result If not authorised
     if (!userAuthenticated(this.ctx)) this.ctx.throw(401);
     // Return result
@@ -54,7 +54,7 @@ export class Configs extends Common {
   }
   
   async post(dataInput: Record<string, any> | undefined): Promise<IreturnResult | undefined> {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     if (dataInput && dataInput["create"] && dataInput["create"]["name"]) {
       return this.formatReturnResult({
         body: await createService(dataInput, this.ctx),
@@ -74,14 +74,14 @@ export class Configs extends Common {
     // Update an item
     async update( idInput: bigint | string, dataInput: Record<string, any>  | undefined ): Promise<IreturnResult | undefined | void> {
       setDebug(true);
-      console.log(formatLog.whereIam()); 
+      console.log(log.whereIam()); 
       console.log(idInput);
       console.log(dataInput);
       
     }
   // Delete an item
   async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {
-    console.log(formatLog.whereIam(idInput));
+    console.log(log.whereIam(idInput));
     // This function not exists
     return;
   }

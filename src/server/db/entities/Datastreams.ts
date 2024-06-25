@@ -7,19 +7,19 @@
  */
 // onsole.log("!----------------------------------- Datastreams entity -----------------------------------!");
 
-import { formatLog } from "../../logger";
+import { log } from "../../log";
 import { errors } from "../../messages";
 import { koaContext } from "../../types";
 import { Common } from "./common";
 
 export class Datastreams extends Common {
   constructor(ctx: koaContext) {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     super(ctx);
   }
 
   formatDataInput(input: Record<string, any> | undefined): Record<string, any>  | undefined {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     if (input) {
       const colName = "observationType";
       if (input[colName]) {

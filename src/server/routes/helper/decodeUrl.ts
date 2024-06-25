@@ -12,7 +12,7 @@ import { serverConfig } from "../../configuration";
 import { ADMIN, setDebug } from "../../constants";
 import { EVersion } from "../../enums";
 import { cleanUrl } from "../../helpers";
-import { formatLog } from "../../logger";
+import { log } from "../../log";
 import { errors } from "../../messages";
 import { IdecodedUrl, koaContext  } from "../../types";
 
@@ -26,7 +26,7 @@ import { IdecodedUrl, koaContext  } from "../../types";
 // protocol     host    version        pathname          search
 
 export const decodeUrl = (ctx: koaContext, input?: string): IdecodedUrl | undefined => {
-  console.log(formatLog.whereIam());
+  console.log(log.whereIam());
   // get input
   input = input || ctx.href; 
   input = input;

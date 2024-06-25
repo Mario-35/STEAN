@@ -9,7 +9,6 @@
 import { Common } from "./common";
 import { getBigIntFromString, notNull, } from "../../helpers/index";
 import { DOUBLEQUOTEDCOMA, ESCAPE_SIMPLE_QUOTE, VOIDTABLE } from "../../constants";
-import { formatLog } from "../../logger";
 import { IreturnResult, keyobj, koaContext } from "../../types";
 import { errors, msg } from "../../messages/";
 import { EDatesType } from "../../enums";
@@ -17,17 +16,18 @@ import { multiDatastreamFromDeveui, streamFromDeveui } from "../queries";
 import { decodeloraDeveuiPayload } from "../../lora";
 import { executeSql, executeSqlValues } from "../helpers";
 import { _ID, _NAVLINK, _SELFLINK } from "../constants";
+import { log } from "../../log";
 
 export class Loras extends Common {
   synonym: Record<string, any>  = {};
   stean: Record<string, any>  = {};
   constructor(ctx: koaContext) {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     super(ctx);
   }
   // prepare datas to lora input
   async prepareInputResult(dataInput: Record<string, any> ): Promise<Record<string, any> > {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     const result:Record<string, any>  = {};
     const listKeys = ["deveui", "DevEUI", "sensor_id", "frame"];
       if (notNull(dataInput["payload_deciphered"]))
@@ -39,13 +39,13 @@ export class Loras extends Common {
   }
 
   createListQuery(input: string[], columnListString: string): string {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     const tempList = columnListString.split("COLUMN");
     return tempList[0].concat( '"', input.join(`"${tempList[1]}${tempList[0]}"`), '"', tempList[1] );
   }
   // Override post
   async post( dataInput: Record<string, any> , silent?: boolean ): Promise<IreturnResult | undefined | void> {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
       const addToStean = (key: string) => (this.stean[key] = dataInput[key]);
     if (dataInput) this.stean = await this.prepareInputResult(dataInput);
 
@@ -88,7 +88,7 @@ export class Loras extends Common {
       this.ctx.throw(400, { code: 400, detail: msg( errors.deveuiNotFound, this.stean["deveui"] )}); 
     });
     
-    console.log(formatLog.debug("stream", stream));
+    console.log(log.debug("stream", stream));
 
     // search for frame and decode payload if found
       if (notNull(this.stean["frame"])) {
@@ -132,7 +132,7 @@ export class Loras extends Common {
         }
     }
 
-      console.log(formatLog.debug("Formated datas", this.stean["formatedDatas"]));
+      console.log(log.debug("Formated datas", this.stean["formatedDatas"]));
 
       this.stean["date"] = gedataInputtDate();
       if (!this.stean["date"]) {
@@ -141,7 +141,7 @@ export class Loras extends Common {
     }    
     
     if (stream["multidatastream"]) {
-      console.log(formatLog.debug("multiDatastream", stream));
+      console.log(log.debug("multiDatastream", stream));
       const listOfSortedValues: { [key: string]: number | null } = {};
       stream["keys"].forEach((element: string) => {
         listOfSortedValues[element] = null;
@@ -159,7 +159,7 @@ export class Loras extends Common {
           );
       });
       
-      console.log(formatLog.debug("Values", listOfSortedValues));
+      console.log(log.debug("Values", listOfSortedValues));
 
       if ( Object.values(listOfSortedValues).filter((word) => word != null) .length < 1 ) {
       const errorMessage = `${errors.dataNotCorresponding} [${stream["keys"]}] with [${Object.keys(this.stean["formatedDatas"])}]`;
@@ -172,7 +172,7 @@ export class Loras extends Common {
       const temp = listOfSortedValues;
       if (temp && typeof temp == "object") {
         const tempLength = Object.keys(temp).length;
-        console.log(formatLog.debug( "data : Keys", `${tempLength} : ${stream["keys"].length}` ));
+        console.log(log.debug( "data : Keys", `${tempLength} : ${stream["keys"].length}` ));
 
         if (tempLength != stream["keys"].length) {
           const errorMessage = msg(
@@ -258,7 +258,7 @@ export class Loras extends Common {
         }
       });
     } else if (stream["datastream"]) {
-      console.log(formatLog.debug("datastream", stream["datastream"]));
+      console.log(log.debug("datastream", stream["datastream"]));
       const getFeatureOfInterest = getBigIntFromString(
       dataInput["FeatureOfInterest"]
       );
@@ -301,7 +301,7 @@ export class Loras extends Common {
         .concat(`"result" = ${resultCreate}`)
         .join("");
 
-      console.log(formatLog.debug("searchDuplicate", searchDuplicate));
+      console.log(log.debug("searchDuplicate", searchDuplicate));
 
       const sql = `WITH "${VOIDTABLE}" AS (SELECT srid FROM "${VOIDTABLE}" LIMIT 1)
                , datastream1 AS (SELECT id, _default_foi, thing_id FROM "${

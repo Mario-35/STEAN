@@ -16,7 +16,6 @@ import { createInsertValues } from "../../models/helpers";
 import { sqlStopDbName } from "../../routes/helper";
 import { keyobj, koaContext } from "../../types";
 import { log } from "../../log";
-import { formatLog } from "../../logger";
 
 const prepareDatas = (dataInput: Record<string, string>, entity: string): object => {
   if (entity === "Observations") {
@@ -45,7 +44,7 @@ const addToServiceFromUrl = async (url: string | undefined, ctx: koaContext): Pr
 }
 
 export const createService = async (dataInput: Record<string, any>, ctx?: koaContext): Promise<Record<string, any>> => {
-  console.log(formatLog.whereIam());
+  console.log(log.whereIam());
   if(dataInput && dataInput["create"]) {
     serverConfig.addConfig(dataInput["create"]);
   }

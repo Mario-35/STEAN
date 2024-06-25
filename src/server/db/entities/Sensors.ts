@@ -6,13 +6,13 @@
  *
  */
 // onsole.log("!----------------------------------- Sensors entity. -----------------------------------!");
+import { log } from "../../log";
 import { koaContext } from "../../types";
-import { formatLog } from "../../logger";
 import { Common } from "./common";
 
 export class Sensors extends Common {
   constructor(ctx: koaContext) {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     super(ctx);
   }
 }

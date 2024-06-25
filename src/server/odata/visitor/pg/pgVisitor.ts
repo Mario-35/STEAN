@@ -13,7 +13,6 @@ import { Token } from "../../parser/lexer";
 import { Literal } from "../../parser/literal";
 import { SQLLiteral } from "../../parser/sqlLiteral";
 import { SqlOptions } from "../../parser/sqlOptions";
-import { formatLog } from "../../../logger";
 import { oDataDateFormat } from "../helper";
 import { errors, msg } from "../../../messages";
 import { EColumnType, EQuery } from "../../../enums";
@@ -45,7 +44,7 @@ export class PgVisitor extends Visitor {
   results: IKeyString = {};
   debugOdata = isTest() ? false : true;
   constructor(ctx: koaContext, options = <SqlOptions>{}) {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     super(ctx, options);
   }
   
@@ -68,7 +67,7 @@ export class PgVisitor extends Visitor {
   }
 
   protected getColumn(input: string, operation: string ,context: IodataContext ) {   
-    console.log(formatLog.whereIam(input));
+    console.log(log.whereIam(input));
     const tempEntity = 
       context.target ===  EQuery.Where && context.identifier
         ? models.getEntity(this.ctx.config, context.identifier.split(".")[0])
@@ -132,7 +131,7 @@ export class PgVisitor extends Visitor {
   }
 
   start(node: Token) {
-    console.log(formatLog.head("Start PgVisitor"));
+    console.log(log.head("Start PgVisitor"));
     const temp = this.Visit(node);
     this.verifyQuery();    
     // Logs.infos("PgVisitor", temp);
@@ -141,7 +140,7 @@ export class PgVisitor extends Visitor {
   }
 
   verifyQuery = (): void => {
-    console.log(formatLog.head("verifyQuery"));
+    console.log(log.head("verifyQuery"));
     const expands: string[] = [];
     if (this.includes) this.includes.forEach((element: PgVisitor) => {
       if (element.ast.type === "ExpandItem")
@@ -179,10 +178,10 @@ export class PgVisitor extends Visitor {
       // @ts-ignore
       visitor.call(this, node, context);
         if (this.debugOdata) {
-          console.log(formatLog.debug("Visit",`Visit${node.type}`, ));
-          console.log(formatLog.result("node.raw", node.raw));
-          console.log(formatLog.result("this.query.where", this.query.where.toString()));
-          console.log(formatLog.debug("context", context));
+          console.log(log.debug("Visit",`Visit${node.type}`, ));
+          console.log(log.result("node.raw", node.raw));
+          console.log(log.result("this.query.where", this.query.where.toString()));
+          console.log(log.debug("context", context));
         }
 
       } else {

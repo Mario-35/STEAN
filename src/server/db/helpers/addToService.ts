@@ -8,7 +8,7 @@
 // onsole.log("!----------------------------------- addToService. -----------------------------------!");
 import { _NOTOK, _OK } from "../../constants";
 import { addDoubleQuotes, asyncForEach } from "../../helpers";
-import { formatLog } from "../../logger";
+import { log } from "../../log";
 import { models } from "../../models";
 import { createInsertValues } from "../../models/helpers";
 import { blankRootPgVisitor } from "../../odata/visitor/helper";
@@ -17,7 +17,7 @@ import { apiAccess } from "../dataAccess";
 import { executeSqlValues } from "./executeSqlValues";
 
 export const addToService = async (ctx: koaContext, dataInput: Record<string, any>): Promise<Record<string, any>> => {
-  console.log(formatLog.whereIam());
+  console.log(log.whereIam());
   const results = {};    
   const temp = blankRootPgVisitor(ctx, ctx.model.Loras);
   if (temp) {

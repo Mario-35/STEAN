@@ -11,12 +11,11 @@ import { serverConfig } from "../../configuration";
 import { _OK } from "../../constants";
 import { log } from "../../log";
 import { addDoubleQuotes } from "../../helpers";
-import { formatLog } from "../../logger";
 import { Ientity, IKeyString } from "../../types";
 
 export const createTable = async ( configName: string, tableEntity: Ientity, doAfter: string | undefined ): Promise<IKeyString> => {
   if (!tableEntity) return {};
-  console.log(formatLog.head(`CreateTable [${tableEntity.table}] for ${configName}`));
+  console.log(log.head(`CreateTable [${tableEntity.table}] for ${configName}`));
   const space = 5;
   const tab = () => " ".repeat(space);
   const tabIeInsert: string[] = [];

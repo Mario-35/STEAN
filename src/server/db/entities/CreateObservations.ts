@@ -8,7 +8,6 @@
 // onsole.log("!----------------------------------- CreateObservations entity -----------------------------------!");
 
 import { Common } from "./common";
-import { formatLog } from "../../logger";
 import { IcsvColumn, IcsvFile, IreturnResult, IstreamInfos, koaContext } from "../../types";
 import { queryInsertFromCsv, dateToDateWithTimeZone, executeSql, executeSqlValues } from "../helpers";
 import { addDoubleQuotes, asyncForEach } from "../../helpers";
@@ -22,7 +21,7 @@ import { log } from "../../log";
 export class CreateObservations extends Common {
   public indexResult = -1;
   constructor(ctx: koaContext) {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     super(ctx);
   }
 
@@ -59,18 +58,18 @@ export class CreateObservations extends Common {
 
   // Override get all to return error Bad request
   async getAll(): Promise<IreturnResult | undefined> {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     this.ctx.throw(400, { code: 400 });
   }
   
   // Override get one to return error Bad request
   async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
-    console.log(formatLog.whereIam(idInput));
+    console.log(log.whereIam(idInput));
     this.ctx.throw(400, { code: 400 });
   }
   // Override post to posted file as createObservations
   async postForm(dataInput: Record<string, any> ): Promise<IreturnResult | undefined> {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     // verify is there FORM data    
     // const datasJson = JSON.parse(this.ctx.datas["datas"]);
     const datasJson = JSON.parse(this.ctx.datas["datas"] || this.ctx.datas["json"]);
@@ -103,7 +102,7 @@ export class CreateObservations extends Common {
     };
     // stream file in temp table and get query to insert
     const sqlInsert = await queryInsertFromCsv(this.ctx, paramsFile);
-    console.log(formatLog.debug(`Stream csv file ${paramsFile.filename} in PostgreSql`, sqlInsert ? _OK : _NOTOK));
+    console.log(log.debug(`Stream csv file ${paramsFile.filename} in PostgreSql`, sqlInsert ? _OK : _NOTOK));
     if (sqlInsert) {
       const sqls = sqlInsert.query.map((e: string, index: number) => `${index === 0 ? 'WITH ' :', '}updated${index+1} as (${e})\n`);
       // Remove logs and triggers for speed insert
@@ -120,7 +119,7 @@ export class CreateObservations extends Common {
   }
     // Override post xson file as createObservations
   async postJson(dataInput: Record<string, any> ): Promise<IreturnResult | undefined> {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     const returnValue: string[] = [];
     let total = 0;
       /// classic Create      
@@ -160,19 +159,19 @@ export class CreateObservations extends Common {
   }
   // Override post caller
   async post(dataInput: JSON): Promise<IreturnResult | undefined> {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     return (this.ctx.datas) ? await this.postForm(dataInput) : await this.postJson(dataInput);
   }
 
   // Override update to return error Bad request
   async update( idInput: bigint | string, dataInput: Record<string, any>  | undefined ): Promise<IreturnResult | undefined> {
-    console.log(formatLog.whereIam(idInput || dataInput));
+    console.log(log.whereIam(idInput || dataInput));
     this.ctx.throw(400, { code: 400 });
   }
 
   // Override delete to return error Bad request
   async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {
-    console.log(formatLog.whereIam(idInput));
+    console.log(log.whereIam(idInput));
     this.ctx.throw(400, { code: 400 });
   }
 }

@@ -13,13 +13,13 @@ import { asyncForEach, isTest } from "../../helpers";
 import { IconfigFile } from "../../types";
 
 export const executeSqlValues = async (config: IconfigFile | string, query: string | string[]): Promise<object> => {
-    log.query(`${query}`);
+    serverConfig.writeLog(log.query(query));
     if (typeof query === "string") {
         return new Promise(async function (resolve, reject) {
             await serverConfig.connection(typeof config === "string" ? config : config.name).unsafe(query).values().then((res: Record<string, any>) => {
       resolve(res[0]);
             }).catch((err: Error) => {
-                if (!isTest() && +err["code" as keyof object] === 23505) log.queryError(query, err);
+                if (!isTest() && +err["code" as keyof object] === 23505) serverConfig.writeLog(log.queryError(query, err));
                 reject(err);
             });
         });
@@ -32,7 +32,7 @@ export const executeSqlValues = async (config: IconfigFile | string, query: stri
                 await serverConfig.connection(typeof config === "string" ? config : config.name).unsafe(sql).values().then((res: Record<string, any>) => { 
       result = { ... result, ...res[0] };
                 }).catch((err: Error) => {
-                    if (!isTest() && +err["code" as keyof object] === 23505) log.queryError(query, err);
+                    if (!isTest() && +err["code" as keyof object] === 23505) serverConfig.writeLog(log.queryError(query, err));
                     reject(err);
                 });    
             });

@@ -11,12 +11,12 @@ import { formatColumnValue } from ".";
 import { models } from "..";
 import { ESCAPE_SIMPLE_QUOTE } from "../../constants";
 import { addDoubleQuotes, addSimpleQuotes, removeDoubleQuotes } from "../../helpers";
-import { formatLog } from "../../logger";
+import { log } from "../../log";
 import { IconfigFile } from "../../types";
 
 // create postgresSql 
 export function createInsertValues(config: IconfigFile, input: Record<string, any>, entityName?: string): string  {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     if (config && input) {
         const keys:string[] = [];
         const values:string[] = [];            

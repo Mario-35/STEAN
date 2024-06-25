@@ -5,14 +5,15 @@
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- Locations entity. -----------------------------------!");
+// onsole.log("!----------------------------------- Locations entity -----------------------------------!");
+
+import { log } from "../../log";
 import { koaContext } from "../../types";
-import { formatLog } from "../../logger";
 import { Common } from "./common";
 
 export class Locations extends Common {
   constructor(ctx: koaContext) {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     super(ctx);
   }
 }

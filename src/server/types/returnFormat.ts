@@ -1,11 +1,12 @@
 /**
- * returnFormat interface.
+ * returnFormat interface
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- returnFormat interface. -----------------------------------!");
+// onsole.log("!----------------------------------- returnFormat interface -----------------------------------!");
+
 import { koaContext } from ".";
 import { PgVisitor } from "../odata/visitor";
 

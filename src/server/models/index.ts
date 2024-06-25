@@ -9,7 +9,6 @@ import { addDoubleQuotes, deepClone, isTest } from "../helpers";
 import { errors, msg } from "../messages";
 import { IconfigFile, Ientities, Ientity, IstreamInfos, keyobj, koaContext } from "../types";
 import fs from "fs";
-import { formatLog } from "../logger";
 import conformance from "./conformance.json";
 import { FeatureOfInterest, Thing, Location, Config, CreateFile, CreateObservation, Datastream, Decoder, HistoricalLocation, HistoricalObservation, Log, Lora, MultiDatastream, MultiDatastreamObservedProperty, Observation, Sensor, User, LocationHistoricalLocation, ObservedProperty, ThingLocation } from "./entities";
 
@@ -288,7 +287,7 @@ class Models {
   }
 
   public getRoot(ctx: koaContext) {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     let expectedResponse: object[] = [];
     Object. keys(ctx.model)
     .filter((elem: string) => ctx.model[elem].order > 0)

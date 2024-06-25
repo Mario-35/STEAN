@@ -9,7 +9,6 @@
 // onsole.log("!----------------------------------- Common class entity -----------------------------------!");
 
  import { addDoubleQuotes, returnFormats } from "../../helpers/index";
- import { formatLog } from "../../logger";
  import { IreturnResult, keyobj, koaContext } from "../../types";
  import { executeSqlValues, removeKeyFromUrl } from "../helpers";
  import { getErrorCode, infos } from "../../messages";
@@ -22,7 +21,7 @@
    public linkBase: string;
  
    constructor(ctx: koaContext) {
-     console.log(formatLog.whereIam());
+     console.log(log.whereIam());
      this.ctx = ctx;
      this.nextLinkBase = removeKeyFromUrl(`${this.ctx.decodedUrl.root}/${ this.ctx.href.split(`${ctx.config.apiVersion}/`)[1] }`, ["top", "skip"] );
      this.linkBase = `${this.ctx.decodedUrl.root}/${this.constructor.name}`;     
@@ -54,7 +53,7 @@
  
    // create a blank ReturnResult
    public formatReturnResult(args: Record<string, any>): IreturnResult {
-     console.log(formatLog.whereIam());
+     console.log(log.whereIam());
      return {
        ...{
          id: undefined,
@@ -88,7 +87,7 @@
  
    // Return all items
    async getAll(): Promise<IreturnResult | undefined> {
-     console.log(formatLog.whereIam());
+     console.log(log.whereIam());
      // create query
      const sql = this.ctx.odata.getSql();
      
@@ -110,7 +109,7 @@
  
    // Return one item
    async getSingle(_idInput: bigint | string): Promise<IreturnResult | undefined> {
-     console.log(formatLog.whereIam());
+     console.log(log.whereIam());
      // create query
      const sql = this.ctx.odata.getSql();
      // Return results
@@ -136,7 +135,7 @@
  
    // Execute multilines SQL in one query
    async addWultipleLines(dataInput: Record<string, any>  | undefined): Promise<IreturnResult | undefined> {
-     console.log(formatLog.whereIam());
+     console.log(log.whereIam());
      // stop save to log cause if datainput too big 
      if (this.ctx.log) this.ctx.log.datas = {datas: infos.MultilinesNotSaved};
      // create queries
@@ -152,7 +151,7 @@
      // execute query
      await executeSqlValues(this.ctx.config, sqls.join(";")).then((res: Record<string, any> ) => results.push(res[0 as keyobj]) )
          .catch((err: Error) => { 
-           log.error(formatLog.error(err));
+           log.error(log.error(err));
            this.ctx.throw(400, { code: 400, detail: err["detail" as keyobj] });
          });
      // Return results
@@ -163,7 +162,7 @@
  
    // Post an item
    async post(dataInput: Record<string, any> | undefined): Promise<IreturnResult | undefined | void> {
-     console.log(formatLog.whereIam());
+     console.log(log.whereIam());
      // Format datas
      dataInput = this.formatDataInput(dataInput);
      if (!dataInput) return;
@@ -198,7 +197,7 @@
  
    // Update an item
    async update( idInput: bigint | string, dataInput: Record<string, any>  | undefined ): Promise<IreturnResult | undefined | void> {
-     console.log(formatLog.whereIam()); 
+     console.log(log.whereIam()); 
      // Format datas
      dataInput = this.formatDataInput(dataInput);
      if (!dataInput) return;
@@ -228,7 +227,7 @@
  
    // Delete an item
    async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {
-     console.log(formatLog.whereIam());
+     console.log(log.whereIam());
      // create Query
      const sql = `DELETE FROM ${addDoubleQuotes(this.ctx.model[this.constructor.name].table)} WHERE "id" = ${idInput} RETURNING id`;
      // Return results

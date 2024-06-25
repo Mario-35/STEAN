@@ -11,7 +11,6 @@ import { addDoubleQuotes } from "../../../helpers";
 import { IodataContext, keyobj, koaContext } from "../../../types";
 import { Token } from "../../parser/lexer";
 import { SqlOptions } from "../../parser/sqlOptions";
-import { formatLog } from "../../../logger";
 import { postSqlFromPgVisitor } from "../helper";
 import { EColumnType, EExtensions } from "../../../enums";
 import { models } from "../../../models";
@@ -22,13 +21,13 @@ import { PgVisitor } from "../.";
 export class RootPgVisitor extends PgVisitor {
   static root = true;
   constructor(ctx: koaContext, options = <SqlOptions>{}, node?: Token) {
-      console.log(formatLog.whereIam());
+      console.log(log.whereIam());
       super(ctx, options);
       if (node) this.StartVisitRessources(node);
   }
 
   protected verifyRessources = (): void => {
-    console.log(formatLog.head("verifyRessources"));
+    console.log(log.head("verifyRessources"));
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -38,8 +37,8 @@ export class RootPgVisitor extends PgVisitor {
       // @ts-ignore
       ressource.call(this, node, context);
       if (this.debugOdata) {
-        console.log(formatLog.debug("VisitRessources",`VisitRessources${node.type}`));
-        console.log(formatLog.result("node.raw", node.raw));
+        console.log(log.debug("VisitRessources",`VisitRessources${node.type}`));
+        console.log(log.result("node.raw", node.raw));
       }
     } else {
       log.errorMsg(`Ressource Not Found ============> VisitRessources${node.type}`);
@@ -140,7 +139,7 @@ export class RootPgVisitor extends PgVisitor {
   }
 
   StartVisitRessources(node: Token) {
-    console.log(formatLog.head("INIT PgVisitor"));
+    console.log(log.head("INIT PgVisitor"));
     this.limit = this.ctx.config.nb_page || 200;
     this.numeric = this.ctx.config.extensions.includes(EExtensions.resultNumeric);
     const temp = this.VisitRessources(node);

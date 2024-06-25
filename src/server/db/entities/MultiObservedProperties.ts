@@ -5,13 +5,13 @@
  * @author mario.adam@inrae.fr
  *
  */
+import { log } from "../../log";
 import { koaContext } from "../../types";
-import { formatLog } from "../../logger";
 import { Common } from "./common";
 // onsole.log("!----------------------------------- MultiObservedProperties entity. -----------------------------------!");
 export class MultiObservedProperties extends Common {
   constructor(ctx: koaContext) {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     super(ctx);
   }
 }

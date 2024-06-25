@@ -6,17 +6,17 @@
  *
  */
 // onsole.log("!----------------------------------- queryInsertFromCsv. -----------------------------------!");
-import { formatLog } from "../../logger";
 import { IcsvColumn, IcsvFile, koaContext } from "../../types";
 import { columnsNameFromHydrasCsv, streamCsvFile } from ".";
 import { _NOTOK, _OK } from "../../constants";
+import { log } from "../../log";
 
 export async function queryInsertFromCsv( ctx: koaContext, paramsFile: IcsvFile ): Promise<{count: number, query: string[]} | undefined> {
-  console.log(formatLog.whereIam());
+  console.log(log.whereIam());
   const sqlRequest = await columnsNameFromHydrasCsv(paramsFile);
   if (sqlRequest) {
     const stream = await streamCsvFile(ctx, paramsFile, sqlRequest);
-    console.log(formatLog.debug(`COPY TO ${paramsFile.tempTable}`, stream > 0 ? _OK : _NOTOK));
+    console.log(log.debug(`COPY TO ${paramsFile.tempTable}`, stream > 0 ? _OK : _NOTOK));
     if (stream > 0) {
       const fileImport = paramsFile.filename.split("/").reverse()[0];
       const dateImport = new Date().toLocaleString();

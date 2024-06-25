@@ -13,11 +13,11 @@ import Expressions from "./expressions";
 import Query from "./query";
 import ResourcePath from "./resourcePath";
 import ODataUri from "./odataUri";
-import { formatLog } from "../../logger";
+import { log } from "../../log";
 
 // Odata Main parser
 export const parserFactory = function(fn: any) {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     return function (source: any, options: any) {
         options = options || {};
         const raw = new Uint16Array(source.length);

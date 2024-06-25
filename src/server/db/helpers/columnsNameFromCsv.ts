@@ -9,10 +9,9 @@
 import fs from "fs";
 import readline from "readline";
 import { log } from "../../log";
-import { formatLog } from "../../logger";
 
 export const columnsNameFromCsv = async ( filename: string ): Promise<string[] | undefined> => {
-  console.log(formatLog.whereIam());
+  console.log(log.whereIam());
   const fileStream = fs.createReadStream(filename);
 
   const rl = readline.createInterface({

@@ -1,12 +1,12 @@
 /**
- * Index of The API.
+ * Index of The API
  *
  * @copyright 2020-present Inrae
  * @review 29-01-2024
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- Index of The API. -----------------------------------!");
+// onsole.log("!----------------------------------- Index of The API -----------------------------------!");
 
 import path from "path";
 import Koa from "koa";
@@ -28,21 +28,6 @@ import { isTest } from "./helpers";
 import { RootPgVisitor } from "./odata/visitor";
 import { IconfigFile, IdecodedUrl, Ientities, Ilog, IuserToken, koaContext } from "./types";
 import { sqlStopDbName } from "./routes/helper";
-
-// interface DefaultContext {
-//   decodedUrl: IdecodedUrl;
-//   config: IconfigFile;
-//   odata: RootPgVisitor;
-//   datas: Record<string, any>;
-//   user: IuserToken;
-//   log: Ilog | undefined;
-//   model: Ientities;
-//   body: any;
-// }
-
-// declare module "koa" {
-// typeof DefaultContext
-// }
 
 // Extend koa context 
 declare module "koa" {
@@ -85,7 +70,11 @@ app.use(routerHandle);
 
 // logger https://github.com/koajs/logger
 if (!isTest())
-  app.use(logger((str) => process.stdout.write(`${new Date().toLocaleString()}${str + "\n"}`)));
+  app.use(logger((str) => {
+    str = `[39m ${new Date().toLocaleString()}${str + "\n"}`;
+    process.stdout.write(str);
+    if (serverConfig.logFile) serverConfig.logFile.write(str);
+  }));
 
 // add json capabilities to KOA server
 app.use(json());
@@ -108,8 +97,6 @@ app.use(protectedRoutes.routes());
 // Initialisation of models
 models.init();
 
-// Initialisation of custom logs
-log.init();
 
 // Start server initialisaion
 export const server = isTest()

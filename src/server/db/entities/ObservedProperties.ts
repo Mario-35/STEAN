@@ -6,13 +6,13 @@
  *
  */
 // onsole.log("!----------------------------------- ObservedProperties entity. -----------------------------------!");
+import { log } from "../../log";
 import { koaContext } from "../../types";
-import { formatLog } from "../../logger";
 import { Common } from "./common";
 
 export class ObservedProperties extends Common {
   constructor(ctx: koaContext) {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     super(ctx);
   }
 }

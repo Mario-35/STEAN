@@ -7,7 +7,6 @@
  */
 // onsole.log("!----------------------------------- CreateFile entity. -----------------------------------!");
 import { Common } from "./common";
-import { formatLog } from "../../logger";
 import { IcsvColumn, IcsvFile, IreturnResult, koaContext } from "../../types";
 import { columnsNameFromCsv, executeSqlValues } from "../helpers";
 import { errors } from "../../messages/";
@@ -20,12 +19,12 @@ import { log } from "../../log";
 
 export class CreateFile extends Common {
   constructor(ctx: koaContext) {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     super(ctx);
   }
 
   streamCsvFileInPostgreSqlFileInDatastream = async ( ctx: koaContext, paramsFile: IcsvFile ): Promise<string | undefined> => {
-    console.log(formatLog.head("streamCsvFileInPostgreSqlFileInDatastream"));
+    console.log(log.head("streamCsvFileInPostgreSqlFileInDatastream"));
     const headers = await columnsNameFromCsv(paramsFile.filename);
 
     if (!headers) {
@@ -133,12 +132,12 @@ export class CreateFile extends Common {
   }
   
   async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
-    console.log(formatLog.whereIam(idInput));
+    console.log(log.whereIam(idInput));
     this.ctx.throw(400, { code: 400 });
   }
     
   async post(dataInput: Record<string, string>): Promise<IreturnResult | undefined> {
-    console.log(formatLog.whereIam(dataInput));
+    console.log(log.whereIam(dataInput));
     if (this.ctx.datas) {
       const myColumns: IcsvColumn[] = [];
         return this.formatReturnResult({

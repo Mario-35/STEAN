@@ -3,7 +3,6 @@ import { _OK } from "../../constants";
 import { EExtensions } from "../../enums";
 import { asyncForEach } from "../../helpers";
 import { log } from "../../log";
-import { formatLog } from "../../logger";
 
 
 
@@ -13,7 +12,7 @@ const exe = async (name: string, queries: string[]): Promise<boolean> => {
         .connection(name)
         .unsafe(query)
         .catch((error: Error) => {
-          log.error(formatLog.error(error));
+          log.error(log.error(error));
           return false;
         });
     });

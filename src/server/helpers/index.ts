@@ -8,14 +8,6 @@
 // onsole.log("!----------------------------------- Main Helpers -----------------------------------!");
 
 import { koaContext } from "../types";
-const removeFirstOrEnd = (input: string, char: string) => {    
-    while (input[0] === char[0]) input = input.slice(1).trim();
-    while (input[input.length - 1] === char[0]) input = input.slice(0, -1);
-    return input;
-}
-const removeFirstAndEnd = (input: string, char: string) => input[0] === char && input[input.length - 1] === char[0] ? input.slice(0, -1).slice(1).trim() : input;
-
-const addQuotes = (input: string, Quotes: string): string => { input = removeFirstOrEnd(input,Quotes) ; return `${input[0] !== Quotes ? Quotes : ''}${input}${input[input.length - 1] !== Quotes ? Quotes : ''}`};
 export const addDoubleQuotes = (input: string | undefined): string => input ? addQuotes(input, '"') : "";
 export const removeDoubleQuotes = (input: string) => removeFirstAndEnd(input, '"');
 export const removeSimpleQuotes = (input: string) => removeFirstAndEnd(input, "'");
@@ -41,3 +33,11 @@ export { unique } from "./unique";
 export { removeEmpty } from "./removeEmpty";
 export { upload } from "./upload";
 export { getKey } from "./getKey";
+
+const removeFirstOrEnd = (input: string, char: string) => {    
+    while (input[0] === char[0]) input = input.slice(1).trim();
+    while (input[input.length - 1] === char[0]) input = input.slice(0, -1);
+    return input;
+}
+const removeFirstAndEnd = (input: string, char: string) => input[0] === char && input[input.length - 1] === char[0] ? input.slice(0, -1).slice(1).trim() : input;
+const addQuotes = (input: string, Quotes: string): string => { input = removeFirstOrEnd(input,Quotes) ; return `${input[0] !== Quotes ? Quotes : ''}${input}${input[input.length - 1] !== Quotes ? Quotes : ''}`};

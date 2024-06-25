@@ -10,7 +10,6 @@
 import { createTable, createUser } from "../helpers";
 import { serverConfig } from "../../configuration";
 import { addDoubleQuotes, addSimpleQuotes, asyncForEach } from "../../helpers";
-import { formatLog } from "../../logger";
 import { _RIGHTS } from "../constants";
 import { IKeyString } from "../../types";
 import { EExtensions } from "../../enums";
@@ -21,7 +20,7 @@ import { log } from "../../log";
 import { createRole } from "../helpers/createRole";
 
 export const createDatabase = async (configName: string): Promise<IKeyString> => {
-  console.log(formatLog.head("createDatabase", configName));
+  console.log(log.head("createDatabase", configName));
   // init result
   const config = serverConfig.getConfig(configName).pg;
   const returnValue: IKeyString = { "Start create Database": config.database };

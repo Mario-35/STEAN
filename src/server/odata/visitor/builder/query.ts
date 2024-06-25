@@ -8,7 +8,6 @@
 // onsole.log("!----------------------------------- Query builder -----------------------------------!");
 
 import { _COLUMNSEPARATOR } from "../../../constants";
-import { formatLog } from "../../../logger";
 import { addDoubleQuotes, cleanStringComma, containsAll, isCsvOrArray, isGraph, isObservation, removeAllQuotes, removeDoubleQuotes } from "../../../helpers";
 import { asJson } from "../../../db/queries";
 import { IconfigFile, Ientity, IKeyBoolean, IpgQuery } from "../../../types";
@@ -18,6 +17,7 @@ import { allEntities, EOptions } from "../../../enums";
 import { GroupBy, Key, OrderBy, Select, Where } from ".";
 import { errors } from "../../../messages";
 import { _NAVLINK, _SELFLINK } from "../../../db/constants";
+import { log } from "../../../log";
 
 export class Query  {
     where: Where;
@@ -29,7 +29,7 @@ export class Query  {
 
   
     constructor() {
-      console.log(formatLog.whereIam());
+      console.log(log.whereIam());
       this.where = new Where();
       this.select = new Select();
       this.orderBy = new OrderBy();
@@ -39,7 +39,6 @@ export class Query  {
 
     private columnList(tableName: string, main: PgVisitor, element: PgVisitor): string[] | undefined  {
         const testIn = (input: string): boolean => ["CONCAT", "CASE", "COALESCE"].map(e => input.includes(e) ? true : false).filter(e => e === true).length > 0;
-
 
         /**
          * 
@@ -51,7 +50,7 @@ export class Query  {
          */
         
         function formatedColumn(config: IconfigFile, entity : Ientity, column: string, options?: IKeyBoolean): string | undefined {   
-            console.log(formatLog.whereIam(column));
+            console.log(log.whereIam(column));
             if (entity.columns[column]) {
                 // is column have alias
                 const alias = entity.columns[column].alias(config, options ? options : undefined);
@@ -77,7 +76,7 @@ export class Query  {
         // get good entity name
         const tempEntity = models.getEntity(main.ctx.config, tableName);
         if (!tempEntity) {
-            console.log(formatLog.error("no entity For", tableName));
+            console.log(log.error("no entity For", tableName));
             return;
         }
         // Add ceil and return if graph
@@ -137,7 +136,7 @@ export class Query  {
     // Create SQL Query
     private create(main: RootPgVisitor | PgVisitor, _element?: PgVisitor): IpgQuery | undefined {        
         const element = _element ? _element : main;
-        console.log(formatLog.whereIam(element.entity || "blank"));
+        console.log(log.whereIam(element.entity || "blank"));
         if (element.entity.trim() !== "") {
             // get columns
             const select = this.columnList(element.entity, main, element);
@@ -215,7 +214,7 @@ export class Query  {
     }
 
     toString(main: RootPgVisitor | PgVisitor, _element?: PgVisitor): string {
-        console.log(formatLog.whereIam());
+        console.log(log.whereIam());
         if(!this._pgQuery) this._pgQuery = this.create(main, _element);
         const query = this.pgQueryToString(this._pgQuery);
         if (query) return query;        
@@ -223,7 +222,7 @@ export class Query  {
     }
     
     toPgQuery(main: RootPgVisitor | PgVisitor, _element?: PgVisitor): IpgQuery | undefined {
-        console.log(formatLog.whereIam());
+        console.log(log.whereIam());
         if(!this._pgQuery) this._pgQuery = this.create(main, _element);
         return this._pgQuery;
     }

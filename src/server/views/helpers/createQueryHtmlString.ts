@@ -7,15 +7,15 @@
  */
 // onsole.log("!----------------------------------- createQueryHtmlString -----------------------------------!");
 
-import { formatLog } from "../../logger";
 import { cleanUrl, removeAllQuotes } from "../../helpers";
 import { addCssFile, listaddCssFiles } from "../css";
 import { addJsFile, listaddJsFiles } from "../js";
 import { APP_VERSION } from "../../constants";
 import { IqueryOptions } from "../../types";
+import { log } from "../../log";
 
 export function createQueryHtmlString(input: string, params: IqueryOptions): string {
-    console.log(formatLog.head("commonHtml"));
+    console.log(log.head("commonHtml"));
     const bigIntReplacer = <K,V>(key: K, value: V) => typeof value === "bigint" ? value.toString() : value;
     // if js or css .min
     const fileWithOutMin = (input: string): string => input.replace(".min",'');

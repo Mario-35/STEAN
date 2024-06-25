@@ -9,11 +9,11 @@
 import { serverConfig } from "../../configuration";
 import { APP_NAME } from "../../constants";
 import { asyncForEach } from "../../helpers";
-import { formatLog } from "../../logger";
+import { log } from "../../log";
 import { koaContext } from "../../types";
 
 export const getMetrics = async (ctx: koaContext): Promise<string[] | { [key: string]: any }> => {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
   const sqlTemp: Record<string, any> = await serverConfig.connection(ctx.config.name).unsafe(`SELECT split_part(split_part((SELECT version()), ',', 1), ' ', 2) AS version`);
   const dbVersion = sqlTemp["version"];
   const username = "postgres";
@@ -214,7 +214,7 @@ export const getMetrics = async (ctx: koaContext): Promise<string[] | { [key: st
             res[operation] = result.length === 1 ? Object.values(result[0])[0] : result;
           })
           .catch((err) => {
-            console.log(formatLog.error(err));
+            console.log(log.error(err));
           });
     }
   );

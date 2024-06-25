@@ -1,11 +1,12 @@
 /**
- * Configuration class.
+ * Configuration class
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- Configuration class. -----------------------------------!");
+// onsole.log("!----------------------------------- Configuration class -----------------------------------!");
+
 import { addToStrings, ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_DB, NODE_ENV, setReady, TEST, _DEBUG, _NOTOK, _OK, _WEB, } from "../constants";
 import { asyncForEach, decrypt, encrypt, hidePassword, isProduction, isTest, unikeList, unique, } from "../helpers";
 import { IconfigFile, IdbConnection, IserviceInfos, koaContext, keyobj } from "../types";
@@ -18,10 +19,10 @@ import util from "util";
 import update from "./update.json";
 import postgres from "postgres";
 import { triggers } from "../db/createDb/triggers";
-import { formatLog } from "../logger";
 import { log } from "../log";
 import { createDatabase, testDatas } from "../db/createDb";
 import { userAccess } from "../db/dataAccess";
+import path from "path";
 
 // class to logCreate configs environements
 class Configuration {
@@ -30,20 +31,37 @@ class Configuration {
   static jsonConfiguration: Record<string, any> ;
   static ports: number[] = [];
   static queries: { [key: string]: string[] } = {};
+  public logFile = fs.createWriteStream(path.resolve(__dirname, "../logs.txt"), {flags : 'w'});
 
   constructor() {
-    process.stdout.write(`${color(EColor.Red)} ${"=".repeat(24)} ${color( EColor.Cyan )} ${`START ${APP_NAME} version : ${APP_VERSION} [${NODE_ENV}]`} ${color( EColor.White )} ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()} ${color( EColor.Red )} ${"=".repeat(24)}${color(EColor.Reset)}\n`);
     const file: fs.PathOrFileDescriptor = __dirname + `/configuration.json`;
     Configuration.filePath = file.toString();
+    // override console log important in production build will remove all console.log
+    console.log = (data: any) => {
+      if (!isTest() && data) this.writeLog(data);
+    };
+    log.init();
     if (isTest()) this.readConfigFile();
   }
-    
+  
+  writeLog(input: any) {
+    if (input) {
+      process.stdout.write(input + "\n");
+      if (serverConfig && serverConfig.logFile) serverConfig.logFile.write(input + "\n");
+    }
+  };
+  
   // Read string (or default configuration file) as configuration file
   public readConfigFile(input?: string) {
-    log.booting("Read config", input ? "content" : Configuration.filePath) ;
+    this.writeLog(`${color(EColor.Red)} ${"=".repeat(24)} ${color( EColor.Cyan )} ${`START ${APP_NAME} version : ${APP_VERSION} [${NODE_ENV}]`} ${color( EColor.White )} ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()} ${color( EColor.Red )} ${"=".repeat(24)}${color(EColor.Reset)}`);
+    this.writeLog(log.booting("Read config", input ? "content" : Configuration.filePath));
     try {
       // load File
       const fileContent = input || fs.readFileSync(Configuration.filePath, "utf8");
+      if (fileContent.trim() === "")  {
+        this.writeLog(log.error(`File is empty`, Configuration.filePath));
+        process.exit(111);      
+      }
       // decrypt file
       Configuration.jsonConfiguration = JSON.parse(decrypt(fileContent));
       if (this.validJSONConfig(Configuration.jsonConfiguration)) {
@@ -56,13 +74,13 @@ class Configuration {
         }
         Configuration.configs[TEST] = this.createConfigFileTest();
       } else {
-        log.error(errors.configFileError);
+        this.writeLog(log.error(errors.configFileError));
         process.exit(112);
       }
       // rewrite file (to update config modification except in test mode)
       if (!isTest()) this.writeConfig();    
     } catch (error: any) {
-      log.error("Config is not correct", error["message"]);
+      this.writeLog(log.error("Config is not correct", error["message"]));
       process.exit(111);      
     }
   }
@@ -155,7 +173,7 @@ class Configuration {
 
   // Write an encrypt config file in json file
   writeConfig(): boolean {
-    log.booting("Write config", Configuration.filePath);
+    this.writeLog(log.booting("Write config", Configuration.filePath));
     const result: Record<string, any>  = {};
     Object.entries(Configuration.configs).forEach(([k, v]) => {
       if (k !== TEST) result[k] = Object.keys(v).reduce((obj, key) => { obj[key as keyobj] = v[key as keyobj]; return obj; }, {} );
@@ -168,7 +186,7 @@ class Configuration {
         : JSON.stringify(result, null, 4),
       (err) => {
         if (err) {
-          log.error(formatLog.error(err));
+          this.writeLog(log.error(log.error(err)));
           return false;
         }
       }
@@ -182,7 +200,7 @@ class Configuration {
         .connection(configName)
         .unsafe(query)
         .catch((error: Error) => {
-          log.error(formatLog.error(error));
+          this.writeLog(log.error(log.error(error)));
           return false;
         });
     });
@@ -199,7 +217,7 @@ class Configuration {
         }
       );
     } catch (error) {
-      log.error(error);
+      this.writeLog(log.error(error));
     }
     return true;
   }
@@ -265,7 +283,7 @@ class Configuration {
       await serverConfig.connection(configName).unsafe(query).then(() => {
         log.create(`[${configName}] ${name}`, _OK);
       }).catch((error: Error) => {
-        log.error(error);
+        this.writeLog(log.error(error));
         return false;
       });
     });
@@ -313,7 +331,7 @@ class Configuration {
           try {
             await this.addToServer(key);
           } catch (error) {
-            log.error(error);
+            this.writeLog(log.error(error));
             status = false;
           }
         }
@@ -331,7 +349,7 @@ class Configuration {
         if (!Configuration.ports.includes(port))
           app.listen(port, () => {
             Configuration.ports.push(port);
-            log.booting(`${color(EColor.Yellow)}First launch]${color(EColor.Green)}${infos.ListenPort}`, port );
+            this.writeLog(log.booting(`${color(EColor.Yellow)}First launch]${color(EColor.Green)}${infos.ListenPort}`, port ));
           });
         return true;
     }
@@ -476,61 +494,61 @@ class Configuration {
             admin: false
           });
           if(![ADMIN, TEST].includes(key)) createIndexes(key);
-          log.booting(`${color(EColor.Magenta)}Database => ${color(EColor.Yellow)}[${key}] ${color(EColor.Default)} on line`, res ? _WEB : _NOTOK);
+          this.writeLog(log.booting(`${color(EColor.Magenta)}Database => ${color(EColor.Yellow)}[${key}] ${color(EColor.Default)} on line`, res ? _WEB : _NOTOK));
           const port = Configuration.configs[key].port;
           if (port > 0) {
             if (Configuration.ports.includes(port))
-              log.booting(`${color(EColor.Magenta)}[${key}] ${color(EColor.Green)}${infos.addPort}`, port );
+              this.writeLog(log.booting(`${color(EColor.Magenta)}[${key}] ${color(EColor.Green)}${infos.addPort}`, port ));
             else
               app.listen(port, () => {
                 Configuration.ports.push(port);
-                log.booting(`${color(EColor.Yellow)}[${key}] ${color(EColor.Green)}${infos.ListenPort}`, port );
+                this.writeLog(log.booting(`${color(EColor.Yellow)}[${key}] ${color(EColor.Green)}${infos.ListenPort}`, port ));
               });
           }
         }
         return res;
       })
       .catch((error: Error) => {
-        log.error(errors.unableFindCreate, Configuration.configs[key].pg.database);
-        log.error(error);
+        this.writeLog(log.error(errors.unableFindCreate, Configuration.configs[key].pg.database));
+        this.writeLog(log.error(error));
         process.exit(111);
       });
   }
 
   // test in boolean exist if not and logCreate is true then logCreate DB
   private async tryToCreateDB(connectName: string): Promise<boolean> {
-    log.booting("Try create Database", Configuration.configs[connectName].pg.database);
+    this.writeLog(log.booting("Try create Database", Configuration.configs[connectName].pg.database));
     return await createDatabase(connectName)
       .then(async () => {
-        log.booting(`${infos.db} ${infos.create} [${Configuration.configs[connectName].pg.database}]`, _OK );
+        this.writeLog(log.booting(`${infos.db} ${infos.create} [${Configuration.configs[connectName].pg.database}]`, _OK ));
         this.createDbConnectionFromConfigName(connectName);
         return true;
       })
       .catch((err: Error) => {;        
-        log.error(msg(infos.create, infos.db), err.message);
+        this.writeLog(log.error(msg(infos.create, infos.db), err.message));
         return false;
       });
   }
 
   // verify if database exist and if create is true create database if not exist.
   private async isDbExist(connectName: string, create: boolean): Promise<boolean> {
-    log.booting(infos.dbExist, Configuration.configs[connectName].pg.database);
+    this.writeLog(log.booting(infos.dbExist, Configuration.configs[connectName].pg.database));
     return await this.connection(connectName)`select 1+1 AS result`.then(async () => {
       const listTempTables = await this.connection(connectName)`SELECT array_agg(table_name) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'temp%';`;
       const tables = listTempTables[0]["array_agg"];
       if (tables != null)        
-        log.booting( `DELETE temp table(s) ==> \x1b[33m${connectName}\x1b[32m`,
+        this.writeLog(log.booting( `DELETE temp table(s) ==> \x1b[33m${connectName}\x1b[32m`,
           await this.connection(connectName).begin(sql => {
             tables.forEach(async (table: string) => {
               await sql.unsafe(`DROP TABLE ${table}`);
             });
           }).then(() => _OK)
             .catch((err: Error) => err.message)
-        );
+        ));
         if (update[EUpdate.triggers] && update[EUpdate.triggers] === true && connectName !== ADMIN) await this.relogCreateTrigger(connectName);
         if (update[EUpdate.beforeAll] && Object.entries(update[EUpdate.beforeAll]).length > 0 ) {
           if (update[EUpdate.beforeAll] && Object.entries(update[EUpdate.beforeAll]).length > 0 ) {
-            console.log(formatLog.head(EUpdate.beforeAll));
+            console.log(log.head(EUpdate.beforeAll));
             try {              
               Object.keys(Configuration.configs)
                 .filter((e) => e != ADMIN)
@@ -542,7 +560,7 @@ class Configuration {
               await this.executeQueries(EUpdate.beforeAll);
             // RelogCreate triggers for this service
             } catch (error) {
-              log.error(formatLog.error(error));
+              this.writeLog(log.error(log.error(error)));
             }
           }
         }
@@ -558,14 +576,14 @@ class Configuration {
           }
           //database does not exist
         } else if (err["code" as keyobj] === "3D000" && create == true) {
-          console.log(formatLog.debug( msg(infos.tryCreate, infos.db), Configuration.configs[connectName].pg.database ));
+          console.log(log.debug( msg(infos.tryCreate, infos.db), Configuration.configs[connectName].pg.database ));
           // If not in tdd tests create test DB for documentation
           if (!isTest()) {
             if(connectName === TEST)
             await createService(testDatas);
             else return await this.tryToCreateDB(connectName);
           }
-        } else log.error(formatLog.error(err));
+        } else this.writeLog(log.error(log.error(err)));
         return false;
       });
   }

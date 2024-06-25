@@ -8,10 +8,10 @@
 // onsole.log("!----------------------------------- createUpdateValues. -----------------------------------!");
 import { ESCAPE_SIMPLE_QUOTE } from "../../constants";
 import { addDoubleQuotes, addSimpleQuotes } from "../../helpers";
-import { formatLog } from "../../logger";
+import { log } from "../../log";
 
 export function createUpdateValues(input: Record<string, any> ): string  {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     const result:string[] = [];
     Object.keys(input).forEach((e: string) => {
           result.push(`${addDoubleQuotes(e)} = ${addSimpleQuotes(ESCAPE_SIMPLE_QUOTE(input[e]))}`);

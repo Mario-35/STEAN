@@ -9,7 +9,6 @@
 
 import { VOIDTABLE } from "../../../constants";
 import { addDoubleQuotes, getBigIntFromString } from "../../../helpers";
-import { formatLog } from "../../../logger";
 import { Ientity, IKeyString } from "../../../types";
 import { EOperation, EOptions } from "../../../enums";
 import { asJson } from "../../../db/queries";
@@ -19,6 +18,7 @@ import { createInsertValues, createUpdateValues } from "../../../models/helpers"
 import { apiAccess } from "../../../db/dataAccess";
 import * as entities from "../../../db/entities";
 import { PgVisitor } from "..";
+import { serverConfig } from "../../../configuration";
 
 export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor): string {
     const formatInsertEntityData = (entity: string, datas: object, main: PgVisitor): Record<string, any> => {
@@ -35,7 +35,7 @@ export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor)
         return datas;
     } 
 
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     let sqlResult = "";
     const queryMaker: {
         [key: string]: {
@@ -124,7 +124,7 @@ export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor)
      * @returns result
      */
     const start = (datas: object, entity?: Ientity, parentEntity?: Ientity): object | undefined => {
-        console.log(formatLog.head(`start level ${level++}`));        
+        console.log(log.head(`start level ${level++}`));        
         const returnValue: Record<string, any> = {};
         entity = entity ? entity : postEntity;
         parentEntity = parentEntity ? parentEntity : postParentEntity ? postParentEntity : postEntity;
@@ -207,7 +207,7 @@ export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor)
              * @param subParentEntity {Ientity} entity parent
              */
         const addAssociation = (subEntity: Ientity, subParentEntity: Ientity) => {
-            console.log(formatLog.debug(`addAssociation in ${subEntity.name} for parent`, subParentEntity.name));
+            console.log(log.debug(`addAssociation in ${subEntity.name} for parent`, subParentEntity.name));
 // onsole.log("!----------------------------------- postSqlFromPgVisitor. -----------------------------------!");
             const relationName = getRelationNameFromEntity(subEntity, subParentEntity);
             const parentRelationName = getRelationNameFromEntity(subParentEntity, subEntity);
@@ -215,10 +215,10 @@ export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor)
             if (parentRelationName && relationName) {
                 const relation = subEntity.relations[relationName];
                 const parentRelation = subParentEntity.relations[parentRelationName];
-                console.log(formatLog.debug(`Found a parent relation in ${subEntity.name}`, subParentEntity.name));
+                console.log(log.debug(`Found a parent relation in ${subEntity.name}`, subParentEntity.name));
                 
                 if (relation.tableName == parentRelation.tableName && relation.tableName == subEntity.table) {
-                    console.log(formatLog.debug("Found a relation to do in sub query", subParentEntity.name));
+                    console.log(log.debug("Found a relation to do in sub query", subParentEntity.name));
                     const tableName = names[subEntity.table];
                     const parentTableName = names[subParentEntity.table];
                     
@@ -234,7 +234,7 @@ export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor)
                         if (relation.tableName == subParentEntity.table) {
                             const tableName = names[subEntity.table];
                             const parentTableName = names[subParentEntity.table];
-                            console.log(formatLog.debug(`Add parent relation ${tableName} in`, parentTableName));                            
+                            console.log(log.debug(`Add parent relation ${tableName} in`, parentTableName));                            
                             addToQueryMaker(
                                 EOperation.Relation,
                                 parentTableName,
@@ -246,7 +246,7 @@ export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor)
                             } else if (relation.tableName != subParentEntity.table && relation.tableName != subEntity.table) {
                                 const tableName = names[subEntity.table];
                                 const parentTableName = names[subParentEntity.table];
-                                console.log(formatLog.debug(`Add Table association ${tableName} in`, parentTableName));
+                                console.log(log.debug(`Add Table association ${tableName} in`, parentTableName));
                                 addToQueryMaker(
                                     EOperation.Association,
                                     relation.tableName,
@@ -262,7 +262,7 @@ export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor)
                 } else {
                     const tableName = names[subEntity.table];
                     const parentTableName = names[subParentEntity.table];
-                    console.log(formatLog.debug(`Add Relation ${tableName} in`, parentTableName));
+                    console.log(log.debug(`Add Relation ${tableName} in`, parentTableName));
                     addToQueryMaker(
                         EOperation.Table,
                         parentTableName,
@@ -304,16 +304,16 @@ export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor)
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     Object.entries(datas[key as keyof object]).forEach(([_key, value]) => {
                         if (entity && parentEntity && Object.keys(entity.relations).includes(key)) {
-                            console.log(formatLog.debug(`Found a relation for ${entity.name}`, key));
+                            console.log(log.debug(`Found a relation for ${entity.name}`, key));
                             subBlock(key, value as object);
                         } else {
-                            console.log(formatLog.debug(`data ${key}`, datas[key as keyof object]));
+                            console.log(log.debug(`data ${key}`, datas[key as keyof object]));
                             returnValue[key as keyof object] = datas[key as keyof object];
                         }
                     });
                 } else if (typeof datas[key as keyof object] === "object") {
                     if (Object.keys(entity.relations).includes(key)) {
-                        console.log(formatLog.debug(`Found a object relation for ${entity.name}`, key));
+                        console.log(log.debug(`Found a object relation for ${entity.name}`, key));
                         subBlock(key, datas[key as keyof object]);
                     }
                 } else returnValue[key as keyof object] = datas[key as keyof object];
@@ -325,7 +325,7 @@ export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor)
 
     if (src.parentEntity) {
         const entityName =models.getEntityName(src.ctx.config, src.parentEntity);
-        console.log(formatLog.debug("Found entity : ", entityName));
+        console.log(log.debug("Found entity : ", entityName));
         const callEntity = entityName ? src.ctx.model[entityName] : undefined;
         const id: bigint | undefined =
         typeof src.parentId== "string" ? getBigIntFromString(src.parentId) : src.parentId;
@@ -357,6 +357,6 @@ export function postSqlFromPgVisitor(datas: Record<string, any>, src: PgVisitor)
         strip: src.ctx.config.options.includes(EOptions.stripNull),
         count: false
     });
-    log.query(`${sqlResult}`);
+    serverConfig.writeLog(log.query(sqlResult));
     return sqlResult;
 }

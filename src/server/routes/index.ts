@@ -10,7 +10,7 @@
 import { decodeToken } from "../authentication";
 import { _DEBUG } from "../constants";
 import { log } from "../log";
-import { formatLog, writeToLog } from "../logger";
+import { writeToLog } from "../logger";
 import { EExtensions } from "../enums";
 import { createBearerToken, getUserId } from "../helpers";
 import { decodeUrl, firstInstall } from "./helper";
@@ -39,7 +39,7 @@ export const routerHandle = async (ctx: koaContext, next: any) => {
   
   // set decodedUrl context
   ctx.decodedUrl = decodedUrl;
-  if (_DEBUG) console.log(formatLog.object("decodedUrl", decodedUrl));
+  if (_DEBUG) console.log(log.object("decodedUrl", decodedUrl));
 
   if (!decodedUrl.service) throw new Error(errors.noNameIdentified);
   if (decodedUrl.service && decodedUrl.configName) 
@@ -80,7 +80,6 @@ export const routerHandle = async (ctx: koaContext, next: any) => {
     await next().then(async () => {  
       if (ctx.config.extensions.includes(EExtensions.logs)) await writeToLog(ctx);
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {         
     log.errorMsg(error);
     if (ctx.config && ctx.config.extensions.includes(EExtensions.logs))

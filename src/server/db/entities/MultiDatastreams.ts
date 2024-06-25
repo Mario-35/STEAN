@@ -10,16 +10,16 @@
 import { koaContext } from "../../types";
 import { Common } from "./common";
 import { errors, msg } from "../../messages/";
-import { formatLog } from "../../logger";
+import { log } from "../../log";
 
 export class MultiDatastreams extends Common {
   constructor(ctx: koaContext) {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     super(ctx);
   }
 
   formatDataInput(input: Record<string, any>  | undefined): Record<string, any>  | undefined {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     if (!input) this.ctx.throw(400, { code: 400, detail: errors.noData });
     const temp = this.getKeysValue(input, ["FeaturesOfInterest", "foi"]);
     if (temp) input["_default_foi"] = temp;

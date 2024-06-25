@@ -8,18 +8,18 @@
 // onsole.log("!----------------------------------- Decoders entity. -----------------------------------!");
 import { IreturnResult, koaContext } from "../../types";
 import { Common } from "./common";
-import { formatLog } from "../../logger";
 import { addDoubleQuotes, asyncForEach } from "../../helpers";
 import { decodingPayload } from "../../lora";
 import { executeSql, executeSqlValues } from "../helpers";
+import { log } from "../../log";
 export class Decoders extends Common {
   constructor(ctx: koaContext) {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     super(ctx);
   }
   // Override get all decoders to be able to search by deveui instead of id only
   async getAll(): Promise<IreturnResult | undefined> {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     if (this.ctx.odata.payload) {
       const result:Record<string, any>  = {};
       const decoders = await executeSql(this.ctx.config, `SELECT "id", "name", "code", "nomenclature", "synonym" FROM ${addDoubleQuotes(this.ctx.model.Decoders.table)}`);
@@ -40,7 +40,7 @@ export class Decoders extends Common {
   }
   // Override get one decoders to be able to search by deveui instead of id only
   async getSingle( idInput: bigint | string ): Promise<IreturnResult | undefined> {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     if (this.ctx.odata.payload) {
       const decoder: Record<string, any>  = await executeSqlValues(this.ctx.config, `SELECT "id", "name", "code", "nomenclature", "synonym" FROM "${this.ctx.model.Decoders.table}" WHERE id = ${this.ctx.odata.id}`);
       return decoder[0]

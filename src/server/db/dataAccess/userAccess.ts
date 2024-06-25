@@ -12,13 +12,13 @@ import { encrypt } from "../../helpers";
 import { serverConfig } from "../../configuration";
 import { ADMIN } from "../../constants";
 import { models } from "../../models";
-import { formatLog } from "../../logger";
+import { log } from "../../log";
 
 const cols = () => Object.keys(models.DBAdmin(serverConfig.getConfig(ADMIN)).Users.columns);
 
 export const userAccess = {
   getAll: async (configName: string, ) => {
-    console.log(formatLog.whereIam("User dataAccess")); 
+    console.log(log.whereIam("User dataAccess")); 
     const conn = serverConfig.connection(configName);
     const query = await serverConfig
       .connection(configName)<Iuser[]>`SELECT ${conn(cols())} FROM ${conn(models.DBAdmin(serverConfig.getConfig(configName)).Users.table)} ORDER BY id`;
@@ -26,7 +26,7 @@ export const userAccess = {
   },
 
   getSingle: async (configName: string, id: string | number) => {
-    console.log(formatLog.whereIam("User dataAccess"));
+    console.log(log.whereIam("User dataAccess"));
     const conn = serverConfig.connection(configName);
     id = (typeof id === "number") ? String(id) : id;    
     const query = await serverConfig
@@ -35,7 +35,7 @@ export const userAccess = {
   },
 
   post: async (configName: string, data: Iuser) => {
-    console.log(formatLog.whereIam("User dataAccess")); 
+    console.log(log.whereIam()); 
     const conn = serverConfig.connection(configName);    
     return await serverConfig
       .connection(configName).unsafe(`INSERT INTO "user" ("username", "email", "password", "database", "canPost", "canDelete", "canCreateUser", "canCreateDb", "superAdmin", "admin") 
@@ -52,7 +52,7 @@ export const userAccess = {
   },
 
   update: async (configName: string, data: Iuser): Promise<Iuser | any> => {
-    console.log(formatLog.whereIam("User dataAccess")); 
+    console.log(log.whereIam("User dataAccess")); 
     const conn = serverConfig.connection(configName);
     return await conn.unsafe(`UPDATE "user" SET "username" = '${data.username}', "email" = '${data.email}', "database" = '${data.database}', "canPost" = ${data.canPost || false}, "canDelete" = ${data.canDelete || false}, "canCreateUser" = ${data.canCreateUser || false}, "canCreateDb" = ${data.canCreateDb || false}, "superAdmin" = ${data.superAdmin || false}, "admin" = ${data.admin || false} WHERE "id" = ${data.id} RETURNING *`);
   }

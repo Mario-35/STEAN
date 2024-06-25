@@ -9,14 +9,14 @@
 
 import { getAuthenticatedUser } from "../../authentication";
 import { serverConfig } from "../../configuration";
-import { formatLog } from "../../logger";
+import { log } from "../../log";
 import { models } from "../../models";
 import { decodeUrl } from "../../routes/helper/decodeUrl";
 import { Ientities, IqueryOptions, koaContext } from "../../types";
 import { blankUser } from "./blankUser";
 
 export async function createQueryParams(ctx: koaContext): Promise<IqueryOptions| undefined> {
-    console.log(formatLog.whereIam());
+    console.log(log.whereIam());
     const model = models.filteredModelFromConfig(ctx.config);
     let user = await getAuthenticatedUser(ctx);
     user = user ? user : blankUser(ctx);

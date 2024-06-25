@@ -11,7 +11,6 @@ import Router from "koa-router";
 import { apiAccess, userAccess } from "../db/dataAccess";
 import { isAllowedTo, returnFormats, upload } from "../helpers";
 import fs from "fs";
-import { formatLog } from "../logger";
 import { IKeyString, IreturnResult, Iuser, koaContext } from "../types";
 import { DefaultState, Context } from "koa";
 import { createQueryHtml } from "../views/";
@@ -25,6 +24,7 @@ import { serverConfig } from "../configuration";
 import { checkPassword, emailIsValid } from "./helper";
 import { Login } from "../views";
 import { createQueryParams } from "../views/helpers";
+import { log } from "../log";
 
 export const protectedRoutes = new Router<DefaultState, Context>();
 
@@ -121,7 +121,7 @@ protectedRoutes.post("/(.*)", async (ctx: koaContext, next) => {
     } else if (ctx.request.type.startsWith("multipart/")) {      
       // If upload datas
       const getDatas = async (): Promise<object> => {
-        console.log(formatLog.head("getDatas ..."));
+        console.log(log.head("getDatas ..."));
         return new Promise(async (resolve, reject) => {
           await upload(ctx)
             .then((data) => {
@@ -137,7 +137,7 @@ protectedRoutes.post("/(.*)", async (ctx: koaContext, next) => {
       const odataVisitor = await createOdata(ctx);
       if (odataVisitor) ctx.odata = odataVisitor;
       if (ctx.odata) {
-        console.log(formatLog.head("POST FORM"));
+        console.log(log.head("POST FORM"));
         const objectAccess = new apiAccess(ctx);
         const returnValue = await objectAccess.post();
         if (ctx.datas) fs.unlinkSync(ctx.datas["file" as keyof object]);
@@ -178,7 +178,7 @@ protectedRoutes.patch("/(.*)", async (ctx) => {
     const odataVisitor = await createOdata(ctx);
     if (odataVisitor) ctx.odata = odataVisitor;
     if (ctx.odata) {
-      console.log(formatLog.head("PATCH"));
+      console.log(log.head("PATCH"));
       const objectAccess = new apiAccess(ctx);
       if (ctx.odata.id) {
         const returnValue: IreturnResult | undefined | void =
@@ -204,7 +204,7 @@ protectedRoutes.delete("/(.*)", async (ctx) => {
     const odataVisitor = await createOdata(ctx);
     if (odataVisitor) ctx.odata = odataVisitor;
     if (ctx.odata) {
-      console.log(formatLog.head("DELETE"));
+      console.log(log.head("DELETE"));
       const objectAccess = new apiAccess(ctx);
       if (!ctx.odata.id) ctx.throw(400, { detail: errors.idRequired });
       const returnValue = await objectAccess.delete(ctx.odata.id);

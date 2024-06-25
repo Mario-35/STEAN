@@ -7,12 +7,11 @@
  */
 // onsole.log("!----------------------------------- decodingPayload for odata. -----------------------------------!");
 import { log } from "../log";
-import { formatLog } from "../logger";
 import { errors } from "../messages";
 import { ILoraDecodingResult } from "../types";
 
 export const decodingPayload = ( decoder: { name: string; code: string; nomenclature: string }, payload: string ): ILoraDecodingResult | undefined => {
-  console.log(formatLog.head("decodingPayload"));
+  console.log(log.head("decodingPayload"));
   if (decoder.name && decoder.nomenclature && decoder.code != 'undefined') {
     try {
       const F = new Function( "input", "nomenclature", `${String(decoder.code)}; return decode(input, nomenclature);` );
