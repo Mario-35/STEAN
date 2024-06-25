@@ -1,44 +1,46 @@
+/**
+ * logToHtml
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+// onsole.log("!----------------------------------- logToHtml -----------------------------------!");
+
 import { _ARROWLEFT, _ARROWRIGHT } from "../../constants";
-import { keyobj } from "../../types";
 
 export function logToHtml(input: string): string {
-  const pipo = (input: string) => {
-   const tmp =  input.split("</span>")
+  const couleur = (input: string) => `</span><span style="color:#${input}"> `
+  const formate = (input: string) => {
+    const tmp =  input.split("</span>")
     tmp.slice(1);
     return tmp.filter(e => e.trim() != "").join("</span>");
   }
-  const EnumHtmlColor: { [key: number]: string; } = {
-    30 : "000000", // Black
-    31 : "FF0000", // Red
-    32 : "00FF00", // Green
-    33 : "FFFF00", // Yellow
-    34 : "0000FF", // Blue
-    35 : "FF00FF", // Magenta
-    36 : "00FFFF", // Cyan
-    37 : "FFFFFF", // White
-    39 : "FFFFFF", // White
-    90 : "DBA57D",  // Orange
-    92 : "BBFFBB",  // Orange
-    93 : "DB61D9",  // Orange
-    95 : "DB61D9"  // Orange
-    } // BBFFBB
-    input = input.split(`[92m[93m`).join("</pre></span>").split(`[92m`).join(`<span style="color:#93C572"><pre>`);
-    Object.keys(EnumHtmlColor).forEach((key) => {       
-      input = input.split(`[${key}m`).join(`</span><span style="color:#${EnumHtmlColor[key as keyobj]}"> `)
-    }); 
-    return input
-              .split(`[0m`)
-              .join(``)
-              .split(`[1m`)
-              .join(`<span style="font-weight:bold;">`)
-              .split(`[22m`)
-              .join(`</span>`)
-              .split("<--")
-              .join(_ARROWLEFT)
-              .split("-->")
-              .join(_ARROWRIGHT)
-              .split(/\r?\n/)
-              .map((e: string) => e.trim().startsWith("</span>") ? `${pipo(e)}</span><br />\r`: `${e}\r`)
-              .join("");
-    
-  }
+  
+  const modif: { [key: string]: string; } = {
+    "[92m[93m" : "</pre></span>",
+    "[92m" : '<span style="color:#93C572"><pre>',
+    "[30m" : couleur("A3AEEC"),
+    "[31m" : couleur("FF0000"), // Red
+    "[32m" : couleur("00FF00"), // Green
+    "[33m" : couleur("FFFF00"), // Yellow
+    "[34m" : couleur("0000FF"), // Blue
+    "[35m" : couleur("FF00FF"), // Magenta
+    "[36m" : couleur("00FFFF"), // Cyan
+    "[37m" : couleur("FFFFFF"), // White
+    "[39m" : couleur("FFFFFF"), // White
+    "[90m" : couleur("DBA57D"),  // Orange
+    "[93m" : couleur("DB61D9"),  // Orange
+    "[95m" : couleur("DB61D9"),  // Orange
+    "[0m" : "",
+    "[1m" : '<span style="font-weight:bold;">',
+    "[22m" : "</span>",
+    "<--" : _ARROWLEFT,
+    "-->" : _ARROWRIGHT,
+  } 
+  
+  Object.keys(modif).forEach((key) => {       
+    input = input.split(key).join(modif[key])
+  }); 
+  return input.split(/\r?\n/).map((e: string) => e.trim().startsWith("</span>") ? `${formate(e)}</span><br />\r`: `${e}\r`) .join("");
+}

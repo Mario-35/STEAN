@@ -1,21 +1,21 @@
 /**
- * writeToLog
+ * writeLogToDb
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- writeToLog -----------------------------------!");
+// onsole.log("!----------------------------------- writeLogToDb -----------------------------------!");
 
 import { addDoubleQuotes, hidePassword, isTest } from "../helpers";
 import { executeSqlValues } from "../db/helpers";
 import { models } from "../models";
-import { log } from "../log";
+import { log } from ".";
 import { createInsertValues } from "../models/helpers";
 import { keyobj, koaContext } from "../types";
 import { _ID } from "../db/constants";
 
-export const writeToLog = async ( ctx: koaContext, ...error: any[] ): Promise<void> => {
+export const writeLogToDb = async ( ctx: koaContext, ...error: any[] ): Promise<void> => {
   console.log(log.whereIam("LOG"));
   if (ctx.log && ctx.log.method != "GET") {
     ctx.log.code = error && error["code" as keyobj] ? +error["code" as keyobj] : +ctx.response.status;

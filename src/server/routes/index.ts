@@ -10,7 +10,6 @@
 import { decodeToken } from "../authentication";
 import { _DEBUG } from "../constants";
 import { log } from "../log";
-import { writeToLog } from "../logger";
 import { EExtensions } from "../enums";
 import { createBearerToken, getUserId } from "../helpers";
 import { decodeUrl, firstInstall } from "./helper";
@@ -21,6 +20,7 @@ export { protectedRoutes } from "./protected";
 export { unProtectedRoutes } from "./unProtected";
 import querystring from "querystring";
 import { koaContext } from "../types";
+import { writeLogToDb } from "../log/writeLogToDb";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const routerHandle = async (ctx: koaContext, next: any) => { 
@@ -78,12 +78,12 @@ export const routerHandle = async (ctx: koaContext, next: any) => {
     ctx.user = decodeToken(ctx);
     // Write in logs
     await next().then(async () => {  
-      if (ctx.config.extensions.includes(EExtensions.logs)) await writeToLog(ctx);
+      if (ctx.config.extensions.includes(EExtensions.logs)) await writeLogToDb(ctx);
     });
   } catch (error: any) {         
     log.errorMsg(error);
     if (ctx.config && ctx.config.extensions.includes(EExtensions.logs))
-      writeToLog(ctx, error);      
+    writeLogToDb(ctx, error);      
       const tempError = {
         code: error.statusCode,
         message: error.message,

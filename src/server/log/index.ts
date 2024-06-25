@@ -12,6 +12,7 @@ import { EColor } from "../enums";
 import { color, showAll, _DEBUG, _OK, _WEB } from "../constants";
 import { isTest } from "../helpers";
 import { Lexer } from "../odata/parser";
+import { _ID } from "../db/constants";
 
 // class to logCreate configs environements
 class Log {
@@ -39,7 +40,7 @@ class Log {
   }
 
   public query(sql: unknown) {
-    if (_DEBUG) return `${color(EColor.Code)}${"=".repeat(5)}[ Query Start ]${"=".repeat(5)}\n${color(EColor.Sql)} ${showAll(sql)}\n${color(EColor.Sql)}${color(EColor.Code)}${"=".repeat(5)}[ Query End ]${"=".repeat(5)}\n${color( EColor.Reset )}`;
+    if (_DEBUG) return `${color(EColor.Code)}${"=".repeat(5)}[ Query Start ]${"=".repeat(5)}\n${color(EColor.Sql)} ${showAll(sql)}\n${color(EColor.Sql)}${color(EColor.Code)}\n${color( EColor.Reset )}`;
   }
 
   public queryError<T>(query: unknown, error: T) {  
@@ -57,62 +58,54 @@ class Log {
     return infos;
   }
 
+  // log an object or json
+  object(title: string, input: object) {
+    if (_DEBUG) {
+      const res = [this.head(title)];
+      Object.keys(input).forEach((cle: string) => {
+        res.push(this.logCleInfos("  " + cle, input[cle as keyof object]));
+      });
+      return res.join("\n");
+    }
+  }
 
+  url(link: string) {
+    return `${_WEB} ${color(EColor.Default)} : ${color( EColor.Cyan )} ${link}${color(EColor.Reset)}`;
+  }
 
+  head<T>(cle: string, infos?: T) {
+    if (_DEBUG) return infos ? `${color(EColor.Green)} ${this.line(12)} ${color( EColor.Cyan )} ${cle} ${color(EColor.White)} ${this.logAll( infos, this.debugFile )} ${color(EColor.Green)} ${this.line(12)}${color( EColor.Reset )}` : this.separator(cle, 12);
+  }
 
+  infos(cle: string, input: unknown) {
+      if (_DEBUG) return `${this.separator(cle, 30)} ${color(EColor.Yellow)} ${this.logAll(input, true)}${color( EColor.Reset )}`;
+  }
 
+  debug<T>(cle: string, infos: T) {
+    if (_DEBUG) return `${color(EColor.Green)} ${cle} ${color( EColor.White )} : ${color(EColor.Cyan)} ${this.logAll( infos, this.debugFile )}${color(EColor.Reset)}`;
+  }
 
+  result<T>(cle: string, infos?: T) {
+    if (_DEBUG) return `${color(EColor.Green)}     >>${color( EColor.Black )} ${cle} ${color(EColor.Default)} : ${color( EColor.Cyan )} ${this.logAll(infos, this.debugFile)}${color(EColor.Reset)}` ;
+  }
 
+  error<T>(cle: unknown, infos?: T) {
+    return infos
+      ? `${color(EColor.Red)} ${cle} ${color( EColor.Blue )} : ${color(EColor.Yellow)} ${this.logAll( infos, this.debugFile )}${color(EColor.Reset)}`
+      : `${color(EColor.Red)} Error ${color( EColor.Blue )} : ${color(EColor.Yellow)} ${this.logAll(cle)}${color( EColor.Reset )}`;
+  }
+  
+  whereIam(infos?: unknown) {    
+    const tmp = infos ? `${color(EColor.Default)} ${infos} ${color(EColor.Reset)}` : '';
+    if (_DEBUG) 
+      return `${color(EColor.Red)} ${this.line(4)} ${color(EColor.Cyan)} ${ new Error().stack?.split("\n")[2].trim().split("(")[0].split("at ")[1].trim() } ${tmp}${color(EColor.Red)} ${this.line(4)}${color(EColor.Reset)}`;
+  }
 
-  
-    // log an object or json
-    object(title: string, input: object) {
-      if (_DEBUG) {
-        const res = [this.head(title)];
-        Object.keys(input).forEach((cle: string) => {
-          res.push(this.logCleInfos("  " + cle, input[cle as keyof object]));
-        });
-        return res.join("\n");
-      }
-    }
-  
-    url(link: string) {
-      return `${_WEB} ${color(EColor.Default)} : ${color( EColor.Cyan )} ${link}${color(EColor.Reset)}`;
-    }
-  
-    head<T>(cle: string, infos?: T) {
-      if (_DEBUG) return infos ? `${color(EColor.Green)} ${this.line(12)} ${color( EColor.Cyan )} ${cle} ${color(EColor.White)} ${this.logAll( infos, this.debugFile )} ${color(EColor.Green)} ${this.line(12)}${color( EColor.Reset )}` : this.separator(cle, 12);
-    }
-  
-    infos(cle: string, input: unknown) {
-        if (_DEBUG) return `${this.separator(cle, 30)} ${color(EColor.Yellow)} ${this.logAll(input, true)}${color( EColor.Reset )}`;
-    }
-  
-    debug<T>(cle: string, infos: T) {
-      if (_DEBUG) return `${color(EColor.Green)} ${cle} ${color( EColor.White )} : ${color(EColor.Cyan)} ${this.logAll( infos, this.debugFile )}${color(EColor.Reset)}`;
-    }
-  
-    result<T>(cle: string, infos?: T) {
-      if (_DEBUG) return `${color(EColor.Green)}     >>${color( EColor.Black )} ${cle} ${color(EColor.Default)} : ${color( EColor.Cyan )} ${this.logAll(infos, this.debugFile)}${color(EColor.Reset)}` ;
-    }
-  
-    error<T>(cle: unknown, infos?: T) {
-      return infos
-        ? `${color(EColor.Red)} ${cle} ${color( EColor.Blue )} : ${color(EColor.Yellow)} ${this.logAll( infos, this.debugFile )}${color(EColor.Reset)}`
-        : `${color(EColor.Red)} Error ${color( EColor.Blue )} : ${color(EColor.Yellow)} ${this.logAll(cle)}${color( EColor.Reset )}`;
-    }
-    
-    whereIam(infos?: unknown) {    
-      const tmp = infos ? `${color(EColor.Default)} ${infos} ${color(EColor.Reset)}` : '';
-      if (_DEBUG) 
-        return `${color(EColor.Red)} ${this.line(4)} ${color(EColor.Cyan)} ${ new Error().stack?.split("\n")[2].trim().split("(")[0].split("at ")[1].trim() } ${tmp}${color(EColor.Red)} ${this.line(4)}${color(EColor.Reset)}`;
-    }
-  
-    test() {
-      return `${color(EColor.Yellow)} ${this.line(4)} ${color(EColor.Cyan)} ${ new Error().stack?.split("\n")[2].trim().split(" ")[1] } ${color(EColor.Yellow)} ${this.line(4)}${color(EColor.Reset)}`;
-    }
-    
-  public init() {
+  test() {
+    return `${color(EColor.Yellow)} ${this.line(4)} ${color(EColor.Cyan)} ${ new Error().stack?.split("\n")[2].trim().split(" ")[1] } ${color(EColor.Yellow)} ${this.line(4)}${color(EColor.Reset)}`;
+  }
+
+  init() {
     console.log(this.message("Log", "ready " + _OK));    
   }
 }
