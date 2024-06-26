@@ -1,11 +1,12 @@
 /**
- * Entity interface.
+ * Entity interface
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- Entity interface. -----------------------------------!");
+// onsole.log("!----------------------------------- Entity interface -----------------------------------!");
+
 import { IentityColumn, IentityRelation, IKeyString } from ".";
 
 export interface Ientity1 {

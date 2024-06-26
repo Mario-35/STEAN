@@ -1,11 +1,11 @@
 /**
- * dbConnection interface.
+ * dbConnection interface
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- dbConnection interface. -----------------------------------!");
+// onsole.log("!----------------------------------- dbConnection interface -----------------------------------!");
 
 export interface IdbConnection { //postgresSqlconnection
     host:       string; // host name

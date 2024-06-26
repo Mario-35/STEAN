@@ -1,11 +1,11 @@
 /**
- * csvFile interface.
+ * csvFile interface
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- csvFile interface. -----------------------------------!");
+// onsole.log("!----------------------------------- csvFile interface -----------------------------------!");
 import { IcsvColumn, IstreamInfos } from ".";
 
 export interface IcsvFile {

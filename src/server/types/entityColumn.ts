@@ -1,11 +1,11 @@
 /**
- * entityColumn interface.
+ * entityColumn interface
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- entityColumn interface. -----------------------------------!");
+// onsole.log("!----------------------------------- entityColumn interface -----------------------------------!");
 import { IKeyString, IKeyBoolean, IconfigFile, typeExtensions } from ".";
 
 export interface IentityColumn {

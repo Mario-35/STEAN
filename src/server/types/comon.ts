@@ -1,11 +1,11 @@
 /**
- * Comon interface.
+ * Comon interface
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- Comon interface. -----------------------------------!");
+// onsole.log("!----------------------------------- Comon interface -----------------------------------!");
 import { IreturnResult } from "./returnResult";
 import { Iuser } from "./user";
 

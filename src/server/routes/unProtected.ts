@@ -49,11 +49,16 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       ctx.type = returnFormats.html.type;
       ctx.body = bodyError.toString();
       return;
-    // export service
+    // logs
     case "LOGS":
-      const bodyLogs = new HtmlLogs(ctx, "what ?");
+      const bodyLogs = new HtmlLogs(ctx, "../../logs.html");
       ctx.type = returnFormats.html.type;
       ctx.body = bodyLogs.toString();
+      return;
+    case "LOGSBAK":
+      const bodyLogsBak = new HtmlLogs(ctx, "../../../logs.bak");
+      ctx.type = returnFormats.html.type;
+      ctx.body = bodyLogsBak.toString();
       return;
     // export service
     case "EXPORT":

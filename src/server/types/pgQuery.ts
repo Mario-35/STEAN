@@ -5,7 +5,7 @@
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- pgQuery interface. -----------------------------------!");
+// onsole.log("!----------------------------------- pgQuery interface -----------------------------------!");
 
 export interface IpgQuery { // postgresSql query simple Interface
     select:     string;

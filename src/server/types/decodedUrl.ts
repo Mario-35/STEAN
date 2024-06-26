@@ -1,11 +1,11 @@
 /**
- * decodedUrl interface.
+ * decodedUrl interface
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- decodedUrl interface. -----------------------------------!");
+// onsole.log("!----------------------------------- decodedUrl interface -----------------------------------!");
 export interface IdecodedUrl {
     linkbase:   string;
     root:       string;

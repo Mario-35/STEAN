@@ -1,11 +1,11 @@
 /**
- * csvImport interface.
+ * csvImport interface
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- csvImport interface. -----------------------------------!");
+// onsole.log("!----------------------------------- csvImport interface -----------------------------------!");
 export interface IcsvImport {
     header:   boolean;
     dateSql:  string;
