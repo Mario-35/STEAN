@@ -12,8 +12,7 @@ import { serverConfig } from "../../configuration";
 import { addDoubleQuotes, addSimpleQuotes, asyncForEach } from "../../helpers";
 import { _RIGHTS } from "../constants";
 import { IKeyString } from "../../types";
-import { EExtensions } from "../../enums";
-import { _NOTOK, _OK } from "../../constants";
+import { EChar, EExtensions } from "../../enums";
 import { triggers } from "./triggers";
 import { models } from "../../models";
 import { log } from "../../log";
@@ -34,18 +33,18 @@ export const createDatabase = async (configName: string): Promise<IKeyString> =>
   // create blank DATABASE
   await adminConnection.unsafe(`CREATE DATABASE ${config.database}`)
     .then(async () => {
-      returnValue[`Create Database`] = `${config.database} ${_OK}`;
+      returnValue[`Create Database`] = `${config.database} ${EChar.ok}`;
       // create USER if not exist
       await adminConnection.unsafe(`SELECT COUNT(*) FROM pg_user WHERE usename = ${addSimpleQuotes(config.user)};`)
         .then(async (res: Record<string, any>) => {
           if (res[0].count == 0) {            
             returnValue[`CREATE ROLE ${config.user}`] = await adminConnection.unsafe(`CREATE ROLE ${config.user} WITH PASSWORD ${addSimpleQuotes(config.password)} ${_RIGHTS}`)
-              .then(() => _OK)
+              .then(() => EChar.ok)
               .catch((err: Error) => err.message);
           } else {
             await adminConnection.unsafe(`ALTER ROLE ${config.user} WITH PASSWORD ${addSimpleQuotes(config.password)}  ${_RIGHTS}`)
               .then(() => {
-                returnValue[`Create/Alter ROLE`] = `${config.user} ${_OK}`;
+                returnValue[`Create/Alter ROLE`] = `${config.user} ${EChar.ok}`;
               })
               .catch((err: Error) => {
                 log.errorMsg(err);
@@ -58,18 +57,18 @@ export const createDatabase = async (configName: string): Promise<IKeyString> =>
 
     const dbConnection = serverConfig.connection(configName);
     if (!dbConnection) {
-      returnValue["DROP Error"] = `No DB connection ${_NOTOK}`;
+      returnValue["DROP Error"] = `No DB connection ${EChar.notOk}`;
       return returnValue;
     }
   
   // create postgis
   returnValue[`Create postgis`] = await dbConnection.unsafe('CREATE EXTENSION IF NOT EXISTS postgis')
-    .then(() => _OK)
+    .then(() => EChar.ok)
     .catch((err: Error) => err.message);
     
   // create tablefunc
   returnValue[`Create tablefunc`] = await dbConnection.unsafe('CREATE EXTENSION IF NOT EXISTS tablefunc')
-    .then(() => _OK)
+    .then(() => EChar.ok)
     .catch((err: Error) => err.message);
     
   // Get complete model
@@ -89,7 +88,7 @@ export const createDatabase = async (configName: string): Promise<IKeyString> =>
     const name = query.split(" */")[0].split("/*")[1].trim();
     await serverConfig.connection(configName).unsafe(query)
       .then(() => {
-        log.create(name, _OK);
+        log.create(name, EChar.ok);
       }).catch((error: Error) => {
         console.log(error);
         process.exit(111);
@@ -112,15 +111,15 @@ export const createDatabase = async (configName: string): Promise<IKeyString> =>
   }
 
   returnValue[`Create Role`] = await createRole(serverConfig.getConfig(configName))
-    .then(() => _OK)
+    .then(() => EChar.ok)
     .catch((err: Error) => err.message);
 
   returnValue[`Create user`] = await createUser(serverConfig.getConfig(configName))
-    .then(() => _OK)
+    .then(() => EChar.ok)
     .catch((err: Error) => err.message);
 
   await dbConnection.unsafe(`SELECT COUNT(*) FROM pg_user WHERE usename = ${addSimpleQuotes(config.user)};`)
-    .then(() => { returnValue["ALL finished ..."] = _OK; })
+    .then(() => { returnValue["ALL finished ..."] = EChar.ok; })
     .catch((err: Error) => err.message);
     
   return returnValue;

@@ -1,11 +1,11 @@
 /**
- * tests datas.
+ * tests datas
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- tests datas. -----------------------------------!");
+// onsole.log("!----------------------------------- tests datas -----------------------------------!");
 
 import { keyobj } from "../../types";
 

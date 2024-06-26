@@ -1,11 +1,11 @@
 /**
- * entity MultiDatastreamObservedProperty.
+ * entity MultiDatastreamObservedProperty
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- entity MultiDatastreamObservedProperty. -----------------------------------!");
+// onsole.log("!----------------------------------- entity MultiDatastreamObservedProperty -----------------------------------!");
 import { createEntity } from ".";
 import { Ientity } from "../../types";
 import { _idRel } from "./constants";

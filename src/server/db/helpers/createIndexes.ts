@@ -1,26 +1,33 @@
+/**
+ * createIndexes
+ *
+ * @copyright 2020-present Inrae
+ * @author mario.adam@inrae.fr
+ *
+ */
+// onsole.log("!----------------------------------- createIndexes -----------------------------------!");
+
 import { serverConfig } from "../../configuration";
-import { _OK } from "../../constants";
-import { EExtensions } from "../../enums";
+import { EChar, EExtensions } from "../../enums";
 import { asyncForEach } from "../../helpers";
 import { log } from "../../log";
 
 
-
-const exe = async (name: string, queries: string[]): Promise<boolean> => {
-    await asyncForEach( queries, async (query: string) => {
-      await serverConfig
-        .connection(name)
-        .unsafe(query)
-        .catch((error: Error) => {
-          log.error(log.error(error));
-          return false;
-        });
-    });
-    log.create(`Indexes : [${name}]`, _OK);
-    return true;
-}
-
 export const createIndexes = (name: string): void => {
+    const exe = async (name: string, queries: string[]): Promise<boolean> => {
+        await asyncForEach( queries, async (query: string) => {
+          await serverConfig
+            .connection(name)
+            .unsafe(query)
+            .catch((error: Error) => {
+              log.error(log.error(error));
+              return false;
+            });
+        });
+        log.create(`Indexes : [${name}]`, EChar.ok);
+        return true;
+    }
+
     const sqls = [`WITH datastreams AS (
         select distinct "datastream_id" AS id from observation
         ),
@@ -40,6 +47,7 @@ export const createIndexes = (name: string): void => {
             "_resultTimeEnd" = datas.rmax
         FROM datas where "datastream".id = datas.id`
     ] 
+
     if (serverConfig.getConfig(name).extensions.includes(EExtensions.multiDatastream)) {
         sqls.push(`WITH multidatastreams AS (
                 select distinct "multidatastream_id" AS id from observation
@@ -60,5 +68,6 @@ export const createIndexes = (name: string): void => {
                 "_resultTimeEnd" = datas.rmax
             FROM datas where "multidatastream".id = datas.id`);
     }
+    
     exe(name, sqls);
   }

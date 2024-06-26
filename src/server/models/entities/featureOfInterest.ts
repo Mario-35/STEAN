@@ -1,11 +1,12 @@
 /**
- * entity FeatureOfInterest.
+ * entity FeatureOfInterest
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- entity FeatureOfInterest. -----------------------------------!");
+// onsole.log("!----------------------------------- entity FeatureOfInterest -----------------------------------!");
+
 import { createEntity } from ".";
 import { ERelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";

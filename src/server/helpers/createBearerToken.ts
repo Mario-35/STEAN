@@ -13,9 +13,8 @@ import { errors } from "../messages";
 import cookieModule from "cookie";
 import { keyobj, koaContext } from "../types";
 
-const getCookie = (serializedCookies: string, key: string) => cookieModule.parse(serializedCookies)[key] ?? false;
-
 export const createBearerToken = (ctx: koaContext) => {  
+    const getCookie = (serializedCookies: string, key: string) => cookieModule.parse(serializedCookies)[key] ?? false;
     const queryKey = "access_token";
     const bodyKey = "access_token";
     const headerKey = "Bearer";

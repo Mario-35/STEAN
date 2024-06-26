@@ -1,11 +1,11 @@
 /**
- * entity Location.
+ * entity Location
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- entity Location. -----------------------------------!");
+// onsole.log("!----------------------------------- entity Location -----------------------------------!");
 import { createEntity } from ".";
 import { ERelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";

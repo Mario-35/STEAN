@@ -11,11 +11,11 @@ import { koaContext } from "../../types";
 import { CoreHtmlView } from "./core";
 import fs from "fs";
 import path from "path";
-import { logToHtml } from "../helpers";
-    export class HtmlLogs extends CoreHtmlView {
-        
+
+export class HtmlLogs extends CoreHtmlView {
+            
     constructor(ctx: koaContext, datas: string) {
-        const fileContent = fs.readFileSync(path.resolve(__dirname, "../../logs.txt"), "utf8");
+        const fileContent = fs.readFileSync(path.resolve(__dirname, "../../logs.html"), "utf8");
         super(ctx);
         this.logs(fileContent);
     }
@@ -25,7 +25,7 @@ import { logToHtml } from "../helpers";
         <!DOCTYPE html>
             <html>
                 <body style="background-color:#353535;">
-                    ${logToHtml(message)}
+                    ${message}
                 </body>
             </html>`];
     };

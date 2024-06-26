@@ -1,11 +1,12 @@
 /**
- * entity ThingLocation.
+ * entity ThingLocation
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- entity ThingLocation. -----------------------------------!");
+// onsole.log("!----------------------------------- entity ThingLocation -----------------------------------!");
+
 import { createEntity } from ".";
 import { Ientity } from "../../types";
 import { _idRel } from "./constants";

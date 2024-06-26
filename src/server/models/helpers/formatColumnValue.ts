@@ -1,11 +1,12 @@
 /**
- * formatColumnValue.
+ * formatColumnValue
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- formatColumnValue. -----------------------------------!");
+// onsole.log("!----------------------------------- formatColumnValue -----------------------------------!");
+
 import { ESCAPE_ARRAY_JSON, ESCAPE_SIMPLE_QUOTE } from "../../constants";
 import { addDoubleQuotes, addSimpleQuotes, removeSimpleQuotes } from "../../helpers";
 import { log } from "../../log";

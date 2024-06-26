@@ -8,8 +8,8 @@
 // onsole.log("!----------------------------------- Log class -----------------------------------!");
 
 import util from "util";
-import { EColor } from "../enums";
-import { color, showAll, _DEBUG, _OK, _WEB } from "../constants";
+import { EChar, EColor } from "../enums";
+import { color, showAll, _DEBUG } from "../constants";
 import { isTest } from "../helpers";
 import { Lexer } from "../odata/parser";
 import { _ID } from "../db/constants";
@@ -70,7 +70,7 @@ class Log {
   }
 
   url(link: string) {
-    return `${_WEB} ${color(EColor.Default)} : ${color( EColor.Cyan )} ${link}${color(EColor.Reset)}`;
+    return `${EChar.web} ${color(EColor.Default)} : ${color( EColor.Cyan )} ${link}${color(EColor.Reset)}`;
   }
 
   head<T>(cle: string, infos?: T) {
@@ -106,7 +106,7 @@ class Log {
   }
 
   init() {
-    console.log(this.message("Log", "ready " + _OK));    
+    console.log(this.message("Log", "ready " + EChar.ok));    
   }
 }
 

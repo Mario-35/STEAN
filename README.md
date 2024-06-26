@@ -4,10 +4,6 @@
 
 ![Inrae](https://raw.githubusercontent.com/Mario-35/STEAN/main/doc/assets/inrae.png "Inrae")
 
-
-
-
-
 # Installation
 
 ## deploy on server run in install folder:

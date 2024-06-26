@@ -5,7 +5,8 @@
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- entity Decoder. -----------------------------------!");
+// onsole.log("!----------------------------------- entity Decoder -----------------------------------!");
+
 import { createEntity } from ".";
 import { ERelations } from "../../enums";
 import { IconfigFile, Ientity, IKeyBoolean } from "../../types";

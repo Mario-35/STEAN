@@ -7,7 +7,10 @@
  */
 // onsole.log("!----------------------------------- logToHtml -----------------------------------!");
 
-import { _ARROWLEFT, _ARROWRIGHT } from "../../constants";
+import { EChar } from "../enums";
+
+
+
 
 export function logToHtml(input: string): string {
   const couleur = (input: string) => `</span><span style="color:#${input}"> `
@@ -30,13 +33,13 @@ export function logToHtml(input: string): string {
     "[37m" : couleur("FFFFFF"), // White
     "[39m" : couleur("FFFFFF"), // White
     "[90m" : couleur("DBA57D"),  // Orange
-    "[93m" : couleur("DB61D9"),  // Orange
-    "[95m" : couleur("DB61D9"),  // Orange
+    "[93m" : couleur("DB61D9"),  // Magenta - Rose
+    "[95m" : couleur("DB61D9"),  // Magenta - Rose
     "[0m" : "",
     "[1m" : '<span style="font-weight:bold;">',
     "[22m" : "</span>",
-    "<--" : _ARROWLEFT,
-    "-->" : _ARROWRIGHT,
+    "<--" : EChar.arrowleft,
+    "-->" : EChar.arrowright,
   } 
   
   Object.keys(modif).forEach((key) => {       

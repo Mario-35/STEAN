@@ -8,8 +8,7 @@
 // onsole.log("!----------------------------------- HTML Views Status for API -----------------------------------!");
 
 import { serverConfig } from "../../configuration";
-import { _NOTOK, _OK } from "../../constants";
-import { EExtensions } from "../../enums";
+import { EChar, EExtensions } from "../../enums";
 import { Iuser, koaContext } from "../../types";
 import { CoreHtmlView } from "./core";
 
@@ -33,13 +32,13 @@ export class Status extends CoreHtmlView {
                         <h3>Username : ${ user.username }</h3> 
                         <h3>Hosting : ${user.database == "all" ? "all" : config ? serverConfig.getConfig(config).pg.host : "Not Found"}</h3>
                         <h3>Database : ${user.database}</h3>
-                        <h3>Status : ${ user.id && user.id > 0 ? _OK : !sec ? _OK : _NOTOK}</h3> 
-                        <h3>Post : ${ user.canPost === true ? _OK : !sec ? _OK : _NOTOK}</h3>
-                        <h3>Delete : ${ user.canDelete === true ? _OK : !sec ? _OK : _NOTOK}</h3>
-                        <h3>Create User: ${ user.canCreateUser === true ? _OK : !sec ? _OK : _NOTOK}</h3>
-                        <h3>Create Service : ${ user.canCreateDb === true ? _OK : !sec ? _OK : _NOTOK}</h3>
-                        <h3>Admin : ${ user.admin === true ? _OK : !sec ? _OK : _NOTOK}</h3>
-                        <h3>Super admin : ${ user.superAdmin === true ? _OK : !sec ? _OK : _NOTOK}</h3>
+                        <h3>Status : ${ user.id && user.id > 0 ? EChar.ok : !sec ? EChar.ok : EChar.notOk}</h3> 
+                        <h3>Post : ${ user.canPost === true ? EChar.ok : !sec ? EChar.ok : EChar.notOk}</h3>
+                        <h3>Delete : ${ user.canDelete === true ? EChar.ok : !sec ? EChar.ok : EChar.notOk}</h3>
+                        <h3>Create User: ${ user.canCreateUser === true ? EChar.ok : !sec ? EChar.ok : EChar.notOk}</h3>
+                        <h3>Create Service : ${ user.canCreateDb === true ? EChar.ok : !sec ? EChar.ok : EChar.notOk}</h3>
+                        <h3>Admin : ${ user.admin === true ? EChar.ok : !sec ? EChar.ok : EChar.notOk}</h3>
+                        <h3>Super admin : ${ user.superAdmin === true ? EChar.ok : !sec ? EChar.ok : EChar.notOk}</h3>
                         ${this.foot([
                             { href: `${url}/Logout`, class: "button-logout", name: "Logout" },
                             { href: `${url}/Query`, class: "button-query", name: "Query" }

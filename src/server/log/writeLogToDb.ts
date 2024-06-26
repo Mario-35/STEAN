@@ -16,7 +16,7 @@ import { keyobj, koaContext } from "../types";
 import { _ID } from "../db/constants";
 
 export const writeLogToDb = async ( ctx: koaContext, ...error: any[] ): Promise<void> => {
-  console.log(log.whereIam("LOG"));
+  console.log(log.whereIam());
   if (ctx.log && ctx.log.method != "GET") {
     ctx.log.code = error && error["code" as keyobj] ? +error["code" as keyobj] : +ctx.response.status;
     ctx.log.error = error;

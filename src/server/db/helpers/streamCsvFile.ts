@@ -12,7 +12,6 @@ import { createReadStream } from 'fs';
 import { addAbortSignal } from 'stream';
 import { serverConfig } from "../../configuration";
 import { executeSql, executeSqlValues } from ".";
-import { _NOTOK, _OK } from "../../constants";
 import { log } from "../../log";
 
 export async function streamCsvFile( ctx: koaContext, paramsFile: IcsvFile, sqlRequest: IcsvImport ): Promise<number> {

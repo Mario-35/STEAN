@@ -5,7 +5,8 @@
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- columnsNameFromHydrasCsv. -----------------------------------!");
+// onsole.log("!----------------------------------- columnsNameFromHydrasCsv -----------------------------------!");
+
 import fs from "fs";
 import { IcsvFile, IcsvImport } from "../../types";
 import readline from "readline";

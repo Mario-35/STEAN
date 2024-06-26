@@ -1,11 +1,12 @@
 /**
- * hidePassword.
+ * hidePassword
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- hidePassword. -----------------------------------!");
+// onsole.log("!----------------------------------- hidePassword -----------------------------------!");
+
 export function hidePassword(obj: object): object {
     if (Array.isArray(obj))  
       return obj

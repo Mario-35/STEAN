@@ -6,7 +6,7 @@
  *
  */
 
-import { _OK } from "../../constants";
+ import { EChar } from "../../enums";
 import { log } from "../../log";
 import { IconfigFile } from "../../types";
 import { _RIGHTS } from "../constants";
@@ -26,7 +26,7 @@ export const createUser = async (config: IconfigFile): Promise<string> => {
       canCreateDb: true,
       superAdmin: false,
       admin: false})
-    .then(() => { resolve(`${config.pg.user} ${_OK}`); })
+    .then(() => { resolve(`${config.pg.user} ${EChar.ok}`); })
     .catch((err: Error) => {
         log.errorMsg(err);
         reject(err);

@@ -1,11 +1,12 @@
 /**
- * decodingPayload for odata.
+ * decodingPayload for odata
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- decodingPayload for odata. -----------------------------------!");
+// onsole.log("!----------------------------------- decodingPayload for odata -----------------------------------!");
+
 import { log } from "../log";
 import { errors } from "../messages";
 import { ILoraDecodingResult } from "../types";

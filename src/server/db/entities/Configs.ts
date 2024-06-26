@@ -12,7 +12,7 @@ import { IreturnResult, koaContext } from "../../types";
 import { serverConfig } from "../../configuration";
 import { hideKeysInJson, hidePassword } from "../../helpers";
 import { addToService, createService } from "../helpers";
-import { setDebug, _NOTOK, _OK } from "../../constants";
+import { setDebug } from "../../constants";
 import { userAuthenticated } from "../../authentication";
 import { log } from "../../log";
 

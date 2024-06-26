@@ -17,17 +17,18 @@ import compress from "koa-compress";
 import json from "koa-json";
 import cors from "@koa/cors";
 import serve from "koa-static";
-import { HELMET_CONFIG, APP_KEY, TEST, APP_NAME, APP_VERSION, _OK, ADMIN } from "./constants";
+import { HELMET_CONFIG, APP_KEY, TEST, APP_NAME, APP_VERSION, ADMIN } from "./constants";
 import favicon from 'koa-favicon';
 import { constants } from "zlib";
 import { log } from "./log";
 import { protectedRoutes, routerHandle, unProtectedRoutes } from "./routes/";
 import { serverConfig } from "./configuration";
 import { models } from "./models";
-import { isTest } from "./helpers";
+import { isTest, logToHtml } from "./helpers";
 import { RootPgVisitor } from "./odata/visitor";
 import { IconfigFile, IdecodedUrl, Ientities, Ilog, IuserToken, koaContext } from "./types";
 import { sqlStopDbName } from "./routes/helper";
+import { EChar } from "./enums";
 
 // Extend koa context 
 declare module "koa" {
@@ -71,9 +72,11 @@ app.use(routerHandle);
 // logger https://github.com/koajs/logger
 if (!isTest())
   app.use(logger((str) => {
-    str = `[39m ${new Date().toLocaleString()}${str + "\n"}`;
-    process.stdout.write(str);
-    if (serverConfig.logFile) serverConfig.logFile.write(str);
+
+    if(str.includes("/logs")) return;
+    str = `[39m ${new Date().toLocaleString()}${str}`;
+    process.stdout.write(str + "\n");
+    if (serverConfig.logFile) serverConfig.logFile.write(logToHtml(str));
   }));
 
 // add json capabilities to KOA server
@@ -107,6 +110,6 @@ export const server = isTest()
             await serverConfig.connection(ADMIN)`DROP DATABASE IF EXISTS test`;
             process.stdout.write(`DROP DATABASE IF EXISTS test\n`);
           });
-      console.log(log.message(`${APP_NAME} version : ${APP_VERSION}`, "ready " + _OK));
+      console.log(log.message(`${APP_NAME} version : ${APP_VERSION}`, "ready " + EChar.ok));
     })
   : serverConfig.init();

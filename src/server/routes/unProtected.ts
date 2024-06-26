@@ -9,7 +9,7 @@
 
 import Router from "koa-router";
 import { userAuthenticated, getAuthenticatedUser, } from "../authentication";
-import { ADMIN, _OK, _READY } from "../constants";
+import { ADMIN, _READY } from "../constants";
 import { addSimpleQuotes, getUrlKey, isAdmin, returnFormats } from "../helpers";
 import { apiAccess } from "../db/dataAccess";
 import { IreturnResult } from "../types";

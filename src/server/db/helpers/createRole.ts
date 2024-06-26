@@ -5,13 +5,13 @@
  * @author mario.adam@inrae.fr
  *
  */
+// onsole.log("!----------------------------------- createRole -----------------------------------!");
 
 import { serverConfig } from "../../configuration";
-import { _OK } from "../../constants";
+import { EChar } from "../../enums";
 import { addSimpleQuotes } from "../../helpers";
 import { IconfigFile } from "../../types";
 import { _RIGHTS } from "../constants";
-// onsole.log("!----------------------------------- createRole -----------------------------------!");
 
 export const createRole = async (config: IconfigFile): Promise<string> => {
   const connection = serverConfig.connection(config.name);
@@ -30,6 +30,6 @@ export const createRole = async (config: IconfigFile): Promise<string> => {
             });
         }
      });
-    resolve(`${config.pg.user} ${_OK}`);
+    resolve(`${config.pg.user} ${EChar.ok}`);
   });
 };

@@ -9,13 +9,13 @@
 
 import { addToService, createDatabase, executeAdmin, executeSqlValues } from ".";
 import { serverConfig } from "../../configuration";
-import { _NOTOK, _OK } from "../../constants";
 import { addDoubleQuotes, addSimpleQuotes, asyncForEach } from "../../helpers";
 import { models } from "../../models";
 import { createInsertValues } from "../../models/helpers";
 import { sqlStopDbName } from "../../routes/helper";
 import { keyobj, koaContext } from "../../types";
 import { log } from "../../log";
+import { EChar } from "../../enums";
 
 const prepareDatas = (dataInput: Record<string, string>, entity: string): object => {
   if (entity === "Observations") {
@@ -55,9 +55,9 @@ export const createService = async (dataInput: Record<string, any>, ctx?: koaCon
   const createDB = async () => {
     try {  
       await createDatabase(serviceName);
-      results[`Create ${mess}`  ] = _OK;
+      results[`Create ${mess}`  ] = EChar.ok;
     } catch (error) {
-      results[`Create ${mess}`] = _NOTOK;
+      results[`Create ${mess}`] = EChar.notOk;
       console.log(error);        
     }      
   }
@@ -65,10 +65,10 @@ export const createService = async (dataInput: Record<string, any>, ctx?: koaCon
 
   await executeAdmin(sqlStopDbName(addSimpleQuotes(serviceName))).then(async () => {
     await executeAdmin(`DROP DATABASE IF EXISTS ${serviceName}`).then(async () => {
-      results[`Drop ${mess}`] = _OK;
+      results[`Drop ${mess}`] = EChar.ok;
       await createDB();
     }).catch((error: any) => {
-      results[`Drop ${mess}`] = _NOTOK;
+      results[`Drop ${mess}`] = EChar.notOk;
       log.error(error);        
     });
   }).catch(async (err: any) => {
@@ -86,14 +86,14 @@ export const createService = async (dataInput: Record<string, any>, ctx?: koaCon
         try {
     const sqls: string[] =dataInput[entityName].map((element: any) =>`INSERT INTO ${addDoubleQuotes(goodEntity.table)} ${createInsertValues(config, prepareDatas(element, goodEntity.name), goodEntity.name)}`);
           await executeSqlValues(serverConfig.getConfig(serviceName), sqls.join(";")).then((res: Record<string, any>) =>{
-            results[entityName] = _OK;
+            results[entityName] = EChar.ok;
           }).catch((error: any) => {
             log.errorMsg(error);
-            results[entityName] = _NOTOK;
+            results[entityName] = EChar.notOk;
           });
         } catch (error) {
           log.errorMsg(error);           
-          results[entityName] = _NOTOK;
+          results[entityName] = EChar.notOk;
         }
       }
     }

@@ -12,9 +12,8 @@ import { IcsvColumn, IcsvFile, IreturnResult, IstreamInfos, koaContext } from ".
 import { queryInsertFromCsv, dateToDateWithTimeZone, executeSql, executeSqlValues } from "../helpers";
 import { addDoubleQuotes, asyncForEach } from "../../helpers";
 import { errors, msg } from "../../messages/";
-import { EDatesType, EExtensions } from "../../enums";
+import { EChar, EDatesType, EExtensions } from "../../enums";
 import util from "util";
-import { _NOTOK, _OK } from "../../constants";
 import { models } from "../../models";
 import { log } from "../../log";
 
@@ -102,7 +101,7 @@ export class CreateObservations extends Common {
     };
     // stream file in temp table and get query to insert
     const sqlInsert = await queryInsertFromCsv(this.ctx, paramsFile);
-    console.log(log.debug(`Stream csv file ${paramsFile.filename} in PostgreSql`, sqlInsert ? _OK : _NOTOK));
+    console.log(log.debug(`Stream csv file ${paramsFile.filename} in PostgreSql`, sqlInsert ? EChar.ok : EChar.notOk));
     if (sqlInsert) {
       const sqls = sqlInsert.query.map((e: string, index: number) => `${index === 0 ? 'WITH ' :', '}updated${index+1} as (${e})\n`);
       // Remove logs and triggers for speed insert

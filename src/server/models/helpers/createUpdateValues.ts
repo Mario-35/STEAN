@@ -1,11 +1,12 @@
 /**
- * createUpdateValues.
+ * createUpdateValues
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- createUpdateValues. -----------------------------------!");
+// onsole.log("!----------------------------------- createUpdateValues -----------------------------------!");
+
 import { ESCAPE_SIMPLE_QUOTE } from "../../constants";
 import { addDoubleQuotes, addSimpleQuotes } from "../../helpers";
 import { log } from "../../log";

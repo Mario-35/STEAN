@@ -9,7 +9,6 @@
 
 import { log } from "../log";
 
-
 /**
  *
  * @param input string or number search

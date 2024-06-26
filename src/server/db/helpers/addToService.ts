@@ -1,12 +1,12 @@
 /**
- * addToService.
+ * addToService
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- addToService. -----------------------------------!");
-import { _NOTOK, _OK } from "../../constants";
+// onsole.log("!----------------------------------- addToService -----------------------------------!");
+
 import { addDoubleQuotes, asyncForEach } from "../../helpers";
 import { log } from "../../log";
 import { models } from "../../models";

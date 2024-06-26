@@ -1,11 +1,12 @@
 /**
- * columnsNameFromCsv.
+ * columnsNameFromCsv
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- columnsNameFromCsv. -----------------------------------!");
+// onsole.log("!----------------------------------- columnsNameFromCsv -----------------------------------!");
+
 import fs from "fs";
 import readline from "readline";
 import { log } from "../../log";

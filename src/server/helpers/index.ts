@@ -32,6 +32,7 @@ export { returnFormats } from "./returnFormats";
 export { unique } from "./unique";
 export { removeEmpty } from "./removeEmpty";
 export { upload } from "./upload";
+export { logToHtml } from "./logToHtml";
 export { getKey } from "./getKey";
 
 const removeFirstOrEnd = (input: string, char: string) => {    
