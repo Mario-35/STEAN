@@ -28,7 +28,7 @@ Locations
 
 
 Thing(1) [PATCH]
-```
+```jsonjson
 {
     "name": "ST1_25 [2CF7F120252000C3]",
     "description": "Thing for Lora ST1_25",
@@ -44,7 +44,7 @@ Thing(1) [PATCH]
 }
 ```
 
-```
+```json
 {
     {
         "name": "ST1_25 [2CF7F120252000C3]",
@@ -193,51 +193,51 @@ Thing(1) [PATCH]
 
 ```
 Datastreams(1) [PATCH]
-```
+```json
 { "Thing": { "@iot.id": 1 } }
 ```
 
-MultiDatastreams(2) [PATCH]  
-```
+MultiDatastreams(2) [PATCH]
+```json
 { "Thing": { "@iot.id": 2 } }
 ```
 
-MultiDatastreams(3) [PATCH]  
-```
+MultiDatastreams(3) [PATCH]
+```json
 { "Thing": { "@iot.id": 3 } }
 ```
 
-MultiDatastreams(4) [PATCH]  
-```
+MultiDatastreams(4) [PATCH]
+```json
 { "Thing": { "@iot.id": 4 } }
 ```
 
-MultiDatastreams(5) [PATCH]  
-```
+MultiDatastreams(5) [PATCH]
+```json
 { "Thing": { "@iot.id": 5 } }
 ```
 
-MultiDatastreams(6) [PATCH]  
-```
+MultiDatastreams(6) [PATCH]
+```json
 { "Thing": { "@iot.id": 6 } }
 ```
 
-MultiDatastreams(7) [PATCH]  
-```
+MultiDatastreams(7) [PATCH]
+```json
 { "Thing": { "@iot.id": 7 } }
 ```
 
-MultiDatastreams(8) [PATCH]  
-```
+MultiDatastreams(8) [PATCH]
+```json
 { "Thing": { "@iot.id": 8 } }
 ```
 
-MultiDatastreams(9) [PATCH]  
-```
+MultiDatastreams(9) [PATCH]
+```json
 { "Thing": { "@iot.id": 9 } }
 ```
 
 MultiDatastreams(10) [PATCH]
-```
+```json
 { "Thing": { "@iot.id": 10 } }
 ```
