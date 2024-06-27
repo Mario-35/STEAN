@@ -1,0 +1,162 @@
+{
+  "create": {
+      "name": "monitoringquimper",
+      "port": 8037,
+      "pg": {
+          "host": "localhost",
+          "port": 5432,
+          "user": "sensorapi",
+          "password": "mario29",
+          "database": "monitoringquimper",
+          "retry": 2
+      },
+      "apiVersion": "1.1",
+      "date_format": "DD/MM/YYYY hh:mi:ss",
+      "webSite": "http://sensorthings.geosas.fr/apidoc/",
+      "nb_page": 200,
+      "forceHttps": true,
+      "alias": [
+        ""
+      ],
+      "extensions": [
+        "base",
+        "logs"
+      ],
+      "highPrecision": false,
+      "canDrop": true,
+      "logFile": ""
+  },
+  "Things": [
+    {
+      "name": "Chambre climatique Quimper",
+      "description": "Chambre climatique INRAE SAS site de Quimper",
+      "properties": {
+        "Creator": "Tom",
+        "Publisher": "Projet EFELE",
+        "Description": ""
+      }
+    }
+  ],
+  "Locations": [
+    {
+      "name": "INRAE Quimper",
+      "description": "Chambre climatique INRAE SAS Quimper",
+      "encodingType": "application/geo+json",
+      "location": {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -4.1090774,
+            48.0076685
+          ]
+        }
+      }
+    }
+  ],
+  "ObservedProperties": [
+    {
+      "name": "Temperature",
+      "definition": "https://w3id.org/ozcar-theia/c_650214c2",
+      "description": "Temperature is a physical quantity that expresses hot and cold. It is the manifestation of thermal energy, present in all matter, which is the source of the occurrence of heat, a flow of energy, when a body is in contact with another that is colder or hotter.",
+      "properties": null
+    },
+    {
+      "name": "Relative humidity",
+      "definition": "https://w3id.org/ozcar-theia/c_b9bb91f1",
+      "description": "The ratio of the partial pressure of water vapor in the air–water mixture to the saturated vapor pressure of water at those conditions. The relative humidity of air is a function of both its water content and temperature.It is normally expressed as a percentage.",
+      "properties": null
+    },
+    {
+      "name": "Radon",
+      "definition": "https://www.georisques.gouv.fr/sites/default/files/2023-05/Fiche-radon.pdf",
+      "description": "Le radon est un gaz radioactif naturel inodore, incolore et inerte chimiquement. Il est issu de la désintégration de l’uranium et du radium présents dans le sol et les roches.",
+      "properties": null
+    }
+  ],
+  "Sensors": [
+    {
+      "name": "DHT22",
+      "description": "Capteur de mesure de température sur la plage -40 à 80 °C, et de l'humidité relative de 0 à 100 %",
+      "encodingType": "text/html",
+      "metadata": "https://joy-it.net/en/products/SEN-DHT22",
+      "properties": null
+    },
+    {
+      "name": "RDP200P2",
+      "description": "RadonEye Plus2, capteur (dosimètre) permettant le monitoring du radon par FTLAB",
+      "encodingType": "text/html",
+      "metadata": "http://radonftlab.com/radon-sensor-product/radon-detector/new-rd200p-radon-detector/",
+      "properties": null
+    }
+  ],
+  "Datastreams": [
+    {
+      "name": "Température de la chambre climatique",
+      "description": "Température de l'air de la chambre climatique, observations toutes les 15 minutes",
+      "observationType": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+      "unitOfMeasurement": {
+        "name": "Degree Celsius",
+        "symbol": "°C",
+        "definition": "http://unitsofmeasure.org/ucum.html#para-30"
+      },
+      "thing_id": {
+        "@iot.name": "Chambre climatique Quimper"
+      },
+      "observedproperty_id": {
+        "@iot.name": "Temperature"
+      },
+      "sensor_id": {
+        "@iot.name": "DHT22"
+      }
+    },
+    {
+      "name": "Humidité de la chambre climatique",
+      "description": "Humidité relative de l’air de la chambre climatique, observations toutes les 15 minutes",
+      "observationType": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+      "unitOfMeasurement": {
+        "name": "Pourcentage",
+        "symbol": "%",
+        "definition": ""
+      },
+      "thing_id": {
+        "@iot.name": "Chambre climatique Quimper"
+      },
+      "observedproperty_id": {
+        "@iot.name": "Temperature"
+      },
+      "sensor_id": {
+        "@iot.name": "DHT22"
+      }
+    },
+    {
+      "name": "Radioactivité de l'air, issue de la désintégration naturelle du radon",
+      "description": "Radioactivité de l'air, issue de la désintégration naturelle du radon dans les sous sools de Quimper",
+      "observationType": "http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement",
+      "unitOfMeasurement": {
+        "name": "Becquerel par mètre cube",
+        "symbol": "Bq/m³",
+        "definition": "https://www.irsn.fr/savoir-comprendre/environnement/dou-vient-radon"
+      },
+      "thing_id": {
+        "@iot.name": "Chambre climatique Quimper"
+      },
+      "observedproperty_id": {
+        "@iot.name": "Temperature"
+      },
+      "sensor_id": {
+        "@iot.name": "DHT22"
+      }
+    }
+  ],
+  "ThingsLocations": [
+    {
+      "thing_id": {
+        "@iot.name": "Chambre climatique Quimper"
+      },
+      "Location_id": {
+        "@iot.name": "INRAE Quimper"
+      }
+    }
+  ]
+}
