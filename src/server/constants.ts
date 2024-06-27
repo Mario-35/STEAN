@@ -7,7 +7,6 @@
  */
 // onsole.log("!----------------------------------- Constants of API -----------------------------------!");
 
-"use strict";
 import util from "util";
 import { getKey } from "./helpers";
 export const ADMIN:string = "admin";

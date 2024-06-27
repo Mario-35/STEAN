@@ -150,6 +150,7 @@
     "InfosLoras",
     "GetAllLoras",
     "GetOneLoras",
+    "GetOneLorasDeveui",
     "PostLorasDatastream",
     "PostLorasMultiDatastream",
     "PostLorasObservation",

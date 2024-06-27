@@ -1,5 +1,5 @@
 /**
- * HTML Views Logs for API.
+ * HTML Views Logs for API
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr

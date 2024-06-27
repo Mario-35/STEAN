@@ -1,11 +1,12 @@
 /**
- * formats Enum.
+ * formats Enum
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- formats Enum. -----------------------------------!");
+// onsole.log("!----------------------------------- formats Enum -----------------------------------!");
+
 export const enum EReturnFormats {    
     json = "json", 
     csv = "csv",

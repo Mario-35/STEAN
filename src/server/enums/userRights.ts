@@ -1,11 +1,12 @@
 /**
- * userRights Enum.
+ * userRights Enum
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- userRights Enum. -----------------------------------!");
+// onsole.log("!----------------------------------- userRights Enum -----------------------------------!");
+
 export enum EUserRights {
     Post = 0,
     Delete = 1,

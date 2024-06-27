@@ -17,18 +17,18 @@ import compress from "koa-compress";
 import json from "koa-json";
 import cors from "@koa/cors";
 import serve from "koa-static";
-import { HELMET_CONFIG, APP_KEY, TEST, APP_NAME, APP_VERSION, ADMIN } from "./constants";
 import favicon from 'koa-favicon';
 import { constants } from "zlib";
 import { log } from "./log";
-import { protectedRoutes, routerHandle, unProtectedRoutes } from "./routes/";
 import { serverConfig } from "./configuration";
 import { models } from "./models";
 import { isTest, logToHtml } from "./helpers";
 import { RootPgVisitor } from "./odata/visitor";
-import { IconfigFile, IdecodedUrl, Ientities, Ilog, IuserToken, koaContext } from "./types";
 import { sqlStopDbName } from "./routes/helper";
 import { EChar } from "./enums";
+import { protectedRoutes, routerHandle, unProtectedRoutes } from "./routes/";
+import { IconfigFile, IdecodedUrl, Ientities, Ilog, IuserToken, koaContext } from "./types";
+import { HELMET_CONFIG, APP_KEY, TEST, APP_NAME, APP_VERSION, ADMIN } from "./constants";
 
 // Extend koa context 
 declare module "koa" {
@@ -99,7 +99,6 @@ app.use(protectedRoutes.routes());
 
 // Initialisation of models
 models.init();
-
 
 // Start server initialisaion
 export const server = isTest()

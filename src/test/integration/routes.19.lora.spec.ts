@@ -134,9 +134,9 @@ import { addStartNewTest, addTest, writeLog } from "./tests";
 
 		it(`Return ${entity.name} deveui: 2CF7F1202520017E`, (done) => {
 			const infos = addTest({
-				api: `{get} ${entity.name}(:deveui) Get one`,
-				apiName: `GetOne${entity.name}`,
-				apiDescription: `Get a specific ${entity.singular}.${apiInfos["9.2.3"]}`,
+				api: `{get} ${entity.name}(:deveui) Get one from deveui`,
+				apiName: `GetOne${entity.name}Deveui`,
+				apiDescription: `Get a specific ${entity.singular} from deveui`,
 				apiReference: "https://docs.ogc.org/is/18-088/18-088.html#usage-address-entity",
 				apiExample: {
                     http: `${testVersion}/${entity.name}(2CF7F1202520017E)`,					
@@ -373,7 +373,7 @@ import { addStartNewTest, addTest, writeLog } from "./tests";
              const infos = addTest({
                  api: `{post} ${entity.name} Post MultiDatastream basic`,
                  apiName: `Post${entity.name}MultiDatastream`,
-                 apiDescription: `Post a new ${entity.name}.${showHide(`Post${entity.name}`, apiInfos["10.2"])}`, apiExample: {
+                 apiDescription: `Post a new ${entity.name}`, apiExample: {
                      http: `${testVersion}/${entity.name}`,                     
                      curl: defaultPost("curl", "KEYHTTP", datas),
                      javascript: defaultPost("javascript", "KEYHTTP", datas),
@@ -410,7 +410,7 @@ import { addStartNewTest, addTest, writeLog } from "./tests";
              const infos = addTest({
                  api: `{post} ${entity.name} Post Datastream basic`,
                  apiName: `Post${entity.name}Datastream`,
-                 apiDescription: `Post a new ${entity.name}.${showHide(`Post${entity.name}`, apiInfos["10.2"])}`, apiExample: {
+                 apiDescription: `Post a new ${entity.name}`, apiExample: {
                      http: `${testVersion}/${entity.name}`,                     
                      curl: defaultPost("curl", "KEYHTTP", datas),
                      javascript: defaultPost("javascript", "KEYHTTP", datas),

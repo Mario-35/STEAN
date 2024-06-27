@@ -14,6 +14,7 @@ export { EChar } from "./chars";
 export { EColor } from "./colors";
 export { EColumnType } from "./colType";
 export { EDatesType } from "./datesType";
+export { EFileName } from "./fileName";
 export { allEntities, allEntitiesType, filterEntities } from "./entities";
 export { EExtensions } from "./extensions";
 export { EReturnFormats } from "./resultFormats";

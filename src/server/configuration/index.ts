@@ -13,7 +13,7 @@ import { IconfigFile, IdbConnection, IserviceInfos, koaContext, keyobj } from ".
 import { errors, infos, msg } from "../messages";
 import { createIndexes, createService} from "../db/helpers";
 import { app } from "..";
-import { EChar, EColor, EExtensions, EOptions, EUpdate, EVersion, typeExtensions, typeOptions } from "../enums";
+import { EChar, EColor, EExtensions, EFileName, EOptions, EUpdate, EVersion, typeExtensions, typeOptions } from "../enums";
 import fs from "fs";
 import util from "util";
 import update from "./update.json";
@@ -31,10 +31,10 @@ class Configuration {
   static jsonConfiguration: Record<string, any> ;
   static ports: number[] = [];
   static queries: { [key: string]: string[] } = {};
-  public logFile = fs.createWriteStream(path.resolve(__dirname, "../logs.html"), {flags : 'w'});
+  public logFile = fs.createWriteStream(path.resolve(__dirname, "../", EFileName.logs), {flags : 'w'});
 
   constructor() {
-    const file: fs.PathOrFileDescriptor = __dirname + `/configuration.json`;
+    const file: fs.PathOrFileDescriptor = __dirname + `/${EFileName.config}`;
     Configuration.filePath = file.toString();
     // override console log important in production build will remove all console.log
     console.log = (data: any) => {

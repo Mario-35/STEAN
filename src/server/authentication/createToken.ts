@@ -1,11 +1,12 @@
 /**
- * createToken.
+ * createToken
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- createToken. -----------------------------------!");
+// onsole.log("!----------------------------------- createToken -----------------------------------!");
+
 import { Iuser } from "../types";
 import jsonwebtoken from "jsonwebtoken";
 import { APP_KEY } from "../constants";
