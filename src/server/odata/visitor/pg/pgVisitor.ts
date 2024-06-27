@@ -56,6 +56,16 @@ export class PgVisitor extends Visitor {
     this.skip = 0;
   }
 
+  table(context: IodataContext) {
+    console.log("===============================> TABLE");
+    console.log(context);
+    if (context.relation) {
+      const entity = models.getEntity(this.ctx.config ,context.relation);  
+      if (entity) return entity.table;
+    }
+    return "lol";
+  }
+
   addToIntervalColumns(input: string) {
     // TODO test with create    
     if (input.endsWith('Time"')) input = `step AS ${input}`;
@@ -538,7 +548,7 @@ export class PgVisitor extends Visitor {
       const temp = this.query.where.toString().split(" ").filter(e => e != "");      
       context.sign = temp.pop(); 
       this.query.where.init(temp.join(" "));
-      this.query.where.add(` ${context.in && context.in === true ? '' : ' IN @START@'}(SELECT ${this.ctx.model[this.entity].relations[context.relation] ? addDoubleQuotes(this.ctx.model[this.entity].relations[context.relation]["relationKey"]) : `${addDoubleQuotes(this.ctx.model[context.relation].table)}."id"`} FROM ${addDoubleQuotes(this.ctx.model[context.relation].table)} WHERE `);
+      this.query.where.add(` ${context.in && context.in === true ? '' : ' IN @START@'}(SELECT ${this.ctx.model[this.entity].relations[context.relation] ? addDoubleQuotes(this.ctx.model[this.entity].relations[context.relation]["relationKey"]) : `${addDoubleQuotes(this.table(context))}."id"`} FROM ${addDoubleQuotes(this.table(context))} WHERE `);
       context.in = true;
       if (context.identifier) {
         if (context.identifier.startsWith("CASE") || context.identifier.startsWith("("))
@@ -555,9 +565,10 @@ export class PgVisitor extends Visitor {
           const quotes = context.identifier[0] === '"' ? '' : '"';
           const alias = tempEntity ? this.getColumnNameOrAlias(tempEntity, context.identifier , this.createDefaultOptions()) : undefined;
 
+
           this.query.where.add((context.sql)
             ? `${context.sql} ${context.target} ${addDoubleQuotes(context.identifier)} ${context.sign} ${SQLLiteral.convert(node.value, node.raw)}))@END@`
-            : `${alias ? '' : `${this.ctx.model[context.relation].table}.`}${alias ? alias : `${quotes}${ context.identifier }${quotes}`} ${context.sign} ${SQLLiteral.convert(node.value, node.raw)})`);
+            : `${alias ? '' : `${this.table(context)}.`}${alias ? alias : `${quotes}${ context.identifier }${quotes}`} ${context.sign} ${SQLLiteral.convert(node.value, node.raw)})`);
         }
       }
     } else {
