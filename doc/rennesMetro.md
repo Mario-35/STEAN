@@ -28,7 +28,7 @@ Locations
 
 
 Thing(1) [PATCH]
-```jsonjson
+```json
 {
     "name": "ST1_25 [2CF7F120252000C3]",
     "description": "Thing for Lora ST1_25",
