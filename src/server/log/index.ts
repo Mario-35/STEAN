@@ -104,10 +104,6 @@ class Log {
   test() {
     return `${color(EColor.Yellow)} ${this.line(4)} ${color(EColor.Cyan)} ${ new Error().stack?.split("\n")[2].trim().split(" ")[1] } ${color(EColor.Yellow)} ${this.line(4)}${color(EColor.Reset)}`;
   }
-
-  init() {
-    console.log(this.message("Log", "ready " + EChar.ok));    
-  }
 }
 
 export const log = new Log();

@@ -37,13 +37,10 @@ class Configuration {
     const file: fs.PathOrFileDescriptor = __dirname + `/${EFileName.config}`;
     Configuration.filePath = file.toString();
     // override console log important in production build will remove all console.log
-    console.log = (data: any) => {      
-      if (!isTest() && data) {
-        process.stdout.write(data + "\n");
-        if (serverConfig && serverConfig.logFile) serverConfig.logFile.write(logToHtml(data));
-      }
+    if (isProduction()) console.log = (data: any) => {
+      if (data) this.writeLog(data);
     };
-    log.init();
+    
     if (isTest()) this.readConfigFile();
   }
   

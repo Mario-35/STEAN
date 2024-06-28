@@ -48,11 +48,16 @@ const generateGrahSql = (input: PgVisitor): string => {
   if (isGraph(input)) input.intervalColumns.push("concat"); 
   const table = input.ctx.model[input.parentEntity ? input.parentEntity : input.entity].table;
   const id = input.parentId ? input.parentId : input.id;
+  const query = table === input.ctx.model.Datastreams.table
+      ? graphDatastream(table, id, input)
+      : graphMultiDatastream( table, id, input );
+
+
+// console.log(query);
+
+
   return asJson({
-    query:
-      table === input.ctx.model.Datastreams.table
-        ? graphDatastream(table, id, interval(input))
-        : graphMultiDatastream( table, id, input.splitResult, interval(input) ),
+    query: query,
     singular: false,
     strip: false,
     count: false,

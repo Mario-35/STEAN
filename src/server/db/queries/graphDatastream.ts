@@ -6,9 +6,11 @@
 *
 */
 // onsole.log("!----------------------------------- graphDatastream. -----------------------------------!");
-import { createIdList } from ".";
+import { createIdList, interval } from ".";
+import { PgVisitor } from "../../odata/visitor";
 
-export const graphDatastream = (table: string, id: string | bigint, query: string): string => {
+export const graphDatastream = (table: string, id: string | bigint, input: PgVisitor): string => {
+  const query = interval(input);
   const ids = (typeof id === "string" ) ? createIdList(id) : [String(id)];
   return  `SELECT ( 
             SELECT 

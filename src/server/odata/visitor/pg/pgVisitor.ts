@@ -174,8 +174,6 @@ export class PgVisitor extends Visitor {
     context = context || { target: EQuery.Where, key: undefined, entity: undefined, table: undefined, identifier: undefined, identifierType: undefined, relation: undefined, literal: undefined, sign: undefined, sql: undefined, in: undefined }
     if (node) {
       const visitor: IvisitRessource = this[`Visit${node.type}` as keyobj];
-    // const ressource: IvisitRessource = this[`VisitRessources${node.type}` as keyobj];
-
       if (visitor) {
       visitor.call(this, node, context);
         if (this.debugOdata) {

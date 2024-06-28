@@ -3,7 +3,7 @@
  #
  # @copyright 2024-present Inrae
  # @author mario.adam@inrae.fr
- # version 0.1
+ # version 0.5
  #
  #/
 
@@ -18,7 +18,12 @@ FILECONFIG=./$APIDEST/configuration/configuration.json
 
 # Script to install Node.js using Node on Ubuntu without sudo
 
-echo "Installing Stean..."
+echo "---------- Installation ---------"
+echo "  ____ __________    _     _   _ "
+echo " / ___|_ __  ____|  / \   | \ | |"
+echo " \___ \| | |  _|   / _ \  |  \| |"
+echo "  ___) | | | |___ / ___ \ | |\  |"
+echo " |____/|_| |_____|_/   \_\|_| \_|"
 
 # Function to install Node
 install_node() {
