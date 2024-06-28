@@ -25,7 +25,6 @@ function float(value: string): number {
 export class Literal {
     constructor(type: string, value: string) {
       // @ts-ignore
-
         const result = (this[type] || ((_: any) => _))(value);
         this.valueOf = () => result;
     }

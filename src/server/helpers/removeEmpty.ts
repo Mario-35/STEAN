@@ -14,6 +14,5 @@
             .filter(v => !(v == null) ); 
         else return Object.entries(obj)
             .map(([k, v]) => [k, v && typeof v === 'object' ? removeEmpty(v) : v])
-            // @ts-ignore
-            .reduce((a, [k, v]) => (v == null ? a : (a[k]=v, a)), {});
+            .reduce((a: Record<string, any>, [k, v]) => (v == null ? a : (a[k]=v, a)), {});
     }

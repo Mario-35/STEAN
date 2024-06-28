@@ -1,11 +1,12 @@
 /**
- * Api dataAccess.
+ * Api dataAccess
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- Api dataAccess. -----------------------------------!");
+// onsole.log("!----------------------------------- Api dataAccess -----------------------------------!");
+
 import * as entities from "../entities/index";
 import { Common } from "../entities/common";
 import { Icomon, IreturnResult, koaContext } from "../../types";

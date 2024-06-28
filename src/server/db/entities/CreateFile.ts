@@ -1,11 +1,12 @@
 /**
- * CreateFile entity.
+ * CreateFile entity
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- CreateFile entity. -----------------------------------!");
+// onsole.log("!----------------------------------- CreateFile entity -----------------------------------!");
+
 import { Common } from "./common";
 import { IcsvColumn, IcsvFile, IreturnResult, koaContext } from "../../types";
 import { columnsNameFromCsv, executeSqlValues } from "../helpers";

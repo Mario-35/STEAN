@@ -1,11 +1,12 @@
 /**
- * FeaturesOfInterest entity.
+ * FeaturesOfInterest entity
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- FeaturesOfInterest entity. -----------------------------------!");
+// onsole.log("!----------------------------------- FeaturesOfInterest entity -----------------------------------!");
+
 import { log } from "../../log";
 import { koaContext } from "../../types";
 import { Common } from "./common";

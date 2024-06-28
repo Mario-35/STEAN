@@ -8,7 +8,7 @@
 // onsole.log("!----------------------------------- pgVisitor for odata -----------------------------------!");
 
 import { addDoubleQuotes } from "../../../helpers";
-import { IodataContext, keyobj, koaContext } from "../../../types";
+import { IodataContext, IvisitRessource, keyobj, koaContext } from "../../../types";
 import { Token } from "../../parser/lexer";
 import { SqlOptions } from "../../parser/sqlOptions";
 import { postSqlFromPgVisitor } from "../helper";
@@ -18,7 +18,10 @@ import { log } from "../../../log";
 import { _COLUMNSEPARATOR } from "../../../constants";
 import { PgVisitor } from "../.";
 
+
+
 export class RootPgVisitor extends PgVisitor {
+
   static root = true;
   constructor(ctx: koaContext, options = <SqlOptions>{}, node?: Token) {
       console.log(log.whereIam());
@@ -30,11 +33,9 @@ export class RootPgVisitor extends PgVisitor {
     console.log(log.head("verifyRessources"));
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected VisitRessources(node: Token, context?: IodataContext) {
-    const ressource = this[`VisitRessources${node.type}` as keyobj];
+    const ressource: IvisitRessource = this[`VisitRessources${node.type}` as keyobj];
     if (ressource) {
-      // @ts-ignore
       ressource.call(this, node, context);
       if (this.debugOdata) {
         console.log(log.debug("VisitRessources",`VisitRessources${node.type}`));
@@ -47,7 +48,7 @@ export class RootPgVisitor extends PgVisitor {
     return this;
   }
 
-  protected VisitRessourcesResourcePath(node: Token, context: IodataContext) {
+  protected VisitRessourcesResourcePath(node: Token, context?: IodataContext) {
     if (node.value.resource && node.value.resource.type == "EntitySetName") {
       this.entity = node.value.resource.raw;
     }

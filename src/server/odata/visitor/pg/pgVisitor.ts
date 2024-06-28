@@ -8,7 +8,7 @@
 // onsole.log("!----------------------------------- pgVisitor for odata -----------------------------------!");
 
 import { addDoubleQuotes, addSimpleQuotes, isGraph, isObservation, isTest, removeAllQuotes, returnFormats } from "../../../helpers";
-import { IodataContext, IKeyString, Ientity, IKeyBoolean, IpgQuery, koaContext } from "../../../types";
+import { IodataContext, IKeyString, Ientity, IKeyBoolean, IpgQuery, koaContext, IvisitRessource, keyobj } from "../../../types";
 import { Token } from "../../parser/lexer";
 import { Literal } from "../../parser/literal";
 import { SQLLiteral } from "../../parser/sqlLiteral";
@@ -21,6 +21,7 @@ import { log } from "../../../log";
 import { _COLUMNSEPARATOR } from "../../../constants";
 import { Visitor } from "./visitor";
 import { _ID, _NAVLINK } from "../../../db/constants";
+import { Query } from "../builder";
 
 export class PgVisitor extends Visitor {
   public entity = "";
@@ -54,16 +55,6 @@ export class PgVisitor extends Visitor {
   public noLimit() {
     this.limit = 0;
     this.skip = 0;
-  }
-
-  table(context: IodataContext) {
-    console.log("===============================> TABLE");
-    console.log(context);
-    if (context.relation) {
-      const entity = models.getEntity(this.ctx.config ,context.relation);  
-      if (entity) return entity.table;
-    }
-    return "lol";
   }
 
   addToIntervalColumns(input: string) {
@@ -178,14 +169,14 @@ export class PgVisitor extends Visitor {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Visit(node: Token, context?: any) {
+  Visit(node: Token, context?: IodataContext) {
     this.ast = this.ast || node;
-    context = context || { target: EQuery.Where };
-
+    context = context || { target: EQuery.Where, key: undefined, entity: undefined, table: undefined, identifier: undefined, identifierType: undefined, relation: undefined, literal: undefined, sign: undefined, sql: undefined, in: undefined }
     if (node) {
-      const visitor = this[`Visit${node.type}` as keyof Object];
+      const visitor: IvisitRessource = this[`Visit${node.type}` as keyobj];
+    // const ressource: IvisitRessource = this[`VisitRessources${node.type}` as keyobj];
+
       if (visitor) {
-      // @ts-ignore
       visitor.call(this, node, context);
         if (this.debugOdata) {
           console.log(log.debug("Visit",`Visit${node.type}`, ));
@@ -222,7 +213,7 @@ export class PgVisitor extends Visitor {
         visitor = new PgVisitor(this.ctx, { ...this.options });
         this.includes ? this.includes.push(visitor) : this.includes = [visitor];
       }
-      visitor.Visit(item);
+      visitor.Visit(item, context);
     });
   }
 
@@ -330,7 +321,7 @@ export class PgVisitor extends Visitor {
     context.identifier = tempColumn ? tempColumn : node.raw;
     if (context.target)
       // @ts-ignore
-      this.query[context.target].add(tempColumn ? `${tempColumn}${_COLUMNSEPARATOR}` : `${addDoubleQuotes(node.raw)}${_COLUMNSEPARATOR}`); 
+      (this.query[context.target as keyobj] as Query).add(tempColumn ? `${tempColumn}${_COLUMNSEPARATOR}` : `${addDoubleQuotes(node.raw)}${_COLUMNSEPARATOR}`); 
       this.showRelations = false;
   }
 
@@ -482,7 +473,10 @@ export class PgVisitor extends Visitor {
         if (tempEntity) {
           if (context.relation) {
             context.sql = `${addDoubleQuotes(this.ctx.model[entity].table)}.${addDoubleQuotes(this.ctx.model[entity].relations[node.value.name].entityColumn)} IN (SELECT ${addDoubleQuotes(tempEntity.table)}.${addDoubleQuotes(this.ctx.model[entity].relations[node.value.name].relationKey)} FROM ${addDoubleQuotes(tempEntity.table)}`;
-          } else context.relation = node.value.name;
+          } else {
+            context.relation = node.value.name;
+            context.table = tempEntity.table;
+          }
           if (!context.key && context.relation) {
             context.key = this.ctx.model[entity].relations[context.relation].entityColumn; 
       // @ts-ignore
@@ -548,7 +542,7 @@ export class PgVisitor extends Visitor {
       const temp = this.query.where.toString().split(" ").filter(e => e != "");      
       context.sign = temp.pop(); 
       this.query.where.init(temp.join(" "));
-      this.query.where.add(` ${context.in && context.in === true ? '' : ' IN @START@'}(SELECT ${this.ctx.model[this.entity].relations[context.relation] ? addDoubleQuotes(this.ctx.model[this.entity].relations[context.relation]["relationKey"]) : `${addDoubleQuotes(this.table(context))}."id"`} FROM ${addDoubleQuotes(this.table(context))} WHERE `);
+      this.query.where.add(` ${context.in && context.in === true ? '' : ' IN @START@'}(SELECT ${this.ctx.model[this.entity].relations[context.relation] ? addDoubleQuotes(this.ctx.model[this.entity].relations[context.relation]["relationKey"]) : `${addDoubleQuotes(context.table)}."id"`} FROM ${addDoubleQuotes(context.table)} WHERE `);
       context.in = true;
       if (context.identifier) {
         if (context.identifier.startsWith("CASE") || context.identifier.startsWith("("))
@@ -568,7 +562,7 @@ export class PgVisitor extends Visitor {
 
           this.query.where.add((context.sql)
             ? `${context.sql} ${context.target} ${addDoubleQuotes(context.identifier)} ${context.sign} ${SQLLiteral.convert(node.value, node.raw)}))@END@`
-            : `${alias ? '' : `${this.table(context)}.`}${alias ? alias : `${quotes}${ context.identifier }${quotes}`} ${context.sign} ${SQLLiteral.convert(node.value, node.raw)})`);
+            : `${alias ? '' : `${context.table}.`}${alias ? alias : `${quotes}${ context.identifier }${quotes}`} ${context.sign} ${SQLLiteral.convert(node.value, node.raw)})`);
         }
       }
     } else {

@@ -195,47 +195,40 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
   if (ctx.decodedUrl.path.includes(`/${ctx.config.apiVersion}`) || ctx.decodedUrl.version) {
     console.log(log.head(`unProtected GET ${ctx.config.apiVersion}`));
     // decode odata url infos
-    try {
-      const odataVisitor = await createOdata(ctx);    
-      
-      if (odataVisitor) {
-        ctx.odata = odataVisitor;
-        if (ctx.odata.returnNull === true) { 
-          ctx.body = { values: [] }; 
-          return;
-        }
-        console.log(log.head(`GET ${ctx.config.apiVersion}`));
-        // Create api object
-        const objectAccess = new apiAccess(ctx);
-        if (objectAccess) {
-          // Get all
-          if (ctx.odata.entity && Number(ctx.odata.id) === 0) {
-            const returnValue = await objectAccess.getAll();
-            if (returnValue) {
-              const datas = ctx.odata.returnFormat === returnFormats.json
-                  ? ({  "@iot.count": returnValue.id,
-                        "@iot.nextLink": returnValue.nextLink,
-                        "@iot.prevLink": returnValue.prevLink,
-                        value: returnValue.body} as object)
-                  : returnValue.body;
-              ctx.type = ctx.odata.returnFormat.type;
-              ctx.body = ctx.odata.returnFormat.format(datas as object, ctx);
-            } else ctx.throw(404);
-          // Get One
-          } else if ( (ctx.odata.id && typeof ctx.odata.id == "bigint" && ctx.odata.id > 0) || (typeof ctx.odata.id == "string" && ctx.odata.id != "") ) {
-            const returnValue: IreturnResult | undefined = await objectAccess.getSingle(ctx.odata.id);
-            if (returnValue && returnValue.body) {
-              ctx.type = ctx.odata.returnFormat.type;
-              ctx.body = ctx.odata.returnFormat.format(returnValue.body);
-            } else ctx.throw(404, { detail: `id : ${ctx.odata.id} not found` });
-          } else ctx.throw(400);
-        }
+    const odataVisitor = await createOdata(ctx);    
+    
+    if (odataVisitor) {
+      ctx.odata = odataVisitor;
+      if (ctx.odata.returnNull === true) { 
+        ctx.body = { values: [] }; 
+        return;
       }
-    } catch (error) {
-      console.log("----------------------------------");
-      
-      console.log(error);
-      
+      console.log(log.head(`GET ${ctx.config.apiVersion}`));
+      // Create api object
+      const objectAccess = new apiAccess(ctx);
+      if (objectAccess) {
+        // Get all
+        if (ctx.odata.entity && Number(ctx.odata.id) === 0) {
+          const returnValue = await objectAccess.getAll();
+          if (returnValue) {
+            const datas = ctx.odata.returnFormat === returnFormats.json
+                ? ({  "@iot.count": returnValue.id,
+                      "@iot.nextLink": returnValue.nextLink,
+                      "@iot.prevLink": returnValue.prevLink,
+                      value: returnValue.body} as object)
+                : returnValue.body;
+            ctx.type = ctx.odata.returnFormat.type;
+            ctx.body = ctx.odata.returnFormat.format(datas as object, ctx);
+          } else ctx.throw(404);
+        // Get One
+        } else if ( (ctx.odata.id && typeof ctx.odata.id == "bigint" && ctx.odata.id > 0) || (typeof ctx.odata.id == "string" && ctx.odata.id != "") ) {
+          const returnValue: IreturnResult | undefined = await objectAccess.getSingle(ctx.odata.id);
+          if (returnValue && returnValue.body) {
+            ctx.type = ctx.odata.returnFormat.type;
+            ctx.body = ctx.odata.returnFormat.format(returnValue.body);
+          } else ctx.throw(404, { detail: `id : ${ctx.odata.id} not found` });
+        } else ctx.throw(400);
+      }
     }
   }  
 });

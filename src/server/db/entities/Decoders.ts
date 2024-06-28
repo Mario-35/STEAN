@@ -1,17 +1,19 @@
 /**
- * Decoders entity.
+ * Decoders entity
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- Decoders entity. -----------------------------------!");
+// onsole.log("!----------------------------------- Decoders entity -----------------------------------!");
+
 import { IreturnResult, koaContext } from "../../types";
 import { Common } from "./common";
 import { addDoubleQuotes, asyncForEach } from "../../helpers";
 import { decodingPayload } from "../../lora";
 import { executeSql, executeSqlValues } from "../helpers";
 import { log } from "../../log";
+
 export class Decoders extends Common {
   constructor(ctx: koaContext) {
     console.log(log.whereIam());

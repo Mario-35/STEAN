@@ -24,6 +24,7 @@ export { Ilog } from "./log";
 export { ILoraDecodingResult } from "./loraDecodingResult";
 export { IodataContext } from "./odataContext";
 export { IpgQuery } from "./pgQuery";
+export { Iliteral } from "./literal";
 export { IqueryOptions } from "./queryOptions";
 export { IreturnFormat } from "./returnFormat";
 export { IreturnResult } from "./returnResult";
@@ -32,6 +33,7 @@ export { IstreamInfos } from "./streamInfos";
 export { Iuser } from "./user";
 export { IuserToken } from "./userToken";
 export { IdecodedUrl } from "./decodedUrl";
+export { IvisitRessource } from "./visitRessource";
 export interface IKeyBoolean { [key: string]: boolean; }
 export interface IKeyString { [key: string]: string; }
 export type Ientities = { [key in allEntitiesType as string]: Ientity }

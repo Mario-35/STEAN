@@ -13,8 +13,7 @@ import { blankUserToken } from "../types/userToken";
 
 export const decodeToken = (ctx: koaContext): IuserToken => {
   if (ctx.request.hasOwnProperty("token")) {
-    // @ts-ignore
-    const token = jsonwebtoken.decode(ctx.request["token"]);    
+    const token = jsonwebtoken.decode(ctx.request["token" as keyobj]);    
     if (token && token["data" as keyobj]["id"] > 0)
       return Object.freeze({
          id: +token["data" as keyobj]["id"], 

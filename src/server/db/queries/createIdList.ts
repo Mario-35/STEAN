@@ -1,12 +1,13 @@
 /**
- * createIdList.
+ * createIdList
  *
  * @copyright 2020-present Inrae
  * @review 27-01-2024
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- createIdList. -----------------------------------!");
+// onsole.log("!----------------------------------- createIdList -----------------------------------!");
+
 export const createIdList = (input: string): string[] => {
   let result: string[] = [];
       if (input.includes(":")) {

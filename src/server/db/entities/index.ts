@@ -1,11 +1,12 @@
 /**
- * Index entities.
+ * Index entities
  *
  * @copyright 2020-present Inrae
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- Index entities. -----------------------------------!");
+// onsole.log("!----------------------------------- Index entities -----------------------------------!");
+
 export { Configs } from "./Configs";
 export { Datastreams } from "./Datastreams";
 export { FeaturesOfInterest } from "./FeaturesOfInterest";
