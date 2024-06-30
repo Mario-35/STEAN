@@ -7,11 +7,13 @@
 */
 // onsole.log("!----------------------------------- graphDatastream. -----------------------------------!");
 import { createIdList, interval } from ".";
+import { cleanStringComma } from "../../helpers";
 import { PgVisitor } from "../../odata/visitor";
 
 export const graphDatastream = (table: string, id: string | bigint, input: PgVisitor): string => {
   const query = interval(input);
   const ids = (typeof id === "string" ) ? createIdList(id) : [String(id)];
+  const pgQuery = input.toPgQuery();
   return  `SELECT ( 
             SELECT 
               CONCAT( description, '|', "unitOfMeasurement" ->> 'name', '|', "unitOfMeasurement" ->> 'symbol' ) 
@@ -36,8 +38,8 @@ export const graphDatastream = (table: string, id: string | bigint, input: PgVis
                       "observation" 
                     WHERE 
                       "observation"."id" in ( SELECT "observation"."id" from "observation" WHERE "observation"."datastream_id" = ${ids[n]} ) 
-                    ORDER BY 
-                      "resultTime" ASC
+                    ORDER BY ${pgQuery && pgQuery.orderBy ? ` ${cleanStringComma(pgQuery.orderBy, ["ASC","DESC"])}` : `"resultTime" ASC `}
+                    ${input.limit ? `LIMIT ${input.limit}` : ``}
                   ) as result${n+1} ${ (n+1) > 1 ? ` ON result${n}.date = result${n+1}.date` : '' }`).join(" ")} 
               ) AS mario
           ) AS nop`

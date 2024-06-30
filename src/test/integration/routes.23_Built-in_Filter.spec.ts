@@ -114,7 +114,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             apiDescription: "Use gt for greater than >",
             apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
             apiExample: { 
-                http: `${testVersion}/Observations?$filter=result gt 45`,
+                http: `${testVersion}/Observations?$filter=result gt 90`,
                 curl: defaultGet("curl", "KEYHTTP"),
                 javascript: defaultGet("javascript", "KEYHTTP"),
                 python: defaultGet("python", "KEYHTTP")
@@ -126,7 +126,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(335);
+                res.body.value.length.should.eql(119);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });                
                 done();
@@ -149,7 +149,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(142);
+                res.body.value.length.should.eql(3);
                 res.body.should.include.keys("@iot.count", "value");                
                 done();
             });
@@ -162,7 +162,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             apiDescription: "Use gt for greater than or equal >=",
             apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
             apiExample: { 
-                http: `${testVersion}/Observations?$filter=result ge 45`,
+                http: `${testVersion}/Observations?$filter=result ge 90`,
                 curl: defaultGet("curl", "KEYHTTP"),
                 javascript: defaultGet("javascript", "KEYHTTP"),
                 python: defaultGet("python", "KEYHTTP")
@@ -174,7 +174,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(335);
+                res.body.value.length.should.eql(120);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });
                 
@@ -189,7 +189,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             apiDescription: "Use lt for smaller than <",
             apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
             apiExample: { 
-                http: `${testVersion}/Observations?$filter=result lt 45`,
+                http: `${testVersion}/Observations?$filter=result lt 90`,
                 curl: defaultGet("curl", "KEYHTTP"),
                 javascript: defaultGet("javascript", "KEYHTTP"),
                 python: defaultGet("python", "KEYHTTP")
@@ -201,7 +201,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(207);
+                res.body.value.length.should.eql(409);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });                
                 done();
@@ -215,7 +215,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
             apiDescription: "Use lt for Less than or equal <=",
             apiReference:"https://docs.ogc.org/is/18-088/18-088.html#_built_in_filter_operations",
             apiExample: { 
-                http: `${testVersion}/Observations?$filter=result le 45`,
+                http: `${testVersion}/Observations?$filter=result le 90`,
                 curl: defaultGet("curl", "KEYHTTP"),
                 javascript: defaultGet("javascript", "KEYHTTP"),
                 python: defaultGet("python", "KEYHTTP")
@@ -227,7 +227,7 @@ describe("Odata Built In Operators [9.3.3.5.1]", () => {
                 should.not.exist(err);
                 res.status.should.equal(200);
                 res.type.should.equal("application/json");
-                res.body.value.length.should.eql(207);
+                res.body.value.length.should.eql(410);
                 res.body.should.include.keys("@iot.count", "value");
                 addToApiDoc({ ...infos, result: limitResult(res) });                
                 done();

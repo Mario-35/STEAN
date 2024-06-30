@@ -104,8 +104,8 @@ export class PgVisitor extends Visitor {
         const translate = `TRANSLATE (SUBSTRING ("result"->>'value' FROM '(([0-9]+.*)*[0-9]+)'), '[]','')`;
         const isOperation = operation.trim() != "";
         return ForceString 
-          ? `@EXPRESSIONSTRING@ ANY (ARRAY_REMOVE( ARRAY[\n${nbs.map(e => `${isOperation ? `${operation} (` : ''} SPLIT_PART ( ${translate}, ',', ${e}))`).join(",\n")}], null))`
-          : `@EXPRESSION@ ANY (ARRAY_REMOVE( ARRAY[\n${nbs.map(e => `${isOperation ? `${operation} (` : ''}NULLIF (SPLIT_PART ( ${translate}, ',', ${e}),'')::numeric${isOperation ? `)` : ''}`).join(",\n")}], null))`;
+          ? `@EXPRESSIONSTRING@ ALL (ARRAY_REMOVE( ARRAY[\n${nbs.map(e => `${isOperation ? `${operation} (` : ''} SPLIT_PART ( ${translate}, ',', ${e}))`).join(",\n")}], null))`
+          : `@EXPRESSION@ ALL (ARRAY_REMOVE( ARRAY[\n${nbs.map(e => `${isOperation ? `${operation} (` : ''}NULLIF (SPLIT_PART ( ${translate}, ',', ${e}),'')::numeric${isOperation ? `)` : ''}`).join(",\n")}], null))`;
     default:
       return `CASE 
           WHEN JSONB_TYPEOF( "result"->'value') = 'number' THEN ("result"->${this.numeric == true? '>': ''}'value')::jsonb
@@ -174,6 +174,8 @@ export class PgVisitor extends Visitor {
     context = context || { target: EQuery.Where, key: undefined, entity: undefined, table: undefined, identifier: undefined, identifierType: undefined, relation: undefined, literal: undefined, sign: undefined, sql: undefined, in: undefined }
     if (node) {
       const visitor: IvisitRessource = this[`Visit${node.type}` as keyobj];
+    // const ressource: IvisitRessource = this[`VisitRessources${node.type}` as keyobj];
+
       if (visitor) {
       visitor.call(this, node, context);
         if (this.debugOdata) {
@@ -416,10 +418,20 @@ export class PgVisitor extends Visitor {
     return false;
   }
 
+  inverseSign(input: string | undefined) {
+    if (input) switch (input) {
+      case ">": return "<";    
+      case ">=": return "<=";
+      case "<": return ">";    
+      case "<=": return ">=";    
+      default:
+        return input;
+    }
+  }
   protected addExpressionToWhere(node: Token, context: IodataContext) {
     if (this.query.where.toString().includes("@EXPRESSION@") ) 
-      this.query.where.replace("@EXPRESSION@",`@EXPRESSION@ ${context.sign}`);
-      else if (!this.query.where.toString().includes("@EXPRESSIONSTRING@") && context.sign) 
+      this.query.where.replace("@EXPRESSION@",`@EXPRESSION@ ${this.inverseSign(context.sign)}`);
+      else if (!this.query.where.toString().includes("@EXPRESSIONSTRING@") && this.inverseSign(context.sign)) 
       // Important to keep space
         this.query.where.add(" " + context.sign);
   }
@@ -550,7 +562,7 @@ export class PgVisitor extends Visitor {
             const alias = tempEntity ? this.getColumnNameOrAlias(tempEntity, context.identifier , this.createDefaultOptions()) : undefined;
             this.query.where.add((context.sql)
               ? `${context.sql} ${context.target} ${addDoubleQuotes(context.identifier)}))@END@`
-              : `${alias ? alias : `${ context.identifier.replace("@EXPRESSION@", ` ${SQLLiteral.convert(node.value, node.raw)} ${context.sign}`) }`})`);
+              : `${alias ? alias : `${ context.identifier.replace("@EXPRESSION@", ` ${SQLLiteral.convert(node.value, node.raw)} ${this.inverseSign(context.sign)}`) }`})`);
         } else {
           const tempEntity = models.getEntity(this.ctx.config, context.relation);    
 
@@ -566,7 +578,7 @@ export class PgVisitor extends Visitor {
     } else {
       const temp = context.literal = node.value == "Edm.Boolean" ? node.raw : SQLLiteral.convert(node.value, node.raw);
       if (this.query.where.toString().includes("@EXPRESSION@")) this.query.where.replace("@EXPRESSION@", temp); 
-      else if (this.query.where.toString().includes("@EXPRESSIONSTRING@")) this.query.where.replace("@EXPRESSIONSTRING@", `${temp} ${context.sign}`);       
+      else if (this.query.where.toString().includes("@EXPRESSIONSTRING@")) this.query.where.replace("@EXPRESSIONSTRING@", `${temp} ${this.inverseSign(context.sign)}`);       
       else this.query.where.add(temp);
       
     }

@@ -11,14 +11,12 @@ import { SIMPLEQUOTEDCOMA } from "../../constants";
 import { cleanStringComma } from "../../helpers";
 import { PgVisitor } from "../../odata/visitor";
 
-
-
 export const graphMultiDatastream = (table: string, id: string | bigint, input: PgVisitor): string => {
   console.log( input.query.orderBy);
   console.log( input.limit);
   const query = interval(input);
   const ids = (typeof id === "string" ) ? createIdList(id) : [String(id)];  
-  const zabi = input.toPgQuery();
+  const pgQuery = input.toPgQuery();
   return ids.length === 1 ?
   `WITH 
       src AS (
@@ -111,8 +109,7 @@ export const graphMultiDatastream = (table: string, id: string | bigint, input: 
                       WHERE 
                         "observation"."multidatastream_id" = ${ids[n]}
                     ) 
-                  ORDER BY 
-                    ${zabi && zabi.orderBy ? ` ${cleanStringComma(zabi.orderBy, ["ASC","DESC"])}` : `"resultTime" ASC `}
+                  ORDER BY ${pgQuery && pgQuery.orderBy ? ` ${cleanStringComma(pgQuery.orderBy, ["ASC","DESC"])}` : `"resultTime" ASC `}
                     ${input.limit ? `LIMIT ${input.limit}` : ``}
                 ) as result${n+1} ${ (n+1) > 1 ? ` ON result${n}.date = result${n+1}.date` : '' }`).join(" ")} 
               ) As mario

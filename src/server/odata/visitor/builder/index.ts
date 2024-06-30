@@ -11,6 +11,7 @@
 export { Core } from "./core";
 export { GroupBy } from "./groupBy";
 export { OrderBy } from "./orderBy";
+export { Join } from "./join";
 export { Query } from "./query";
 export { Select } from "./select";
 export { Where } from "./where";

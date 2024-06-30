@@ -14,7 +14,7 @@ import { IconfigFile, Ientity, IKeyBoolean, IpgQuery } from "../../../types";
 import { PgVisitor, RootPgVisitor } from "..";
 import { models } from "../../../models";
 import { allEntities, EOptions } from "../../../enums";
-import { GroupBy, Key, OrderBy, Select, Where } from ".";
+import { GroupBy, Key, OrderBy, Select, Where, Join } from ".";
 import { errors } from "../../../messages";
 import { _NAVLINK, _SELFLINK } from "../../../db/constants";
 import { log } from "../../../log";
@@ -22,6 +22,7 @@ import { log } from "../../../log";
 export class Query  {
     where: Where;
     select: Select;
+    join: Join;
     orderBy: OrderBy;
     groupBy: GroupBy;
     keyNames: Key;
@@ -33,6 +34,7 @@ export class Query  {
       this.where = new Where();
       this.select = new Select();
       this.orderBy = new OrderBy();
+      this.join = new Join();
       this.groupBy = new GroupBy();
       this.keyNames = new Key([]);
     }
@@ -82,7 +84,7 @@ export class Query  {
         // Add ceil and return if graph
         if (isGraph(main)) {
             if (element.query.orderBy.notNull()) element.query.orderBy.add(', ');
-            element.query.orderBy.add('"resultTime" ASC,');
+            // element.query.orderBy.add('"resultTime" ASC,');
             return [ main.interval
                 ? `timestamp_ceil("resultTime", interval '${main.interval}') AS srcdate`
                 : `@GRAPH@`];

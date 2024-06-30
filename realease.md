@@ -1,7 +1,7 @@
 # Release Stean
 
 ## version 3.7.5
-    correction 
+    correction filter with result mulitidatastream
 ## version 3.7.4
     remove errorFile.md
     add /logs route
