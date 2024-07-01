@@ -8,7 +8,7 @@
  #/
 
 clear
-APIDEST=api
+APIDEST=/opt/stean/api
 APIBak=apiBak
 FILEAPP=./$APIDEST/index.js
 FILEDIST=./dist.zip
@@ -172,3 +172,5 @@ sh ./run.sh
 install_stean
 echo "------------ Installed ----------"
 logo
+
+sudo rm install.sh | sudo curl -fsSL https://raw.githubusercontent.com/Mario-35/STEAN/main/scripts/install.sh -o install.sh | sudo less install.sh | sudo chmod +x install.sh | run ./install.sh
