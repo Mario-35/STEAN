@@ -1,4 +1,4 @@
- #/
+file_dist_old #/
  # Stean Install Bash.
  #
  # @copyright 2024-present Inrae
@@ -15,28 +15,28 @@ clear
 # fi
 
 # Prompt for the domain name and directory
-read -p "Enter the path to install api (/var/www/stean): " APIDEST
-FILEDIST=./dist.zip
-FILEDISTOLD=./distOld.zip
-FILERUN=./run.sh
+read -p "Enter the path to install api (/var/www/stean): " api_dest
+file_dist=./dist.zip
+file_dist_old=./distOld.zip
+script_run=./run.sh
 
 create_run() {
-    if [ -f $FILERUN ];
+    if [ -f $script_run ];
     then
-        rm $FILERUN
-        echo "Delete => $FILERUN"
+        rm $script_run
+        echo "Delete => $script_run"
     fi
-    echo "#!/bin/bash" > $FILERUN
-    echo "pm2 stop index" >> $FILERUN
-    echo "pm2 flush" >> $FILERUN
-    echo "pm2 delete index" >> $FILERUN
-    echo "echo \"API starting ...\"" >> $FILERUN
-    echo "NODE_ENV=production" >> $FILERUN
-    echo "mv $APIDEST/api/logs.html $APIDEST/logs.bak" >> $FILERUN
-    echo "pm2 start $APIDEST/api/index.js" >> $FILERUN
-    echo "pm2 logs --lines 500" >> $FILERUN
-    sudo chmod -R 777 $FILERUN
-    echo "Create script => $FILERUN"
+    echo "#!/bin/bash" > $script_run
+    echo "pm2 stop index" >> $script_run
+    echo "pm2 flush" >> $script_run
+    echo "pm2 delete index" >> $script_run
+    echo "echo \"API starting ...\"" >> $script_run
+    echo "NODE_ENV=production" >> $script_run
+    echo "mv $api_dest/api/logs.html $api_dest/logs.bak" >> $script_run
+    echo "pm2 start $api_dest/api/index.js" >> $script_run
+    echo "pm2 logs --lines 500" >> $script_run
+    sudo chmod -R 777 $script_run
+    echo "Create script => $script_run"
 }
 
 # Script to install Node.js using Node on Ubuntu without sudo
@@ -76,54 +76,54 @@ install_unzip() {
 
 # Function to make bak 
 save_dist() {
-    if [ -f "$FILEDIST" ]; then
-        rm -f $FILEDISTOLD
-        echo "Delete => $FILEDISTOLD"
-        mv $FILEDIST $FILEDISTOLD
-        echo "Move $FILEDIST => $FILEDISTOLD"
+    if [ -f "$file_dist" ]; then
+        rm -f $file_dist_old
+        echo "Delete => $file_dist_old"
+        mv $file_dist $file_dist_old
+        echo "Move $file_dist => $file_dist_old"
     fi
 }
 
 # Function to get stean
 download_stean() {
     save_dist
-    sudo curl -o $FILEDIST -L https://github.com/Mario-35/STEAN/raw/main/dist.zip
-    echo "Downloading => $FILEDIST"
+    sudo curl -o $file_dist -L https://github.com/Mario-35/STEAN/raw/main/dist.zip
+    echo "Downloading => $file_dist"
 }
 
 # Function to install stean
 install_stean() {
     stop_stean
     # remove bak
-    if [ -f $APIDEST/apiBak ];
+    if [ -f $api_dest/apiBak ];
     then
-        rm -r $APIDEST/apiBak
-        echo "Delete => $APIDEST/apiBak"
+        rm -r $api_dest/apiBak
+        echo "Delete => $api_dest/apiBak"
     fi
     # save actual to bak
-    if [ -f $APIDEST/api ];
+    if [ -f $api_dest/api ];
     then
-        mv $APIDEST/api $APIDEST/apiBak
-        echo "Move $APIDEST/api => $APIDEST/apiBak"
+        mv $api_dest/api $api_dest/apiBak
+        echo "Move $api_dest/api => $api_dest/apiBak"
     fi
     # create path
-    sudo mkdir -p -m 777 $APIDEST/api
-    echo "Create folder => $APIDEST/api"
+    sudo mkdir -p -m 777 $api_dest/api
+    echo "Create folder => $api_dest/api"
     # unzip actual
-    unzip -qq $FILEDIST -d $APIDEST/api/  
-    echo "unzip $FILEDIST => $APIDEST/api"
+    unzip -qq $file_dist -d $api_dest/api/  
+    echo "unzip $file_dist => $api_dest/api"
     # Save config
-    if [ -f $APIDEST/apiBak/configuration/configuration.json ]; then
-        cp $APIDEST/apiBak/configuration/configuration.json $APIDEST/api/configuration/configuration.json
-        echo "Move $APIDEST/apiBak/configuration/configuration.json => $APIDEST/api/configuration/configuration.json"
+    if [ -f $api_dest/apiBak/configuration/configuration.json ]; then
+        cp $api_dest/apiBak/configuration/configuration.json $api_dest/api/configuration/configuration.json
+        echo "Move $api_dest/apiBak/configuration/configuration.json => $api_dest/api/configuration/configuration.json"
     fi
     # Save key
-    if [ -f $APIDEST/apiBak/configuration/.key ]; then
-        cp $APIDEST/apiBak/configuration/.key $APIDEST/api/configuration/.key
-        echo "Move $APIDEST/apiBak/configuration/.key => $APIDEST/api/configuration/.key"        
+    if [ -f $api_dest/apiBak/configuration/.key ]; then
+        cp $api_dest/apiBak/configuration/.key $api_dest/api/configuration/.key
+        echo "Move $api_dest/apiBak/configuration/.key => $api_dest/api/configuration/.key"        
     fi
     save_dist
-    npm install --silent --omit=dev --prefix $APIDEST/api/
+    npm install --silent --omit=dev --prefix $api_dest/api/
 }
 
 stop_stean() {
@@ -172,9 +172,9 @@ else
     echo "unzip is already installed."
 fi
 
-if [ -f $FILEDIST ];
+if [ -f $file_dist ];
 then
-    echo "$FILEDIST is already present."
+    echo "$file_dist is already present."
     while true; do
         read -p "Do you wish to use it " yn
         case $yn in
