@@ -15,16 +15,17 @@ FILEDIST=./dist.zip
 FILEDISTOLD=./distOld.zip
 FILEKEY=./$APIDEST/configuration/.key
 FILECONFIG=./$APIDEST/configuration/configuration.json
+HELLOSCRIPT=./hello.sql
 
 # Script to install Node.js using Node on Ubuntu without sudo
 
-echo "---------- Installation ---------"
-echo "  ____ __________    _     _   _ "
-echo " / ___|_ __  ____|  / \   | \ | |"
-echo " \___ \| | |  _|   / _ \  |  \| |"
-echo "  ___) | | | |___ / ___ \ | |\  |"
-echo " |____/|_| |_____|_/   \_\|_| \_|"
-
+logo() {
+    echo "  ____ __________    _     _   _ "
+    echo " / ___|_ __  ____|  / \   | \ | |"
+    echo " \___ \| | |  _|   / _ \  |  \| |"
+    echo "  ___) | | | |___ / ___ \ | |\  |"
+    echo " |____/|_| |_____|_/   \_\|_| \_|"
+}
 # Function to install Node
 install_node() {
     echo "Installing Node..."
@@ -33,9 +34,9 @@ install_node() {
 
 # Function to install postgresql-postgis
 install_pg() {
-    echo "Installing postgresql-postgis ..." 
-    sudo deluser postgres 
-    sudo apt install postgis postgresql-14-postgis-3 -y 
+    echo "Installing postgresql-postgis ..."
+    sudo apt autoremove
+    sudo apt install postgis postgresql-14-postgis-3 -y -qq
 }
 
 # Function to install pm2
@@ -43,7 +44,6 @@ install_pm2() {
     echo "Installing pm2..."
     sudo npm install pm2@latest -g
 }
-postgres
 
 # Function to install unzip
 install_unzip() {
@@ -63,14 +63,15 @@ download_stean() {
     echo "Downloading stean..."
     save_dist
     sudo curl -o $FILEDIST -L https://github.com/Mario-35/STEAN/raw/main/dist.zip
+    sudo curl -o $HELLOSCRIPT -L https://github.com/Mario-35/STEAN/raw/main/scripts/hello.sql
 }
 
 # Function to create run.sh
 create_run() {
     echo "Create run.sh"
-    sudo cp ./$APIDEST/scripts/run.sh .
+    cp ./$APIDEST/scripts/run.sh .
     sudo chmod -R 777 run.sh
-    sudo cp ./$APIDEST/scripts/back.sh .
+    cp ./$APIDEST/scripts/back.sh .
     sudo chmod -R 777 back.sh
 }
 
@@ -108,7 +109,8 @@ stop_stean() {
 #------------------------------------------------------------------
 #|                        START                                   |
 #------------------------------------------------------------------
-
+echo "---------- Installation ---------"
+logo
 # Check if PostgreSQL  is installed
 if ! command -v psql --version &> /dev/null
 then
@@ -163,7 +165,11 @@ else
     download_stean
 fi
 
+
+psql -U postgres -f $HELLOSCRIPT
+
 install_stean
 sh ./run.sh
 install_stean
-echo "---------- FINISHED ---------"
+echo "------------ Installed ----------"
+logo
