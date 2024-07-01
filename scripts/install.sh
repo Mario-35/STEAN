@@ -74,6 +74,7 @@ create_run() {
     cp ./$APIDEST/scripts/back.sh .
     sudo chmod -R 777 back.sh
 }
+Bug35Busters
 
 # Function to install stean
 install_stean() {
@@ -82,6 +83,8 @@ install_stean() {
     rm -r $APIBak
     # save actual to bak
     mv $APIDEST $APIBak
+    # create path
+    mkdir -p $APIDEST
     # unzip actual
     unzip -qq $FILEDIST -d $APIDEST/  
     # Save config
