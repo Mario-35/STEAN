@@ -42,10 +42,10 @@ install_pg() {
     sudo deluser postgres 
     sudo apt install postgis postgresql-14-postgis-3
     sudo -i -u postgres 
-    createuser stean 
-    createdb steanDB -O stean 
-    psql -d steanDB 
-    sudo -u stean psql steanDB 
+    createuser postgres 
+    createdb steanDB -O postgres 
+    psql -d postgres 
+    sudo -u stean psql postgres 
     # steanDB=# CREATE EXTENSION postgis; 
     # steanDB=# SELECT PostGIS_version(); 
 }
@@ -73,15 +73,15 @@ save_dist() {
 download_stean() {
     echo "Downloading stean..."
     save_dist
-    curl -o $FILEDIST -L https://github.com/Mario-35/STEAN/raw/main/dist.zip
+    sudo curl -o $FILEDIST -L https://github.com/Mario-35/STEAN/raw/main/dist.zip
 }
 
 # Function to create run.sh
 create_run() {
     echo "Create run.sh"
-    cp ./$APIDEST/scripts/run.sh .
+    sudo cp ./$APIDEST/scripts/run.sh .
     sudo chmod -R 777 run.sh
-    cp ./$APIDEST/scripts/back.sh .
+    sudo cp ./$APIDEST/scripts/back.sh .
     sudo chmod -R 777 back.sh
 }
 
