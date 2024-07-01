@@ -8,7 +8,7 @@
  #/
 
 clear
-APIDEST=api
+APIDEST=/www/var/stean/api
 APIBak=apiBak
 FILEAPP=./$APIDEST/index.js
 FILEDIST=./dist.zip
@@ -85,8 +85,9 @@ install_stean() {
     mv $APIDEST $APIBak
     # create path
     mkdir -p $APIDEST
+    sudo chmod -R 777 $APIDEST
     # unzip actual
-    unzip -qq $FILEDIST -d $APIDEST/  
+    sudo unzip -qq $FILEDIST -d $APIDEST/  
     # Save config
     if [ -f ./$APIBak/configuration/configuration.json ]; then
         echo "confifuration exist."
