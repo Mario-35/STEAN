@@ -174,9 +174,3 @@ install_stean
 <<<<<<< HEAD
 echo "------------ Installed ----------"
 logo
-=======
-sh ./run.sh
-install_stean
-echo "------------ Installed ----------"
-logo
->>>>>>> 5e11bc6f3f0b2b7c256c11bd0e86bca5eca0de73
