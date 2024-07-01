@@ -33,9 +33,9 @@ install_node() {
 
 # Function to install postgresql-postgis
 install_pg() {
-    echo "Installing postgresql-postgis ..." 
-    sudo delu
+    echo "Installing postgresql-postgis ..."
     sudo apt autoremove
+    sudo apt install postgis postgresql-14-postgis-3 -y -qq
 }
 
 # Function to install pm2
@@ -43,7 +43,6 @@ install_pm2() {
     echo "Installing pm2..."
     sudo npm install pm2@latest -g
 }
-postgres
 
 # Function to install unzip
 install_unzip() {
