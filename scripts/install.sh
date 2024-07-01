@@ -33,21 +33,10 @@ install_node() {
 
 # Function to install postgresql-postgis
 install_pg() {
-    echo "Installing postgresql-postgis ..."
-    sudo apt --purge remove postgresql postgresql-* -y
-    sudo apt autoremove -y
-    sudo rm -rf /var/lib/postgresql/ 
-    sudo rm -rf /var/log/postgresql/ 
-    sudo rm -rf /etc/postgresql/ 
+    echo "Installing postgresql-postgis ..." 
     sudo deluser postgres 
     sudo apt install postgis postgresql-14-postgis-3 -y
-    sudo -i -u postgres 
-    createuser postgres 
-    createdb postgres -O postgres 
-    psql -d postgres 
-    sudo -u stean psql postgres 
-    # postgres=# CREATE EXTENSION postgis; 
-    # postgres=# SELECT PostGIS_version(); 
+    sudo apt autoremove
 }
 
 # Function to install pm2
@@ -55,6 +44,7 @@ install_pm2() {
     echo "Installing pm2..."
     sudo npm install pm2@latest -g
 }
+postgres
 
 # Function to install unzip
 install_unzip() {
@@ -79,9 +69,9 @@ download_stean() {
 # Function to create run.sh
 create_run() {
     echo "Create run.sh"
-    sudo cp ./$APIDEST/scripts/run.sh .
+    cp ./$APIDEST/scripts/run.sh .
     sudo chmod -R 777 run.sh
-    sudo cp ./$APIDEST/scripts/back.sh .
+    cp ./$APIDEST/scripts/back.sh .
     sudo chmod -R 777 back.sh
 }
 
@@ -176,3 +166,11 @@ fi
 
 install_stean
 sh ./run.sh
+install_stean
+echo "------------ Installed ----------"
+echo "  ____ _____ _____    _    _   _ "
+echo " / ___|_   _| ____|  / \  | \ | |"
+echo " \___ \ | | |  _|   / _ \ |  \| |"
+echo "  ___) || | | |___ / ___ \| |\  |"
+echo " |____/ |_| |_____/_/   \_\_| \_|"
+                                 
