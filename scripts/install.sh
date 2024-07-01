@@ -165,12 +165,10 @@ else
     download_stean
 fi
 
-
 psql -U postgres -f $HELLOSCRIPT
 
 install_stean
 sh ./run.sh
 install_stean
-<<<<<<< HEAD
 echo "------------ Installed ----------"
 logo
