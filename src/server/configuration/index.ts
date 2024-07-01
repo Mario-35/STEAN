@@ -36,17 +36,14 @@ class Configuration {
   constructor() {
     const file: fs.PathOrFileDescriptor = __dirname + `/${EFileName.config}`;
     Configuration.filePath = file.toString();
-    // override console log important in production build will remove all console.log
-
-
-    console.log(isProduction());
-    
-    if (isProduction()) console.log = (data: any) => {
-      if (data) this.writeLog(data);
-    };
-    if (isTest()) console.log = (data: any) => {};
-    
-    if (isTest()) this.readConfigFile();
+    // override console log important in production build will remove all console.log   
+    // if (isProduction()) console.log = (data: any) => {
+    //   if (data) this.writeLog(data);
+    // };
+    // if (isTest()) {
+    //   console.log = (data: any) => {};
+    //   this.readConfigFile();
+    // }    
   }
   
   writeLog(input: any) {
@@ -313,13 +310,25 @@ class Configuration {
       Object.keys(Configuration.configs)
         .filter( (e) => e != ADMIN && Configuration.configs[e].extensions.includes(EExtensions.lora) )
         .forEach((connectName: string) => {
-          Object.keys(update[EUpdate.decoders]).forEach((name: string) => {
-            const hash = this.hashCode(update[EUpdate.decoders as keyobj][name]);
-            this.addToQueries( connectName, `UPDATE decoder SET code='${update[EUpdate.decoders as keyobj][name]}', hash = '${hash}' WHERE name = '${name}' AND hash <> '${hash}' ` );
-          });
+          if(Configuration.configs[connectName].extensions.includes(EExtensions.lora)) {
+            const decs:string[] = []
+            Object.keys(update[EUpdate.decoders]).forEach(async (name: string) => {
+              const hash = this.hashCode(update[EUpdate.decoders as keyobj][name]);
+              decs.push(name);            
+              const sql = `UPDATE decoder SET code='${update[EUpdate.decoders as keyobj][name]}', hash = '${hash}' WHERE name = '${name}' AND hash <> '${hash}' `;
+              await serverConfig
+              .connection(connectName)
+              .unsafe(sql)
+              .catch((error: Error) => {
+                this.writeLog(log.error(log.error(error)));
+                return false;
+              });
+            });
+            this.writeLog(log.booting(`UPDATE decoder ${color(EColor.Yellow)} [${connectName}]`, decs));            
+          }
         });
       }
-     await this.executeQueries(EUpdate.decoders);
+    //  await this.executeQueries(EUpdate.decoders);
      return true;
   }
 

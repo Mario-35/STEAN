@@ -30,10 +30,8 @@ export class Decoders extends Common {
         Object(decoders),
         async (decoder: Record<string, any> ) => {          
           if (this.ctx.odata.payload) {
-      const temp = decodingPayload( { name: decoder["name"], code: String(decoder["code"]), nomenclature: decoder["nomenclature"], },
-              this.ctx.odata.payload
-            );
-      result[decoder["id"]] = temp;
+            const temp = decodingPayload( { name: decoder["name"], code: String(decoder["code"]), nomenclature: decoder["nomenclature"], }, this.ctx.odata.payload );
+            result[decoder["id"]] = temp;
           }
         }
       );

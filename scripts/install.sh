@@ -34,7 +34,20 @@ install_node() {
 # Function to install postgresql-postgis
 install_pg() {
     echo "Installing postgresql-postgis ..."
+    sudo apt --purge remove postgresql postgresql-* 
+    sudo apt autoremove
+    sudo rm -rf /var/lib/postgresql/ 
+    sudo rm -rf /var/log/postgresql/ 
+    sudo rm -rf /etc/postgresql/ 
+    sudo deluser postgres 
     sudo apt install postgis postgresql-14-postgis-3
+    sudo -i -u postgres 
+    createuser stean 
+    createdb steanDB -O stean 
+    psql -d steanDB 
+    sudo -u stean psql steanDB 
+    # steanDB=# CREATE EXTENSION postgis; 
+    # steanDB=# SELECT PostGIS_version(); 
 }
 
 # Function to install pm2
