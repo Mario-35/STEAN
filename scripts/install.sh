@@ -123,7 +123,6 @@ install_stean() {
         echo "Move $APIDEST/apiBak/configuration/.key => $APIDEST/api/configuration/.key"        
     fi
     save_dist
-    cd $APIDEST/api
     npm install --silent --omit=dev --prefix $APIDEST/api/
 }
 
