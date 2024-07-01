@@ -18,13 +18,13 @@ FILECONFIG=./$APIDEST/configuration/configuration.json
 
 # Script to install Node.js using Node on Ubuntu without sudo
 
-echo "---------- Installation ---------"
-echo "  ____ __________    _     _   _ "
-echo " / ___|_ __  ____|  / \   | \ | |"
-echo " \___ \| | |  _|   / _ \  |  \| |"
-echo "  ___) | | | |___ / ___ \ | |\  |"
-echo " |____/|_| |_____|_/   \_\|_| \_|"
-
+logo() {
+    echo "  ____ __________    _     _   _ "
+    echo " / ___|_ __  ____|  / \   | \ | |"
+    echo " \___ \| | |  _|   / _ \  |  \| |"
+    echo "  ___) | | | |___ / ___ \ | |\  |"
+    echo " |____/|_| |_____|_/   \_\|_| \_|"
+}
 # Function to install Node
 install_node() {
     echo "Installing Node..."
@@ -34,8 +34,7 @@ install_node() {
 # Function to install postgresql-postgis
 install_pg() {
     echo "Installing postgresql-postgis ..." 
-    sudo deluser postgres 
-    sudo apt install postgis postgresql-14-postgis-3 -y
+    sudo delu
     sudo apt autoremove
 }
 
@@ -109,7 +108,8 @@ stop_stean() {
 #------------------------------------------------------------------
 #|                        START                                   |
 #------------------------------------------------------------------
-
+echo "---------- Installation ---------"
+logo
 # Check if PostgreSQL  is installed
 if ! command -v psql --version &> /dev/null
 then
@@ -168,9 +168,4 @@ install_stean
 sh ./run.sh
 install_stean
 echo "------------ Installed ----------"
-echo "  ____ _____ _____    _    _   _ "
-echo " / ___|_   _| ____|  / \  | \ | |"
-echo " \___ \ | | |  _|   / _ \ |  \| |"
-echo "  ___) || | | |___ / ___ \| |\  |"
-echo " |____/ |_| |_____/_/   \_\_| \_|"
-                                 
+logo
