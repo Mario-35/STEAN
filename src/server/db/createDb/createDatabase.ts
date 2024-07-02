@@ -17,6 +17,7 @@ import { triggers } from "./triggers";
 import { models } from "../../models";
 import { log } from "../../log";
 import { createRole } from "../helpers/createRole";
+import { ADMIN } from "../../constants";
 
 export const createDatabase = async (configName: string): Promise<IKeyString> => {
   console.log(log.head("createDatabase", configName));
@@ -110,11 +111,11 @@ export const createDatabase = async (configName: string): Promise<IKeyString> =>
       });
   }
 
-  returnValue[`Create Role`] = await createRole(serverConfig.getConfig(configName))
+  returnValue[`Create Role`] = await createRole(serverConfig.getConfig(ADMIN))
     .then(() => EChar.ok)
     .catch((err: Error) => err.message);
 
-  returnValue[`Create user`] = await createUser(serverConfig.getConfig(configName))
+  returnValue[`Create user`] = await createUser(serverConfig.getConfig(ADMIN))
     .then(() => EChar.ok)
     .catch((err: Error) => err.message);
 

@@ -16,13 +16,16 @@ clear
 # fi
 
 # Prompt for the domain name and directory
-read -p "Enter the path to install api (/var/www/stean): " APIDEST
+read -p "Enter the path to install api (/var/www/stean) [./]: " APIDEST
+APIDEST=${APIDEST:-/var/www/stean}
 # Name of the file downladed
 FILEDIST=./dist.zip
 # Name of the backup
 FILEDISTOLD=./distOld.zip
 # Name of the run script
 FILERUN=./run.sh
+# Name of the run script
+SQLSCRIPT=./script.sql
 
 # Create run script
 create_run() {
@@ -50,7 +53,7 @@ logo() {
     echo " / ___|_ __  ____|  / \   | \ | |"
     echo " \___ \| | |  _|   / _ \  |  \| |"
     echo "  ___) | | | |___ / ___ \ | |\  |"
-    echo " |____/|_| |_____|_/   \_\|_| \_|"
+    echo " |____/|_| |_____|_/   \_\|_| \_|  run API ----> $FILERUN"
     echo ""
 }
 
@@ -67,17 +70,36 @@ check_node() {
 
 # Function to check PostgreSQL-postgis and install it if not
 check_pg() {
-    if ! command -v psql --version > /dev/null
-    then
+    if ! psql --version | grep -q "psql (PostgreSQL)"; then
         echo "Installing postgresql-postgis ..."
         sudo apt install postgis postgresql-14-postgis-3 -y
-        if ! command -v psql --version > /dev/null
-        then
+            if ! psql --version | grep -q "psql (PostgreSQL)"; then
             exit
         fi
+        sudo -i -u postgres psql -c "ALTER USER postgres WITH ENCRYPTED PASSWORD 'postgres';"    
+        update_pg_hba
     else
         echo "PostgreSQL is already installed."
     fi    
+}
+
+# Create run script
+update_pg_hba() {
+    SQLPATH=/etc/postgresql/14/main/pg_hba.conf
+    sudo cp $SQLPATH $SQLPATH.bak
+    if [ -f $SQLSCRIPT ]; then
+        echo "rm $SQLSCRIPT"
+        rm $SQLSCRIPT
+        echo "Delete => $SQLSCRIPT"
+    fi
+    echo "create table hba ( lines text );" > $SQLSCRIPT
+    echo "hba from ($SQLPATH);" >> $SQLSCRIPT
+    echo "insert into hba (lines) values ('host    all             all             0.0.0.0/0            md5');" >> $SQLSCRIPT
+    echo "insert into hba (lines) values ('listen_addresses = ''*''');" >> $SQLSCRIPT
+    echo "copy hba to '$SQLPATH';" >> $SQLSCRIPT
+    echo "select pg_reload_conf();" >> $SQLSCRIPT
+    sudo psql -U postgres -f $SQLSCRIPT
+    # rm $SQLSCRIP
 }
 
 # Function to check pm2 and install it if not
@@ -105,8 +127,7 @@ check_unzip() {
 # Function to check dist file
 check_dist() {
     # Check if file already present and ask to use it if true
-    if [ -f $FILEDIST ];
-    then
+    if [ -f $FILEDIST ]; then
         echo "$FILEDIST is already present."
         while true; do
             read -p "Do you wish to use it " yn
@@ -154,7 +175,7 @@ install_stean() {
     sudo mkdir -p -m 777 $APIDEST/api
     echo "Create folder => $APIDEST/api"
     # unzip actual
-    unzip -qq $FILEDIST -d $APIDEST/api/  
+    unzip -qq -o $FILEDIST -d $APIDEST/api/  
     echo "unzip $FILEDIST => $APIDEST/api"
     # Save config
     if [ -f $APIDEST/apiBak/configuration/configuration.json ]; then
@@ -167,7 +188,6 @@ install_stean() {
         echo "Move $APIDEST/apiBak/configuration/.key => $APIDEST/api/configuration/.key"        
     fi
     save_dist
-    cd $APIDEST/api
     npm install --silent --omit=dev --prefix $APIDEST/api/
 }
 
