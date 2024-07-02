@@ -8,6 +8,7 @@
  #/
 
 clear
+
 # Check if the script is run as root
 # if [ "$EUID" -ne 0 ]; then
 #   echo "Please run this script as root or use sudo"
@@ -16,13 +17,16 @@ clear
 
 # Prompt for the domain name and directory
 read -p "Enter the path to install api (/var/www/stean): " APIDEST
+# Name of the file downladed
 FILEDIST=./dist.zip
+# Name of the backup
 FILEDISTOLD=./distOld.zip
+# Name of the run script
 FILERUN=./run.sh
 
+# Create run script
 create_run() {
-    if [ -f $FILERUN ];
-    then
+    if [ -f $FILERUN ]; then
         rm $FILERUN
         echo "Delete => $FILERUN"
     fi
@@ -39,7 +43,7 @@ create_run() {
     echo "Create script => $FILERUN"
 }
 
-# Script to install Node.js using Node on Ubuntu without sudo
+# Function to show logo
 logo() {
     echo ""
     echo "  ____ __________    _     _   _ "
@@ -50,28 +54,71 @@ logo() {
     echo ""
 }
 
-# Function to install Node
-install_node() {
-    echo "Installing Node..."
-    sudo apt install nodejs
+# Function to check Node and install it if not
+check_node() {
+    if ! command -v node > /dev/null
+    then
+        echo "Installing Node..."
+        sudo apt install nodejs
+    else
+        echo "Node is already installed."
+    fi    
 }
 
-# Function to install postgresql-postgis
-install_pg() {
-    echo "Installing postgresql-postgis ..."
-    sudo apt install postgis postgresql-14-postgis-3 -y
+# Function to check PostgreSQL-postgis and install it if not
+check_pg() {
+    if ! command -v psql --version > /dev/null
+    then
+        echo "Installing postgresql-postgis ..."
+        sudo apt install postgis postgresql-14-postgis-3 -y
+        if ! command -v psql --version > /dev/null
+        then
+            exit
+        fi
+    else
+        echo "PostgreSQL is already installed."
+    fi    
 }
 
-# Function to install pm2
-install_pm2() {
-    echo "Installing pm2..."
-    sudo npm install pm2@latest -g
+# Function to check pm2 and install it if not
+check_pm2() {
+    if ! command -v pm2 > /dev/null
+    then
+        echo "Installing pm2..."
+        sudo npm install pm2@latest -g
+    else
+        echo "pm2 is already installed."
+    fi    
 }
 
-# Function to install unzip
-install_unzip() {
-    echo "Installing unzip..."
-    sudo apt-get install unzip
+# Function to check unzip and install it if not
+check_unzip() {
+    if ! command -v unzip > /dev/null
+    then
+        echo "Installing unzip..."
+        sudo apt-get install unzip
+    else
+        echo "unzip is already installed."
+    fi
+}
+
+# Function to check dist file
+check_dist() {
+    # Check if file already present and ask to use it if true
+    if [ -f $FILEDIST ];
+    then
+        echo "$FILEDIST is already present."
+        while true; do
+            read -p "Do you wish to use it " yn
+            case $yn in
+                [Yy]* ) break;;
+                [Nn]* ) download_dist; break;;
+                * ) echo "Please answer yes or no.";;
+            esac
+        done
+    else
+        download_dist
+    fi
 }
 
 # Function to make bak 
@@ -85,7 +132,7 @@ save_dist() {
 }
 
 # Function to get stean
-download_stean() {
+download_dist() {
     save_dist
     sudo curl -o $FILEDIST -L https://github.com/Mario-35/STEAN/raw/main/dist.zip
     echo "Downloading => $FILEDIST"
@@ -93,16 +140,13 @@ download_stean() {
 
 # Function to install stean
 install_stean() {
-    stop_stean
     # remove bak
-    if [ -f $APIDEST/apiBak ];
-    then
+    if [ -f $APIDEST/apiBak ]; then
         rm -r $APIDEST/apiBak
         echo "Delete => $APIDEST/apiBak"
     fi
     # save actual to bak
-    if [ -f $APIDEST/api ];
-    then
+    if [ -f $APIDEST/api ]; then
         mv $APIDEST/api $APIDEST/apiBak
         echo "Move $APIDEST/api => $APIDEST/apiBak"
     fi
@@ -127,67 +171,21 @@ install_stean() {
     npm install --silent --omit=dev --prefix $APIDEST/api/
 }
 
+# Function to stop stean
 stop_stean() {
     pm2 stop index
     pm2 kill
 }
 
-#------------------------------------------------------------------
-#|                        START                                   |
-#------------------------------------------------------------------
-echo "---------- Installation ---------"
-# Check if PostgreSQL  is installed
-if ! command -v psql --version > /dev/null
-then
-    echo "PostgreSQL is Not installed."
-    install_pg
-    if ! command -v psql --version > /dev/null
-    then
-        exit
-    fi
-else
-    echo "PostgreSQL is installed."
-fi
-
-# Check if Node is installed
-if ! command -v node > /dev/null
-then
-    install_node
-else
-    echo "Node is already installed."
-fi
-
-# Check if pm2 is installed
-if ! command -v pm2 > /dev/null
-then
-    install_pm2
-else
-    echo "pm2 is already installed."
-fi
-
-# Check if unzip is installed
-if ! command -v unzip > /dev/null
-then
-    install_unzip
-else
-    echo "unzip is already installed."
-fi
-
-if [ -f $FILEDIST ];
-then
-    echo "$FILEDIST is already present."
-    while true; do
-        read -p "Do you wish to use it " yn
-        case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) download_stean; break;;
-            * ) echo "Please answer yes or no.";;
-        esac
-    done
-else
-    download_stean
-fi
-
+echo "------------------------------------------------------------------"
+echo "|                         STEAN Install                          |"
+echo "------------------------------------------------------------------"
+check_pg
+check_node
+check_pm2
+check_unzip
+check_dist
+stop_stean
 install_stean
 create_run
 logo

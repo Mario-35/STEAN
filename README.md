@@ -7,7 +7,7 @@
 # Installation
 
 ## deploy on server run in install folder:
-```curl -fsSL https://raw.githubusercontent.com/Mario-35/STEAN/main/scripts/install.sh -o install.sh | less install.sh | chmod +x install.sh | run ./install.sh```
+```curl -fsSL https://raw.githubusercontent.com/Mario-35/STEAN/main/scripts/install.sh -o install.sh | less install.sh | sudo chmod -R 777 +x install.sh | run ./install.sh```
 ## use on local windows as production (for testing) use :  [script](https://raw.githubusercontent.com/Mario-35/STEAN/main/scripts/install.ps1) as install.ps1
 
 ## for developper : 
