@@ -77,6 +77,7 @@ check_pg() {
             exit
         fi
         sudo -i -u postgres psql -c "ALTER USER postgres WITH ENCRYPTED PASSWORD 'postgres';"    
+        sudo -i -u postgres psql -c "create USER stean WITH ENCRYPTED PASSWORD 'stean';"    
         update_pg_hba
     else
         echo "PostgreSQL is already installed."

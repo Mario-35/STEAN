@@ -37,13 +37,13 @@ class Configuration {
     const file: fs.PathOrFileDescriptor = __dirname + `/${EFileName.config}`;
     Configuration.filePath = file.toString();
     // override console log important in production build will remove all console.log   
-    // if (isProduction()) console.log = (data: any) => {
-    //   if (data) this.writeLog(data);
-    // };
-    // if (isTest()) {
-    //   console.log = (data: any) => {};
-    //   this.readConfigFile();
-    // }    
+    if (isProduction()) console.log = (data: any) => {
+      if (data) this.writeLog(data);
+    };
+    if (isTest()) {
+      console.log = (data: any) => {};
+      this.readConfigFile();
+    }    
   }
   
   writeLog(input: any) {
@@ -420,24 +420,9 @@ class Configuration {
       ? unique(["base", ... String(input["extensions"as keyobj]).split(",")]) as typeof typeExtensions 
       : ["base"];
       
-    if (input["extensions"as keyobj]["users"]) extensions.includes("users")
-    // TO REMOVE AFTER ALL SERVICES CLEAN
-    // const formatOldConfig = () => {
-    //   if (stringToBoolean(input["stripNull"])) {
-    //     options.push(EOptions.stripNull)
-    //     delete input["stripNull" as keyobj]
-    //   }
-    //   if (stringToBoolean(input["canDrop"])) {
-    //     options.push(EOptions.canDrop)
-    //     delete input["canDrop" as keyobj]
-    //   }
-    //   if (stringToBoolean(input["forceHttps"])) {
-    //     options.push(EOptions.forceHttps)
-    //     delete input["forceHttps" as keyobj]
-    //   }
-    // }
 
-    // formatOldConfig();
+
+    if (input["extensions"as keyobj]["users"]) extensions.includes("users")
     const goodDbName = name
       ? name
       : input["pg" as keyobj] && input["pg" as keyobj]["database"] ? input["pg" as keyobj]["database"] : `ERROR` || "ERROR";
