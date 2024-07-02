@@ -37,9 +37,9 @@ class Configuration {
     const file: fs.PathOrFileDescriptor = __dirname + `/${EFileName.config}`;
     Configuration.filePath = file.toString();
     // override console log important in production build will remove all console.log   
-    // if (isProduction()) console.log = (data: any) => {
-    //   if (data) this.writeLog(data);
-    // };
+    if (isProduction()) console.log = (data: any) => {
+      if (data) this.writeLog(data);
+    };
     if (isTest()) {
       console.log = (data: any) => {};
       this.readConfigFile();
@@ -354,7 +354,7 @@ class Configuration {
       if (status === true) {
         this.afterAll();
       }           
-      // console.log(log.message(`${APP_NAME} version : ${APP_VERSION}`, `ready ${(status === true ) ? EChar.ok : EChar.notOk}`));
+      console.log(log.message(`${APP_NAME} version : ${APP_VERSION}`, `ready ${(status === true ) ? EChar.ok : EChar.notOk}`));
       return status;
     // no configuration file so First install    
     } else {

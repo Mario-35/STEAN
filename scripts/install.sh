@@ -17,7 +17,7 @@ clear
 
 # Prompt for the domain name and directory
 read -p "Enter the path to install api (/var/www/stean) [./]: " APIDEST
-APIDEST=${APIDEST:-/var/www/stean}
+APIDEST=${APIDEST:-./}
 # Name of the file downladed
 FILEDIST=./dist.zip
 # Name of the backup
@@ -76,8 +76,8 @@ check_pg() {
             if ! psql --version | grep -q "psql (PostgreSQL)"; then
             exit
         fi
-        sudo -i -u postgres psql -c "ALTER USER postgres WITH ENCRYPTED PASSWORD 'postgres';"    
-        sudo -i -u postgres psql -c "create USER stean WITH ENCRYPTED PASSWORD 'stean';"    
+        sudo -i -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"    
+        sudo -i -u postgres psql -c "CREATE USER stean WITH PASSWORD 'stean';"    
         update_pg_hba
     else
         echo "PostgreSQL is already installed."
