@@ -18,7 +18,7 @@ export async function firstInstall(ctx: koaContext): Promise<IdecodedUrl | undef
   if (serverConfig.configFileExist() === false) {    
     // trap create post
     if (ctx.request.url.toUpperCase() === "/CREATE") {
-      const src = JSON.parse(JSON.stringify(ctx.request.body, null, 2));
+      const src = JSON.parse(JSON.stringify(ctx.request.body, null, 2));      
       const ext: string[]= ["base"];
       const opt: string[]= [""];
       const extStr= "serviceextensions";
@@ -33,10 +33,9 @@ export async function firstInstall(ctx: koaContext): Promise<IdecodedUrl | undef
           delete src[e];
         }
       });
-      src["extensions"] = src["extensions"] ? unique([ ...src["extensions"], ...ext ]) : unique(ext);
-      src["options"] = src["options"] ? unique([ ...src["options"], ...opt ]) : unique(opt);   
+      src["extensions"] = unique(ext);
+      src["options"] =  unique(opt);   
       src["serviceversion"] = src["serviceversion"].startsWith("v") ? src["serviceversion"].replace("v","") : src["serviceversion"];
-
       const confJson: Record<string, any> = {
         "admin": {
             "name": "admin",
@@ -54,8 +53,8 @@ export async function firstInstall(ctx: koaContext): Promise<IdecodedUrl | undef
             "webSite": "no web site",
             "nb_page": 200,
             "alias": [ "" ],
-            "extensions": src["extensions"],
-            "options": src["options"]
+            "options": [],
+            "extensions": [ "base"]
         }
       };
       confJson[src["servicename"]] = {
@@ -73,8 +72,8 @@ export async function firstInstall(ctx: koaContext): Promise<IdecodedUrl | undef
         "date_format": "DD/MM/YYYY hh:mi:ss",
         "webSite": "",
         "nb_page": 200,
-        "options": src["options"],
-        "extensions": [ "base"]
+        "extensions": src["extensions"],
+        "options": src["options"]
       }
       await serverConfig.init(JSON.stringify(confJson, null, 2)); 
     }

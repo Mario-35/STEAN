@@ -94,7 +94,7 @@ export class First extends CoreHtmlView {
                         </div> 
                         <div class="sign-up-htm">
                         ${this.addTextInput({name: "host", label: "Host name", value: datas.body && datas.body.host || "localhost", alert: alert("host"), toolType: "Host must be at least 5 chars"})}
-                        ${this.addTextInput({name: "username", label: "Username", value: datas.body && datas.body.username || "", alert: alert("username"), toolType: "Name must be at least 5 chars"})}
+                        ${this.addTextInput({name: "username", label: "Username", value: datas.body && datas.body.username || "postgres", alert: alert("username"), toolType: "Name must be at least 5 chars"})}
                         ${this.addTextInput({name: "password", label: "Password", password: true, value: datas.body && datas.body.password || "", alert: alert("password"), toolType: "At least one number, one lowercase and one uppercase letter, at least six characters that are letters, numbers or the underscore"})}
                         ${this.addTextInput({name: "repeat", label: "Repeat password", password: true, value: "", alert: alert("repeat"), toolType: "Same as password"})}
                         ${this.addSubmitButton("Create configuration")}
