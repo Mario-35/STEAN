@@ -28,7 +28,6 @@ import path from "path";
 class Configuration {
   static configs: { [key: string]: IconfigFile } = {};
   static filePath: string; 
-  static jsonConfiguration: Record<string, any> ;
   static ports: number[] = [];
   static queries: { [key: string]: string[] } = {};
   public logFile = fs.createWriteStream(path.resolve(__dirname, "../", EFileName.logs), {flags : 'w'});
@@ -65,12 +64,12 @@ class Configuration {
         process.exit(111);      
       }
       // decrypt file
-      Configuration.jsonConfiguration = JSON.parse(decrypt(fileContent));
-      if (this.validJSONConfig(Configuration.jsonConfiguration)) {
+      Configuration.configs = JSON.parse(decrypt(fileContent));
+      if (this.validJSONConfig(Configuration.configs)) {
         if (isTest()) {
           Configuration.configs[ADMIN] = this.formatConfig(ADMIN);
         } else {
-          Object.keys(Configuration.jsonConfiguration).forEach((element: string) => {
+          Object.keys(Configuration.configs).forEach((element: string) => {
             Configuration.configs[element] = this.formatConfig(element);
           });
         }
@@ -410,7 +409,7 @@ class Configuration {
   private formatConfig(input: object | string, name?: string): IconfigFile {
     if (typeof input === "string") {
       name = input;
-      input = Configuration.jsonConfiguration[input];
+      input = Configuration.configs[input];
     }
     const options: typeof typeOptions = input["options"as keyobj]
     ? unique([... String(input["options"as keyobj]).split(",")]) as typeof typeOptions 
