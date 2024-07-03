@@ -33,6 +33,7 @@ export function logToHtml(input: string): string {
     "[37m" : couleur("FFFFFF"), // White
     "[39m" : couleur("FFFFFF"), // White
     "[90m" : couleur("DBA57D"),  // Orange
+    "[91m" : couleur("FFFFFF"),  // Logo
     "[93m" : couleur("DB61D9"),  // Magenta - Rose
     "[95m" : couleur("DB61D9"),  // Magenta - Rose
     "[0m" : "",

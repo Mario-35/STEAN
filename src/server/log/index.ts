@@ -106,7 +106,7 @@ class Log {
   }
 
   logo(ver: string) {
-    return ` ____ __________    _     _   _ \n/ ___|_ __  ____|  / \\   | \\ | |\n\\___ \\| | |  _|   / _ \\  |  \\| |\n ___) | | | |___ / ___ \\ | |\\  |\n|____/|_| |_____|_/   \\_\\|_| \\_|  ${color(EColor.Blue)}run API ----> ${color(EColor.Green)}${ver}${color(EColor.Reset)}`
+    return `${color(EColor.Cyan)} @author ${EChar.web} ${color(EColor.White)}https://github.com/ ${color(EColor.Red)} mail ==> ${color(EColor.Yellow)} mario.adam@inrae.fr${color(EColor.Code)}${color(EColor.Sql)}\n ____ __________    _     _   _ \n/ ___|_ __  ____|  / \\   | \\ | |\n\\___ \\| | |  _|   / _ \\  |  \\| |\n ___) | | | |___ / ___ \\ | |\\  |\n|____/|_| |_____|_/   \\_\\|_| \\_|  ${color(EColor.Blue)}run API ----> ${color(EColor.Green)}${ver}${color(EColor.Sql)}${color(EColor.Code)}\n${color( EColor.Reset )}`
   }
 }
 

@@ -19,5 +19,6 @@ export const enum EColor {
   White = 37,
   Default = 39,
   Sql = 92,
+  Logo = 91,
   Code = 93,
 }

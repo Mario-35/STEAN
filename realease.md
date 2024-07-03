@@ -3,6 +3,7 @@
 ## version 3.7.5
     correction filter with result mulitidatastream
     correction extensions in first install
+    correction creating db test at starting api
 ## version 3.7.4
     remove errorFile.md
     add /logs route
