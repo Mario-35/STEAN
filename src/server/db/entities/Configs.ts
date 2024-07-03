@@ -65,19 +65,19 @@ export class Configs extends Common {
       });
     }
     if (!userAuthenticated(this.ctx)) this.ctx.throw(401);    
-    if (dataInput)
-      return this.formatReturnResult({
-        body: await serverConfig.addConfig(dataInput),
-      });
+    if (dataInput) {
+      const added = await serverConfig.addConfig(dataInput);
+      if (added)
+        return this.formatReturnResult({
+          body: hidePassword(added),
+        });
+    }
   }
 
     // Update an item
     async update( idInput: bigint | string, dataInput: Record<string, any>  | undefined ): Promise<IreturnResult | undefined | void> {
       setDebug(true);
-      console.log(log.whereIam()); 
-      console.log(idInput);
-      console.log(dataInput);
-      
+      console.log(log.whereIam());      
     }
   // Delete an item
   async delete(idInput: bigint | string): Promise<IreturnResult | undefined> {

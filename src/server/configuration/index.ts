@@ -8,7 +8,7 @@
 // onsole.log("!----------------------------------- Configuration class -----------------------------------!");
 
 import { addToStrings, ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_DB, NODE_ENV, setReady, TEST, _DEBUG } from "../constants";
-import { asyncForEach, decrypt, encrypt, hidePassword, isProduction, isTest, logToHtml, unikeList, unique, } from "../helpers";
+import { asyncForEach, decrypt, encrypt, isProduction, isTest, logToHtml, unikeList, unique, } from "../helpers";
 import { IconfigFile, IdbConnection, IserviceInfos, koaContext, keyobj } from "../types";
 import { errors, infos, msg } from "../messages";
 import { createIndexes, createService} from "../db/helpers";
@@ -37,7 +37,7 @@ class Configuration {
     const file: fs.PathOrFileDescriptor = __dirname + `/${EFileName.config}`;
     Configuration.filePath = file.toString();
     // override console log important in production build will remove all console.log   
-    if (isProduction()) console.log = (data: any) => {
+    console.log = (data: any) => {
       if (data) this.writeLog(data);
     };
     if (isTest()) {
@@ -463,12 +463,11 @@ class Configuration {
   public async addConfig(addJson: object): Promise<IconfigFile | undefined> {
         try {
       const addedConfig = this.formatConfig(addJson);      
-      Configuration.jsonConfiguration[addedConfig.name] = addedConfig;
+      Configuration.configs[addedConfig.name] = addedConfig;
       if(!isTest()) {
         await this.addToServer(addedConfig.name);
         this.writeConfig();
       }
-      hidePassword(addedConfig);
       return addedConfig;
     } catch (error) {
       return undefined;

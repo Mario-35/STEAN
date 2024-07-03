@@ -152,5 +152,89 @@
             "users"
         ],
         "options": []
+    },
+    "adam": {
+        "name": "adam",
+        "port": 8030,
+        "pg": {
+            "host": "localhost",
+            "port": 5432,
+            "user": "sensorapi",
+            "password": "mario29",
+            "database": "adam",
+            "retry": 2
+        },
+        "apiVersion": "v1.1",
+        "date_format": "DD/MM/YYYY hh:mi:ss",
+        "webSite": "http://sensorthings.geosas.fr/apidoc/",
+        "nb_page": 200,
+        "alias": [
+            ""
+        ],
+        "extensions": [
+            "base",
+            "multiDatastream",
+            "logs",
+            "users"
+        ],
+        "options": [
+            "canDrop"
+        ]
+    },
+    "zobi": {
+        "name": "zobi",
+        "port": 8030,
+        "pg": {
+            "host": "localhost",
+            "port": 5432,
+            "user": "sensorapi",
+            "password": "mario29",
+            "database": "zobi",
+            "retry": 2
+        },
+        "apiVersion": "v1.1",
+        "date_format": "DD/MM/YYYY hh:mi:ss",
+        "webSite": "http://sensorthings.geosas.fr/apidoc/",
+        "nb_page": 200,
+        "alias": [
+            ""
+        ],
+        "extensions": [
+            "base",
+            "multiDatastream",
+            "logs",
+            "users"
+        ],
+        "options": [
+            "canDrop"
+        ]
+    },
+    "badeg": {
+        "name": "badeg",
+        "port": 8030,
+        "pg": {
+            "host": "localhost",
+            "port": 5432,
+            "user": "sensorapi",
+            "password": "mario29",
+            "database": "badeg",
+            "retry": 2
+        },
+        "apiVersion": "v1.1",
+        "date_format": "DD/MM/YYYY hh:mi:ss",
+        "webSite": "http://sensorthings.geosas.fr/apidoc/",
+        "nb_page": 200,
+        "alias": [
+            ""
+        ],
+        "extensions": [
+            "base",
+            "multiDatastream",
+            "logs",
+            "users"
+        ],
+        "options": [
+            "canDrop"
+        ]
     }
 }
