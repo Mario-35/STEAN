@@ -531,8 +531,7 @@ export const infos: Record<string, any>  = {
     }    
 };
 
-export const listOfColumns = (inputEntity: Ientity) => {
-    
+export const listOfColumns = (inputEntity: Ientity) => {    
     const success:string[] = [];
     const params:string[] = [];
     const infosEntity: Record<string, any> = infos[inputEntity.name];

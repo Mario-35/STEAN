@@ -46,6 +46,8 @@ const addToServiceFromUrl = async (url: string | undefined, ctx: koaContext): Pr
 export const createService = async (dataInput: Record<string, any>, ctx?: koaContext): Promise<Record<string, any>> => {
   console.log(log.whereIam());
   if(dataInput && dataInput["create"]) {
+    console.log("=======================================================================>ATTTTTTT");
+    
     serverConfig.addConfig(dataInput["create"]);
   }
   const results: Record<string, string>  = {};

@@ -36,7 +36,7 @@ class Configuration {
     const file: fs.PathOrFileDescriptor = __dirname + `/${EFileName.config}`;
     Configuration.filePath = file.toString();
     // override console log important in production build will remove all console.log   
-    console.log = (data: any) => {
+    if(isProduction()) console.log = (data: any) => {
       if (data) this.writeLog(data);
     };
     if (isTest()) {
@@ -68,12 +68,12 @@ class Configuration {
       if (this.validJSONConfig(Configuration.configs)) {
         if (isTest()) {
           Configuration.configs[ADMIN] = this.formatConfig(ADMIN);
+          Configuration.configs[TEST] = this.formatConfig(testDatas["create"]);
         } else {
           Object.keys(Configuration.configs).forEach((element: string) => {
             Configuration.configs[element] = this.formatConfig(element);
           });
         }
-        Configuration.configs[TEST] = this.createConfigFileTest();
       } else {
         this.writeLog(log.error(errors.configFileError));
         process.exit(112);
@@ -90,26 +90,6 @@ class Configuration {
   public configFileExist(): boolean {
     return fs.existsSync(Configuration.filePath);
   }
-
-  // create config tests entry
-  private createConfigFileTest(): IconfigFile {  
-    return this.formatConfig (
-    { name: "test",
-      port: Configuration.configs[ADMIN].port,
-      "pg": {
-        "host": Configuration.configs[ADMIN].pg.host,
-        "port": Configuration.configs[ADMIN].pg.port,
-        "user": "stean",
-        "password": "stean",
-        "database": "test",
-        "retry": 2
-      },
-      "apiVersion": EVersion.v1_1,
-      "nb_page" : 1000,
-      "extensions" : [EExtensions.base, EExtensions.multiDatastream, EExtensions.lora, EExtensions.logs, EExtensions.users],
-      "options" : [EOptions.canDrop]
-    });
-	}
 
   // return infos routes
   getInfos = (ctx: koaContext, name: string): IserviceInfos  => {
@@ -179,7 +159,8 @@ class Configuration {
     Object.entries(Configuration.configs).forEach(([k, v]) => {
       if (k !== TEST) result[k] = Object.keys(v).reduce((obj, key) => { obj[key as keyobj] = v[key as keyobj]; return obj; }, {} );
     });
-    fs.writeFile(
+    // in some case of crash config is blank so prevent to overrite it
+    if (Object.keys(result).length > 0) fs.writeFile(
       // encrypt only in production mode
       Configuration.filePath,
       isProduction() === true 
@@ -348,12 +329,19 @@ class Configuration {
             status = false;
           }
         }
-      ); 
+      );
       setReady(status);
       if (status === true) {
         this.afterAll();
       }           
-      console.log(log.message(`${APP_NAME} version : ${APP_VERSION}`, `ready ${(status === true ) ? EChar.ok : EChar.notOk}`));
+      if(!isTest()) {
+        if( await this.testDbExists(TEST) ) 
+          Configuration.configs[TEST] = this.formatConfig(testDatas["create"]);
+          else await createService(testDatas);
+          this.writeLog(log.booting(`${color(EColor.Red)}Database => Test online ${color(EColor.Green)}${infos.ListenPort}`, Configuration.configs[TEST].port ));
+      }
+      // console.log(log.message(`${APP_NAME} version : ${APP_VERSION}`, `ready ${(status === true ) ? EChar.ok : EChar.notOk}`));
+      this.writeLog(log.logo(APP_VERSION));
       return status;
     // no configuration file so First install    
     } else {
@@ -362,7 +350,7 @@ class Configuration {
         if (!Configuration.ports.includes(port))
           app.listen(port, () => {
             Configuration.ports.push(port);
-            this.writeLog(log.booting(`${color(EColor.Yellow)}First launch]${color(EColor.Green)}${infos.ListenPort}`, port ));
+            this.writeLog(log.booting(`${color(EColor.Yellow)}[First launch]${color(EColor.Green)}${infos.ListenPort}`, port ));
           });
         return true;
     }
@@ -460,7 +448,7 @@ class Configuration {
 
   // Add config to configuration file
   public async addConfig(addJson: object): Promise<IconfigFile | undefined> {
-        try {
+    try {
       const addedConfig = this.formatConfig(addJson);      
       Configuration.configs[addedConfig.name] = addedConfig;
       if(!isTest()) {
@@ -475,7 +463,9 @@ class Configuration {
 
   // process to add an entry in server
   public async addToServer(key: string): Promise<boolean> {
-    return await this.isDbExist(key, true)
+    this.writeLog(log.head(key));
+
+    return await this.isServiceExist(key, true)
       .then(async (res: boolean) => {
         if (res === true) {
           await userAccess.post(key, {
@@ -527,8 +517,24 @@ class Configuration {
       });
   }
 
+  // test if database exist with admin connection
+  private async testDbExists(dbName: string): Promise<boolean> {
+    const input = Configuration.configs[ADMIN].pg;
+    return await postgres( `postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${dbName}`,
+      {
+        debug: _DEBUG,          
+        connection: { 
+          application_name : `${APP_NAME} ${APP_VERSION}`
+        }
+      })`select 1+1 AS result`.then(async () => true)
+    .catch((err: Error) => {
+        console.log(err);
+        return false;
+      });
+  }
+
   // verify if database exist and if create is true create database if not exist.
-  private async isDbExist(connectName: string, create: boolean): Promise<boolean> {
+  private async isServiceExist(connectName: string, create: boolean): Promise<boolean> {
     this.writeLog(log.booting(infos.dbExist, Configuration.configs[connectName].pg.database));
     return await this.connection(connectName)`select 1+1 AS result`.then(async () => {
       const listTempTables = await this.connection(connectName)`SELECT array_agg(table_name) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'temp%';`;
@@ -548,7 +554,7 @@ class Configuration {
             console.log(log.head(EUpdate.beforeAll));
             try {              
               Object.keys(Configuration.configs)
-                .filter((e) => e != ADMIN)
+                .filter((e) => ![ADMIN, TEST].includes(e))
                 .forEach((connectName: string) => {
                   update[EUpdate.beforeAll].forEach((operation: string) => {
                     this.addToQueries(connectName, operation);
@@ -566,20 +572,11 @@ class Configuration {
       .catch(async (err: Error) => {
         // Password authentication failed 
         if (err["code" as keyobj] === "28P01") {
-          if (!isTest()) {
-            if(connectName === TEST)
-            await createService(testDatas);
-            else return await this.tryToCreateDB(connectName);
-          }
+          if (!isTest()) return await this.tryToCreateDB(connectName);
           //database does not exist
         } else if (err["code" as keyobj] === "3D000" && create == true) {
           console.log(log.debug( msg(infos.tryCreate, infos.db), Configuration.configs[connectName].pg.database ));
-          // If not in tdd tests create test DB for documentation
-          if (!isTest()) {
-            if(connectName === TEST)
-            await createService(testDatas);
-            else return await this.tryToCreateDB(connectName);
-          }
+          if (connectName !== TEST)   return await this.tryToCreateDB(connectName);
         } else this.writeLog(log.error(log.error(err)));
         return false;
       });

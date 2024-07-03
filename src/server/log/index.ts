@@ -74,7 +74,8 @@ class Log {
   }
 
   head<T>(cle: string, infos?: T) {
-    if (_DEBUG) return infos ? `${color(EColor.Green)} ${this.line(12)} ${color( EColor.Cyan )} ${cle} ${color(EColor.White)} ${this.logAll( infos, this.debugFile )} ${color(EColor.Green)} ${this.line(12)}${color( EColor.Reset )}` : this.separator(cle, 12);
+    return infos ? `${color(EColor.Green)} ${this.line(12)} ${color( EColor.Cyan )} ${cle} ${color(EColor.White)} ${this.logAll( infos, this.debugFile )} ${color(EColor.Green)} ${this.line(12)}${color( EColor.Reset )}` : this.separator(cle, 12);
+    // if (_DEBUG) return infos ? `${color(EColor.Green)} ${this.line(12)} ${color( EColor.Cyan )} ${cle} ${color(EColor.White)} ${this.logAll( infos, this.debugFile )} ${color(EColor.Green)} ${this.line(12)}${color( EColor.Reset )}` : this.separator(cle, 12);
   }
 
   infos(cle: string, input: unknown) {
@@ -97,12 +98,15 @@ class Log {
   
   whereIam(infos?: unknown) {    
     const tmp = infos ? `${color(EColor.Default)} ${infos} ${color(EColor.Reset)}` : '';
-    if (_DEBUG) 
-      return `${color(EColor.Red)} ${this.line(4)} ${color(EColor.Cyan)} ${ new Error().stack?.split("\n")[2].trim().split("(")[0].split("at ")[1].trim() } ${tmp}${color(EColor.Red)} ${this.line(4)}${color(EColor.Reset)}`;
+    return `${color(EColor.Red)} ${this.line(4)} ${color(EColor.Cyan)} ${ new Error().stack?.split("\n")[2].trim().split("(")[0].split("at ")[1].trim() } ${tmp}${color(EColor.Red)} ${this.line(4)}${color(EColor.Reset)}`;
   }
 
   test() {
     return `${color(EColor.Yellow)} ${this.line(4)} ${color(EColor.Cyan)} ${ new Error().stack?.split("\n")[2].trim().split(" ")[1] } ${color(EColor.Yellow)} ${this.line(4)}${color(EColor.Reset)}`;
+  }
+
+  logo(ver: string) {
+    return ` ____ __________    _     _   _ \n/ ___|_ __  ____|  / \\   | \\ | |\n\\___ \\| | |  _|   / _ \\  |  \\| |\n ___) | | | |___ / ___ \\ | |\\  |\n|____/|_| |_____|_/   \\_\\|_| \\_|  ${color(EColor.Blue)}run API ----> ${color(EColor.Green)}${ver}${color(EColor.Reset)}`
   }
 }
 
