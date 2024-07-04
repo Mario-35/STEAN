@@ -9,8 +9,14 @@
 
 clear
 
-# Api destination
-APIDEST=NOPATH
+if [[ -z "${STEAN_ENV}" ]]; then
+    read -p "Enter the path of api (/var/www/stean) [./]: " APIDEST
+    APIDEST=${APIDEST:-./}
+    export STEAN_ENV=APIDEST 
+else
+    APIDEST="${STEAN_ENV}"
+fi
+
 # Name of the file downladed
 FILEDIST=./dist.zip
 # Name of the backup
@@ -194,16 +200,15 @@ stop_stean() {
 
 logo
 PS3='Please enter your choice : '
-options=("Path" "Installation" "Update" "Run" "Quit")
-echo "Path : $APIDEST"
+options=("path" "Installation" "Update" "Run" "Quit")
 select opt in "${options[@]}"
 do
     case $opt in
         "Path")
             # Prompt for the domain name and directory
-            read -p "Enter the path to install api (/var/www/stean) [./]: " NEWDEST
-            NEWDEST=${NEWDEST:-./}
-            sed -i -e "s/$NEWDEST/NOPATH/g" ./stean.sh             
+            read -p "Enter the new path to install api (/var/www/stean) [./]: " APIDEST
+            APIDEST=${APIDEST:-./}
+            export STEANPATH=APIDEST 
             ;;
         "Installation")
             echo "------------------------------------------------------------------"
