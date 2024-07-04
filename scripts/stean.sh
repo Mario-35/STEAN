@@ -203,7 +203,7 @@ do
             read -p "Enter the new path to install api (/var/www/stean) [./]: " APIDEST
             APIDEST=${APIDEST:-./}
             echo $APIDEST > .steanpath
-            exec $0
+            exec env -i HOME=$HOME bash -l
             ;;
         "Installation")
             echo "------------------------------------------------------------------"
