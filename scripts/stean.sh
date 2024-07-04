@@ -12,7 +12,7 @@ clear
 if [[ -z "${STEAN_ENV}" ]]; then
     read -p "Enter the path of api (/var/www/stean) [./]: " APIDEST
     APIDEST=${APIDEST:-./}
-    export STEAN_ENV="$APIDEST" 
+    export STEAN_ENV=$(echo $APIDEST)
 else
     APIDEST="${STEAN_ENV}"
 fi
@@ -209,7 +209,7 @@ do
             # Prompt for the domain name and directory
             read -p "Enter the new path to install api (/var/www/stean) [./]: " APIDEST
             APIDEST=${APIDEST:-./}
-            export STEAN_ENV="$APIDEST" 
+            export STEAN_ENV=$(echo $APIDEST)
             ;;
         "Installation")
             echo "------------------------------------------------------------------"
