@@ -12,7 +12,7 @@ clear
 if [[ -z "${STEAN_ENV}" ]]; then
     read -p "Enter the path of api (/var/www/stean) [./]: " APIDEST
     APIDEST=${APIDEST:-./}
-    export STEAN_ENV=APIDEST 
+    export STEAN_ENV="$APIDEST" 
 else
     APIDEST="${STEAN_ENV}"
 fi
@@ -199,6 +199,7 @@ stop_stean() {
 }
 
 logo
+echo "Path : $APIDEST"
 PS3='Please enter your choice : '
 options=("path" "Installation" "Update" "Run" "Quit")
 select opt in "${options[@]}"
@@ -208,7 +209,7 @@ do
             # Prompt for the domain name and directory
             read -p "Enter the new path to install api (/var/www/stean) [./]: " APIDEST
             APIDEST=${APIDEST:-./}
-            export STEANPATH=APIDEST 
+            export STEAN_ENV="$APIDEST" 
             ;;
         "Installation")
             echo "------------------------------------------------------------------"
