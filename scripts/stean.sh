@@ -9,14 +9,7 @@
 
 clear
 
-if [[ -z "${STEAN_ENV}" ]]; then
-    read -p "Enter the path of api (/var/www/stean) [./]: " APIDEST
-    APIDEST=${APIDEST:-./}
-    export STEAN_ENV="$APIDEST" >> ~/.bashrc
-else
-    APIDEST="${STEAN_ENV}"
-fi
-
+read APIDEST < .steanpath
 # Name of the file downladed
 FILEDIST=./dist.zip
 # Name of the backup
