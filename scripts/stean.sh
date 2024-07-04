@@ -203,7 +203,7 @@ do
             read -p "Enter the new path to install api (/var/www/stean) [./]: " APIDEST
             APIDEST=${APIDEST:-./}
             echo $APIDEST > .steanpath
-            $(basename $0) && exit
+            ./$(basename $0) && exit
             ;;
         "Installation")
             echo "------------------------------------------------------------------"
