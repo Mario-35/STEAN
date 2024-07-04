@@ -194,7 +194,7 @@ stop_stean() {
 logo
 echo "Path : $APIDEST"
 PS3='Please enter your choice : '
-options=("path" "Installation" "Update" "Run" "Quit")
+options=("Path" "Installation" "Update" "Run" "Quit")
 select opt in "${options[@]}"
 do
     case $opt in
