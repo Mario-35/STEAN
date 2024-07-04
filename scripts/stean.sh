@@ -203,8 +203,9 @@ do
             # Prompt for the domain name and directory
             read -p "Enter the path to install api (/var/www/stean) [./]: " NEWDEST
             NEWDEST=${NEWDEST:-./}
-            d=$'\03'
-            sed "s${d}$APIDEST${d}$NEWDEST$d" ./stean.sh
+# var="/Users/Documents/name/file"
+            sed "s/NOPATH/${NEWDEST//\//\\/}/g" ./stean.sh
+
             ;;
         "Installation")
             echo "------------------------------------------------------------------"
