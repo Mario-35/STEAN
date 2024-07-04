@@ -201,9 +201,10 @@ do
     case $opt in
         "Path")
             # Prompt for the domain name and directory
-            read -p "Enter the path to install api (/var/www/stean) [./]: " APIDEST
-            APIDEST=${APIDEST:-./}
-            sed "s^[NOPATH^[$APIDEST^[g" ./stean.sh
+            read -p "Enter the path to install api (/var/www/stean) [./]: " NEWDEST
+            NEWDEST=${NEWDEST:-./}
+            d=$'\03'
+            sed "s${d}$APIDEST${d}$NEWDEST$d" ./stean.sh
             ;;
         "Installation")
             echo "------------------------------------------------------------------"
