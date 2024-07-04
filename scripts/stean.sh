@@ -192,7 +192,8 @@ stop_stean() {
 }
 
 logo
-echo "Path : $APIDEST"
+echo "Stean path : $APIDEST"
+echo "---------------- MENU ----------------"
 PS3='Please enter your choice : '
 options=("Path" "Installation" "Update" "Run" "Quit")
 select opt in "${options[@]}"
