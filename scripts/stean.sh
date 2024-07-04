@@ -9,15 +9,8 @@
 
 clear
 
-# Check if the script is run as root
-# if [ "$EUID" -ne 0 ]; then
-#   echo "Please run this script as root or use sudo"
-#   exit 1
-# fi
-
-# Prompt for the domain name and directory
-read -p "Enter the path to install api (/var/www/stean) [./]: " APIDEST
-APIDEST=${APIDEST:-./}
+# Api destination
+APIDEST=./NOPATH
 # Name of the file downladed
 FILEDIST=./dist.zip
 # Name of the backup
@@ -53,7 +46,7 @@ logo() {
     echo " / ___|_ __  ____|  / \   | \ | |"
     echo " \___ \| | |  _|   / _ \  |  \| |"
     echo "  ___) | | | |___ / ___ \ | |\  |"
-    echo " |____/|_| |_____|_/   \_\|_| \_|  run API ----> $FILERUN"
+    echo " |____/|_| |_____|_/   \_\|_| \_|"
     echo ""
 }
 
@@ -196,17 +189,63 @@ install_stean() {
 stop_stean() {
     pm2 stop index
     pm2 kill
+    pm2 delete index
 }
 
-echo "------------------------------------------------------------------"
-echo "|                         STEAN Install                          |"
-echo "------------------------------------------------------------------"
-check_pg
-check_node
-check_pm2
-check_unzip
-check_dist
-stop_stean
-install_stean
-create_run
 logo
+PS3='Please enter your choice : '
+options=("path" "Installation" "Update" "Run" "Quit")
+echo "Path : $APIDEST"
+select opt in "${options[@]}"
+do
+    case $opt in
+        "Path")
+            # Prompt for the domain name and directory
+            read -p "Enter the path to install api (/var/www/stean) [./]: " APIDEST
+            APIDEST=${APIDEST:-./}
+            sed -i -e 's/abc/XYZ/g' /tmp/file.txt
+            x='./NOPATH'
+            sed -i -e 's/$x/$APIDEST/g' ./stean.sh
+            exit
+            ;;
+        "Installation")
+            echo "------------------------------------------------------------------"
+            echo "|                         STEAN Install                          |"
+            echo "------------------------------------------------------------------"
+            check_pg
+            check_node
+            check_pm2
+            check_unzip
+            check_dist
+            stop_stean
+            install_stean
+            create_run
+            ;;
+        "Update")
+            echo "------------------------------------------------------------------"
+            echo "|                         STEAN Update                           |"
+            echo "------------------------------------------------------------------"
+            check_dist
+            stop_stean
+            install_stean
+            ;;
+        "Run")
+            echo "------------------------------------------------------------------"
+            echo "|                          STEAN Run                             |"
+            echo "------------------------------------------------------------------"
+            echo "API Stopping ..."
+            pm2 stop index
+            pm2 flush
+            pm2 delete index
+            echo "API starting ..."
+            NODE_ENV=production
+            mv /var/www/stean/api/logs.html /var/www/stean/logs.bak
+            pm2 start /var/www/stean/api/index.js
+            pm2 logs --lines 500
+            ;;
+        "Quit")
+            break
+            ;;
+        *) echo "invalid option $REPLY";;
+    esac
+done
