@@ -205,7 +205,6 @@ do
             APIDEST=${APIDEST:-./}
             x='./NOPATH'
             sed -i -e 's/$x/$APIDEST/g' ./stean.sh
-            exit
             ;;
         "Installation")
             echo "------------------------------------------------------------------"
