@@ -202,7 +202,7 @@ do
             # Prompt for the domain name and directory
             read -p "Enter the new path to install api (/var/www/stean) [./]: " APIDEST
             APIDEST=${APIDEST:-./}
-            export STEAN_ENV="$APIDEST" >> ~/.bashrc
+            echo $APIDEST > .steanpath
             ;;
         "Installation")
             echo "------------------------------------------------------------------"
