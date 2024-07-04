@@ -203,7 +203,7 @@ do
             # Prompt for the domain name and directory
             read -p "Enter the path to install api (/var/www/stean) [./]: " APIDEST
             APIDEST=${APIDEST:-./}
-            sed -i -e 's/NOPATH/{$APIDEST}/g' ./stean.sh
+            sed "s^[NOPATH^[$APIDEST^[g" ./stean.sh
             ;;
         "Installation")
             echo "------------------------------------------------------------------"
