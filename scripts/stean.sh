@@ -10,7 +10,7 @@
 clear
 
 # Api destination
-APIDEST=./NOPATH
+APIDEST=NOPATH
 # Name of the file downladed
 FILEDIST=./dist.zip
 # Name of the backup
@@ -203,8 +203,7 @@ do
             # Prompt for the domain name and directory
             read -p "Enter the path to install api (/var/www/stean) [./]: " APIDEST
             APIDEST=${APIDEST:-./}
-            x='./NOPATH'
-            sed -i -e 's/$x/$APIDEST/g' ./stean.sh
+            sed -i -e 's/NOPATH/$APIDEST/g' ./stean.sh
             ;;
         "Installation")
             echo "------------------------------------------------------------------"
