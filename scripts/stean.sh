@@ -194,7 +194,7 @@ stop_stean() {
 
 logo
 PS3='Please enter your choice : '
-options=("path" "Installation" "Update" "Run" "Quit")
+options=("Path" "Installation" "Update" "Run" "Quit")
 echo "Path : $APIDEST"
 select opt in "${options[@]}"
 do
