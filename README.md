@@ -6,7 +6,7 @@
 
 # Installation
 
-## deploy on server run in install folder:
+## deploy on server run :
 ```curl -fsSL https://raw.githubusercontent.com/Mario-35/STEAN/main/scripts/stean.sh -o stean.sh && chmod +x stean.sh && ./stean.sh```
 
 after running script the message  
