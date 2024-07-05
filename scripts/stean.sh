@@ -76,7 +76,7 @@ check_pg() {
     fi    
 }
 
-# Create run script
+# Function to create PostgreSQL default postcres user
 update_pg_hba() {
     SQLPATH=/etc/postgresql/14/main/pg_hba.conf
     sudo cp $SQLPATH $SQLPATH.bak
@@ -92,7 +92,7 @@ update_pg_hba() {
     echo "copy hba to '$SQLPATH';" >> $SQLSCRIPT
     echo "select pg_reload_conf();" >> $SQLSCRIPT
     sudo psql -U postgres -f $SQLSCRIPT
-    # rm $SQLSCRIP
+    rm $SQLSCRIP
 }
 
 # Function to check pm2 and install it if not
@@ -204,7 +204,7 @@ restart() {
 }
 
 logo
- pm2 ls
+pm2 ls
 echo -e "Stean path : \e[32m$APIDEST\e[0m"
 echo -e "\e[33m---------------- MENU ----------------\e[0m"
 PS3='Please enter your choice : '
