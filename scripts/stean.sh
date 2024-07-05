@@ -41,11 +41,11 @@ create_run() {
 # Function to show logo
 logo() {
     echo ""
-    echo "  ____ __________    _     _   _ "
-    echo " / ___|_ __  ____|  / \   | \ | |"
-    echo " \___ \| | |  _|   / _ \  |  \| |"
-    echo "  ___) | | | |___ / ___ \ | |\  |"
-    echo " |____/|_| |_____|_/   \_\|_| \_|"
+    echo -e "\e[32m  ____ __________    _     _   _ \e[0m"
+    echo -e "\e[32m / ___|_ __  ____|  / \   | \ | |\e[0m"
+    echo -e "\e[32m \___ \| | |  _|   / _ \  |  \| |\e[0m"
+    echo -e "\e[32m  ___) | | | |___ / ___ \ | |\  |\e[0m"
+    echo -e "\e[32m |____/|_| |_____|_/   \_\|_| \_|\e[0m"
     echo ""
 }
 
@@ -186,16 +186,33 @@ install_stean() {
 
 # Function to stop stean
 stop_stean() {
+    echo "API Stopping ..."
     pm2 stop index
     pm2 kill
-    pm2 delete index
+}
+
+# Function to run stean
+run_stean() {
+    echo "API starting ..."
+    NODE_ENV=production
+    mv $APIDEST/api/logs.html $APIDEST/logs.bak
+    pm2 start $APIDEST/api/index.js
+}
+
+restart() {
+    bash ./stean.sh && exit
 }
 
 logo
-echo "Stean path : $APIDEST"
-echo "---------------- MENU ----------------"
+ pm2 ls
+echo -e "Stean path : \e[32m$APIDEST\e[0m"
+echo -e "\e[33m---------------- MENU ----------------\e[0m"
 PS3='Please enter your choice : '
-options=("Path" "Installation" "Update" "Run" "Quit")
+if [ -f $APIDEST/api/index.js ]; then
+    options=("Path" "Installation" "Update" "Back" "Create script" "Run" "Stop" "Logs" "Quit")
+else
+    options=("Path" "Installation" "Quit")
+fi
 select opt in "${options[@]}"
 do
     case $opt in
@@ -204,7 +221,8 @@ do
             read -p "Enter the new path to install api (/var/www/stean) [./]: " APIDEST
             APIDEST=${APIDEST:-./}
             echo $APIDEST > .steanpath
-            bash ./stean.sh && exit
+            restart
+            break
             ;;
         "Installation")
             echo "------------------------------------------------------------------"
@@ -217,7 +235,8 @@ do
             check_dist
             stop_stean
             install_stean
-            create_run
+            restart
+            break
             ;;
         "Update")
             echo "------------------------------------------------------------------"
@@ -226,20 +245,46 @@ do
             check_dist
             stop_stean
             install_stean
+            restart
+            break
+            ;;
+        "Back")
+            echo "------------------------------------------------------------------"
+            echo "|                         STEAN Go Back                          |"
+            echo "------------------------------------------------------------------"         
+            stop_stean
+            rm -r $APIDEST/api
+            mv $APIDEST/apiBak $APIDEST/api
+            restart
+            break
+            ;;
+        "Create script")
+            echo "------------------------------------------------------------------"
+            echo "|                  STEAN Create Run script                       |"
+            echo "------------------------------------------------------------------"            
+            create_run
+            echo "script ====> ./run.sh"            
             ;;
         "Run")
             echo "------------------------------------------------------------------"
             echo "|                          STEAN Run                             |"
             echo "------------------------------------------------------------------"
-            echo "API Stopping ..."
-            pm2 stop index
-            pm2 flush
-            pm2 delete index
-            echo "API starting ..."
-            NODE_ENV=production
-            mv /var/www/stean/api/logs.html /var/www/stean/logs.bak
-            pm2 start /var/www/stean/api/index.js
+            stop_stean            
+            run_stean
+            restart
+            break
+            ;;
+        "Stop")
+            echo "------------------------------------------------------------------"
+            echo "|                          STEAN Stop                            |"
+            echo "------------------------------------------------------------------"
+            stop_stean
+            restart
+            break
+            ;;
+        "Logs")
             pm2 logs --lines 500
+            break
             ;;
         "Quit")
             break
