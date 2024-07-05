@@ -16,7 +16,6 @@ import util from "util";
 import { EOptions, EReturnFormats } from "../enums";
 import { isGraph } from ".";
 import { DOUBLEQUOTEDCOMA } from "../constants";
-import { log } from "../log";
 import { PgVisitor } from "../odata/visitor";
 
 // Default "blank" function
@@ -160,7 +159,7 @@ const _returnFormats: { [key in EReturnFormats]: IreturnFormat } = {
           return parser.parse(input[0].dataArray);
         } catch (e) {
           if (e instanceof Error) {
-            log.errorMsg(e);
+            console.log(e);
             return e.message;
           }
         }

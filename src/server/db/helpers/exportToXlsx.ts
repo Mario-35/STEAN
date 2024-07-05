@@ -5,11 +5,11 @@
  * @author mario.adam@inrae.fr
  *
  */
-// onsole.log("!----------------------------------- exportToXlsx. -----------------------------------!");
+// onsole.log("!----------------------------------- exportToXlsx -----------------------------------!");
+
 import Excel from "exceljs";
 import postgres from "postgres";
 import { serverConfig } from "../../configuration";
-import { log } from "../../log";
 import { asyncForEach } from "../../helpers";
 import { models } from "../../models";
 import { filterEntities } from "../../enums";
@@ -74,11 +74,11 @@ const createColumnsList = async (ctx: koaContext, entity: string) => {
                     const tempSqlResult = await serverConfig.connection(ctx.config.name).unsafe(createQuery(`jsonb_object_keys(jsonb_array_elements("${column}"))`));
                     if (tempSqlResult && tempSqlResult.length > 0)
                       tempSqlResult.forEach((e: Iterable<postgres.Row> ) => { columnList.push( `jsonb_array_elements("${column}")->>'${e[column as keyobj]}' AS "${column}-${e[column as keyobj]}"`); });
-                  } else log.errorMsg(e);
+                  } else console.log(e);
                 });    
                 if (tempSqlResult && tempSqlResult.length > 0) 
                   tempSqlResult.forEach((e: Iterable<postgres.Row> ) => { columnList.push( `"${column}"[0]->>'${e[column as keyobj]}' AS "${column}-${e[column as keyobj]}"`); });
-              } else log.errorMsg(e);
+              } else console.log(e);
             });            
             if (tempSqlResult && tempSqlResult.length > 0)
               tempSqlResult.forEach((e: Iterable<postgres.Row> ) => { columnList.push( `"${column}"->>'${e[column as keyobj]}' AS "${column}-${e[column as keyobj]}"`); });

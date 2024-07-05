@@ -35,7 +35,7 @@ export class Observations extends Common {
       const tempSql = await executeSqlValues(this.ctx.config, multiDatastreamsUnitsKeys(searchID) );      
       const multiDatastream: Record<string, any> = tempSql[0 as keyobj];
       if (dataInput["result"] && typeof dataInput["result"] == "object") {
-        console.log(log.debug( "result : keys", `${Object.keys(dataInput["result"]).length} : ${ multiDatastream.length }` ));
+        console.log(log.debug_infos( "result : keys", `${Object.keys(dataInput["result"]).length} : ${ multiDatastream.length }` ));
         if ( Object.keys(dataInput["result"]).length != multiDatastream.length ) {
           this.ctx.throw(400, {
             code: 400,

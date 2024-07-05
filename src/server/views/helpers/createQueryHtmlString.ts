@@ -15,7 +15,7 @@ import { IqueryOptions } from "../../types";
 import { log } from "../../log";
 
 export function createQueryHtmlString(input: string, params: IqueryOptions): string {
-    console.log(log.head("commonHtml"));
+    console.log(log.debug_head("commonHtml"));
     const bigIntReplacer = <K,V>(key: K, value: V) => typeof value === "bigint" ? value.toString() : value;
     // if js or css .min
     const fileWithOutMin = (input: string): string => input.replace(".min",'');

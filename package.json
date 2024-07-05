@@ -55,7 +55,8 @@
         "koa-router": "^10.0.0",
         "koa-static": "^5.0.0",
         "munchy": "^1.0.9",
-        "postgres": "^3.4.3"
+        "postgres": "^3.4.3",
+        "tunnel-ssh": "^5.1.2"
     },
     "devDependencies": {
         "@node-minify/clean-css": "^6.2.0",

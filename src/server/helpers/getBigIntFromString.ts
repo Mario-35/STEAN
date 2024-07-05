@@ -7,7 +7,6 @@
  */
 // onsole.log("!----------------------------------- getBigIntFromString -----------------------------------!");
 
-import { log } from "../log";
 
 /**
  *
@@ -25,7 +24,7 @@ export const getBigIntFromString = ( input: string | bigint | number ): bigint |
       }
       return BigInt(input);
     } catch (error) {
-      log.errorMsg(error);
+      console.log(error);
     }
   }
 };

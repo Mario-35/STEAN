@@ -9,7 +9,6 @@
 
 import crypto from "crypto";
 import { APP_KEY } from "../constants";
-import { log } from "../log";
 
 /**
  * 
@@ -36,7 +35,7 @@ export const decrypt = (input: string): string => {
         const decrpyted = Buffer.concat([ decipher.update(Buffer.from(input.slice(33), "hex")), decipher.final(), ]);
         return decrpyted.toString();
     } catch (error) {
-      log.errorMsg(error);
+      console.log(error);
     }
   }
   return input;

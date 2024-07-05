@@ -30,7 +30,7 @@ export class RootPgVisitor extends PgVisitor {
   }
 
   protected verifyRessources = (): void => {
-    console.log(log.head("verifyRessources"));
+    console.log(log.debug_head("verifyRessources"));
   };
 
   protected VisitRessources(node: Token, context?: IodataContext) {
@@ -38,11 +38,11 @@ export class RootPgVisitor extends PgVisitor {
     if (ressource) {
       ressource.call(this, node, context);
       if (this.debugOdata) {
-        console.log(log.debug("VisitRessources",`VisitRessources${node.type}`));
-        console.log(log.result("node.raw", node.raw));
+        console.log(log.debug_infos("VisitRessources",`VisitRessources${node.type}`));
+        console.log(log.debug_infos("node.raw", node.raw));
       }
     } else {
-      log.errorMsg(`Ressource Not Found ============> VisitRessources${node.type}`);
+      log.error(`Ressource Not Found ============> VisitRessources${node.type}`);
       throw new Error(`Unhandled node type: ${node.type}`);
     }
     return this;
@@ -140,7 +140,7 @@ export class RootPgVisitor extends PgVisitor {
   }
 
   StartVisitRessources(node: Token) {
-    console.log(log.head("INIT PgVisitor"));
+    console.log(log.debug_head("INIT PgVisitor"));
     this.limit = this.ctx.config.nb_page || 200;
     this.numeric = this.ctx.config.extensions.includes(EExtensions.resultNumeric);
     const temp = this.VisitRessources(node);

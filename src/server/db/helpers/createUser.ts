@@ -7,7 +7,6 @@
  */
 
  import { EChar } from "../../enums";
-import { log } from "../../log";
 import { IconfigFile } from "../../types";
 import { _RIGHTS } from "../constants";
 import { userAccess } from "../dataAccess";
@@ -28,8 +27,8 @@ export const createUser = async (config: IconfigFile): Promise<string> => {
       admin: false})
     .then(() => { resolve(`${config.pg.user} ${EChar.ok}`); })
     .catch((err: Error) => {
-        log.errorMsg(err);
-        reject(err);
+      console.log(err);
+      reject(err);
     });
   });
 };

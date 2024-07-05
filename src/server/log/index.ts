@@ -10,22 +10,16 @@
 import util from "util";
 import { EChar, EColor } from "../enums";
 import { color, showAll, _DEBUG } from "../constants";
-import { isTest } from "../helpers";
 import { Lexer } from "../odata/parser";
 import { _ID } from "../db/constants";
 
 // class to logCreate configs environements
 class Log {
   private debugFile = false;
-  private line = (nb: number)  => "=".repeat(nb);
+  private line = (nb: number)  => "═".repeat(nb);
   private logAll = (input: any, colors?: boolean) => typeof input === "object" ? util.inspect(input, { showHidden: false, depth: null, colors: colors || false, }) : input;
   private separator = (title: string, nb: number) => `${color(EColor.Green)} ${this.line(nb)} ${color( EColor.Yellow )} ${title} ${color(EColor.Green)} ${this.line(nb)}${color( EColor.Reset )}`;
   private logCleInfos = (cle: string, infos: object) =>  `${color(EColor.Green)} ${cle} ${color( EColor.White )} : ${color(EColor.Cyan)} ${this.logAll( infos, this.debugFile )}${color(EColor.Reset)}`;
-
-  public errorMsg(...data: any[]) {
-    if (isTest()) return;
-    return util.format.apply(null, data);
-  }
 
   public booting<T>(cle: string, value: T) { 
     return `\x1b[${ EColor.Cyan }m ${cle} \x1b[${EColor.White}m ${value}\x1b[${EColor.Reset}m`;
@@ -61,7 +55,7 @@ class Log {
   // log an object or json
   object(title: string, input: object) {
     if (_DEBUG) {
-      const res = [this.head(title)];
+      const res = [this._head(title)];
       Object.keys(input).forEach((cle: string) => {
         res.push(this.logCleInfos("  " + cle, input[cle as keyof object]));
       });
@@ -73,21 +67,25 @@ class Log {
     return `${EChar.web} ${color(EColor.Default)} : ${color( EColor.Cyan )} ${link}${color(EColor.Reset)}`;
   }
 
-  head<T>(cle: string, infos?: T) {
+  _head<T>(cle: string, infos?: T) {
     return infos ? `${color(EColor.Green)} ${this.line(12)} ${color( EColor.Cyan )} ${cle} ${color(EColor.White)} ${this.logAll( infos, this.debugFile )} ${color(EColor.Green)} ${this.line(12)}${color( EColor.Reset )}` : this.separator(cle, 12);
-    // if (_DEBUG) return infos ? `${color(EColor.Green)} ${this.line(12)} ${color( EColor.Cyan )} ${cle} ${color(EColor.White)} ${this.logAll( infos, this.debugFile )} ${color(EColor.Green)} ${this.line(12)}${color( EColor.Reset )}` : this.separator(cle, 12);
+  }
+  debug_head<T>(cle: string, infos?: T) {
+    if (_DEBUG) return this._head(cle, infos);
   }
 
-  infos(cle: string, input: unknown) {
-      if (_DEBUG) return `${this.separator(cle, 30)} ${color(EColor.Yellow)} ${this.logAll(input, true)}${color( EColor.Reset )}`;
-  }
-
-  debug<T>(cle: string, infos: T) {
+  _infos<T>(cle: string, infos: T) {
     if (_DEBUG) return `${color(EColor.Green)} ${cle} ${color( EColor.White )} : ${color(EColor.Cyan)} ${this.logAll( infos, this.debugFile )}${color(EColor.Reset)}`;
   }
+  debug_infos<T>(cle: string, infos: T) {
+    if (_DEBUG) return this._infos(cle, infos);
+  }
 
-  result<T>(cle: string, infos?: T) {
-    if (_DEBUG) return `${color(EColor.Green)}     >>${color( EColor.Black )} ${cle} ${color(EColor.Default)} : ${color( EColor.Cyan )} ${this.logAll(infos, this.debugFile)}${color(EColor.Reset)}` ;
+  _result<T>(cle: string, infos?: T) {
+    return `${color(EColor.Green)}     >>${color( EColor.Black )} ${cle} ${color(EColor.Default)} : ${color( EColor.Cyan )} ${this.logAll(infos, this.debugFile)}${color(EColor.Reset)}` ;
+  }
+  debug_result<T>(cle: string, infos?: T) {
+    if (_DEBUG) return this._result(cle, infos);
   }
 
   error<T>(cle: unknown, infos?: T) {
@@ -95,18 +93,16 @@ class Log {
       ? `${color(EColor.Red)} ${cle} ${color( EColor.Blue )} : ${color(EColor.Yellow)} ${this.logAll( infos, this.debugFile )}${color(EColor.Reset)}`
       : `${color(EColor.Red)} Error ${color( EColor.Blue )} : ${color(EColor.Yellow)} ${this.logAll(cle)}${color( EColor.Reset )}`;
   }
-  
-  whereIam(infos?: unknown) {    
-    const tmp = infos ? `${color(EColor.Default)} ${infos} ${color(EColor.Reset)}` : '';
-    return `${color(EColor.Red)} ${this.line(4)} ${color(EColor.Cyan)} ${ new Error().stack?.split("\n")[2].trim().split("(")[0].split("at ")[1].trim() } ${tmp}${color(EColor.Red)} ${this.line(4)}${color(EColor.Reset)}`;
-  }
 
-  test() {
-    return `${color(EColor.Yellow)} ${this.line(4)} ${color(EColor.Cyan)} ${ new Error().stack?.split("\n")[2].trim().split(" ")[1] } ${color(EColor.Yellow)} ${this.line(4)}${color(EColor.Reset)}`;
-  }
+  whereIam(infos?: unknown) {  
+    if (_DEBUG) {
+      const tmp = infos ? `${color(EColor.Default)} ${infos} ${color(EColor.Reset)}` : '';
+      return `${color(EColor.Red)} ${this.line(4)} ${color(EColor.Cyan)} ${ new Error().stack?.split("\n")[2].trim().split("(")[0].split("at ")[1].trim() } ${tmp}${color(EColor.Red)} ${this.line(4)}${color(EColor.Reset)}`;
+    }
+  }  
 
   logo(ver: string) {
-    return `${color(EColor.Cyan)} @author ${EChar.web} ${color(EColor.White)}https://github.com/ ${color(EColor.Red)} mail ==> ${color(EColor.Yellow)} mario.adam@inrae.fr${color(EColor.Code)}${color(EColor.Sql)}\n ____ __________    _     _   _ \n/ ___|_ __  ____|  / \\   | \\ | |\n\\___ \\| | |  _|   / _ \\  |  \\| |\n ___) | | | |___ / ___ \\ | |\\  |\n|____/|_| |_____|_/   \\_\\|_| \\_|  ${color(EColor.Blue)}run API ----> ${color(EColor.Green)}${ver}${color(EColor.Sql)}${color(EColor.Code)}\n${color( EColor.Reset )}`
+    return `${color(EColor.Code)}${color(EColor.Sql)}\n ____ __________    _     _   _ \n/ ___|_ __  ____|  / \\   | \\ | |\n\\___ \\| | |  _|   / _ \\  |  \\| |\n ___) | | | |___ / ___ \\ | |\\  |\n|____/|_| |_____|_/   \\_\\|_| \\_|  ${color(EColor.Blue)}run API ----> ${color(EColor.Green)}${ver}${color(EColor.Sql)}${color(EColor.Code)}\n${EChar.web} ${color(EColor.White)}https://github.com/Mario-35/STEAN/ ${EChar.mail} ${color(EColor.Yellow)} mario.adam@inrae.fr${color( EColor.Reset )}`
   }
 }
 

@@ -151,7 +151,7 @@
      // execute query
      await executeSqlValues(this.ctx.config, sqls.join(";")).then((res: Record<string, any> ) => results.push(res[0 as keyobj]) )
          .catch((err: Error) => { 
-           log.error(log.error(err));
+           console.log(err);           
            this.ctx.throw(400, { code: 400, detail: err["detail" as keyobj] });
          });
      // Return results

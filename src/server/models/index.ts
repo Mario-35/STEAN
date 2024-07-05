@@ -141,7 +141,7 @@ class Models {
           } : undefined;
         })
         .catch((error) => {
-          log.errorMsg(error);
+          console.log(error);
           return undefined;
         });
     }

@@ -25,7 +25,7 @@ export class CreateFile extends Common {
   }
 
   streamCsvFileInPostgreSqlFileInDatastream = async ( ctx: koaContext, paramsFile: IcsvFile ): Promise<string | undefined> => {
-    console.log(log.head("streamCsvFileInPostgreSqlFileInDatastream"));
+    console.log(log.debug_head("streamCsvFileInPostgreSqlFileInDatastream"));
     const headers = await columnsNameFromCsv(paramsFile.filename);
 
     if (!headers) {
@@ -121,7 +121,7 @@ export class CreateFile extends Common {
           resolve(returnValue["body"]);
         })
         .on('error', (err) => {
-          log.errorMsg('ABORTED-STREAM');
+          log.error('ABORTED-STREAM');
           reject(err);
         });
         
@@ -151,7 +151,7 @@ export class CreateFile extends Common {
           }),
         });      
     } else {
-      log.errorMsg("No Datas");
+      log.error("No Datas");
       return;
     }
   }

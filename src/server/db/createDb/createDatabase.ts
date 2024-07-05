@@ -19,7 +19,7 @@ import { log } from "../../log";
 import { createRole } from "../helpers/createRole";
 
 export const createDatabase = async (configName: string): Promise<IKeyString> => {
-  console.log(log.head("createDatabase", configName));
+  console.log(log.debug_head("createDatabase", configName));
   // init result
   const config = serverConfig.getConfig(configName).pg;
   const returnValue: IKeyString = { "Start create Database": config.database };
@@ -47,12 +47,12 @@ export const createDatabase = async (configName: string): Promise<IKeyString> =>
                 returnValue[`Create/Alter ROLE`] = `${config.user} ${EChar.ok}`;
               })
               .catch((err: Error) => {
-                log.errorMsg(err);
+                console.log(err);
               });
           }
         });
     }).catch((err: Error) => {
-      log.errorMsg(err);
+      console.log(err);
     });
 
     const dbConnection = serverConfig.connection(configName);
@@ -100,12 +100,12 @@ export const createDatabase = async (configName: string): Promise<IKeyString> =>
   if ( serverConfig.getConfig(configName).extensions.includes( EExtensions.highPrecision ) ) {
     await dbConnection.unsafe(`ALTER TABLE ${addDoubleQuotes(DB.Observations.table)} ALTER COLUMN 'result' TYPE float4 USING null;`)
       .catch((error: Error) => {
-        log.errorMsg(error);
+        console.log(error);
         return error;
       });
     await dbConnection.unsafe(`ALTER TABLE ${addDoubleQuotes(DB.HistoricalLocations.table)} ALTER COLUMN '_result' TYPE float4 USING null;`)
       .catch((error) => {
-        log.errorMsg(error);
+        console.log(error);
         return error;
       });
   }

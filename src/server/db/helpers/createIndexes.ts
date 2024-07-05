@@ -20,8 +20,9 @@ export const createIndexes = (name: string): void => {
             .connection(name)
             .unsafe(query)
             .catch((error: Error) => {
-              log.error(log.error(error));
-              return false;
+                console.error(error);
+                console.log(error);
+                return false;
             });
         });
         log.create(`Indexes : [${name}]`, EChar.ok);

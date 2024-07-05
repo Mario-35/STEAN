@@ -214,7 +214,7 @@ export const getMetrics = async (ctx: koaContext): Promise<string[] | { [key: st
             res[operation] = result.length === 1 ? Object.values(result[0])[0] : result;
           })
           .catch((err) => {
-            console.log(log.error(err));
+            console.log(err);
           });
     }
   );

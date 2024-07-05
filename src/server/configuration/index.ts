@@ -51,11 +51,17 @@ class Configuration {
       if (serverConfig && serverConfig.logFile) serverConfig.logFile.write(logToHtml(input));
     }
   };
+  writeErrorLog(input: any) {
+    if (input) {
+      process.stdout.write(input + "\n");
+      if (serverConfig && serverConfig.logFile) serverConfig.logFile.write(logToHtml(input));
+    }
+  };
   
   // Read string (or default configuration file) as configuration file
   public readConfigFile(input?: string) {
-    this.writeLog(`${color(EColor.Red)} ${"=".repeat(24)} ${color( EColor.Cyan )} ${`START ${APP_NAME} version : ${APP_VERSION} [${NODE_ENV}]`} ${color( EColor.White )} ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()} ${color( EColor.Red )} ${"=".repeat(24)}${color(EColor.Reset)}`);
-    this.writeLog(log.booting("Read config", input ? "content" : Configuration.filePath));
+    this.writeLog(`${color(EColor.Red)} ${"▬".repeat(24)} ${color( EColor.Cyan )} ${`START ${APP_NAME} version : ${APP_VERSION} [${NODE_ENV}]`} ${color( EColor.White )} ${new Date().toLocaleDateString()} : ${new Date().toLocaleTimeString()} ${color( EColor.Red )} ${"▬".repeat(24)}${color(EColor.Reset)}`);
+    this.writeLog(log.message("Read config", input ? "content" : Configuration.filePath));
     try {
       // load File
       const fileContent = input || fs.readFileSync(Configuration.filePath, "utf8");
@@ -154,7 +160,7 @@ class Configuration {
 
   // Write an encrypt config file in json file
   writeConfig(): boolean {
-    this.writeLog(log.booting("Write config", Configuration.filePath));
+    this.writeLog(log.message("Write config", Configuration.filePath));
     const result: Record<string, any>  = {};
     Object.entries(Configuration.configs).forEach(([k, v]) => {
       if (k !== TEST) result[k] = Object.keys(v).reduce((obj, key) => { obj[key as keyobj] = v[key as keyobj]; return obj; }, {} );
@@ -168,7 +174,7 @@ class Configuration {
         : JSON.stringify(result, null, 4),
       (err) => {
         if (err) {
-          this.writeLog(log.error(log.error(err)));
+          console.log(err);
           return false;
         }
       }
@@ -182,7 +188,7 @@ class Configuration {
         .connection(configName)
         .unsafe(query)
         .catch((error: Error) => {
-          this.writeLog(log.error(log.error(error)));
+          console.log(error);
           return false;
         });
     });
@@ -199,7 +205,7 @@ class Configuration {
         }
       );
     } catch (error) {
-      this.writeLog(log.error(error));
+      console.log(error);
     }
     return true;
   }
@@ -220,8 +226,7 @@ class Configuration {
   // return postgres.js connection with ADMIN rights
   public adminConnection(): postgres.Sql<Record<string, unknown>> {
     const input = Configuration.configs[ADMIN].pg;
-    return postgres(
-      `postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${DEFAULT_DB}`,
+    return postgres(`postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${DEFAULT_DB}`,
       {
         debug: _DEBUG,          
         connection: { 
@@ -233,8 +238,7 @@ class Configuration {
 
   // return postgres.js connection from Connection
   private createDbConnection(input: IdbConnection): postgres.Sql<Record<string, unknown>> {
-    return postgres(
-      `postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${input.database}`, 
+    return postgres(`postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${input.database}`, 
       {
         debug: _DEBUG,
         max : 2000,            
@@ -265,7 +269,7 @@ class Configuration {
       await serverConfig.connection(configName).unsafe(query).then(() => {
         log.create(`[${configName}] ${name}`, EChar.ok);
       }).catch((error: Error) => {
-        this.writeLog(log.error(error));
+        console.log(error);
         return false;
       });
     });
@@ -300,7 +304,7 @@ class Configuration {
               .connection(connectName)
               .unsafe(sql)
               .catch((error: Error) => {
-                this.writeLog(log.error(log.error(error)));
+                console.log(error);
                 return false;
               });
             });
@@ -308,7 +312,6 @@ class Configuration {
           }
         });
       }
-    //  await this.executeQueries(EUpdate.decoders);
      return true;
   }
 
@@ -316,7 +319,7 @@ class Configuration {
   async init(input?: string): Promise<boolean> {
     if (this.configFileExist()  === true || input) {
       this.readConfigFile(input);
-      console.log(log.message(infos.configuration, infos.loaded + EChar.ok));    
+      console.log(log.message(infos.configuration, infos.loaded + " " + EChar.ok));    
       let status = true;
       await asyncForEach(
         // Start connection ALL entries in config file
@@ -325,11 +328,12 @@ class Configuration {
           try {
             await this.addToServer(key);
           } catch (error) {
-            this.writeLog(log.error(error));
+            console.log(error);
             status = false;
           }
         }
       );
+      this.writeLog(log._head("Ready", EChar.ok));
       setReady(status);
       if (status === true) {
         this.afterAll();
@@ -340,7 +344,6 @@ class Configuration {
           else await createService(testDatas);
           this.writeLog(log.booting(`${color(EColor.Red)}Database => Test online ${color(EColor.Green)}${infos.ListenPort}`, Configuration.configs[TEST].port ));
       }
-      // console.log(log.message(`${APP_NAME} version : ${APP_VERSION}`, `ready ${(status === true ) ? EChar.ok : EChar.notOk}`));
       this.writeLog(log.logo(APP_VERSION));
       return status;
     // no configuration file so First install    
@@ -463,8 +466,7 @@ class Configuration {
 
   // process to add an entry in server
   public async addToServer(key: string): Promise<boolean> {
-    this.writeLog(log.head(key));
-
+    this.writeLog(log._head(key));
     return await this.isServiceExist(key, true)
       .then(async (res: boolean) => {
         if (res === true) {
@@ -497,7 +499,7 @@ class Configuration {
       })
       .catch((error: Error) => {
         this.writeLog(log.error(errors.unableFindCreate, Configuration.configs[key].pg.database));
-        this.writeLog(log.error(error));
+        console.log(error);
         process.exit(111);
       });
   }
@@ -551,7 +553,7 @@ class Configuration {
         if (update[EUpdate.triggers] && update[EUpdate.triggers] === true && connectName !== ADMIN) await this.relogCreateTrigger(connectName);
         if (update[EUpdate.beforeAll] && Object.entries(update[EUpdate.beforeAll]).length > 0 ) {
           if (update[EUpdate.beforeAll] && Object.entries(update[EUpdate.beforeAll]).length > 0 ) {
-            console.log(log.head(EUpdate.beforeAll));
+            console.log(log._head(EUpdate.beforeAll));
             try {              
               Object.keys(Configuration.configs)
                 .filter((e) => ![ADMIN, TEST].includes(e))
@@ -563,7 +565,7 @@ class Configuration {
               await this.executeQueries(EUpdate.beforeAll);
             // RelogCreate triggers for this service
             } catch (error) {
-              this.writeLog(log.error(log.error(error)));
+              console.log(error);
             }
           }
         }
@@ -575,9 +577,9 @@ class Configuration {
           if (!isTest()) return await this.tryToCreateDB(connectName);
           //database does not exist
         } else if (err["code" as keyobj] === "3D000" && create == true) {
-          console.log(log.debug( msg(infos.tryCreate, infos.db), Configuration.configs[connectName].pg.database ));
+          console.log(log._infos(msg(infos.tryCreate, infos.db), Configuration.configs[connectName].pg.database ));
           if (connectName !== TEST)   return await this.tryToCreateDB(connectName);
-        } else this.writeLog(log.error(log.error(err)));
+        } else  console.log(err);
         return false;
       });
   }

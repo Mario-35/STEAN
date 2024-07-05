@@ -16,7 +16,7 @@ export async function queryInsertFromCsv( ctx: koaContext, paramsFile: IcsvFile 
   const sqlRequest = await columnsNameFromHydrasCsv(paramsFile);
   if (sqlRequest) {
     const stream = await streamCsvFile(ctx, paramsFile, sqlRequest);
-    console.log(log.debug(`COPY TO ${paramsFile.tempTable}`, stream > 0 ? EChar.ok : EChar.notOk));
+    console.log(log.debug_infos(`COPY TO ${paramsFile.tempTable}`, stream > 0 ? EChar.ok : EChar.notOk));
     if (stream > 0) {
       const fileImport = paramsFile.filename.split("/").reverse()[0];
       const dateImport = new Date().toLocaleString();

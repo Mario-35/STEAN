@@ -34,7 +34,7 @@ export const writeLogToDb = async ( ctx: koaContext, ...error: any[] ): Promise<
     await executeSqlValues(ctx.config, `INSERT INTO ${addDoubleQuotes(models.DBFull(ctx.config).Logs.table)} ${createInsertValues(ctx.config, ctx.log, models.DBFull(ctx.config).Logs.name)} returning id`).then((res: object) =>{
       if (!isTest()) console.log(log.url(`${ctx.decodedUrl.root}/Logs(${res[0 as keyobj]})`));      
     }).catch((error) => {
-      log.errorMsg(error);
+      console.log(error);
     });
   }
 };

@@ -28,11 +28,10 @@ export const columnsNameFromCsv = async ( filename: string ): Promise<string[] |
       const cols = line
         .split(";")
         .map((e: string) => e.replace(/\./g, "").toLowerCase());
-
       fileStream.destroy();
       return cols;
     } catch (error) {
-      log.errorMsg(error);
+      console.log(error);
     }
   }
 };

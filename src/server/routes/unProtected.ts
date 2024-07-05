@@ -129,7 +129,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
     case "INDEXES":
       process.exit(110);
     case "DROP":
-      console.log(log.head("drop database"));
+      console.log(log.debug_head("drop database"));
       if (ctx.config.options.includes(EOptions.canDrop)) {        
         await executeAdmin(sqlStopDbName(addSimpleQuotes(ctx.config.pg.database))).then(async () => {
             await executeAdmin(`DROP DATABASE IF EXISTS ${ctx.config.pg.database}`);
@@ -145,7 +145,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       return;
     // Create DB test
     case "CREATEDBTEST":
-      console.log(log.head("GET createDB"));
+      console.log(log.debug_head("GET createDB"));
       try {
         await serverConfig.connection(ADMIN)`DROP DATABASE IF EXISTS test`;
         ctx.body = await createService(testDatas),    
@@ -157,7 +157,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
       return;
     // Drop DB test
     case "REMOVEDBTEST":
-      console.log(log.head("GET remove DB test"));
+      console.log(log.debug_head("GET remove DB test"));
       const returnDel = await serverConfig
         .connection(ADMIN)`${sqlStopDbName('test')}`
         .then(async () => {
@@ -193,7 +193,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
 
   // API GET REQUEST  
   if (ctx.decodedUrl.path.includes(`/${ctx.config.apiVersion}`) || ctx.decodedUrl.version) {
-    console.log(log.head(`unProtected GET ${ctx.config.apiVersion}`));
+    console.log(log.debug_head(`unProtected GET ${ctx.config.apiVersion}`));
     // decode odata url infos
     const odataVisitor = await createOdata(ctx);    
     
@@ -203,7 +203,7 @@ unProtectedRoutes.get("/(.*)", async (ctx) => {
         ctx.body = { values: [] }; 
         return;
       }
-      console.log(log.head(`GET ${ctx.config.apiVersion}`));
+      console.log(log.debug_head(`GET ${ctx.config.apiVersion}`));
       // Create api object
       const objectAccess = new apiAccess(ctx);
       if (objectAccess) {

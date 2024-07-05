@@ -31,12 +31,12 @@ export async function streamCsvFile( ctx: koaContext, paramsFile: IcsvFile, sqlR
       .then((e) => {
         resolve(+e[0 as keyof object]);
       }).catch((error) => {
-        log.error(error);      
+        console.log(error);      
         resolve(-1);
       });
     })
     .on('error', (error) => {
-      log.error(error);      
+      console.log(error);    
       resolve(-1);
     });
 });

@@ -81,7 +81,7 @@ export const routerHandle = async (ctx: koaContext, next: any) => {
       if (ctx.config.extensions.includes(EExtensions.logs)) await writeLogToDb(ctx);
     });
   } catch (error: any) {         
-    log.errorMsg(error);
+    console.log(error);
     if (ctx.config && ctx.config.extensions.includes(EExtensions.logs))
     writeLogToDb(ctx, error);      
       const tempError = {

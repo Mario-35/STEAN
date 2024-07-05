@@ -88,7 +88,7 @@ export class Loras extends Common {
       this.ctx.throw(400, { code: 400, detail: msg( errors.deveuiNotFound, this.stean["deveui"] )}); 
     });
     
-    console.log(log.debug("stream", stream));
+    console.log(log.debug_infos("stream", stream));
 
     // search for frame and decode payload if found
       if (notNull(this.stean["frame"])) {
@@ -157,7 +157,7 @@ console.log(this.stean["decodedPayload"]);
         }
     }
 
-      console.log(log.debug("Formated datas", this.stean["formatedDatas"]));
+      console.log(log.debug_infos("Formated datas", this.stean["formatedDatas"]));
 
       this.stean["date"] = gedataInputtDate();
       if (!this.stean["date"]) {
@@ -166,7 +166,7 @@ console.log(this.stean["decodedPayload"]);
     }    
     
     if (stream["multidatastream"]) {
-      console.log(log.debug("multiDatastream", stream));
+      console.log(log.debug_infos("multiDatastream", stream));
       const listOfSortedValues: { [key: string]: number | null } = {};
       stream["keys"].forEach((element: string) => {
         listOfSortedValues[element] = null;
@@ -184,7 +184,7 @@ console.log(this.stean["decodedPayload"]);
           );
       });
       
-      console.log(log.debug("Values", listOfSortedValues));
+      console.log(log.debug_infos("Values", listOfSortedValues));
 
       if ( Object.values(listOfSortedValues).filter((word) => word != null) .length < 1 ) {
       const errorMessage = `${errors.dataNotCorresponding} [${stream["keys"]}] with [${Object.keys(this.stean["formatedDatas"])}]`;
@@ -197,7 +197,7 @@ console.log(this.stean["decodedPayload"]);
       const temp = listOfSortedValues;
       if (temp && typeof temp == "object") {
         const tempLength = Object.keys(temp).length;
-        console.log(log.debug( "data : Keys", `${tempLength} : ${stream["keys"].length}` ));
+        console.log(log.debug_infos( "data : Keys", `${tempLength} : ${stream["keys"].length}` ));
 
         if (tempLength != stream["keys"].length) {
           const errorMessage = msg(
@@ -283,7 +283,7 @@ console.log(this.stean["decodedPayload"]);
         }
       });
     } else if (stream["datastream"]) {
-      console.log(log.debug("datastream", stream["datastream"]));
+      console.log(log.debug_infos("datastream", stream["datastream"]));
       const getFeatureOfInterest = getBigIntFromString(
       dataInput["FeatureOfInterest"]
       );
@@ -326,7 +326,7 @@ console.log(this.stean["decodedPayload"]);
         .concat(`"result" = ${resultCreate}`)
         .join("");
 
-      console.log(log.debug("searchDuplicate", searchDuplicate));
+      console.log(log.debug_infos("searchDuplicate", searchDuplicate));
 
       const sql = `WITH "${VOIDTABLE}" AS (SELECT srid FROM "${VOIDTABLE}" LIMIT 1)
                , datastream1 AS (SELECT id, _default_foi, thing_id FROM "${

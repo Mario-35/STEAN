@@ -12,8 +12,7 @@ import { CoreHtmlView } from "./core";
 import fs from "fs";
 import path from "path";
 
-export class HtmlLogs extends CoreHtmlView {
-            
+export class HtmlLogs extends CoreHtmlView {            
     // use data to name ifle
     constructor(ctx: koaContext, datas: string) {
         const fileContent = fs.readFileSync(path.resolve(__dirname, datas), "utf8");

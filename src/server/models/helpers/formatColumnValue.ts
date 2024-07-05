@@ -13,7 +13,7 @@ import { log } from "../../log";
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export function formatColumnValue(columnName: string, value: any, type: string): string | undefined {
-    console.log(log.head(`${columnName} [${type}] ==> ${value}`));
+    console.log(log.debug_head(`${columnName} [${type}] ==> ${value}`));
     switch (typeof value ) {
       case "object" :        
         return value.hasOwnProperty("@iot.name") 

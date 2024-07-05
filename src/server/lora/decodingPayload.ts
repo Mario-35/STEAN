@@ -12,7 +12,7 @@ import { errors } from "../messages";
 import { ILoraDecodingResult } from "../types";
 
 export const decodingPayload = ( decoder: { name: string; code: string; nomenclature: string }, payload: string ): ILoraDecodingResult | undefined => {
-  console.log(log.head("decodingPayload"));
+  console.log(log.debug_head("decodingPayload"));
   if (decoder.name && decoder.nomenclature && decoder.code != 'undefined') {
     try {
       const F = new Function( "input", "nomenclature", `${String(decoder.code)}; return decode(input, nomenclature);` );
@@ -26,7 +26,7 @@ export const decodingPayload = ( decoder: { name: string; code: string; nomencla
       const result = F( payload, decoder.nomenclature === "{}" || decoder.nomenclature === "" ? null : nomenclature);
       return { decoder: decoder.name, result: result };
     } catch (error) {
-      log.errorMsg(error);
+      console.log(error);
       return {
         decoder: decoder.name,
         result: undefined,

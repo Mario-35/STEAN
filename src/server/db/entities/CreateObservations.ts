@@ -101,7 +101,7 @@ export class CreateObservations extends Common {
     };
     // stream file in temp table and get query to insert
     const sqlInsert = await queryInsertFromCsv(this.ctx, paramsFile);
-    console.log(log.debug(`Stream csv file ${paramsFile.filename} in PostgreSql`, sqlInsert ? EChar.ok : EChar.notOk));
+    console.log(log.debug_infos(`Stream csv file ${paramsFile.filename} in PostgreSql`, sqlInsert ? EChar.ok : EChar.notOk));
     if (sqlInsert) {
       const sqls = sqlInsert.query.map((e: string, index: number) => `${index === 0 ? 'WITH ' :', '}updated${index+1} as (${e})\n`);
       // Remove logs and triggers for speed insert
@@ -131,7 +131,7 @@ export class CreateObservations extends Common {
           const values = this.createListColumnsValues("VALUES", [ String(dataStreamId.id), ...elem, ]);
           await executeSqlValues(this.ctx.config, `INSERT INTO ${addDoubleQuotes(this.ctx.model.Observations.table)} (${keys}) VALUES (${values}) RETURNING id`)
             .then((res: Record<string, any> ) => {
-      returnValue.push( this.linkBase.replace("Create", "") + "(" + res[0]+ ")" );
+              returnValue.push( this.linkBase.replace("Create", "") + "(" + res[0]+ ")" );
               total += 1;
             })
             .catch(async (error) => {
@@ -139,10 +139,10 @@ export class CreateObservations extends Common {
                 returnValue.push(`Duplicate (${elem})`);
                 if ( dataInput["duplicate"] && dataInput["duplicate"].toUpperCase() === "DELETE" ) {
                   await executeSqlValues(this.ctx.config, `DELETE FROM ${addDoubleQuotes(this.ctx.model.Observations.table)} WHERE 1=1 ` + keys .map((e, i) => `AND ${e} = ${values[i]}`) .join(" ") + ` RETURNING id` ) .then((res: Record<string, any> ) => {
-      returnValue.push(`delete id ==> ${res[0]}`);
+                      returnValue.push(`delete id ==> ${res[0]}`);
                       total += 1;
                     }).catch((error) => {
-                      log.errorMsg(error);                     
+                      console.log(error);                     
                     });
                 }
               } else this.ctx.throw(400, { code: 400, detail: error });

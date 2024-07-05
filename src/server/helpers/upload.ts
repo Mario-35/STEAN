@@ -12,7 +12,6 @@ import Busboy from "busboy";
 import path from "path";
 import util from "util";
 import fs from "fs";
-import { log } from "../log";
 import { koaContext } from "../types";
 
 /**
@@ -53,7 +52,7 @@ export const upload = (ctx: koaContext): Promise<object> => {
         });
 
         file.on("error", (error: Error) => {
-          log.errorMsg(error);
+          console.log(error);
         });
 
         file.on("end", () => {
@@ -68,7 +67,7 @@ export const upload = (ctx: koaContext): Promise<object> => {
     });
     // catch error
     busboy.on("error", (error: Error) => {
-      log.errorMsg(error);
+      console.log(error);
       data["state"] = "ERROR";
       reject(error);
     });

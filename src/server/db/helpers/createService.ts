@@ -71,7 +71,7 @@ export const createService = async (dataInput: Record<string, any>, ctx?: koaCon
       await createDB();
     }).catch((error: any) => {
       results[`Drop ${mess}`] = EChar.notOk;
-      log.error(error);        
+      console.log(error);        
     });
   }).catch(async (err: any) => {
     if (err["code"] === "3D000") {
@@ -90,11 +90,11 @@ export const createService = async (dataInput: Record<string, any>, ctx?: koaCon
           await executeSqlValues(serverConfig.getConfig(serviceName), sqls.join(";")).then((res: Record<string, any>) =>{
             results[entityName] = EChar.ok;
           }).catch((error: any) => {
-            log.errorMsg(error);
+            console.log(error);
             results[entityName] = EChar.notOk;
           });
         } catch (error) {
-          log.errorMsg(error);           
+          console.log(error);           
           results[entityName] = EChar.notOk;
         }
       }

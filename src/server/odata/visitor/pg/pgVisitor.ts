@@ -132,7 +132,7 @@ export class PgVisitor extends Visitor {
   }
 
   start(node: Token) {
-    console.log(log.head("Start PgVisitor"));
+    console.log(log.debug_head("Start PgVisitor"));
     const temp = this.Visit(node);
     this.verifyQuery();    
     // Logs.infos("PgVisitor", temp);
@@ -141,7 +141,7 @@ export class PgVisitor extends Visitor {
   }
 
   verifyQuery = (): void => {
-    console.log(log.head("verifyQuery"));
+    console.log(log.debug_head("verifyQuery"));
     const expands: string[] = [];
     if (this.includes) this.includes.forEach((element: PgVisitor) => {
       if (element.ast.type === "ExpandItem")
@@ -179,15 +179,15 @@ export class PgVisitor extends Visitor {
       if (visitor) {
       visitor.call(this, node, context);
         if (this.debugOdata) {
-          console.log(log.debug("Visit",`Visit${node.type}`, ));
-          console.log(log.result("node.raw", node.raw));
-          console.log(log.result("this.query.where", this.query.where.toString()));
-          console.log(log.debug("context", context));
+          console.log(log._infos("Visit",`Visit${node.type}`, ));
+          console.log(log._result("node.raw", node.raw));
+          console.log(log._result("this.query.where", this.query.where.toString()));
+          console.log(log._infos("context", context));
         }
 
       } else {
-        log.errorMsg(`Node error =================> Visit${node.type}`);
-        log.errorMsg(node);
+        log.error(`Node error =================> Visit${node.type}`);
+        log.error(node);
         throw new Error(`Unhandled node type: ${node.type}`);
       }
     }

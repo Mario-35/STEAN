@@ -8,7 +8,6 @@
 // onsole.log("!----------------------------------- blankRootPgVisitor -----------------------------------!");
 
 import { RootPgVisitor } from "..";
-import { log } from "../../../log";
 import { Ientity, koaContext } from "../../../types";
 import { Token } from "../../parser";
 import { query, resourcePath } from "../../parser/parser";
@@ -25,7 +24,7 @@ export const blankRootPgVisitor = (ctx: koaContext, entity: Ientity): RootPgVisi
       },
       astRessources).start(astQuery);    
     } catch (error) {
-      log.errorMsg(error);
+      console.log(error);
       return undefined;
     }
   }

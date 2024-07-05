@@ -17,10 +17,16 @@ export const enum EChar {
   ok = "✔️️",
   search = "🔎",
   time = "⏲️",
+  date = "🗓️",
   tools = "🛠️",
   unlock = "🔐",
   wait = "⏳",
   web = "🌍",
+  mail = "📧",
+  attention = "⚠️",
+  write = "💾",
+  copyright = "©️",
   arrowleft = "🡸",
   arrowright = "🡺",
 }
+

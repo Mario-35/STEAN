@@ -15,7 +15,7 @@ import { EChar } from "../../enums";
 
 export const createTable = async ( configName: string, tableEntity: Ientity, doAfter: string | undefined ): Promise<IKeyString> => {
   if (!tableEntity) return {};
-  console.log(log.head(`CreateTable [${tableEntity.table}] for ${configName}`));
+  console.log(log.debug_head(`CreateTable [${tableEntity.table}] for ${configName}`));
   const space = 5;
   const tab = () => " ".repeat(space);
   const tabIeInsert: string[] = [];
@@ -24,7 +24,7 @@ export const createTable = async ( configName: string, tableEntity: Ientity, doA
   let insertion = "";
 
   if (!serverConfig.connection(configName)) {
-    log.errorMsg("connection Error");
+    log.error("connection Error");
     return { error: "connection Error" };
   }
   
@@ -77,7 +77,7 @@ export const createTable = async ( configName: string, tableEntity: Ientity, doA
       await serverConfig.connection(configName).unsafe(tableEntity.after)
           .then(() => EChar.ok)
           .catch((error: Error) => {
-            log.errorMsg(error);
+            log.error(error);
             return error.message;
           });
   }

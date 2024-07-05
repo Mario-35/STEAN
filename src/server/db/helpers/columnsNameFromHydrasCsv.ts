@@ -31,18 +31,17 @@ export const columnsNameFromHydrasCsv = async ( paramsFile: IcsvFile ): Promise<
     const splitColumns = line.split(";");
     if (regexDateHour.test(splitColumns[0]) == true) {
       const nbCol = (line.match(/;/g) || []).length;
-      console.log(log.result("dateSqlRequest", "Date Hour"));
+      console.log(log.debug_infos("dateSqlRequest", "Date Hour"));
       returnValue.columns = ["datehour"];
       for (let i = 0; i < nbCol; i++) returnValue.columns.push(`value${i + 1}`);
       fileStream.destroy();
       returnValue.dateSql = `TO_TIMESTAMP(REPLACE("${paramsFile.tempTable}".datehour, '24:00:00', '23:59:59'), 'DD/MM/YYYY HH24:MI:SS')`;
       return returnValue;
     } else if ( regexDate.test(splitColumns[0]) == true && regexHour.test(splitColumns[1]) == true ) {
-      console.log(log.result("dateSqlRequest", "date ; hour"));
+      console.log(log.debug_infos("dateSqlRequest", "date ; hour"));
       const nbCol = (line.match(/;/g) || []).length;
       returnValue.columns = ["date", "hour"];
       for (let i = 0; i < nbCol - 1; i++) returnValue.columns.push(`value${i + 1}`);
-
       fileStream.destroy();
       returnValue.dateSql = `TO_TIMESTAMP(concat("${paramsFile.tempTable}".date, REPLACE("${paramsFile.tempTable}".hour, '24:00:00', '23:59:59')), 'DD/MM/YYYYHH24:MI:SS:MS')`;
       return returnValue;
