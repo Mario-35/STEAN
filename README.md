@@ -9,7 +9,6 @@
 ## deploy on server run :
 ```curl -fsSL https://raw.githubusercontent.com/Mario-35/STEAN/main/scripts/stean.sh -o stean.sh && chmod +x stean.sh && ./stean.sh```
 
-after running script the message  
 ## use on local windows as production (for testing) use :  [script](https://raw.githubusercontent.com/Mario-35/STEAN/main/scripts/install.ps1) as install.ps1
 
 ## for developper : 
