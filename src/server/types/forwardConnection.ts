@@ -8,8 +8,23 @@
 // onsole.log("!----------------------------------- forwardConnection interface -----------------------------------!");
 
 export interface IforwardConnection {
-    srcAddr: string; //The address or interface we want to listen on.
-    srcPort: number ; // The port or interface we want to listen on.
-    dstAddr: string; //The address we want to forward the traffic to.
-    dstPort: number ; // The port we want to forward the traffic to.
+  /*
+  * The address or interface we want to listen on.
+  * @default ServerOptions.address
+  **/
+  srcAddr?: string;
+  /*
+  * The port or interface we want to listen on.
+  * @default ServerOptions.port
+  **/
+  srcPort?: number;
+  /*
+  * the address we want to forward the traffic to.
+  * @default "0.0.0.0"
+  **/
+  dstAddr?: string;
+  /*
+  * the port we want to forward the traffic to.
+  */
+  dstPort: number;
 }

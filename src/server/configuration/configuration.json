@@ -172,7 +172,7 @@
                 },
                 "forwardConnection": {
                     "srcAddr": "localhost",
-                    "srcPort": 5432,
+                    "srcPort": 1111,
                     "dstAddr": "localhost",
                     "dstPort": 5432
                 }

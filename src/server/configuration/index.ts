@@ -8,7 +8,7 @@
 // onsole.log("!----------------------------------- Configuration class -----------------------------------!");
 
 import { addToStrings, ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_DB, NODE_ENV, setReady, TEST, _DEBUG } from "../constants";
-import { asyncForEach, decrypt, encrypt, isProduction, isTest, logToHtml, unikeList, unique, } from "../helpers";
+import { asyncForEach, createTunnel, decrypt, encrypt, isProduction, isTest, logToHtml, unikeList, unique, } from "../helpers";
 import { IconfigFile, IdbConnection, IserviceInfos, koaContext, keyobj, IsshConnection, IforwardConnection } from "../types";
 import { errors, infos, msg } from "../messages";
 import { createIndexes, createService} from "../db/helpers";
@@ -23,7 +23,6 @@ import { log } from "../log";
 import { createDatabase, testDatas } from "../db/createDb";
 import { userAccess } from "../db/dataAccess";
 import path from "path";
-import {createTunnel} from 'tunnel-ssh';
 
 // class to logCreate configs environements
 class Configuration {
@@ -239,7 +238,7 @@ class Configuration {
     );
   }
 
-  private mySimpleTunnel(sshOptions:  IsshConnection , forwardOptions: IforwardConnection, port: number, autoClose = true){
+  private mySimpleTunnel(sshOptions:  IsshConnection , forwardOptions: IforwardConnection, port: number, autoClose = true){  
 
     let tunnelOptions = {
         autoClose:autoClose

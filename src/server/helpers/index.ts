@@ -34,6 +34,7 @@ export { removeEmpty } from "./removeEmpty";
 export { upload } from "./upload";
 export { logToHtml } from "./logToHtml";
 export { getKey } from "./getKey";
+export { createTunnel } from "./tunnel";
 
 const removeFirstOrEnd = (input: string, char: string) => {    
     while (input[0] === char[0]) input = input.slice(1).trim();

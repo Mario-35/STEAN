@@ -93,37 +93,12 @@ export class Loras extends Common {
     // search for frame and decode payload if found
       if (notNull(this.stean["frame"])) {
       const temp = await decodeloraDeveuiPayload( this.ctx, this.stean["deveui"], this.stean["frame"] );
-
-
-
-console.log("ssssssssssssssssssssssssssssssssssssssssssssssssssss");
-console.log(temp);
-
-
-
-
-
-
-
-
       if (!temp) return this.ctx.throw(400, { code: 400, detail: "Error"});
       if (temp && temp.error) {
         if (silent) return this.formatReturnResult({ body: temp.error });
         else this.ctx.throw(400, { code: 400, detail: temp.error });
       }
       this.stean["decodedPayload"] = temp["result"];
-
-
-
-
-console.log("==========================================================");
-console.log(this.stean["decodedPayload"]);
-
-
-
-
-
-
       if (this.stean["decodedPayload"].valid === false) this.ctx.throw(400, { code: 400, detail: errors.InvalidPayload });
     }
 
