@@ -9,7 +9,7 @@
 
 import { addToStrings, ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_DB, NODE_ENV, setReady, TEST, _DEBUG } from "../constants";
 import { asyncForEach, decrypt, encrypt, isProduction, isTest, logToHtml, unikeList, unique, } from "../helpers";
-import { IconfigFile, IdbConnection, IserviceInfos, koaContext, keyobj } from "../types";
+import { IconfigFile, IdbConnection, IserviceInfos, koaContext, keyobj, IsshConnection, IforwardConnection } from "../types";
 import { errors, infos, msg } from "../messages";
 import { createIndexes, createService} from "../db/helpers";
 import { app } from "..";
@@ -23,6 +23,7 @@ import { log } from "../log";
 import { createDatabase, testDatas } from "../db/createDb";
 import { userAccess } from "../db/dataAccess";
 import path from "path";
+import {createTunnel} from 'tunnel-ssh';
 
 // class to logCreate configs environements
 class Configuration {
@@ -51,6 +52,7 @@ class Configuration {
       if (serverConfig && serverConfig.logFile) serverConfig.logFile.write(logToHtml(input));
     }
   };
+
   writeErrorLog(input: any) {
     if (input) {
       process.stdout.write(input + "\n");
@@ -226,6 +228,7 @@ class Configuration {
   // return postgres.js connection with ADMIN rights
   public adminConnection(): postgres.Sql<Record<string, unknown>> {
     const input = Configuration.configs[ADMIN].pg;
+    
     return postgres(`postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${DEFAULT_DB}`,
       {
         debug: _DEBUG,          
@@ -236,9 +239,34 @@ class Configuration {
     );
   }
 
-  // return postgres.js connection from Connection
-  private createDbConnection(input: IdbConnection): postgres.Sql<Record<string, unknown>> {
-    return postgres(`postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${input.database}`, 
+  private mySimpleTunnel(sshOptions:  IsshConnection , forwardOptions: IforwardConnection, port: number, autoClose = true){
+
+    let tunnelOptions = {
+        autoClose:autoClose
+    }
+    
+    let serverOptions = {
+        port: port
+    }
+
+    return createTunnel(tunnelOptions, serverOptions, sshOptions, forwardOptions);
+}
+
+private createDbConnection(input: IdbConnection): postgres.Sql<Record<string, unknown>> {
+    if (input.tunnel) {
+      this.writeLog(log.booting(`${color(EColor.Yellow)}[Tunneling to]`, input.tunnel.sshConnection.host ));
+      this.mySimpleTunnel(input.tunnel.sshConnection, input.tunnel.forwardConnection, 1111)
+      .then(() => {
+        this.writeLog(log.booting(msg( infos.tunnel, `${input.tunnel?.sshConnection.host}` ), EChar.ok ));
+      }).catch((err: Error) => {
+        this.writeLog(log.booting(msg( errors.tunnelError, `${input.tunnel?.sshConnection.host}` ), EChar.notOk ));
+        console.log(err);        
+      });
+    }
+    return postgres( 
+      input.tunnel 
+      ? `postgres://${input.user}:${input.password}@${input.host}:${1111}/${input.database}`
+      : `postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${input.database}`,
       {
         debug: _DEBUG,
         max : 2000,            
@@ -247,7 +275,7 @@ class Configuration {
         },
       }
     );
-  }
+}
   
   public createDbConnectionFromConfigName(input: string): postgres.Sql<Record<string, unknown>> {
     const temp = this.createDbConnection(Configuration.configs[input].pg);
@@ -429,6 +457,20 @@ class Configuration {
         password: input["pg" as keyobj] && input["pg" as keyobj]["password"] ? input["pg" as keyobj]["password"] : `ERROR`,
         database: name && name === "test" ? "test" : input["pg" as keyobj] && input["pg" as keyobj]["database"] ? input["pg" as keyobj]["database"] : `ERROR`,
         retry: input["retry" as keyobj] ? +input["retry" as keyobj] : 2,
+        tunnel: input["pg" as keyobj] && input["pg" as keyobj]["tunnel"] ?  {
+          sshConnection: {
+            host: input["pg" as keyobj] && input["pg" as keyobj]["tunnel"] &&  input["pg" as keyobj]["tunnel"]["sshConnection"]["host"] ? input["pg" as keyobj]["tunnel"]["sshConnection"]["host"] : `ERROR`,
+            username: input["pg" as keyobj] && input["pg" as keyobj]["tunnel"] &&  input["pg" as keyobj]["tunnel"]["sshConnection"]["username"] ? input["pg" as keyobj]["tunnel"]["sshConnection"]["username"] : `ERROR`,
+            port: input["pg" as keyobj] && input["pg" as keyobj]["tunnel"] &&  input["pg" as keyobj]["tunnel"]["sshConnection"]["port"] ? input["pg" as keyobj]["tunnel"]["sshConnection"]["port"] : 22,
+            password: input["pg" as keyobj] && input["pg" as keyobj]["tunnel"] &&  input["pg" as keyobj]["tunnel"]["sshConnection"]["password"] ? input["pg" as keyobj]["tunnel"]["sshConnection"]["password"] : `ERROR`,
+          },
+          forwardConnection: {
+            srcAddr: input["pg" as keyobj] && input["pg" as keyobj]["tunnel"] &&  input["pg" as keyobj]["tunnel"]["forwardConnection"]["srcAddr"] ? input["pg" as keyobj]["tunnel"]["forwardConnection"]["srcAddr"] : `ERROR`,
+            srcPort: input["pg" as keyobj] && input["pg" as keyobj]["tunnel"] &&  input["pg" as keyobj]["tunnel"]["forwardConnection"]["srcPort"] ? input["pg" as keyobj]["tunnel"]["forwardConnection"]["srcPort"] : 22,
+            dstAddr: input["pg" as keyobj] && input["pg" as keyobj]["tunnel"] &&  input["pg" as keyobj]["tunnel"]["forwardConnection"]["dstAddr"] ? input["pg" as keyobj]["tunnel"]["forwardConnection"]["dstAddr"] : `ERROR`,
+            dstPort: input["pg" as keyobj] && input["pg" as keyobj]["tunnel"] &&  input["pg" as keyobj]["tunnel"]["forwardConnection"]["dstPort"] ? input["pg" as keyobj]["tunnel"]["forwardConnection"]["dstPort"] : 22
+          }
+        } : undefined 
       },
       apiVersion: this.getModelVersion(version),
       date_format: input["date_format" as keyobj] || "DD/MM/YYYY hh:mi:ss",

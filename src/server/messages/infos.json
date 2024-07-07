@@ -27,5 +27,7 @@
 	"newUser": "user to create",
 	"pass": "password",
 	"rep": "repeat",
-	"pg": "PostgresSql"
+	"pg": "PostgresSql",
+	"tunnel": "Thunnelling to $1 etablished"
+
 }

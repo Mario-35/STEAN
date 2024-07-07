@@ -153,28 +153,28 @@
         ],
         "options": []
     },
-    "stean": {
-        "name": "stean",
+    "essai": {
+        "name": "essai",
         "port": 8030,
         "pg": {
-            "host": "localhost",
+            "host": "147.100.165.4",
             "port": 5432,
             "user": "stean",
             "password": "stean",
-            "database": "stean",
+            "database": "test",
             "retry": 2,
             "tunnel": {
                 "sshConnection": {
-                    "host": "147.100.165.4",
-                    "username": "madam",
+                    "host": "147.165.100.3",
                     "port": 22,
+                    "username": "madam",
                     "password": "Mario35*"
                 },
                 "forwardConnection": {
                     "srcAddr": "localhost",
-                    "srcPort": 5432,
+                    "srcPort": 22,
                     "dstAddr": "localhost",
-                    "dstPort": 5432
+                    "dstPort": 22
                 }
             }
         },

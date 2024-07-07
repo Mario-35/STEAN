@@ -1,9 +1,9 @@
  #/
- # Stean Install Bash.
+ # Stean Bash.
  #
  # @copyright 2024-present Inrae
  # @author mario.adam@inrae.fr
- # version 1
+ # version 1.1
  #
  #/
 
@@ -18,6 +18,12 @@ FILEDISTOLD=./distOld.zip
 FILERUN=./run.sh
 # Name of the run script
 SQLSCRIPT=./script.sql
+# Stean version
+STEANVER=$(cat $APIDEST/api/package.json \
+  | grep version \
+  | head -1 \
+  | awk -F: '{ print $2 }' \
+  | sed 's/[",]//g')
 
 # Create run script
 create_run() {
@@ -45,7 +51,7 @@ logo() {
     echo -e "\e[32m / ___|_ __  ____|  / \   | \ | |\e[0m"
     echo -e "\e[32m \___ \| | |  _|   / _ \  |  \| |\e[0m"
     echo -e "\e[32m  ___) | | | |___ / ___ \ | |\  |\e[0m"
-    echo -e "\e[32m |____/|_| |_____|_/   \_\|_| \_|\e[0m"
+    echo -e "\e[32m |____/|_| |_____|_/   \_\|_| \_|   \e[34m$STEANVER\e[0m"
     echo ""
 }
 
@@ -204,12 +210,20 @@ restart() {
 }
 
 logo
+
+
+menu() {
+
+  
 pm2 ls
-echo -e "Stean path : \e[32m$APIDEST\e[0m"
+echo -e "\e[34mStean : \e[32m$STEANVER \e[34mNode : \e[32m$(node -v) \e[34mPostgreSQL : \e[32m$(psql --version) \e[34mPm2: \e[32m$(pm2 -v)\e[0m"
+echo -e "\e[34mStean path : \e[32m$APIDEST\e[0m"
 echo -e "\e[33m---------------- MENU ----------------\e[0m"
+}
+menu
 PS3='Please enter your choice : '
 if [ -f $APIDEST/api/index.js ]; then
-    options=("Path" "Installation" "Update" "Back" "Create script" "Run" "Stop" "Logs" "Quit")
+    options=("Path" "Update" "Back" "Create script" "Run" "Stop" "Logs" "Quit")
 else
     options=("Path" "Installation" "Quit")
 fi
@@ -225,9 +239,9 @@ do
             break
             ;;
         "Installation")
-            echo "------------------------------------------------------------------"
-            echo "|                         STEAN Install                          |"
-            echo "------------------------------------------------------------------"
+            echo "┌───────────────────────────────────────────────────────────────┐"
+            echo "│                         STEAN Install                         │"
+            echo "└───────────────────────────────────────────────────────────────┘"
             check_pg
             check_node
             check_pm2
@@ -239,9 +253,9 @@ do
             break
             ;;
         "Update")
-            echo "------------------------------------------------------------------"
-            echo "|                         STEAN Update                           |"
-            echo "------------------------------------------------------------------"
+            echo "┌───────────────────────────────────────────────────────────────┐"
+            echo "│                         STEAN Update                          │"
+            echo "└───────────────────────────────────────────────────────────────┘"
             check_dist
             stop_stean
             install_stean
@@ -249,9 +263,9 @@ do
             break
             ;;
         "Back")
-            echo "------------------------------------------------------------------"
-            echo "|                         STEAN Go Back                          |"
-            echo "------------------------------------------------------------------"         
+            echo "┌───────────────────────────────────────────────────────────────┐"
+            echo "│                         STEAN Go Back                         │"
+            echo "└───────────────────────────────────────────────────────────────┘"        
             stop_stean
             rm -r $APIDEST/api
             mv $APIDEST/apiBak $APIDEST/api
@@ -259,25 +273,25 @@ do
             break
             ;;
         "Create script")
-            echo "------------------------------------------------------------------"
-            echo "|                  STEAN Create Run script                       |"
-            echo "------------------------------------------------------------------"            
+            echo "┌───────────────────────────────────────────────────────────────┐"
+            echo "│                       Create Run script                       │"
+            echo "└───────────────────────────────────────────────────────────────┘"         
             create_run
             echo "script ====> ./run.sh"            
             ;;
         "Run")
-            echo "------------------------------------------------------------------"
-            echo "|                          STEAN Run                             |"
-            echo "------------------------------------------------------------------"
+            echo "┌───────────────────────────────────────────────────────────────┐"
+            echo "│                           STEAN Run                           │"
+            echo "└───────────────────────────────────────────────────────────────┘"
             stop_stean            
             run_stean
             restart
             break
             ;;
         "Stop")
-            echo "------------------------------------------------------------------"
-            echo "|                          STEAN Stop                            |"
-            echo "------------------------------------------------------------------"
+            echo "┌───────────────────────────────────────────────────────────────┐"
+            echo "│                           STEAN Stop                          │"
+            echo "└───────────────────────────────────────────────────────────────┘"
             stop_stean
             restart
             break
@@ -292,3 +306,4 @@ do
         *) echo "invalid option $REPLY";;
     esac
 done
+

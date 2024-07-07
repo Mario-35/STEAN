@@ -7,6 +7,8 @@
  */
 // onsole.log("!----------------------------------- dbConnection interface -----------------------------------!");
 
+import { IforwardConnection, IsshConnection } from ".";
+
 export interface IdbConnection { //postgresSqlconnection
     host:       string; // host name
     user:       string; // user name
@@ -14,4 +16,8 @@ export interface IdbConnection { //postgresSqlconnection
     database:   string; // database name
     port:       number; // port || 5332
     retry:      number; // nube of connection try || 2
+    tunnel: {
+        sshConnection: IsshConnection;
+        forwardConnection : IforwardConnection;
+    } | undefined
 }
