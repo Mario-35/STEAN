@@ -8,8 +8,9 @@
  #/
 
 clear
-
 read APIDEST < .steanpath
+APIDEST=$(echo "$APIDEST" | sed 's:/*$::')
+
 # Name of the file downladed
 FILEDIST=./dist.zip
 # Name of the backup
@@ -36,7 +37,7 @@ create_run() {
     echo "pm2 flush" >> $FILERUN
     echo "pm2 delete index" >> $FILERUN
     echo "echo \"API starting ...\"" >> $FILERUN
-    echo "NODE_ENV=production" >> $FILERUN
+    echo "export NODE_ENV=production" >> $FILERUN
     echo "mv $APIDEST/api/logs.html $APIDEST/logs.bak" >> $FILERUN
     echo "pm2 start $APIDEST/api/index.js" >> $FILERUN
     echo "pm2 logs --lines 500" >> $FILERUN
@@ -240,7 +241,7 @@ do
         "Change path")
             # Prompt for the domain name and directory
             read -p "Enter the new path to install api (/var/www/stean) [./]: " APIDEST
-            APIDEST=${APIDEST:-./}
+            APIDEST=${APIDEST:-.} | sed 's:/*$::'
             echo $APIDEST > .steanpath
             restart
             break
