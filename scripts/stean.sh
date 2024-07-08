@@ -226,7 +226,7 @@ logo
 menu
 PS3='Please enter your choice : '
 if [ -f $APIDEST/api/index.js ]; then
-    options=("Change path" "Update stean" "Back to previous version" "Create run script" "Run stean" "Stop stean" "Logs" "Quit")
+    options=("Change path" "Update stean" "Back to previous" "Create run script" "Run stean" "Stop stean" "Logs" "Quit")
 else
     if [ -f .steanpath ]; then
         options=("Change path" "Install all" "Quit")
@@ -269,7 +269,7 @@ do
             restart
             break
             ;;
-        "Back to previous version")
+        "Back to previous")
             echo "┌───────────────────────────────────────────────────────────────┐"
             echo "│                         STEAN Go Back                         │"
             echo "└───────────────────────────────────────────────────────────────┘"        
