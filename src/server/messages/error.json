@@ -50,5 +50,5 @@
 	"InvalidPayload": "Invalid Payload",
 	"invalidSTVersion": "Invalid SensorThings version",
 	"wrongVersion": "Wrong $1 version",
-	"tunnelError": "Thunnelling to $1 error"
+	"tunnelError": "Tunneling to $1 error"
 }

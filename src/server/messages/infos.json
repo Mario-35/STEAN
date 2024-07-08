@@ -28,6 +28,6 @@
 	"pass": "password",
 	"rep": "repeat",
 	"pg": "PostgresSql",
-	"tunnel": "Thunnelling to $1 etablished"
+	"tunnel": "Tunneling to $1 established"
 
 }

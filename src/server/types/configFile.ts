@@ -15,8 +15,8 @@ import { IdbConnection } from "./dbConnection";
 export interface IconfigFile {
     name:           string; // name of the config file
     key?:           string; // key for crypto
+    port?:           number; // server port
     pg:             IdbConnection; // postgresSql connection
-    port:           number; // server port
     apiVersion:     EVersion; // api version / model
     date_format:    string; // formating date
     webSite:        string; // website
@@ -24,6 +24,5 @@ export interface IconfigFile {
     options:        typeof typeOptions; // Options see Enum EOptions
     extensions:     typeof typeExtensions; // extensions see Enum EExtensions
     alias:          string[]; // alias name of the service
-    connection:     postgres.Sql<Record<string, unknown>> | undefined; // not in file only when running to store connection
+    _connection:    postgres.Sql<Record<string, unknown>> | undefined; // not in file only when running to store connection
 }
-

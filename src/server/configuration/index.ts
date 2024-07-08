@@ -9,7 +9,7 @@
 
 import { addToStrings, ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_DB, NODE_ENV, setReady, TEST, _DEBUG } from "../constants";
 import { asyncForEach, createTunnel, decrypt, encrypt, isProduction, isTest, logToHtml, unikeList, unique, } from "../helpers";
-import { IconfigFile, IdbConnection, IserviceInfos, koaContext, keyobj, IsshConnection, IforwardConnection } from "../types";
+import { IconfigFile, IdbConnection, IserviceInfos, koaContext, keyobj } from "../types";
 import { errors, infos, msg } from "../messages";
 import { createIndexes, createService} from "../db/helpers";
 import { app } from "..";
@@ -27,8 +27,8 @@ import path from "path";
 // class to logCreate configs environements
 class Configuration {
   static configs: { [key: string]: IconfigFile } = {};
-  static filePath: string; 
-  static ports: number[] = [];
+  static filePath: string;
+  static port = 8029;
   static queries: { [key: string]: string[] } = {};
   public logFile = fs.createWriteStream(path.resolve(__dirname, "../", EFileName.logs), {flags : 'w'});
 
@@ -46,13 +46,6 @@ class Configuration {
   }
   
   writeLog(input: any) {
-    if (input) {
-      process.stdout.write(input + "\n");
-      if (serverConfig && serverConfig.logFile) serverConfig.logFile.write(logToHtml(input));
-    }
-  };
-
-  writeErrorLog(input: any) {
     if (input) {
       process.stdout.write(input + "\n");
       if (serverConfig && serverConfig.logFile) serverConfig.logFile.write(logToHtml(input));
@@ -164,7 +157,7 @@ class Configuration {
     this.writeLog(log.message("Write config", Configuration.filePath));
     const result: Record<string, any>  = {};
     Object.entries(Configuration.configs).forEach(([k, v]) => {
-      if (k !== TEST) result[k] = Object.keys(v).reduce((obj, key) => { obj[key as keyobj] = v[key as keyobj]; return obj; }, {} );
+      if (k !== TEST) result[k] = Object.keys(v).filter(e => !e.startsWith("_")) .reduce((obj, key) => { obj[key as keyobj] = v[key as keyobj]; return obj; }, {} );
     });
     // in some case of crash config is blank so prevent to overrite it
     if (Object.keys(result).length > 0) fs.writeFile(
@@ -220,14 +213,13 @@ class Configuration {
   
   // return the connection
   public connection(name: string): postgres.Sql<Record<string, unknown>> {    
-    if (!Configuration.configs[name].connection) this.createDbConnectionFromConfigName(name);
-    return Configuration.configs[name].connection || this.createDbConnection(Configuration.configs[name].pg);
+    if (!Configuration.configs[name]._connection) this.createDbConnectionFromConfigName(name);
+    return Configuration.configs[name]._connection || this.createDbConnection(Configuration.configs[name].pg);
   }
   
   // return postgres.js connection with ADMIN rights
   public adminConnection(): postgres.Sql<Record<string, unknown>> {
-    const input = Configuration.configs[ADMIN].pg;
-    
+    const input = Configuration.configs[ADMIN].pg;    
     return postgres(`postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${DEFAULT_DB}`,
       {
         debug: _DEBUG,          
@@ -237,31 +229,32 @@ class Configuration {
       }
     );
   }
-
-  private mySimpleTunnel(sshOptions:  IsshConnection , forwardOptions: IforwardConnection, port: number, autoClose = true){  
-
-    let tunnelOptions = {
-        autoClose:autoClose
-    }
-    
-    let serverOptions = {
-        port: port
-    }
-
-    return createTunnel(tunnelOptions, serverOptions, sshOptions, forwardOptions);
-}
-
-private createDbConnection(input: IdbConnection): postgres.Sql<Record<string, unknown>> {
+  
+  // connect ssh tunnel
+  private async connectionTunnel(input: IdbConnection): Promise<boolean> {    
     if (input.tunnel) {
       this.writeLog(log.booting(`${color(EColor.Yellow)}[Tunneling to]`, input.tunnel.sshConnection.host ));
-      this.mySimpleTunnel(input.tunnel.sshConnection, input.tunnel.forwardConnection, 1111)
-      .then(() => {
-        this.writeLog(log.booting(msg( infos.tunnel, `${input.tunnel?.sshConnection.host}` ), EChar.ok ));
-      }).catch((err: Error) => {
-        this.writeLog(log.booting(msg( errors.tunnelError, `${input.tunnel?.sshConnection.host}` ), EChar.notOk ));
-        console.log(err);        
-      });
-    }
+      return await createTunnel(
+        { autoClose: true },
+        { port: 1111 }, 
+        input.tunnel.sshConnection, 
+        input.tunnel.forwardConnection) .then(() => {          
+          this.writeLog(log.booting(msg( infos.tunnel, `${input.tunnel?.sshConnection.host}` ), EChar.ok ));
+          return true;
+        }).catch((err: Error) => {
+          this.writeLog(log.booting(msg( errors.tunnelError, `${input.tunnel?.sshConnection.host}` ), EChar.notOk ));
+          console.log(err);        
+          return false;
+        });
+    } else return false;
+  }
+
+  /**
+   * 
+   * @param input IdbConnection
+   * @returns Postgres.s connection (psql connect string)
+   */
+  private createDbConnection(input: IdbConnection): postgres.Sql<Record<string, unknown>> {
     return postgres( 
       input.tunnel 
       ? `postgres://${input.user}:${input.password}@${input.host}:${1111}/${input.database}`
@@ -274,11 +267,11 @@ private createDbConnection(input: IdbConnection): postgres.Sql<Record<string, un
         },
       }
     );
-}
+  }
   
   public createDbConnectionFromConfigName(input: string): postgres.Sql<Record<string, unknown>> {
     const temp = this.createDbConnection(Configuration.configs[input].pg);
-    Configuration.configs[input].connection = temp;
+    Configuration.configs[input]._connection = temp;
     return temp;
   }
 
@@ -353,7 +346,10 @@ private createDbConnection(input: IdbConnection): postgres.Sql<Record<string, un
         Object.keys(Configuration.configs).filter(e => e.toUpperCase() !== TEST.toUpperCase()),
         async (key: string) => {
           try {
-            await this.addToServer(key);
+            if (Configuration.configs[key].pg.tunnel) {
+              const test = await this.connectionTunnel(Configuration.configs[key].pg);
+              if(test === true) await this.addToServer(key);
+            } else await this.addToServer(key);
           } catch (error) {
             console.log(error);
             status = false;
@@ -369,18 +365,15 @@ private createDbConnection(input: IdbConnection): postgres.Sql<Record<string, un
         if( await this.testDbExists(TEST) ) 
           Configuration.configs[TEST] = this.formatConfig(testDatas["create"]);
           else await createService(testDatas);
-          this.writeLog(log.booting(`${color(EColor.Red)}Database => Test online ${color(EColor.Green)}${infos.ListenPort}`, Configuration.configs[TEST].port ));
+          this.writeLog(log.booting(`${color(EColor.Red)}Database => Test online ${color(EColor.Green)}${infos.ListenPort}`, Configuration.port ));
       }
       this.writeLog(log.logo(APP_VERSION));
       return status;
     // no configuration file so First install    
     } else {
         console.log(log.message("file", Configuration.filePath + EChar.notOk));
-        const port = 8029;
-        if (!Configuration.ports.includes(port))
-          app.listen(port, () => {
-            Configuration.ports.push(port);
-            this.writeLog(log.booting(`${color(EColor.Yellow)}[First launch]${color(EColor.Green)}${infos.ListenPort}`, port ));
+          app.listen(Configuration.port, () => {
+            this.writeLog(log.booting(`${color(EColor.Yellow)}[First launch]${color(EColor.Green)}${infos.ListenPort}`, Configuration.port ));
           });
         return true;
     }
@@ -448,8 +441,9 @@ private createDbConnection(input: IdbConnection): postgres.Sql<Record<string, un
       name: goodDbName,
       port: goodDbName === ADMIN
           ? input["port" as keyobj] || 8029
-          : input["port" as keyobj] || Configuration.configs[ADMIN].port || 8029,
+          : undefined,
       pg: {
+        ready: false,
         host: input["pg" as keyobj] && input["pg" as keyobj]["host" as keyobj] ? String(input["pg" as keyobj]["host" as keyobj]) : `ERROR`,
         port: input["pg" as keyobj] && input["pg" as keyobj]["port"] ? input["pg" as keyobj]["port"] : 5432,
         user: input["pg" as keyobj] && input["pg" as keyobj]["user"] ? input["pg" as keyobj]["user"] : `ERROR`,
@@ -478,7 +472,7 @@ private createDbConnection(input: IdbConnection): postgres.Sql<Record<string, un
       alias: input["alias" as keyobj] ? unikeList(String(input["alias" as keyobj]).split(",")) : [],
       extensions: extensions,
       options: options,
-      connection: undefined,
+      _connection: undefined,
     };    
     if (Object.values(returnValue).includes("ERROR"))
       throw new TypeError(
@@ -525,16 +519,10 @@ private createDbConnection(input: IdbConnection): postgres.Sql<Record<string, un
           });
           if(![ADMIN, TEST].includes(key)) createIndexes(key);
           this.writeLog(log.booting(`${color(EColor.Magenta)}Database => ${color(EColor.Yellow)}[${key}] ${color(EColor.Default)} on line`, res ? EChar.web : EChar.notOk));
-          const port = Configuration.configs[key].port;
-          if (port > 0) {
-            if (Configuration.ports.includes(port))
-              this.writeLog(log.booting(`${color(EColor.Magenta)}[${key}] ${color(EColor.Green)}${infos.addPort}`, port ));
-            else
-              app.listen(port, () => {
-                Configuration.ports.push(port);
-                this.writeLog(log.booting(`${color(EColor.Yellow)}[${key}] ${color(EColor.Green)}${infos.ListenPort}`, port ));
-              });
-          }
+          if(key === ADMIN) app.listen(Configuration.port, () => {
+            this.writeLog(log.booting(`${color(EColor.Yellow)}[${key}] ${color(EColor.Green)}${infos.addPort}`, Configuration.port));
+          });
+          else this.writeLog(log.booting(`${color(EColor.Yellow)}[${key}] ${color(EColor.Green)}${infos.ListenPort}`, Configuration.port ));
         }
         return res;
       })
@@ -614,6 +602,10 @@ private createDbConnection(input: IdbConnection): postgres.Sql<Record<string, un
       })
       .catch(async (err: Error) => {
         // Password authentication failed 
+        if (err["code" as keyobj] === "ECONNREFUSED") {
+          console.log("================================");
+          
+        } else 
         if (err["code" as keyobj] === "28P01") {
           if (!isTest()) return await this.tryToCreateDB(connectName);
           //database does not exist

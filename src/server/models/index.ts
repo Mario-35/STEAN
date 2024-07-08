@@ -90,7 +90,7 @@ class Models {
     const temp = serverConfig.getInfos(ctx, ctx.config.name)
     const result: Record<string, any> = {
       ... temp,
-      ready : ctx.config.connection ? true : false,
+      ready : ctx.config._connection ? true : false,
       Postgres: {}
     };
     const extensions: Record<string, any> = {};

@@ -3,6 +3,7 @@
         "name": "admin",
         "port": 8029,
         "pg": {
+            "ready": false,
             "host": "localhost",
             "port": 5432,
             "user": "postgres",
@@ -24,8 +25,8 @@
     },
     "monitoringquimper": {
         "name": "monitoringquimper",
-        "port": 8037,
         "pg": {
+            "ready": false,
             "host": "localhost",
             "port": 5432,
             "user": "sensorapi",
@@ -50,8 +51,8 @@
     },
     "bosco": {
         "name": "bosco",
-        "port": 8037,
         "pg": {
+            "ready": false,
             "host": "localhost",
             "port": 5432,
             "user": "sensorapi",
@@ -77,8 +78,8 @@
     },
     "agrhys": {
         "name": "agrhys",
-        "port": 8030,
         "pg": {
+            "ready": false,
             "host": "localhost",
             "port": 5432,
             "user": "sensorapi",
@@ -105,8 +106,8 @@
     },
     "onde": {
         "name": "onde",
-        "port": 8030,
         "pg": {
+            "ready": false,
             "host": "localhost",
             "port": 5432,
             "user": "sensorapi",
@@ -128,8 +129,8 @@
     },
     "rennesmetro": {
         "name": "rennesmetro",
-        "port": 8030,
         "pg": {
+            "ready": false,
             "host": "localhost",
             "port": 5432,
             "user": "sensorapi",
@@ -155,8 +156,8 @@
     },
     "stean": {
         "name": "stean",
-        "port": 8030,
         "pg": {
+            "ready": false,
             "host": "localhost",
             "port": 5432,
             "user": "stean",
