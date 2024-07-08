@@ -225,7 +225,11 @@ PS3='Please enter your choice : '
 if [ -f $APIDEST/api/index.js ]; then
     options=("Path" "Update" "Back" "Create script" "Run" "Stop" "Logs" "Quit")
 else
-    options=("Path" "Installation" "Quit")
+    if [ -f .steanpath ]; then
+        options=("Path" "Installation" "Quit")
+    else
+        options=("Path" "Quit")
+    fi
 fi
 select opt in "${options[@]}"
 do
