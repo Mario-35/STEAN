@@ -46,7 +46,7 @@ The project run under nodeJS.
  ┃ ┣ 📂authentication // authentication and tokens
  ┃ ┣ 📂configuration // Configuration Server
  ┃ ┃ ┣ 📜.key // crypt Key
- ┃ ┃ ┗ 📜 production.json // configuration file
+ ┃ ┃ ┗ 📜 configuration.json // configuration file
  ┃ ┣ 📂db
  ┃ ┃ ┣ 📂createDb // datas to create blank Database
  ┃ ┃ ┣ 📂dataAccess
@@ -57,24 +57,27 @@ The project run under nodeJS.
  ┃ ┃ ┗ 📜constants.ts // Constants for DB
  ┃ ┣ 📂enums // Enums datas
  ┃ ┣ 📂helpers // Application helpers
- ┃ ┣ 📂logger // Logs tools
+ ┃ ┣ 📂log // Logs tools
  ┃ ┣ 📂lora // loras functions
  ┃ ┣ 📂messages //all messages of the api
+ ┃ ┣ 📂models //model descriptor
  ┃ ┣ 📂odata // Odata decoder
  ┃ ┃ ┣ 📂parser // Odata parser
  ┃ ┃ ┗ 📂visitor //  Odata decoder process
- ┃ ┃   ┗📂helpers
- ┃ ┣ 📂public // public HTTP pages
+ ┃ ┃   ┣📂builder //  Odata builder process
+ ┃ ┃   ┣📂helper  //  Odata helpers
+ ┃ ┃   ┗📂pg  //  Odata postgres visitor
  ┃ ┣ 📂routes // routes API
- ┃ ┃ ┣ 📜favicon.ico // Icon
- ┃ ┃ ┣ 📜protected.ts // protected routes
- ┃ ┃ ┗ 📜unProtected.ts // open routes
+ ┃ ┃ ┗ 📂helper // routes helpers
+ ┃ ┃   ┣ 📜protected.ts // protected routes
+ ┃ ┃   ┗ 📜unProtected.ts // open routes
  ┃ ┣ 📂types // data types
  ┃ ┣ 📂views // generated view
- ┃ ┃ ┣ 📂css // CsS filse
- ┃ ┃ ┣ 📂helpers
- ┃ ┃ ┣ 📂js // JS filse
- ┃ ┃ ┗ 📂query // Query view
+ ┃ ┃ ┣ 📂clas // class files
+ ┃ ┃ ┣ 📂css
+ ┃ ┃ ┣ 📂helpers // views helpers
+ ┃ ┃ ┣ 📂html 
+ ┃ ┃ ┗ 📂js
  ┃ ┣ 📜constants.ts // App constants
  ┃ ┗ 📜index.ts // starting file
  ┣ 📂template // ApiDoc template
@@ -91,12 +94,11 @@ The project run under nodeJS.
 - [Node.js](https://nodejs.org/) `v18.15.0`
 - [PostgreSQL](https://www.postgresql.org/)
 - [Postgres.js](https://github.com/porsager/postgres)
-- [pg](https://node-postgres.com/)
-- [pg-copy-streams](https://github.com/brianc/node-pg-copy-streams#readme)
 - [json2csv](https://mircozeiss.com/json2csv/)
 - [busboy](https://github.com/mscdex/busboy)
 - [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)
 - [exceljs](https://github.com/exceljs/exceljs)
+- [ssh2](https://github.com/mscdex/ssh2)
 
 ---
 

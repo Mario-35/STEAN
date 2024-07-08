@@ -205,36 +205,39 @@ run_stean() {
     pm2 start $APIDEST/api/index.js
 }
 
+# Function to show menu
+menu() {
+    if command -v pm2 > /dev/null
+    then
+        pm2 ls
+    fi 
+
+    echo -e "\e[34mStean : \e[32m$STEANVER \e[34mNode : \e[32m$(node -v) \e[34mPostgreSQL : \e[32m$(psql --version) \e[34mPm2: \e[32m$(pm2 -v)\e[0m"
+    echo -e "\e[34mStean path : \e[32m$APIDEST\e[0m"
+    echo -e "\e[33m---------------- MENU ----------------\e[0m"
+}
+
+# Function to reload script menu
 restart() {
     bash ./stean.sh && exit
 }
 
 logo
-
-
-menu() {
-
-  
-pm2 ls
-echo -e "\e[34mStean : \e[32m$STEANVER \e[34mNode : \e[32m$(node -v) \e[34mPostgreSQL : \e[32m$(psql --version) \e[34mPm2: \e[32m$(pm2 -v)\e[0m"
-echo -e "\e[34mStean path : \e[32m$APIDEST\e[0m"
-echo -e "\e[33m---------------- MENU ----------------\e[0m"
-}
 menu
 PS3='Please enter your choice : '
 if [ -f $APIDEST/api/index.js ]; then
-    options=("Path" "Update" "Back" "Create script" "Run" "Stop" "Logs" "Quit")
+    options=("Change path" "Update stean" "Back to previous version" "Create run script" "Run stean" "Stop stean" "Logs" "Quit")
 else
     if [ -f .steanpath ]; then
-        options=("Path" "Installation" "Quit")
+        options=("Change path" "Install all" "Quit")
     else
-        options=("Path" "Quit")
+        options=("Change path" "Quit")
     fi
 fi
 select opt in "${options[@]}"
 do
     case $opt in
-        "Path")
+        "Change path")
             # Prompt for the domain name and directory
             read -p "Enter the new path to install api (/var/www/stean) [./]: " APIDEST
             APIDEST=${APIDEST:-./}
@@ -242,7 +245,7 @@ do
             restart
             break
             ;;
-        "Installation")
+        "Install all")
             echo "┌───────────────────────────────────────────────────────────────┐"
             echo "│                         STEAN Install                         │"
             echo "└───────────────────────────────────────────────────────────────┘"
@@ -256,7 +259,7 @@ do
             restart
             break
             ;;
-        "Update")
+        "Update stean")
             echo "┌───────────────────────────────────────────────────────────────┐"
             echo "│                         STEAN Update                          │"
             echo "└───────────────────────────────────────────────────────────────┘"
@@ -266,7 +269,7 @@ do
             restart
             break
             ;;
-        "Back")
+        "Back to previous version")
             echo "┌───────────────────────────────────────────────────────────────┐"
             echo "│                         STEAN Go Back                         │"
             echo "└───────────────────────────────────────────────────────────────┘"        
@@ -276,14 +279,14 @@ do
             restart
             break
             ;;
-        "Create script")
+        "Create run script")
             echo "┌───────────────────────────────────────────────────────────────┐"
             echo "│                       Create Run script                       │"
             echo "└───────────────────────────────────────────────────────────────┘"         
             create_run
             echo "script ====> ./run.sh"            
             ;;
-        "Run")
+        "Run stean")
             echo "┌───────────────────────────────────────────────────────────────┐"
             echo "│                           STEAN Run                           │"
             echo "└───────────────────────────────────────────────────────────────┘"
@@ -292,7 +295,7 @@ do
             restart
             break
             ;;
-        "Stop")
+        "Stop stean")
             echo "┌───────────────────────────────────────────────────────────────┐"
             echo "│                           STEAN Stop                          │"
             echo "└───────────────────────────────────────────────────────────────┘"

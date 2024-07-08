@@ -54,7 +54,6 @@
         "koa-logger": "^3.2.1",
         "koa-router": "^10.0.0",
         "koa-static": "^5.0.0",
-        "munchy": "^1.0.9",
         "postgres": "^3.4.4",
         "ssh2": "^1.15.0"
     },
