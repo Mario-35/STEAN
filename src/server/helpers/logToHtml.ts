@@ -14,6 +14,7 @@ import { EChar } from "../enums";
 
 export function logToHtml(input: string): string {
   if (input) {
+    input = String(input);
     const couleur = (input: string) => `</span><span style="color:#${input}"> `
     const formate = (input: string) => {
       const tmp =  input.split("</span>")

@@ -34,6 +34,7 @@
 
 ## version 3.6.1
    prepare easy prod install
+   Th34nk0uIsGod$
 
 ## version 3.6
     add getKey to perform first Install
