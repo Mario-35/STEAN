@@ -15,7 +15,7 @@ import { IdbConnection } from "./dbConnection";
 export interface IconfigFile {
     name:           string; // name of the config file
     key?:           string; // key for crypto
-    port?:           number; // server port
+    port?:          number; // server port
     pg:             IdbConnection; // postgresSql connection
     apiVersion:     EVersion; // api version / model
     date_format:    string; // formating date

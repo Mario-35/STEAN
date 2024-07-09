@@ -11,17 +11,20 @@ import { Iuser, koaContext } from "../../types";
 
 
 export function blankUser(ctx: koaContext):Iuser  {    
-    return {
+    const tmp = {
         id: 0,
         username: "query",
         password: "",
         email: "",
         database: ctx.config.pg.database,
-        canPost: !!ctx.config.extensions.includes(EExtensions.security),
-        canDelete: !!ctx.config.extensions.includes(EExtensions.security),
-        canCreateUser: !!ctx.config.extensions.includes(EExtensions.security),
-        canCreateDb: !!ctx.config.extensions.includes(EExtensions.security),
+        canPost: !ctx.config.extensions.includes(EExtensions.users),
+        canDelete: !ctx.config.extensions.includes(EExtensions.users),
+        canCreateUser: !ctx.config.extensions.includes(EExtensions.users),
+        canCreateDb: !ctx.config.extensions.includes(EExtensions.users),
         admin: false,
         superAdmin: false
     }
+    console.log(tmp);
+    
+    return tmp ;
 };

@@ -7,26 +7,7 @@
  *
  */
 process.env.NODE_ENV = "test";
-import {
-	IApiDoc,
-	generateApiDoc,
-	IApiInput,
-	prepareToApiDoc,
-	defaultGet,
-	defaultPost,
-	identification,
-	keyTokenName,
-	defaultPatch,
-	defaultDelete,
-	listOfColumns,
-	limitResult,
-	infos,
-	apiInfos,
-	showHide,
-	nbColor,
-	nbColorTitle,
-	testVersion,
-	_RAWDB
+import { IApiDoc, generateApiDoc, IApiInput, prepareToApiDoc, defaultGet, defaultPost, identification, keyTokenName, defaultPatch, defaultDelete, listOfColumns, limitResult, infos, apiInfos, showHide, nbColor, nbColorTitle, testVersion, _RAWDB
 } from "./constant";
 export const testsKeys = ["@iot.id", "@iot.selfLink", "description", "name", "properties", "Locations@iot.navigationLink", "HistoricalLocations@iot.navigationLink", "Datastreams@iot.navigationLink", "MultiDatastreams@iot.navigationLink"];
 import chai from "chai";
@@ -154,6 +135,7 @@ describe("endpoint : Thing [8.2.1]", () => {
 					done();
 				});
 		});
+		
 		it(`Return error if ${entity.name} not exist ${nbColor}[9.2.4]`, (done) => {
 			const infos = addTest({
 				api: `Return error if ${entity.name} not exist`,

@@ -98,7 +98,7 @@ class Log {
     if (_DEBUG) {
       const tmp = infos ? `${color(EColor.Default)} ${infos} ${color(EColor.Reset)}` : '';
       return `${color(EColor.Red)} ${this.line(4)} ${color(EColor.Cyan)} ${ new Error().stack?.split("\n")[2].trim().split("(")[0].split("at ")[1].trim() } ${tmp}${color(EColor.Red)} ${this.line(4)}${color(EColor.Reset)}`;
-    }
+    };
   }  
 
   logo(ver: string) {

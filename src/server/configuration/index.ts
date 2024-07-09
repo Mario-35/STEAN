@@ -36,13 +36,15 @@ class Configuration {
     const file: fs.PathOrFileDescriptor = __dirname + `/${EFileName.config}`;
     Configuration.filePath = file.toString();
     // override console log important in production build will remove all console.log   
-    if(isProduction()) console.log = (data: any) => {
-      if (data) this.writeLog(data);
-    };
+    // if(isProduction()) console.log = (data: any) => {
+    //   if (data) this.writeLog(data);
+    // };
     if (isTest()) {
       console.log = (data: any) => {};
       this.readConfigFile();
-    }    
+    } else  console.log = (data: any) => {
+      if (data) this.writeLog(data);
+    };
   }
   
   writeLog(input: any) {
@@ -443,7 +445,7 @@ class Configuration {
           ? input["port" as keyobj] || 8029
           : undefined,
       pg: {
-        ready: false,
+        _ready: undefined,
         host: input["pg" as keyobj] && input["pg" as keyobj]["host" as keyobj] ? String(input["pg" as keyobj]["host" as keyobj]) : `ERROR`,
         port: input["pg" as keyobj] && input["pg" as keyobj]["port"] ? input["pg" as keyobj]["port"] : 5432,
         user: input["pg" as keyobj] && input["pg" as keyobj]["user"] ? input["pg" as keyobj]["user"] : `ERROR`,

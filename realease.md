@@ -1,7 +1,8 @@
 # Release Stean
 
 ## version 3.7.6
-    tunnel ssh done (mip to 3.7.7)
+    tunnel ssh done
+    add configs it TDD so in doc
 ## version 3.7.5
     correction filter with result mulitidatastream
     correction extensions in first install

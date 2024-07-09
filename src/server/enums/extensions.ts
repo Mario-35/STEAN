@@ -10,7 +10,6 @@
 
 export enum EExtensions { 
     base = "base",
-    security = "security",
     logs = "logs",
     users = "users",
     lora = "lora",

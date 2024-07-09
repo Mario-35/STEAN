@@ -3,6 +3,7 @@
         "name": "admin",
         "port": 8029,
         "pg": {
+            "ready": false,
             "host": "localhost",
             "port": 5432,
             "user": "postgres",
@@ -25,6 +26,7 @@
     "monitoringquimper": {
         "name": "monitoringquimper",
         "pg": {
+            "ready": false,
             "host": "localhost",
             "port": 5432,
             "user": "sensorapi",
@@ -49,6 +51,7 @@
     "bosco": {
         "name": "bosco",
         "pg": {
+            "ready": false,
             "host": "localhost",
             "port": 5432,
             "user": "sensorapi",
@@ -75,6 +78,7 @@
     "agrhys": {
         "name": "agrhys",
         "pg": {
+            "ready": false,
             "host": "localhost",
             "port": 5432,
             "user": "sensorapi",
@@ -102,6 +106,7 @@
     "onde": {
         "name": "onde",
         "pg": {
+            "ready": false,
             "host": "localhost",
             "port": 5432,
             "user": "sensorapi",
@@ -124,12 +129,54 @@
     "rennesmetro": {
         "name": "rennesmetro",
         "pg": {
+            "ready": false,
             "host": "localhost",
             "port": 5432,
             "user": "sensorapi",
             "password": "mario29",
             "database": "rennesmetro",
             "retry": 2
+        },
+        "apiVersion": "v1.1",
+        "date_format": "DD/MM/YYYY hh:mi:ss",
+        "webSite": "http://sensorthings.geosas.fr/apidoc/",
+        "nb_page": 200,
+        "alias": [
+            ""
+        ],
+        "extensions": [
+            "base",
+            "multiDatastream",
+            "lora",
+            "logs",
+            "users"
+        ],
+        "options": []
+    },
+    "stean": {
+        "name": "stean",
+        "pg": {
+            "ready": false,
+            "host": "localhost",
+            "port": 5432,
+            "user": "stean",
+            "password": "stean",
+            "database": "stean",
+            "retry": 2,
+            "tunnel": {
+                "sshConnection": {
+                    "host": "147.100.165.4",
+                    "username": "madam",
+                    "port": 22,
+                    "password": "Mario35*"
+                },
+                "forwardConnection": {
+                    "srcAddr": "localhost",
+                    "srcPort": 1111,
+                    "dstAddr": "localhost",
+                    "dstPort": 5432
+                }
+            }
         },
         "apiVersion": "v1.1",
         "date_format": "DD/MM/YYYY hh:mi:ss",

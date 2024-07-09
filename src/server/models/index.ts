@@ -186,9 +186,8 @@ class Models {
     } 
     return testVersion(nb);
   }
-
   
-  private filtering(config: IconfigFile) { 
+  private filtering(config: IconfigFile) {    
     return Object.fromEntries(Object.entries(Models.models[config.apiVersion]).filter(([, v]) => Object.keys(filterEntities(config.extensions)).includes(v.name))) as Ientities;
   }
 

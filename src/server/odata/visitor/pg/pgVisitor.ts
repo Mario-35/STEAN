@@ -18,7 +18,7 @@ import { errors, msg } from "../../../messages";
 import { EColumnType, EQuery } from "../../../enums";
 import { models } from "../../../models";
 import { log } from "../../../log";
-import { _COLUMNSEPARATOR } from "../../../constants";
+import { _COLUMNSEPARATOR, _DEBUG } from "../../../constants";
 import { Visitor } from "./visitor";
 import { _ID, _NAVLINK } from "../../../db/constants";
 import { Query } from "../builder";
@@ -43,7 +43,7 @@ export class PgVisitor extends Visitor {
   ast: Token;
   showRelations = true;
   results: IKeyString = {};
-  debugOdata = isTest() ? false : true;
+  debugOdata = isTest() ? false : _DEBUG;
   constructor(ctx: koaContext, options = <SqlOptions>{}) {
     console.log(log.whereIam());
     super(ctx, options);

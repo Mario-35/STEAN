@@ -15,6 +15,7 @@ import { addToService, createService } from "../helpers";
 import { setDebug } from "../../constants";
 import { userAuthenticated } from "../../authentication";
 import { log } from "../../log";
+import { EExtensions } from "../../enums";
 
 export class Configs extends Common {
   constructor(ctx: koaContext) {
@@ -55,6 +56,7 @@ export class Configs extends Common {
   
   async post(dataInput: Record<string, any> | undefined): Promise<IreturnResult | undefined> {
     console.log(log.whereIam());
+    if (!this.ctx.config.extensions.includes(EExtensions.users)) this.ctx.throw(401);
     if (dataInput && dataInput["create"] && dataInput["create"]["name"]) {
       return this.formatReturnResult({
         body: await createService(dataInput, this.ctx),

@@ -522,6 +522,39 @@ export const infos: Record<string, any>  = {
     },
 
     Configs: {
+        definition: "A Config represent the configuration of the sorvice and the possibility to create a service.",
+        columns: {
+            name: "Name of the service.",
+            apiVersion: "version of the model",
+            date_format: "date format",
+            nb_page: "Default number of item by page for pagination",
+            alias: "List of alias for calling the API",
+            extensions: "List of extensions",
+            options: "List of options",
+            pg: `<pre>{
+                "host": "Postgres Host",
+                "port": "Postgres Port",
+                "user": "Postgres username to create",
+                "password": "Postgres password to create",
+                "database": "Name of the database (create it if not exist)",
+                "retry": "number of connection retry",
+                "tunnel": {
+                    "sshConnection": {
+                        "host": "Distant host",
+                        "username": "Distant username",
+                        "password": "Distant password",
+                        "port": "Distant ssh port"
+                    },
+                    "forwardConnection": {
+                        "srcAddr": "forward Connection source address",
+                        "srcPort": "forward Connection source port",
+                        "dstAddr": "forward Connection distant address",
+                        "dstPort": "forward Connection distant port"
+                    }
+                }
+            }</pre>
+            `,
+        }
     },
     
     CreateObservations: {
@@ -556,6 +589,8 @@ export const showHide = (name: string, content: string) => `<input id="show${nam
 
 export const apiInfos = {
     "0" : `List of some code values used for identifying observations result types defined in the Datastream or MultiDatastream observationType.</b> <table> <thead> <tr> <th style="width: 20%">Type (O&M 2.0)</th> <th style="width: 70%">Value Code</th> <th style="width: 10%">Result</th> </tr> </thead> <tbody> <tr> <td>OM_CategoryObservation</td> <td>http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_CategoryObservation</td> <td>URI</td> </tr> <tr> <td>OM_CountObservation</td> <td>http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_CountObservation</td> <td>integer</td> </tr> <tr> <td>OM_Measurement</td> <td>http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement</td> <td>double</td> <tr> <td>OM_complexObservation</td> <td>http://www.opengis.net/def/observation-type/ogc-om/2.0/om_complex-observation</td> <td>array of double</td> </tr> <tr> <td>OM_Observation</td> <td>http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Observation</td> <td>any</td> </tr> <tr> <td>OM_TruthObservation</td> <td>http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_TruthObservation</td> <td>boolean</td> </tr> <tr> <td>OM_SWEArrayObservation</td> <td>http://www.opengis.net/def/observation-type/ogc-omxml/2.0/swe-array-observation</td> <td>array</td> </tr> </tbody> </table>`, "9.2.2" : "To address to an entity set, users can simply put the entity set name after the service root URI. The service returns a JSON object with a property of value. The value of the property SHALL be a list of the entities in the specified entity set.",
+    "1" : `List of Options : <table> <thead> <tr> <th style="width: 20%">Option</th> <th style="width: 70%">Description</th> </tr> </thead> <tbody> <tr> <td>canDrop</td> <td>Can drop database (usefull when setting system)</td> </tr> <tr> <td>stripNull</td> <td>Remove null value to json</td> </tr> <tr> <td>forceHttps</td> <td>add s to http:</td> </tr> </tbody> </table>`,
+    "2" : `List of Extensions : <table> <thead> <tr> <th style="width: 20%">Option</th> <th style="width: 70%">Extensions</th> </tr> </thead> <tbody> <tr> <td>base</td> <td>Core Sensorthings</td> </tr> <tr> <td>logs</td> <td>Add log entity to save logs</td> </tr> <tr> <td>users</td> <td>Add users mangement</td> </tr> <tr> <td>lora</td> <td>Add lora to manage lora sensors</td> </tr> <tr> <td>multiDatastream</td> <td>Add multiDatastream extension</td> </tr> <tr> <td>highPrecision</td> <td>Result are on float8 instead of float4</td> </tr> <tr> <td>mqtt</td> <td>Not use yet</td> </tr> <tr> <td>tasking</td> <td>Not use yet</td> </tr> </tbody> </table>`,
     "9.2.3" : "Users can address to a specific entity in an entity set by place the unique identifier of the entity between brace symbol “()” and put after the entity set name. The service then returns the entity with all its properties.",
     "9.2.4" : "Users can address to a property of an entity by specifying the property name after the URI addressing to the entity. The service then returns the value of the specified property. If the property has a complex type value, properties of that value can be addressed by further property name composition.</br>If the property is single-valued and has the null value, the service SHALL respond with 204 No Content. If the property is not available, for example due to permissions, the service SHALL respond with 404 Not Found.",
     "9.2.5" : "To address the raw value of a primitive property, clients append a path segment containing the string $value to the property URL.",

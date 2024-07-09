@@ -20,5 +20,5 @@ export interface IdbConnection { //postgresSqlconnection
         sshConnection: IsshConnection;
         forwardConnection : IforwardConnection;
     } | undefined;
-    ready: boolean;
+    _ready: boolean | undefined;
 }
