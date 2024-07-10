@@ -46,13 +46,13 @@ export const createDatabase = async (configName: string): Promise<IKeyString> =>
               .then(() => {
                 returnValue[`Create/Alter ROLE`] = `${config.user} ${EChar.ok}`;
               })
-              .catch((err: Error) => {
-                console.log(err);
+              .catch((error: Error) => {
+                console.log(error);
               });
           }
         });
-    }).catch((err: Error) => {
-      console.log(err);
+    }).catch((error: Error) => {
+      console.log(error);
     });
 
     const dbConnection = serverConfig.connection(configName);

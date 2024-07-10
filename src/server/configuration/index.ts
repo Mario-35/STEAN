@@ -43,6 +43,8 @@ class Configuration {
       console.log = (data: any) => {};
       this.readConfigFile();
     } else  console.log = (data: any) => {
+      this.writeLog(`${ new Error().stack?.split("\n")[2].trim().split("(")[0].split("at ")[1].trim() }`);
+
       if (data) this.writeLog(data);
     };
   }
@@ -168,9 +170,9 @@ class Configuration {
       isProduction() === true 
         ? encrypt(JSON.stringify(result, null, 4))
         : JSON.stringify(result, null, 4),
-      (err) => {
-        if (err) {
-          console.log(err);
+      (error) => {
+        if (error) {
+          console.log(error);
           return false;
         }
       }
@@ -243,9 +245,9 @@ class Configuration {
         input.tunnel.forwardConnection) .then(() => {          
           this.writeLog(log.booting(msg( infos.tunnel, `${input.tunnel?.sshConnection.host}` ), EChar.ok ));
           return true;
-        }).catch((err: Error) => {
+        }).catch((error: Error) => {
           this.writeLog(log.booting(msg( errors.tunnelError, `${input.tunnel?.sshConnection.host}` ), EChar.notOk ));
-          console.log(err);        
+          console.log(error);        
           return false;
         });
     } else return false;
@@ -560,8 +562,8 @@ class Configuration {
           application_name : `${APP_NAME} ${APP_VERSION}`
         }
       })`select 1+1 AS result`.then(async () => true)
-    .catch((err: Error) => {
-        console.log(err);
+    .catch((error: Error) => {
+        console.log(error);
         return false;
       });
   }
@@ -602,19 +604,18 @@ class Configuration {
         }
         return true;
       })
-      .catch(async (err: Error) => {
+      .catch(async (error: Error) => {
         // Password authentication failed 
-        if (err["code" as keyobj] === "ECONNREFUSED") {
-          console.log("================================");
-          
+        if (error["code" as keyobj] === "ECONNREFUSED") {
+          console.log(log.error(error));
         } else 
-        if (err["code" as keyobj] === "28P01") {
+        if (error["code" as keyobj] === "28P01") {
           if (!isTest()) return await this.tryToCreateDB(connectName);
-          //database does not exist
-        } else if (err["code" as keyobj] === "3D000" && create == true) {
+          // Database does not exist
+        } else if (error["code" as keyobj] === "3D000" && create == true) {
           console.log(log._infos(msg(infos.tryCreate, infos.db), Configuration.configs[connectName].pg.database ));
           if (connectName !== TEST)   return await this.tryToCreateDB(connectName);
-        } else  console.log(err);
+        } else  console.log(error);
         return false;
       });
   }

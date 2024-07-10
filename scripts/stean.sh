@@ -14,7 +14,7 @@ APIDEST=$(echo "$APIDEST" | sed 's:/*$::')
 # Name of the file downladed
 FILEDIST=./dist.zip
 # Name of the backup
-FILEDISTOLD=./distOld.zip
+FILEDISTOLD=./distOld.zip 
 # Name of the run script
 FILERUN=./run.sh
 # Name of the run script
@@ -216,6 +216,10 @@ menu() {
     echo -e "\e[34mStean : \e[32m$STEANVER \e[34mNode : \e[32m$(node -v) \e[34mPostgreSQL : \e[32m$(psql --version) \e[34mPm2: \e[32m$(pm2 -v)\e[0m"
     echo -e "\e[34mStean path : \e[32m$APIDEST\e[0m"
     echo -e "\e[33m---------------- MENU ----------------\e[0m"
+    for index in "${!options[@]}"; do
+        echo "$((index+1))) ${options[index]}"
+    done
+
 }
 
 # Function to reload script menu

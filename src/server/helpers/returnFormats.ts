@@ -50,11 +50,7 @@ const generateGrahSql = (input: PgVisitor): string => {
   const query = table === input.ctx.model.Datastreams.table
       ? graphDatastream(table, id, input)
       : graphMultiDatastream( table, id, input );
-
-
-// console.log(query);
-
-
+      
   return asJson({
     query: query,
     singular: false,

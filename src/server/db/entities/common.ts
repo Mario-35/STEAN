@@ -150,9 +150,9 @@
      const results: Record<string, any>[] = [];
      // execute query
      await executeSqlValues(this.ctx.config, sqls.join(";")).then((res: Record<string, any> ) => results.push(res[0 as keyobj]) )
-         .catch((err: Error) => { 
-           console.log(err);           
-           this.ctx.throw(400, { code: 400, detail: err["detail" as keyobj] });
+         .catch((error: Error) => { 
+           console.log(error);           
+           this.ctx.throw(400, { code: 400, detail: error["detail" as keyobj] });
          });
      // Return results
      return this.formatReturnResult({

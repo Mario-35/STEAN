@@ -6,12 +6,12 @@
  *
  */
 // onsole.log("!----------------------------------- blankUser -----------------------------------!");
+
 import { EExtensions } from "../../enums";
 import { Iuser, koaContext } from "../../types";
 
-
 export function blankUser(ctx: koaContext):Iuser  {    
-    const tmp = {
+    return {
         id: 0,
         username: "query",
         password: "",
@@ -24,7 +24,4 @@ export function blankUser(ctx: koaContext):Iuser  {
         admin: false,
         superAdmin: false
     }
-    console.log(tmp);
-    
-    return tmp ;
 };

@@ -12,8 +12,6 @@ import { cleanStringComma } from "../../helpers";
 import { PgVisitor } from "../../odata/visitor";
 
 export const graphMultiDatastream = (table: string, id: string | bigint, input: PgVisitor): string => {
-  console.log( input.query.orderBy);
-  console.log( input.limit);
   const query = interval(input);
   const ids = (typeof id === "string" ) ? createIdList(id) : [String(id)];  
   const pgQuery = input.toPgQuery();

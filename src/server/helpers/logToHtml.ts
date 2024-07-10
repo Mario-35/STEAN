@@ -8,12 +8,15 @@
 // onsole.log("!----------------------------------- logToHtml -----------------------------------!");
 
 import { EChar } from "../enums";
+import util from "util";
 
 
 
 
 export function logToHtml(input: string): string {
   if (input) {
+    if (typeof input !== "string")
+    process.stdout.write(util.inspect(input, { showHidden: false, depth: null, colors: false, })  + "\n");
     input = String(input);
     const couleur = (input: string) => `</span><span style="color:#${input}"> `
     const formate = (input: string) => {
