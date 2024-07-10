@@ -8,14 +8,13 @@
 // onsole.log("!----------------------------------- Configuration class -----------------------------------!");
 
 import { addToStrings, ADMIN, APP_NAME, APP_VERSION, color, DEFAULT_DB, NODE_ENV, setReady, TEST, _DEBUG } from "../constants";
-import { asyncForEach, createTunnel, decrypt, encrypt, isProduction, isTest, logToHtml, unikeList, unique, } from "../helpers";
+import { asyncForEach, createTunnel, decrypt, encrypt, isProduction, isTest, logToHtml, } from "../helpers";
 import { IconfigFile, IdbConnection, IserviceInfos, koaContext, keyobj } from "../types";
 import { errors, infos, msg } from "../messages";
 import { createIndexes, createService} from "../db/helpers";
 import { app } from "..";
-import { EChar, EColor, EExtensions, EFileName, EOptions, EUpdate, EVersion, typeExtensions, typeOptions } from "../enums";
+import { EChar, EColor, EExtensions, EFileName, EOptions, EUpdate } from "../enums";
 import fs from "fs";
-import util from "util";
 import update from "./update.json";
 import postgres from "postgres";
 import { triggers } from "../db/createDb/triggers";
@@ -23,6 +22,7 @@ import { log } from "../log";
 import { createDatabase, testDatas } from "../db/createDb";
 import { userAccess } from "../db/dataAccess";
 import path from "path";
+import { formatconfigFile, testDbExists, validJSONConfig } from "./helper";
 
 // class to logCreate configs environements
 class Configuration {
@@ -35,16 +35,12 @@ class Configuration {
   constructor() {
     const file: fs.PathOrFileDescriptor = __dirname + `/${EFileName.config}`;
     Configuration.filePath = file.toString();
-    // override console log important in production build will remove all console.log   
-    // if(isProduction()) console.log = (data: any) => {
-    //   if (data) this.writeLog(data);
-    // };
+    // override console log important in production build will remove all console.log
     if (isTest()) {
       console.log = (data: any) => {};
       this.readConfigFile();
     } else  console.log = (data: any) => {
-      this.writeLog(`${ new Error().stack?.split("\n")[2].trim().split("(")[0].split("at ")[1].trim() }`);
-
+      // this.writeLog(`${ new Error().stack?.split("\n")[2].trim().split("(")[0].split("at ")[1].trim() }`);
       if (data) this.writeLog(data);
     };
   }
@@ -64,12 +60,12 @@ class Configuration {
       // load File
       const fileContent = input || fs.readFileSync(Configuration.filePath, "utf8");
       if (fileContent.trim() === "")  {
-        this.writeLog(log.error(`File is empty`, Configuration.filePath));
+        this.writeLog(log.error(msg(errors.fileEmpty, Configuration.filePath), Configuration.filePath));
         process.exit(111);      
       }
       // decrypt file
       Configuration.configs = JSON.parse(decrypt(fileContent));
-      if (this.validJSONConfig(Configuration.configs)) {
+      if (validJSONConfig(Configuration.configs)) {
         if (isTest()) {
           Configuration.configs[ADMIN] = this.formatConfig(ADMIN);
           Configuration.configs[TEST] = this.formatConfig(testDatas["create"]);
@@ -85,7 +81,7 @@ class Configuration {
       // rewrite file (to update config modification except in test mode)
       if (!isTest()) this.writeConfig();    
     } catch (error: any) {
-      this.writeLog(log.error("Config is not correct", error["message"]));
+      this.writeLog(log.error(errors.configFileError, error["message"]));
       process.exit(111);      
     }
   }
@@ -142,18 +138,6 @@ class Configuration {
 
   public getConfigs() {
     return Object.keys(Configuration.configs).filter(e => e !== ADMIN);
-  }
-
-  // verify is valid config
-  private validJSONConfig(input: Record<string, any> ): boolean {    
-    if (!input.hasOwnProperty(ADMIN)) return false;
-    if (!input[ADMIN].hasOwnProperty("pg")) return false;
-    const admin = input[ADMIN]["pg" as keyobj] as JSON;
-    if (!admin.hasOwnProperty("host")) return false;
-    if (!admin.hasOwnProperty("user")) return false;
-    if (!admin.hasOwnProperty("password")) return false;
-    if (!admin.hasOwnProperty("database")) return false;
-    return true;
   }
 
   // Write an encrypt config file in json file
@@ -366,7 +350,7 @@ class Configuration {
         this.afterAll();
       }           
       if(!isTest()) {
-        if( await this.testDbExists(TEST) ) 
+        if( await testDbExists(Configuration.configs[ADMIN].pg, TEST) ) 
           Configuration.configs[TEST] = this.formatConfig(testDatas["create"]);
           else await createService(testDatas);
           this.writeLog(log.booting(`${color(EColor.Red)}Database => Test online ${color(EColor.Green)}${infos.ListenPort}`, Configuration.port ));
@@ -410,15 +394,7 @@ class Configuration {
     }
   };
 
-  public getModelVersion = (name: string): EVersion => {
-    switch (name) {
-      case "v1.1":
-      case "1.1":
-        return EVersion.v1_1
-      default:
-        return EVersion.v1_0
-    }
-  }
+
   
   // return IconfigFile Formated for IconfigFile object or name found in json file
   private formatConfig(input: object | string, name?: string): IconfigFile {
@@ -426,66 +402,11 @@ class Configuration {
       name = input;
       input = Configuration.configs[input];
     }
-    const options: typeof typeOptions = input["options"as keyobj]
-    ? unique([... String(input["options"as keyobj]).split(",")]) as typeof typeOptions 
-    : [];
-
-    const extensions: typeof typeExtensions = input["extensions"as keyobj]
-      ? unique(["base", ... String(input["extensions"as keyobj]).split(",")]) as typeof typeExtensions 
-      : ["base"];
-      
-
-
-    if (input["extensions"as keyobj]["users"]) extensions.includes("users")
     const goodDbName = name
-      ? name
-      : input["pg" as keyobj] && input["pg" as keyobj]["database"] ? input["pg" as keyobj]["database"] : `ERROR` || "ERROR";
-    const version = goodDbName === ADMIN ? EVersion.v1_1  : String(input["apiVersion" as keyobj]).trim();
-    const returnValue: IconfigFile = {
-      name: goodDbName,
-      port: goodDbName === ADMIN
-          ? input["port" as keyobj] || 8029
-          : undefined,
-      pg: {
-        _ready: undefined,
-        host: input["pg" as keyobj] && input["pg" as keyobj]["host" as keyobj] ? String(input["pg" as keyobj]["host" as keyobj]) : `ERROR`,
-        port: input["pg" as keyobj] && input["pg" as keyobj]["port"] ? input["pg" as keyobj]["port"] : 5432,
-        user: input["pg" as keyobj] && input["pg" as keyobj]["user"] ? input["pg" as keyobj]["user"] : `ERROR`,
-        password: input["pg" as keyobj] && input["pg" as keyobj]["password"] ? input["pg" as keyobj]["password"] : `ERROR`,
-        database: name && name === "test" ? "test" : input["pg" as keyobj] && input["pg" as keyobj]["database"] ? input["pg" as keyobj]["database"] : `ERROR`,
-        retry: input["retry" as keyobj] ? +input["retry" as keyobj] : 2,
-        tunnel: input["pg" as keyobj] && input["pg" as keyobj]["tunnel"] ?  {
-          sshConnection: {
-            host: input["pg" as keyobj] && input["pg" as keyobj]["tunnel"] &&  input["pg" as keyobj]["tunnel"]["sshConnection"]["host"] ? input["pg" as keyobj]["tunnel"]["sshConnection"]["host"] : `ERROR`,
-            username: input["pg" as keyobj] && input["pg" as keyobj]["tunnel"] &&  input["pg" as keyobj]["tunnel"]["sshConnection"]["username"] ? input["pg" as keyobj]["tunnel"]["sshConnection"]["username"] : `ERROR`,
-            port: input["pg" as keyobj] && input["pg" as keyobj]["tunnel"] &&  input["pg" as keyobj]["tunnel"]["sshConnection"]["port"] ? input["pg" as keyobj]["tunnel"]["sshConnection"]["port"] : 22,
-            password: input["pg" as keyobj] && input["pg" as keyobj]["tunnel"] &&  input["pg" as keyobj]["tunnel"]["sshConnection"]["password"] ? input["pg" as keyobj]["tunnel"]["sshConnection"]["password"] : `ERROR`,
-          },
-          forwardConnection: {
-            srcAddr: input["pg" as keyobj] && input["pg" as keyobj]["tunnel"] &&  input["pg" as keyobj]["tunnel"]["forwardConnection"]["srcAddr"] ? input["pg" as keyobj]["tunnel"]["forwardConnection"]["srcAddr"] : `ERROR`,
-            srcPort: input["pg" as keyobj] && input["pg" as keyobj]["tunnel"] &&  input["pg" as keyobj]["tunnel"]["forwardConnection"]["srcPort"] ? input["pg" as keyobj]["tunnel"]["forwardConnection"]["srcPort"] : 22,
-            dstAddr: input["pg" as keyobj] && input["pg" as keyobj]["tunnel"] &&  input["pg" as keyobj]["tunnel"]["forwardConnection"]["dstAddr"] ? input["pg" as keyobj]["tunnel"]["forwardConnection"]["dstAddr"] : `ERROR`,
-            dstPort: input["pg" as keyobj] && input["pg" as keyobj]["tunnel"] &&  input["pg" as keyobj]["tunnel"]["forwardConnection"]["dstPort"] ? input["pg" as keyobj]["tunnel"]["forwardConnection"]["dstPort"] : 22
-          }
-        } : undefined 
-      },
-      apiVersion: this.getModelVersion(version),
-      date_format: input["date_format" as keyobj] || "DD/MM/YYYY hh:mi:ss",
-      webSite: input["webSite" as keyobj] || "no web site",
-      nb_page: input["nb_page" as keyobj] ? +input["nb_page" as keyobj] : 200,
-      alias: input["alias" as keyobj] ? unikeList(String(input["alias" as keyobj]).split(",")) : [],
-      extensions: extensions,
-      options: options,
-      _connection: undefined,
-    };    
-    if (Object.values(returnValue).includes("ERROR"))
-      throw new TypeError(
-        `${errors.inConfigFile} [${util.inspect(returnValue, {
-          showHidden: false,
-          depth: null,
-        })}]`
-      );
-    return returnValue;
+    ? name
+    : input["pg" as keyobj] && input["pg" as keyobj]["database"] ? input["pg" as keyobj]["database"] : `ERROR` || "ERROR";
+
+    return formatconfigFile(goodDbName, input);
   }
 
   // Add config to configuration file
@@ -548,22 +469,6 @@ class Configuration {
       })
       .catch((err: Error) => {;        
         this.writeLog(log.error(msg(infos.create, infos.db), err.message));
-        return false;
-      });
-  }
-
-  // test if database exist with admin connection
-  private async testDbExists(dbName: string): Promise<boolean> {
-    const input = Configuration.configs[ADMIN].pg;
-    return await postgres( `postgres://${input.user}:${input.password}@${input.host}:${input.port || 5432}/${dbName}`,
-      {
-        debug: _DEBUG,          
-        connection: { 
-          application_name : `${APP_NAME} ${APP_VERSION}`
-        }
-      })`select 1+1 AS result`.then(async () => true)
-    .catch((error: Error) => {
-        console.log(error);
         return false;
       });
   }

@@ -2,7 +2,7 @@
 	"alreadyPresent": "Already present",
 	"invalidQuery": "Invalid Query",
 	"inConfigFile": "Error in config file",
-	"configFileError": "Config not correct",
+	"configFileError": "Config is not correct",
 	"configName": "Configname $1 not found",
 	"noNameIdentified": "No name indentified",
     "notPresentInConfigName": "$1 : not present in config File",  
@@ -50,5 +50,6 @@
 	"InvalidPayload": "Invalid Payload",
 	"invalidSTVersion": "Invalid SensorThings version",
 	"wrongVersion": "Wrong $1 version",
-	"tunnelError": "Tunneling to $1 error"
+	"tunnelError": "Tunneling to $1 error",
+	"fileEmpty": "File $1 si empty"
 }

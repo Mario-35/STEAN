@@ -45,7 +45,7 @@ export const createEntity = (name: string, datas: Ientity1 | number) : Ientity =
     throw new Error(msg( errors.noValidEntity, name));
 };
   
-export const Config: Ientity = createEntity("Configs", 98);
+export const Config: Ientity = createEntity("Configs", 0);
 export const CreateFile: Ientity = createEntity("CreateFile", 0);
 export const CreateObservation:Ientity = createEntity("CreateObservations", 0);
 export { Datastream } from "./datastream";

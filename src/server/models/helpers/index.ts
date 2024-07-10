@@ -7,6 +7,7 @@
  */
 // onsole.log("!----------------------------------- Index Models Helpers -----------------------------------!");
 
-export { formatColumnValue } from "./formatColumnValue";
-export { createUpdateValues } from "./createUpdateValues";
 export { createInsertValues } from "./createInsertValues";
+export { createUpdateValues } from "./createUpdateValues";
+export { formatColumnValue } from "./formatColumnValue";
+export { getModelVersion } from "./getModelVersion";
