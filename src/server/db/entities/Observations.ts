@@ -22,6 +22,8 @@ export class Observations extends Common {
   }
   // Prepare odservations 
   async prepareInputResult(dataInput: Record<string, any> ): Promise<object> {
+    console.log("=======================================================================");
+    
     console.log(log.whereIam());
     // IF MultiDatastream
     if ( (dataInput["MultiDatastream"] && dataInput["MultiDatastream"] != null) || (this.ctx.odata.parentEntity && this.ctx.odata.parentEntity.startsWith("MultiDatastream")) ) {

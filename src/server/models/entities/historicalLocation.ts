@@ -47,7 +47,7 @@ export const HistoricalLocation:Ientity  = createEntity("HistoricalLocations", {
       'ON public."historicallocation" USING btree ("thing_id")',
   },
   relations: {
-    Things: {
+    Thing: {
       type: ERelations.belongsTo,
       expand: `"thing"."id" = "historicallocation"."thing_id"`,
       link: `"thing"."id" = (SELECT "historicallocation"."thing_id" from "historicallocation" WHERE "historicallocation"."id" = $ID)`,

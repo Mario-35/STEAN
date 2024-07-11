@@ -379,7 +379,7 @@ describe("endpoint : Thing [8.2.1]", () => {
 					res.body["@iot.count"].should.eql(1);
 					const id = res.body.value[0]["@iot.id"];
 					res.body.value[0]["@iot.selfLink"].should.contain(`${name}(${id})`);
-					res.body.value[0]["Things@iot.navigationLink"].should.contain(`/${name}(${id})/Things`);
+					res.body.value[0]["Thing@iot.navigationLink"].should.contain(`/${name}(${id})/Thing`);
 					res.body.value[0]["Locations@iot.navigationLink"].should.contain(`${name}(${id})/Locations`);
 					done();
 				});
@@ -579,7 +579,7 @@ describe("endpoint : Thing [8.2.1]", () => {
 					res.type.should.equal("application/json");
 					const id = Number(res.body[name][0]["@iot.id"]);
 					res.body[name][0]["@iot.selfLink"].should.contain(`${name}(${id})`);
-					res.body[name][0]["Things@iot.navigationLink"].should.contain(`/${name}(${id})/Things`);
+					res.body[name][0]["Thing@iot.navigationLink"].should.contain(`/${name}(${id})/Thing`);
 					res.body[name][0]["Locations@iot.navigationLink"].should.contain(`${name}(${id})/Locations`);
 					done();
 				});

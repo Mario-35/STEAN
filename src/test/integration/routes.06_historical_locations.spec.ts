@@ -49,7 +49,7 @@ import {
 	writeLog
 } from "./tests";
 
-const testsKeys = ["@iot.selfLink", "@iot.id", "Things@iot.navigationLink", "Locations@iot.navigationLink", "time"];
+const testsKeys = ["@iot.selfLink", "@iot.id", "Thing@iot.navigationLink", "Locations@iot.navigationLink", "time"];
 
 chai.use(chaiHttp);
 
@@ -145,7 +145,7 @@ describe("endpoint : HistoricalLocations", () => {
 					res.body.should.include.keys(testsKeys);
 					res.body["@iot.selfLink"].should.contain(`/${entity.name}(1)`);
 					res.body["@iot.id"].should.eql(1);
-					res.body["Things@iot.navigationLink"].should.contain(`/${entity.name}(1)/Things`);
+					res.body["Thing@iot.navigationLink"].should.contain(`/${entity.name}(1)/Thing`);
 					addToApiDoc({
 						...infos,
 						result: limitResult(res)
@@ -239,8 +239,8 @@ describe("endpoint : HistoricalLocations", () => {
 				});
 		});
 
-		it(`Return ${entity.name} Subentity Things ${nbColor}[9.2.6]`, (done) => {
-			const name = "Things";
+		it(`Return ${entity.name} Subentity Thing ${nbColor}[9.2.6]`, (done) => {
+			const name = "Thing";
 			const infos = addTest({
 				api: `{get} ${entity.name}(:id) Get Subentity ${name}`,
 				apiName: "",
@@ -258,11 +258,11 @@ describe("endpoint : HistoricalLocations", () => {
 					res.type.should.equal("application/json");
 					res.body["@iot.count"].should.eql(1);
 					const id = Number(res.body.value[0]["@iot.id"]);
-					res.body.value[0]["@iot.selfLink"].should.contain(`/${name}(${id})`);
-					res.body.value[0]["Locations@iot.navigationLink"].should.contain(`/${name}(${id})/Location`);
-					res.body.value[0]["HistoricalLocations@iot.navigationLink"].should.contain(`/${name}(${id})/HistoricalLocations`);
-					res.body.value[0]["Datastreams@iot.navigationLink"].should.contain(`/${name}(${id})/Datastreams`);
-					res.body.value[0]["MultiDatastreams@iot.navigationLink"].should.contain(`/${name}(${id})/MultiDatastreams`);
+					res.body.value[0]["@iot.selfLink"].should.contain(`/${name}s(${id})`);
+					res.body.value[0]["Locations@iot.navigationLink"].should.contain(`/${name}s(${id})/Location`);
+					res.body.value[0]["HistoricalLocations@iot.navigationLink"].should.contain(`/${name}s(${id})/HistoricalLocations`);
+					res.body.value[0]["Datastreams@iot.navigationLink"].should.contain(`/${name}s(${id})/Datastreams`);
+					res.body.value[0]["MultiDatastreams@iot.navigationLink"].should.contain(`/${name}s(${id})/MultiDatastreams`);
 					done();
 				});
 		});
@@ -294,8 +294,8 @@ describe("endpoint : HistoricalLocations", () => {
 				});
 		});
 
-		it(`Return ${entity.name} Expand Things ${nbColor}[9.3.2.1]`, (done) => {
-			const name = "Things";
+		it(`Return ${entity.name} Expand Thing ${nbColor}[9.3.2.1]`, (done) => {
+			const name = "Thing";
 			const infos = addTest({
 				api: `{get} return ${entity.name} Expand ${name}`,
 				apiName: "",
@@ -311,12 +311,12 @@ describe("endpoint : HistoricalLocations", () => {
 					should.not.exist(err);
 					res.status.should.equal(200);
 					res.type.should.equal("application/json");
-					const id = Number(res.body[name][0]["@iot.id"]);
-					res.body[name][0]["@iot.selfLink"].should.contain(`/${name}(${id})`);
-					res.body[name][0]["Locations@iot.navigationLink"].should.contain(`${name}(${id})/Location`);
-					res.body[name][0]["HistoricalLocations@iot.navigationLink"].should.contain(`/${name}(${id})/HistoricalLocations`);
-					res.body[name][0]["Datastreams@iot.navigationLink"].should.contain(`${name}(${id})/Datastreams`);
-					res.body[name][0]["MultiDatastreams@iot.navigationLink"].should.contain(`${name}(${id})/MultiDatastreams`);
+					const id = Number(res.body[name]["@iot.id"]);
+					res.body[name]["@iot.selfLink"].should.contain(`/${name}s(${id})`);
+					res.body[name]["Locations@iot.navigationLink"].should.contain(`${name}s(${id})/Location`);
+					res.body[name]["HistoricalLocations@iot.navigationLink"].should.contain(`/${name}s(${id})/HistoricalLocations`);
+					res.body[name]["Datastreams@iot.navigationLink"].should.contain(`${name}s(${id})/Datastreams`);
+					res.body[name]["MultiDatastreams@iot.navigationLink"].should.contain(`${name}s(${id})/MultiDatastreams`);
 					
 					done();
 				});

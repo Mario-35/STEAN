@@ -266,6 +266,11 @@ class Models {
           : tempEntity.columns.hasOwnProperty(test)
               ? EColumnType.Column
               : undefined;
+          // return tempEntity.columns.hasOwnProperty(test)
+          // ? EColumnType.Column
+          // : tempEntity.columns.hasOwnProperty(test)
+          //     ? EColumnType.Relation
+          //     : undefined;
     }      
   };
 

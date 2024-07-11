@@ -8,9 +8,9 @@
  #/
 
 clear
-read APIDEST < .steanpath
-APIDEST=$(echo "$APIDEST" | sed 's:/*$::')
 
+# Name of dtas
+CONF=.steanpath
 # Name of the file downladed
 FILEDIST=./dist.zip
 # Name of the backup
@@ -19,12 +19,29 @@ FILEDISTOLD=./distOld.zip
 FILERUN=./run.sh
 # Name of the run script
 SQLSCRIPT=./script.sql
+
+# load configuration
+if [ -f $CONF ]; then
+    read APIDEST < $CONF
+    APIDEST=$(echo "$APIDEST" | sed 's:/*$::')
+fi
+
+# Del configuration file if blank
+if [ -z "${APIDEST}" ]; then
+    if [ -f $CONF ]; then
+        rm .steanpath
+        echo "Delete => .steanpath cause is blank"
+    fi
+fi
+
 # Stean version
-STEANVER=$(cat $APIDEST/api/package.json \
-  | grep version \
-  | head -1 \
-  | awk -F: '{ print $2 }' \
-  | sed 's/[",]//g')
+if [ -f $APIDEST/api/package.json ]; then
+    STEANVER=$(cat $APIDEST/api/package.json \
+    | grep version \
+    | head -1 \
+    | awk -F: '{ print $2 }' \
+    | sed 's/[",]//g')
+fi
 
 # Create run script
 create_run() {
@@ -62,8 +79,9 @@ check_node() {
     then
         echo "Installing Node..."
         sudo apt install nodejs
+        NODEVER=$(node -v) 
     else
-        echo "Node is already installed."
+        NODEVER=$(node -v) 
     fi    
 }
 
@@ -78,8 +96,9 @@ check_pg() {
         sudo -i -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"    
         sudo -i -u postgres psql -c "CREATE USER stean WITH PASSWORD 'stean';"    
         update_pg_hba
+        PGVER=$(psql --version)
     else
-        echo "PostgreSQL is already installed."
+        PGVER=$(psql --version)
     fi    
 }
 
@@ -108,8 +127,9 @@ check_pm2() {
     then
         echo "Installing pm2..."
         sudo npm install pm2@latest -g
+        PM2VER=$(pm2 -v) 
     else
-        echo "pm2 is already installed."
+        PM2VER=$(pm2 -v) 
     fi    
 }
 
@@ -208,12 +228,12 @@ run_stean() {
 
 # Function to show menu
 menu() {
+    logo
     if command -v pm2 > /dev/null
     then
         pm2 ls
-    fi 
-
-    echo -e "\e[34mStean : \e[32m$STEANVER \e[34mNode : \e[32m$(node -v) \e[34mPostgreSQL : \e[32m$(psql --version) \e[34mPm2: \e[32m$(pm2 -v)\e[0m"
+    fi
+    echo -e "\e[34mStean : \e[32m$STEANVER \e[34mNode : \e[32m$NODEVER \e[34mPostgreSQL : \e[32m$PGVER \e[34mPm2: \e[32m$PM2VER \e[0m"
     echo -e "\e[34mStean path : \e[32m$APIDEST\e[0m"
     echo -e "\e[33m---------------- MENU ----------------\e[0m"
     for index in "${!options[@]}"; do
@@ -227,25 +247,34 @@ restart() {
     bash ./stean.sh && exit
 }
 
-logo
+check_node
+check_pg
+check_pm2
 menu
 PS3='Please enter your choice : '
 if [ -f $APIDEST/api/index.js ]; then
-    options=("Change path" "Update stean" "Back to previous" "Create run script" "Run stean" "Stop stean" "Logs" "Quit")
+    options=("Change path" "Update stean" "Back to previous" "Create run script" "Run stean" "Stop stean" "Logs" "Reload" "Quit")
 else
     if [ -f .steanpath ]; then
-        options=("Change path" "Install all" "Quit")
+        options=("Change path" "Install all" "Reload" "Quit")
     else
-        options=("Change path" "Quit")
+        echo -e "\e[31mNo path you have to indicate the path\e[0m"
+        options=("Indicate path" "Reload" "Quit")
     fi
 fi
 select opt in "${options[@]}"
 do
     case $opt in
+        "Indicate path")
+            # Prompt for the domain name and directory
+            read -p "Enter the path to install api (/var/www/stean) [./]: " APIDEST
+            echo $APIDEST > .steanpath
+            restart
+            break
+            ;;
         "Change path")
             # Prompt for the domain name and directory
             read -p "Enter the new path to install api (/var/www/stean) [./]: " APIDEST
-            APIDEST=${APIDEST:-.} | sed 's:/*$::'
             echo $APIDEST > .steanpath
             restart
             break
@@ -305,6 +334,10 @@ do
             echo "│                           STEAN Stop                          │"
             echo "└───────────────────────────────────────────────────────────────┘"
             stop_stean
+            restart
+            break
+            ;;
+        "Reload")
             restart
             break
             ;;
