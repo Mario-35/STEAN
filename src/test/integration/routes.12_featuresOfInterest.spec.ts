@@ -155,6 +155,26 @@ addToApiDoc({
 				});
 		});
 
+        it(`Return error ${entity.singular} not found`, (done) => {
+			const infos = addTest({
+				api : `{get} return error ${entity.singular} not found`,
+				apiName: "",
+				apiDescription: "",
+				apiReference: "",
+				apiExample: {
+					http: `${testVersion}/${entity.singular}`,
+				}
+			});
+			chai.request(server)
+				.get(`/test/${infos.apiExample.http}`)
+				.end((err, res) => {
+					should.not.exist(err);
+					res.status.should.equal(404);
+					res.type.should.equal("application/json");					
+					done();
+				});
+		});
+
         it(`Return all features of interests using $expand query option ${nbColor}[9.3.2.1]`, (done) => {
             const infos = addTest({
                 api: `{get} ${entity.name}(:id) Get one and expand`,

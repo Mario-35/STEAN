@@ -22,7 +22,7 @@ import { log } from "../log";
 import { createDatabase, testDatas } from "../db/createDb";
 import { userAccess } from "../db/dataAccess";
 import path from "path";
-import { formatconfigFile, testDbExists, validJSONConfig } from "./helper";
+import { formatconfigFile, testDbExists, validJSONConfig } from "./helpers";
 
 // class to logCreate configs environements
 class Configuration {

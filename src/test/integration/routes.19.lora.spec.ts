@@ -132,6 +132,26 @@ import { addStartNewTest, addTest, writeLog } from "./tests";
 				});
 		});
 
+        it(`Return error ${entity.singular} not found`, (done) => {
+			const infos = addTest({
+				api : `{get} return error ${entity.singular} not found`,
+				apiName: "",
+				apiDescription: "",
+				apiReference: "",
+				apiExample: {
+					http: `${testVersion}/${entity.singular}`,
+				}
+			});
+			chai.request(server)
+				.get(`/test/${infos.apiExample.http}`)
+				.end((err, res) => {
+					should.not.exist(err);
+					res.status.should.equal(404);
+					res.type.should.equal("application/json");					
+					done();
+				});
+		});
+
 		it(`Return ${entity.name} deveui: 2CF7F1202520017E`, (done) => {
 			const infos = addTest({
 				api: `{get} ${entity.name}(:deveui) Get one from deveui`,
@@ -183,6 +203,26 @@ import { addStartNewTest, addTest, writeLog } from "./tests";
 					res.status.should.equal(404);
 					res.type.should.equal("application/json");
 					docs[docs.length - 1].apiErrorExample = JSON.stringify(res.body, null, 4).replace(Number.MAX_SAFE_INTEGER.toString(), "1");					
+					done();
+				});
+		});
+
+        it(`Return error ${entity.singular} not found`, (done) => {
+			const infos = addTest({
+				api : `{get} return error ${entity.singular} not found`,
+				apiName: "",
+				apiDescription: "",
+				apiReference: "",
+				apiExample: {
+					http: `${testVersion}/${entity.singular}`,
+				}
+			});
+			chai.request(server)
+				.get(`/test/${infos.apiExample.http}`)
+				.end((err, res) => {
+					should.not.exist(err);
+					res.status.should.equal(404);
+					res.type.should.equal("application/json");					
 					done();
 				});
 		});

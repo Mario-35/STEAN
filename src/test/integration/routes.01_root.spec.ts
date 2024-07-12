@@ -55,8 +55,7 @@ addToApiDoc({
 describe("endpoint : index", () => {
     describe(`GET /${testVersion}/ [9.2.1]`, () => {
         afterEach(() => { writeLog(true); });
-        it("should inform on result", (done) => {
-            
+        it("should inform on result", (done) => {            
             addStartNewTest("Root");
             const infos = addTest({
                 api: "{get} resource result",
@@ -82,25 +81,24 @@ describe("endpoint : index", () => {
             chai.request(server)
             .get(`/test/${infos.apiExample.http}`)
             .end((err, res) => {
-                console.log("trace === true");
                 should.not.exist(err);
-                    res.status.should.eql(200);
-                    res.type.should.eql("application/json");
-                    res.body.value[0].url.should.contain("/Datastreams");
-                    res.body.value[1].url.should.contain("/MultiDatastreams");
-                    res.body.value[2].url.should.contain("/FeaturesOfInterest");
-                    res.body.value[3].url.should.contain("/HistoricalLocation");
-                    res.body.value[4].url.should.contain("/Locations");
-                    res.body.value[5].url.should.contain("/Observations");
-                    res.body.value[6].url.should.contain("/ObservedProperties");
-                    res.body.value[7].url.should.contain("/Sensors");
-                    res.body.value[8].url.should.contain("/Things");
-                    res.body.value[9].url.should.contain("/Loras");
-                    res.body.value[10].url.should.contain("/Decoders");
-                    docs.push(prepareToApiDoc({ ...infos, result: res }, "SensorThings"));
-                    generateApiDoc(docs, "apiSensorThings.js");
-                    done();
-                });
+                res.status.should.eql(200);
+                res.type.should.eql("application/json");
+                res.body.value[0].url.should.contain("/Datastreams");
+                res.body.value[1].url.should.contain("/MultiDatastreams");
+                res.body.value[2].url.should.contain("/FeaturesOfInterest");
+                res.body.value[3].url.should.contain("/HistoricalLocation");
+                res.body.value[4].url.should.contain("/Locations");
+                res.body.value[5].url.should.contain("/Observations");
+                res.body.value[6].url.should.contain("/ObservedProperties");
+                res.body.value[7].url.should.contain("/Sensors");
+                res.body.value[8].url.should.contain("/Things");
+                res.body.value[9].url.should.contain("/Loras");
+                res.body.value[10].url.should.contain("/Decoders");
+                docs.push(prepareToApiDoc({ ...infos, result: res }, "SensorThings"));
+                generateApiDoc(docs, "apiSensorThings.js");
+                done();
+            });
         });
     });
 });

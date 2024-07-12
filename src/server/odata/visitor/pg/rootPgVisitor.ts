@@ -30,7 +30,13 @@ export class RootPgVisitor extends PgVisitor {
   }
 
   protected verifyRessources = (): void => {
-    console.log(log.debug_head("verifyRessources"));
+    console.log(log.whereIam());
+    console.log(this.ctx.model);
+    
+    // if (this.parentEntity) {
+    //     if (!_DBDATAS[this.parentEntity].relations[this.entity])  ctx.throw(40, { detail: messages.errors.invalidPath + this.entity.trim() }); 
+    // } else if (!_DBDATAS[this.entity])  ctx.throw(404, { detail: messages.errors.invalidPath + this.entity.trim() }); 
+
   };
 
   protected VisitRessources(node: Token, context?: IodataContext) {
@@ -125,8 +131,13 @@ export class RootPgVisitor extends PgVisitor {
         if (BigInt(this.id) > 0) {
           this.query.where.init(`${tmpLinkSplit[0]} = (SELECT id FROM (${tmpLinkSplit[1]} as l WHERE id = ${this.id})`);
         } else this.query.where.init(tmpLink);
-        this.parentEntity = this.entity;
-        this.entity = node.value.path.raw;
+        const pipo =  models.getEntityName(this.ctx.config, node.value.path.raw);
+        if (pipo) {
+          this.parentEntity = this.entity;
+          this.entity = pipo
+        }
+        // this.parentEntity = this.entity;
+        // this.entity = node.value.path.raw;
       } else if (this.ctx.model[this.entity].columns[node.value.path.raw]) {
         this.query.select.add(`${addDoubleQuotes(node.value.path.raw )}${_COLUMNSEPARATOR}`);
         this.showRelations = false;

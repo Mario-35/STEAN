@@ -92,8 +92,12 @@ export const createOdata = async (ctx: koaContext): Promise<RootPgVisitor | unde
   if (!urlSrcSplit[1]) urlSrcSplit.push(`$top=${ctx.config.nb_page ? ctx.config.nb_page : 200}`);
 
   if (urlSrcSplit[0].split("(").length != urlSrcSplit[0].split(")").length) urlSrcSplit[0] += ")";
-
-  const astRessources: Token = <Token>resourcePath(<string>urlSrcSplit[0]);
+  let astRessources: Token;
+  try {
+    astRessources = <Token>resourcePath(<string>urlSrcSplit[0]);    
+  } catch (error) {
+    ctx.throw(404, { code: 400, detail: `Not a valid id: Path is not valid.` });
+  }
 
   const astQuery: Token = <Token>query(decodeURIComponent(urlSrcSplit[1]));
 

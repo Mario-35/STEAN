@@ -157,6 +157,26 @@ describe("endpoint : Thing [8.2.1]", () => {
 				});
 		});
 
+		it(`Return error ${entity.singular} not found`, (done) => {
+			const infos = addTest({
+				api : `{get} return error ${entity.singular} not found`,
+				apiName: "",
+				apiDescription: "",
+				apiReference: "",
+				apiExample: {
+					http: `${testVersion}/${entity.singular}`,
+				}
+			});
+			chai.request(server)
+				.get(`/test/${infos.apiExample.http}`)
+				.end((err, res) => {
+					should.not.exist(err);
+					res.status.should.equal(404);
+					res.type.should.equal("application/json");					
+					done();
+				});
+		});
+
 		it(`Return property name of Thing id: 1 ${nbColor}[9.2.4]`, (done) => {
 			const infos = addTest({
 				api: `{get} ${entity.name}(:id) Get only a property`,

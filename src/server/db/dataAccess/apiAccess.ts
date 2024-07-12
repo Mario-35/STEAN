@@ -13,6 +13,7 @@ import { Icomon, IreturnResult, koaContext } from "../../types";
 import { isArray } from "../../helpers";
 import { models } from "../../models";
 import { log } from "../../log";
+import { errors } from "../../messages";
 
 
 // Interface API
@@ -22,12 +23,13 @@ export class apiAccess implements Icomon {
 
   constructor(ctx: koaContext, entity?: string) {
     this.ctx = ctx;    
-    const entityName = models.getEntityName(this.ctx.config, entity ? entity : this.ctx.odata.entity);
+    const entityName = entity ? models.getEntityName(this.ctx.config, entity) : this.ctx.odata.entity;
+    // const entityName = models.getEntityName(this.ctx.config, entity ? entity : this.ctx.odata.entity);
     console.log(log.whereIam(entityName));
     if (entityName && entityName in entities) {
       // @ts-ignore
       this.myEntity = new entities[(this.ctx, entityName)](ctx);
-    } 
+    } else log.error(errors.noValidEntity, entityName);
   }
   
   formatDataInput(input: object | undefined): object | undefined {
